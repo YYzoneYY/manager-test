@@ -14,6 +14,7 @@ import com.ruoyi.system.domain.BizVideo;
  */
 public interface IBizVideoService  extends IService<BizVideo>
 {
+    List<BizVideo> list();
     /**
      * 查询工程视频
      * 
