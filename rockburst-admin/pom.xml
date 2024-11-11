@@ -47,12 +47,14 @@
         <dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>rockburst-framework</artifactId>
+
         </dependency>
 
         <!-- 定时任务-->
         <dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>rockburst-quartz</artifactId>
+
         </dependency>
 
         <!-- 代码生成-->

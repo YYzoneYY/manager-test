@@ -58,6 +58,12 @@
             <groupId>com.ruoyi</groupId>
             <artifactId>rockburst-system</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+            <version>3.5.8</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 
