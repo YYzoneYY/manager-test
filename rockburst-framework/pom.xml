@@ -16,7 +16,11 @@
     </description>
 
     <dependencies>
-
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.16</version>
+        </dependency>
         <!-- SpringBoot Web容器 -->
          <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -64,6 +68,7 @@
             <version>3.5.8</version>
             <scope>compile</scope>
         </dependency>
+
 
     </dependencies>
 
