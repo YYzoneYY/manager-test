@@ -22,6 +22,7 @@ public class BizProjectRecord extends BaseEntity
     private static final long serialVersionUID = 1L;
 
     /** 工程id */
+
     private Long projectId;
 
     /** 施工时间 */

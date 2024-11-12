@@ -5,6 +5,7 @@ import java.util.List;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.system.domain.BizDrillRecord;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.vo.BizProjectRecordVo;
 
 /**
  * 工程填报记录Service接口
@@ -21,6 +22,13 @@ public interface IBizProjectRecordService  extends IService<BizProjectRecord>
      * @return 工程填报记录
      */
     List<BizProjectRecord> getlist(BizProjectRecord bizProjectRecord);
+
+
+
+    /**
+     * 查询工程填报审核记录
+     */
+    List<BizProjectRecordVo> auditList(BizProjectRecord bizProjectRecord);
 
     /**
      * 查询工程填报记录列表
