@@ -1,25 +1,19 @@
 package com.ruoyi.common.utils;
+import com.ruoyi.common.exception.ServiceException;
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.lang.management.ManagementFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import org.apache.commons.lang3.time.DateFormatUtils;
 
 /**
  * 时间工具类
- * 
+ *
  * @author ruoyi
  */
-public class DateUtils extends org.apache.commons.lang3.time.DateUtils
+public class DateUtil extends org.apache.commons.lang3.time.DateUtils
 {
     public static String YYYY = "yyyy";
 
@@ -35,29 +29,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
             "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM",
             "yyyy/MM/dd", "yyyy/MM/dd HH:mm:ss", "yyyy/MM/dd HH:mm", "yyyy/MM",
             "yyyy.MM.dd", "yyyy.MM.dd HH:mm:ss", "yyyy.MM.dd HH:mm", "yyyy.MM"};
-
-    /**
-     * 时间戳转换指定格式（固定格式:yyyy-MM-dd HH:mm:ss）
-     *
-     * @param time
-     * @return
-     */
-    public static String getDateStrByTime(Long time) {
-        TimeZone timeZoneSH = TimeZone.getTimeZone("Asia/Shanghai");
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss" , Locale.CHINA);
-        sdf.setTimeZone(timeZoneSH);
-        Date date;
-        String dateStr = "";
-        try {
-            if (time != null) {
-                date = sdf.parse(sdf.format(time));
-                dateStr = sdf.format(date);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return dateStr;
-    }
 
     /**
      * 获取当前Date型日期
@@ -126,6 +97,19 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
     }
 
     /**
+     * 得到日期字符串 默认格式（yyyy-MM-dd） pattern可以为："yyyy-MM-dd" "HH:mm:ss" "E"
+     */
+    public static String formatDate(Date date, Object... pattern) {
+        String formatDate = null;
+        if (pattern != null && pattern.length > 0) {
+            formatDate = DateFormatUtils.format(date, pattern[0].toString());
+        } else {
+            formatDate = DateFormatUtils.format(date, "yyyy-MM-dd");
+        }
+        return formatDate;
+    }
+
+    /**
      * 日期路径 即年/月/日 如20180808
      */
     public static final String dateTime()
@@ -163,28 +147,16 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
     }
 
     /**
-     * 计算相差天数
+     * 计算两个时间差
      */
-    public static int differentDaysByMillisecond(Date date1, Date date2)
-    {
-        return Math.abs((int) ((date2.getTime() - date1.getTime()) / (1000 * 3600 * 24)));
-    }
-
-    /**
-     * 计算时间差
-     *
-     * @param endDate 最后时间
-     * @param startTime 开始时间
-     * @return 时间差（天/小时/分钟）
-     */
-    public static String timeDistance(Date endDate, Date startTime)
+    public static String getDatePoor(Date endDate, Date nowDate)
     {
         long nd = 1000 * 24 * 60 * 60;
         long nh = 1000 * 60 * 60;
         long nm = 1000 * 60;
         // long ns = 1000;
         // 获得两个时间的毫秒时间差异
-        long diff = endDate.getTime() - startTime.getTime();
+        long diff = endDate.getTime() - nowDate.getTime();
         // 计算差多少天
         long day = diff / nd;
         // 计算差多少小时
@@ -214,4 +186,25 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
         ZonedDateTime zdt = localDateTime.atZone(ZoneId.systemDefault());
         return Date.from(zdt.toInstant());
     }
+
+    /**
+     * 校验日期格式yyyy-MM-dd
+     */
+    public static Date checkDateStr(String dateStr){
+        if(!dateStr.matches("((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))")){
+            throw new ServiceException("日期格式不正确，请参照:yyyy-MM-dd");
+        }
+        return parseDate(dateStr);
+    }
+
+    /**
+     * 校验日期格式yyyy-MM-dd HH:mm:ss
+     */
+    public static Date checkTimeStr(String timeStr){
+        if(!timeStr.matches("((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))\\\\s+([0-1]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])")){
+            throw new ServiceException("时间格式不正确，请参照:yyyy-MM-dd HH:mm:ss");
+        }
+        return parseDate(timeStr);
+    }
+
 }
