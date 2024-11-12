@@ -2,6 +2,8 @@ package com.ruoyi.web.controller.projectFill;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.system.mapper.BizProjectAuditMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +35,8 @@ public class BizProjectAuditController extends BaseController
 {
     @Autowired
     private IBizProjectAuditService bizProjectAuditService;
+    @Autowired
+    private BizProjectAuditMapper bizProjectAuditMapper;
 
     /**
      * 查询工程填报审核记录列表

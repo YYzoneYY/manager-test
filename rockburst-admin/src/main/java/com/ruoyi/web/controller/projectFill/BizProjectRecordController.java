@@ -4,6 +4,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ruoyi.system.domain.BizProjectRecordDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,12 +44,22 @@ public class BizProjectRecordController extends BaseController
      * 查询工程填报记录列表
      */
     @ApiOperation("查询工程填报记录列表")
-//    @PreAuthorize("@ss.hasPermi('project:record:list')")
+    @PreAuthorize("@ss.hasPermi('project:record:list')")
     @GetMapping("/list")
     public Object list(BizProjectRecord bizProjectRecord)
     {
         startPage();
         return getDataTable(bizProjectRecordService.getlist( bizProjectRecord));
+    }
+
+
+    @ApiOperation("查询工程填报审核列表")
+    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
+    @GetMapping("/auditList")
+    public Object auditList(BizProjectRecordDto dto)
+    {
+        startPage();
+        return getDataTable(bizProjectRecordService.getlist( null));
     }
 
     /**
