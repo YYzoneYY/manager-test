@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.ruoyi.system.domain.BusinessBaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -50,10 +52,12 @@ public class MiningRecordEntity extends BusinessBaseEntity implements Serializab
 
     @ApiModelProperty("回采进度")
     @TableField("mining_pace")
+    @JsonSerialize(using = ToStringSerializer.class)
     private BigDecimal miningPace;
 
     @ApiModelProperty("修改回采进度")
     @TableField("mining_pace_edit")
+    @JsonSerialize(using = ToStringSerializer.class)
     private BigDecimal miningPaceEdit;
 
     //0不用标识，1时间相同，2未填写3修改 4擦除

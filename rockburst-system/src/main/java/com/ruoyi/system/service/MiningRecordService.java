@@ -3,6 +3,10 @@ package com.ruoyi.system.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.system.domain.Entity.MiningFootageEntity;
 import com.ruoyi.system.domain.Entity.MiningRecordEntity;
+import com.ruoyi.system.domain.dto.MiningFootageDTO;
+import com.ruoyi.system.domain.dto.MiningRecordDTO;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -10,4 +14,8 @@ import com.ruoyi.system.domain.Entity.MiningRecordEntity;
  * @description:
  */
 public interface MiningRecordService extends IService<MiningRecordEntity> {
+
+    public MiningFootageDTO insertMiningRecord(MiningFootageDTO miningFootageDTO);
+
+    List<MiningRecordDTO> queryByMiningRecordId(Long miningRecordId);
 }

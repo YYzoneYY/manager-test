@@ -2,4 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.MiningFootageMapper">
 
+    <!--统计开采的总长度-->
+    <select id="minedLength">
+        select sum(r.mining_pace) as minedLength
+        from mining_footage mf
+        <where>
+            mf.workface_id=#{workfaceId} and mf.delFlag = '0'
+        </where>
+    </select>
+
 </mapper>

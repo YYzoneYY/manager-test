@@ -1,6 +1,8 @@
 package com.ruoyi.system.domain.Entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.ruoyi.system.domain.BusinessBaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -10,6 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -29,19 +32,23 @@ public class MiningFootageEntity extends BusinessBaseEntity implements Serializa
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("回采进尺id")
+    @NotNull(groups = {MiningFootageUpdate.class}, message = "回采进尺id不能为空")
     @TableId(value = "mining_footage_id", type = IdType.AUTO)
     private Long miningFootageId;
 
     @ApiModelProperty("工作面id")
+    @NotNull(groups = {MiningFootageOther.class}, message = "工作面id不能为空")
     @TableField("workface_id")
     private Long workfaceId;
 
     @ApiModelProperty("回采时间")
+    @NotNull(groups = {MiningFootageOther.class}, message = "回采时间不能为空")
     @TableField("mining_time")
     private Long miningTime;
 
     @ApiModelProperty("回采进度")
     @TableField("mining_pace")
+    @JsonSerialize(using = ToStringSerializer.class)
     private BigDecimal miningPace;
 
     //0正常数据 1未填写的 2修改 3 擦除

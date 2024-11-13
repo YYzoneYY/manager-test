@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ruoyi.system.mapper.MiningFootageMapper">
+<mapper namespace="com.ruoyi.system.mapper.MiningRecordMapper">
 
+    <select id="queryByMiningRecordId" resultType="com.ruoyi.system.domain.dto.MiningRecordDTO">
+        select
+        mr.mining_time                                                      as miningTime,
+        mr.create_by                                                        as createBy,
+        mr.update_time                                                      as updateTime,
+        (case when mr.flag = '2' then '修改' when mr.flag = '3' then '擦除' end) as type,
+        mr.mining_pace                                                      as miningPace,
+        mr.mining_pace_edit                                                 as miningPaceEdit
+        from mining_record mr
+        <where>
+            mr.mining_footage_id = #{miningRecordId}
+        </where>
+        order by mr.update_time desc
+    </select>
 </mapper>

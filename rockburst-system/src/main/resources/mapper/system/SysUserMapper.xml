@@ -141,8 +141,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<select id="checkEmailUnique" parameterType="String" resultMap="SysUserResult">
 		select user_id, email from sys_user where email = #{email} and del_flag = '0' limit 1
 	</select>
-	
-	<insert id="insertUser" parameterType="SysUser" useGeneratedKeys="true" keyProperty="userId">
+
+    <select id="selectNameById" resultType="java.lang.String">
+		select
+			user.nick_name
+		from
+			sys_user user
+		where
+			user.user_id = #{userId} and user.del_flag = '0'
+    </select>
+
+    <insert id="insertUser" parameterType="SysUser" useGeneratedKeys="true" keyProperty="userId">
  		insert into sys_user(
  			<if test="userId != null and userId != 0">user_id,</if>
  			<if test="deptId != null and deptId != 0">dept_id,</if>
