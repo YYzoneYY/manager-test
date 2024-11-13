@@ -1,0 +1,63 @@
+package com.ruoyi.system.domain.Entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.ruoyi.system.domain.BusinessBaseEntity;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * @author: shikai
+ * @date: 2024/11/13
+ * @description:
+ */
+@Data
+@ApiModel("回采进尺记录表")
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@TableName("miming_record")
+public class MiningRecordEntity extends BusinessBaseEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @ApiModelProperty("回采进尺记录id")
+    @TableId(value = "mining_record_id", type = IdType.AUTO)
+    private Long miningRecordId;
+
+    @ApiModelProperty("工作面id")
+    @TableField("workface_id")
+    private Long workfaceId;
+
+    @ApiModelProperty("回采进尺id")
+    @TableField("mining_footage_id")
+    private Long miningFootageId;
+
+    @ApiModelProperty("回采时间")
+    @TableField("mining_time")
+    private Long miningTime;
+
+    @ApiModelProperty("回采进度")
+    @TableField("mining_pace")
+    private BigDecimal miningPace;
+
+    @ApiModelProperty("修改回采进度")
+    @TableField("mining_pace_edit")
+    private BigDecimal miningPaceEdit;
+
+    //0不用标识，1时间相同，2未填写3修改 4擦除
+    @ApiModelProperty("修改标识")
+    @TableField("flag")
+    private String flag;
+}
