@@ -7,22 +7,22 @@ package com.ruoyi.common.enums;
  */
 public enum WorkFaceType
 {
-    wkc("0", "未开采"),
-    ykc("1", "开采中"),
-    kcw("2", "开采完成"),
-    tzkc("3", "停止开采"),
-    aqfb("4", "安全封闭");
+    wkc(0, "未开采"),
+    ykc(1, "开采中"),
+    kcw(2, "开采完成"),
+    tzkc(3, "停止开采"),
+    aqfb(4, "安全封闭");
 
-    private final String code;
+    private final Integer code;
     private final String info;
 
 
-    WorkFaceType(String code, String info) {
+    WorkFaceType(Integer code, String info) {
         this.code = code;
         this.info = info;
     }
 
-    public String getCode()
+    public Integer getCode()
     {
         return code;
     }

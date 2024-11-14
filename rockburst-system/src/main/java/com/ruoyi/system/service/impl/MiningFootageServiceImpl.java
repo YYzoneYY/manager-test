@@ -8,6 +8,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.enums.MiningFootageEnum;
+import com.ruoyi.common.enums.WorkFaceType;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
@@ -224,7 +225,7 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
 //            BizWorkface workface = new BizWorkface();
 //            BeanUtils.copyProperties(bizWorkface1, workface);
 //            if (subtract.equals(BigDecimal.ZERO)) {
-//                workface.setMiningType();
+//                workface.setStatus(WorkFaceType.kcw.getCode());
 //            }
 //        }
 //    }
