@@ -8,7 +8,7 @@ package com.ruoyi.common.enums;
 public enum WorkFaceType
 {
     wkc(0, "未开采"),
-    ykc(1, "开采中"),
+    kcz(1, "开采中"),
     kcw(2, "开采完成"),
     tzkc(3, "停止开采"),
     aqfb(4, "安全封闭");

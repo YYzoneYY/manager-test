@@ -46,6 +46,14 @@ public interface MiningFootageService extends IService<MiningFootageEntity> {
     TableData pageQueryList(MiningSelectDTO miningSelectDTO, Integer pageNum, Integer pageSize);
 
     /**
+     * 查询是否有时间相同
+     * @param miningTime 时间
+     * @param workfaceId 工作面id
+     * @return 返回结果
+     */
+    public String queryByTime(Long miningTime, Long workfaceId);
+
+    /**
      * 获取剩余工作面长度
      * @param workfaceId 工作面id
      * @return 返回结果
