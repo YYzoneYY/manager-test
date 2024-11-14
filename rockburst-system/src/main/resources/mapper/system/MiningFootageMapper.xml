@@ -11,4 +11,45 @@
         </where>
     </select>
 
+    <select id="selectMiningFootageByPage" parameterType="com.ruoyi.system.domain.dto.MiningSelectDTO" resultType="com.ruoyi.system.domain.dto.MiningFootageDTO">
+        select
+        mf.mining_footage_id as miningFootageId,
+        mf.workface_id as workfaceId,
+        mf.mining_time as miningTime,
+        mf.mining_pace as miningPace,
+        mf.flag as flag,
+        mf.create_time as createTime,
+        mf.update_time as updateTime
+        from mining_footage mf
+        <where>
+            <if test="startTime != null">and mf.mining_time &gt;= #{startTime}</if>
+            <if test="endTime != null">and mf.mining_time &lt;=#{endTime}</if>
+            <choose>
+                <when test="pace == '0'.toString()">
+                    and mf.mining_pace='0'
+                </when>
+
+                <when test="pace == '1'.toString()">
+                    and mf.mining_pace <![CDATA[ <> ]]>'0'
+                </when>
+                <otherwise>
+                    and mf.delFlag = '0'
+                </otherwise>
+            </choose>
+            and mf.delFlag = '0'
+            and mf.workface_id=#{workfaceId}
+        </where>
+        order by m.mining_time desc
+    </select>
+
+    <!--统计的开采时间之前的所有开采进度-->
+    <select id="miningPaceSum" resultType="java.math.BigDecimal">
+        select IFNULL(SUM(mf.mining_pace),0) as miningPaceSum from mining_footage mf
+        <where>
+            mf.mining_time <![CDATA[ <= ]]> #{time}
+            and mf.workface_id=#{workfaceId}
+            and mf.delFlag='0'
+        </where>
+    </select>
+
 </mapper>
