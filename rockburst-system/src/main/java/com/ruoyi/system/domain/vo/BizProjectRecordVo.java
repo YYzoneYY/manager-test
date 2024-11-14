@@ -8,5 +8,10 @@ import lombok.Setter;
 @Getter
 public class BizProjectRecordVo extends BizProjectRecord {
 
-    String deptName;
+    private String constructUnitName;
+    private String constructShiftName;
+    private String constructLocationName;
+
+
+
 }

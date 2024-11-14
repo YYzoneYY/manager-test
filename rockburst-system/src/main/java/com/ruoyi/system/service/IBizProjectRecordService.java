@@ -3,8 +3,12 @@ package com.ruoyi.system.service;
 import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ruoyi.system.domain.BizDrillRecord;
+import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
+import com.ruoyi.system.domain.dto.BizProjectRecordDto;
+import com.ruoyi.system.domain.vo.BizProStatsVo;
+import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordVo;
 
 /**
@@ -21,52 +25,28 @@ public interface IBizProjectRecordService  extends IService<BizProjectRecord>
      * @param projectId 工程填报记录主键
      * @return 工程填报记录
      */
-    List<BizProjectRecord> getlist(BizProjectRecord bizProjectRecord);
+    List<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto);
+
+
+    List<BizProjectRecordListVo> selectproList(BasePermission permission, BizProjectRecordDto dto);
+
+
+    BizProStatsVo statsProject(BasePermission permission, BizProjectRecordDto dto);
 
 
 
-    /**
-     * 查询工程填报审核记录
-     */
-    List<BizProjectRecordVo> auditList(BizProjectRecord bizProjectRecord);
+    List<BizProjectRecordListVo> auditList(BizProjectRecord bizProjectRecord);
 
-    /**
-     * 查询工程填报记录列表
-     * 
-     * @param bizProjectRecord 工程填报记录
-     * @return 工程填报记录集合
-     */
-//    public List<BizProjectRecord> selectBizProjectRecordList(BizProjectRecord bizProjectRecord);
 
-    /**
-     * 新增工程填报记录
-     * 
-     * @param bizProjectRecord 工程填报记录
-     * @return 结果
-     */
-//    public int insertBizProjectRecord(BizProjectRecord bizProjectRecord);
+    int saveRecord(BizProjectRecordAddDto dto);
 
-    /**
-     * 修改工程填报记录
-     * 
-     * @param bizProjectRecord 工程填报记录
-     * @return 结果
-     */
-//    public int updateBizProjectRecord(BizProjectRecord bizProjectRecord);
 
-    /**
-     * 批量删除工程填报记录
-     * 
-     * @param projectIds 需要删除的工程填报记录主键集合
-     * @return 结果
-     */
-//    public int deleteBizProjectRecordByProjectIds(Long[] projectIds);
+    int updateRecordById(BizProjectRecordAddDto dto);
 
-    /**
-     * 删除工程填报记录信息
-     * 
-     * @param projectId 工程填报记录主键
-     * @return 结果
-     */
-//    public int deleteBizProjectRecordByProjectId(Long projectId);
+    BizProjectRecordVo selectById(Long bizProjectRecordId);
+
+
+     int firstAudit(BizProjectRecordDto projectRecordDto);
+
+     int secondAudit(BizProjectRecordDto projectRecordDto);
 }

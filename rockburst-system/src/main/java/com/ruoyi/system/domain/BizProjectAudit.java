@@ -2,10 +2,12 @@ package com.ruoyi.system.domain;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
+import org.springframework.security.core.parameters.P;
 
 import java.io.Serializable;
 
@@ -17,6 +19,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
+@Accessors(chain = true)
 public class BizProjectAudit implements Serializable
 {
     private static final long serialVersionUID = 1L;
@@ -30,7 +33,12 @@ public class BizProjectAudit implements Serializable
 
     /** 审核状态 */
     @Excel(name = "审核状态")
-    private String status;
+    private Integer status;
+
+
+    private String msg;
+
+    private String level;
 
     /** 序号 */
     @Excel(name = "序号")

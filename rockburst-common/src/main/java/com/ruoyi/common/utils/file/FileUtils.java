@@ -92,7 +92,7 @@ public class FileUtils
         {
             String extension = getFileExtendName(data);
             pathName = DateUtils.datePath() + "/" + IdUtils.fastUUID() + "." + extension;
-            File file = FileUploadUtils.getAbsoluteFile(uploadDir, pathName);
+            File file = FileUploadUtils1.getAbsoluteFile(uploadDir, pathName);
             fos = new FileOutputStream(file);
             fos.write(data);
         }
@@ -100,7 +100,7 @@ public class FileUtils
         {
             IOUtils.close(fos);
         }
-        return FileUploadUtils.getPathFileName(uploadDir, pathName);
+        return FileUploadUtils1.getPathFileName(uploadDir, pathName);
     }
 
     /**

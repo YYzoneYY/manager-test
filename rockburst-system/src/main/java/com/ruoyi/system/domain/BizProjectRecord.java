@@ -6,8 +6,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 /**
  * 工程填报记录对象 biz_project_record
@@ -17,6 +19,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@Accessors(chain = true)
 public class BizProjectRecord extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
@@ -24,6 +27,12 @@ public class BizProjectRecord extends BaseEntity
     /** 工程id */
 
     private Long projectId;
+
+    @Schema(description = "钻孔类型")
+    private String drillType;
+
+    @Schema(description = "计划类型")
+    private String planType;
 
     /** 施工时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -101,4 +110,6 @@ public class BizProjectRecord extends BaseEntity
     /** 钻屑量 */
 //    @Excel(name = "钻屑量")
     private Long deptId;
+
+    private Integer isRead;
 }

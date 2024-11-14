@@ -1,18 +1,16 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.common.core.domain;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.ruoyi.common.core.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -52,6 +50,8 @@ public class BaseSelfEntity implements Serializable {
 
     /** 备注 */
     private String remark;
+
+
 
     public BaseSelfEntity() {
     }

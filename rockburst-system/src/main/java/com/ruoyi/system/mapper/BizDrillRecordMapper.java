@@ -3,6 +3,7 @@ package com.ruoyi.system.mapper;
 import java.util.List;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.yulichang.base.MPJBaseMapper;
 import com.ruoyi.system.domain.BizDrillRecord;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -13,7 +14,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2024-11-09
  */
 @Mapper
-public interface BizDrillRecordMapper   extends BaseMapper<BizDrillRecord>
+public interface BizDrillRecordMapper   extends MPJBaseMapper<BizDrillRecord>
 {
     /**
      * 查询钻孔参数记录

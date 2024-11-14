@@ -5,6 +5,7 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
@@ -18,6 +19,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
  */
 @Getter
 @Setter
+@Accessors(chain = true)
 public class BizDrillRecord implements Serializable
 {
     private static final long serialVersionUID = 1L;
@@ -66,6 +68,11 @@ public class BizDrillRecord implements Serializable
     /** 状态 */
     @Excel(name = "状态")
     private String status;
+
+
+    private String drillCrumbJosn;
+
+    private String detailJson;
 
 
 }
