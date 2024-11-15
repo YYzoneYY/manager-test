@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -24,10 +27,13 @@ public class ConstructionUnitEntity extends BusinessBaseEntity implements Serial
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("施工单位id")
+    @NotNull(groups = {ParameterValidationUpdate.class}, message = "施工单位id不能为空")
     @TableId(value = "construction_unit_id", type = IdType.AUTO)
     private Long constructionUnitId;
 
     @ApiModelProperty("施工单位名称")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "施工单位名称不能为空")
+    @Size(max = 50, groups = {ParameterValidationOther.class}, message = "施工单位长度不能超过50")
     @TableField(value = "construction_unit_name")
     private String constructionUnitName;
 

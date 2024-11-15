@@ -2,10 +2,7 @@ package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableData;
-import com.ruoyi.system.domain.Entity.MiningFootageAdd;
-import com.ruoyi.system.domain.Entity.MiningFootageEntity;
-import com.ruoyi.system.domain.Entity.MiningFootageOther;
-import com.ruoyi.system.domain.Entity.MiningFootageUpdate;
+import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.MiningFootageDTO;
 import com.ruoyi.system.domain.dto.MiningSelectDTO;
 import com.ruoyi.system.service.MiningFootageService;
@@ -36,13 +33,13 @@ public class MiningFootageController {
 
     @ApiOperation(value = "新增回采进尺", notes = "新增回采进尺")
     @PostMapping("/add")
-    public R<MiningFootageDTO> add(@RequestBody @Validated(value = {MiningFootageAdd.class, MiningFootageOther.class}) MiningFootageDTO miningFootageDTO){
+    public R<MiningFootageDTO> add(@RequestBody @Validated(value = {ParameterValidationAdd.class, ParameterValidationOther.class}) MiningFootageDTO miningFootageDTO){
         return R.ok(miningFootageService.insertMiningFootage(miningFootageDTO),"新增成功");
     }
 
     @ApiOperation(value = "回采进尺修改", notes = "回采进尺修改")
     @PutMapping("/update")
-    public R<MiningFootageEntity> update(@RequestBody @Validated(value = {MiningFootageUpdate.class, MiningFootageOther.class}) MiningFootageDTO miningFootageDTO){
+    public R<MiningFootageEntity> update(@RequestBody @Validated(value = {ParameterValidationUpdate.class, ParameterValidationOther.class}) MiningFootageDTO miningFootageDTO){
         return R.ok(miningFootageService.updateMiningFootage(miningFootageDTO),"修改成功");
     }
 

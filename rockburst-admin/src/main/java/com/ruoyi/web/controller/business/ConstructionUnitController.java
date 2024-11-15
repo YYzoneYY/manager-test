@@ -2,9 +2,7 @@ package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableData;
-import com.ruoyi.system.domain.Entity.ConstructionUnitAdd;
-import com.ruoyi.system.domain.Entity.ConstructionUnitOther;
-import com.ruoyi.system.domain.Entity.ConstructionUnitUpdate;
+import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.ConstructUnitSelectDTO;
 import com.ruoyi.system.domain.dto.ConstructionUnitDTO;
 import com.ruoyi.system.domain.dto.UnitChoiceListDTO;
@@ -32,13 +30,13 @@ public class ConstructionUnitController {
 
     @ApiOperation(value = "新增施工单位", notes = "新增施工单位")
     @PostMapping(value = "/add")
-    public R<ConstructionUnitDTO> add(@RequestBody @Validated({ConstructionUnitAdd.class, ConstructionUnitOther.class}) ConstructionUnitDTO constructionUnitDTO) {
+    public R<ConstructionUnitDTO> add(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) ConstructionUnitDTO constructionUnitDTO) {
         return R.ok(constructionUnitService.insertConstructionUnit(constructionUnitDTO));
     }
 
     @ApiOperation(value = "修改施工单位", notes = "修改施工单位")
     @PutMapping(value = "/update")
-    public R<ConstructionUnitDTO> update(@RequestBody @Validated({ConstructionUnitUpdate.class, ConstructionUnitOther.class}) ConstructionUnitDTO constructionUnitDTO) {
+    public R<ConstructionUnitDTO> update(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) ConstructionUnitDTO constructionUnitDTO) {
         return R.ok(constructionUnitService.updateConstructionUnit(constructionUnitDTO));
     }
 

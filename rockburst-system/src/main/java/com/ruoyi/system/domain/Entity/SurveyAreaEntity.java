@@ -31,28 +31,28 @@ public class SurveyAreaEntity extends BusinessBaseEntity implements Serializable
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "测区id")
-    @NotNull(groups = {SurveyAreUpdate.class}, message = "测区id不能为空")
+    @NotNull(groups = {ParameterValidationUpdate.class}, message = "测区id不能为空")
     @TableId(value = "survey_area_id", type = IdType.AUTO)
     private Long surveyAreaId;
 
     @ApiModelProperty(value = "测区名称")
-    @NotBlank(groups = {SurveyAreOther.class}, message = "测区名称不能为空")
-    @Size(max = 50, groups = {SurveyAreOther.class}, message = "测区名称长度不能超过50")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "测区名称不能为空")
+    @Size(max = 50, groups = {ParameterValidationOther.class}, message = "测区名称长度不能超过50")
     @TableField(value = "survey_area_name")
     private String surveyAreaName;
 
     @ApiModelProperty(value = "采区id")
-    @NotNull(groups = {SurveyAreOther.class}, message = "采区id不能为空")
+    @NotNull(groups = {ParameterValidationOther.class}, message = "采区id不能为空")
     @TableField(value = "mining_area_id")
     private Long miningAreaId;
 
     @ApiModelProperty(value = "工作面id")
-    @NotNull(groups = {SurveyAreOther.class}, message = "工作面id不能为空")
+    @NotNull(groups = {ParameterValidationOther.class}, message = "工作面id不能为空")
     @TableField(value = "workface_id")
     private Long workFaceId;
 
     @ApiModelProperty(value = "巷道id")
-    @NotNull(groups = {SurveyAreOther.class}, message = "巷道id不能为空")
+    @NotNull(groups = {ParameterValidationOther.class}, message = "巷道id不能为空")
     @TableField(value = "tunnel_id")
     private Long tunnelId;
 

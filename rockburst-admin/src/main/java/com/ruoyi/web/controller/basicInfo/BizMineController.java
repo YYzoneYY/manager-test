@@ -1,19 +1,11 @@
 package com.ruoyi.web.controller.basicInfo;
 
-import java.util.List;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.bean.BeanUtil;
-import com.ruoyi.common.core.domain.R;
-import com.ruoyi.system.domain.Entity.SurveyAreAdd;
-import com.ruoyi.system.domain.Entity.SurveyAreOther;
 import com.ruoyi.system.domain.dto.BizMineDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 //import org.springdoc.api.annotations.ParameterObject;
-import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -31,8 +23,6 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.domain.BizMine;
 import com.ruoyi.system.service.IBizMineService;
-import com.ruoyi.common.utils.poi.ExcelUtil;
-import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
  * 矿井管理Controller

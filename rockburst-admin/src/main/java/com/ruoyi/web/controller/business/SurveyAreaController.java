@@ -2,9 +2,7 @@ package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableData;
-import com.ruoyi.system.domain.Entity.SurveyAreAdd;
-import com.ruoyi.system.domain.Entity.SurveyAreOther;
-import com.ruoyi.system.domain.Entity.SurveyAreUpdate;
+import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.SurveyAreaDTO;
 import com.ruoyi.system.domain.dto.SurveySelectDTO;
 import com.ruoyi.system.service.SurveyAreaService;
@@ -47,7 +45,7 @@ public class SurveyAreaController {
      */
     @ApiOperation(value = "新增测区", notes = "新增测区")
     @PostMapping(value = "/add")
-    public R<SurveyAreaDTO> add(@RequestBody @Validated(value = {SurveyAreAdd.class, SurveyAreOther.class}) SurveyAreaDTO surveyAreaDTO){
+    public R<SurveyAreaDTO> add(@RequestBody @Validated(value = {ParameterValidationAdd.class, ParameterValidationOther.class}) SurveyAreaDTO surveyAreaDTO){
         return R.ok(surveyAreaService.insertSurveyArea(surveyAreaDTO), "新增成功");
     }
 
@@ -58,7 +56,7 @@ public class SurveyAreaController {
      */
     @ApiOperation(value = "测区修改", notes = "修改修改")
     @PutMapping(value = "/update")
-    public R<SurveyAreaDTO> update(@RequestBody @Validated(value = {SurveyAreUpdate.class, SurveyAreOther.class}) SurveyAreaDTO surveyAreaDTO){
+    public R<SurveyAreaDTO> update(@RequestBody @Validated(value = {ParameterValidationUpdate.class, ParameterValidationOther.class}) SurveyAreaDTO surveyAreaDTO){
         return R.ok(surveyAreaService.updateSurveyArea(surveyAreaDTO), "修改成功");
     }
 
