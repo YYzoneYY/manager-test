@@ -39,10 +39,10 @@ public class SurveyAreaVO {
     private BigDecimal rightGang;
 
     @ApiModelProperty(value = "创建时间")
-    private String creatTimeFmt;
+    private String createTimeFmt;
 
     private Long miningAreaId;
     private Long workFaceId;
     private Long tunnelId;
-    private Long creatTime;
+    private Long createTime;
 }

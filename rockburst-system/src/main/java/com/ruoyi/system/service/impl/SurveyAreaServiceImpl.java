@@ -127,7 +127,7 @@ public class SurveyAreaServiceImpl extends ServiceImpl<SurveyAreaMapper, SurveyA
                 surveyAreaVO.setWorkFaceNameFmt("");
                 surveyAreaVO.setMiningAreaNameFmt("");
                 surveyAreaVO.setTunnelNameFmt("");
-                surveyAreaVO.setCreatTimeFmt(DateUtils.getDateStrByTime(surveyAreaVO.getCreatTime()));
+                surveyAreaVO.setCreateTimeFmt(DateUtils.getDateStrByTime(surveyAreaVO.getCreateTime()));
             });
         }
         result.setTotal(page.getTotal());

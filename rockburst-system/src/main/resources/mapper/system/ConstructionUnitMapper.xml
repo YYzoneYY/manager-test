@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ConstructionUnitMapper">
+
+    <select id="selectConstructionUnitByPage"
+           parameterType="com.ruoyi.system.domain.dto.ConstructUnitSelectDTO" resultType="com.ruoyi.system.domain.vo.ConstructionUnitVO">
+        select
+        cn.construction_unit_id as constructionUnitId,
+        cn.construction_unit_name as constructionUnitName,
+        cn.create_time as createTime,
+        cn.update_time as updateTime,
+        cn.del_flag as delFlag
+        from construction_unit as cn
+        <where>
+            <if test="constructionUnitName != null and constructionUnitName != ''">
+                and cn.construction_unit_name like concat('%',#{constructionUnitName},'%')
+            </if>
+            <if test="startTime != null">
+                and cn.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and cn.create_time &lt;= #{endTime}
+            </if>
+            and cn.del_flag = '0'
+        </where>
+        order by cn.create_time desc
+    </select>
+</mapper>
