@@ -2,6 +2,9 @@ package com.ruoyi.system.domain;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +28,7 @@ public class BizDrillRecord implements Serializable
     private static final long serialVersionUID = 1L;
 
     /** $column.columnComment */
+    @TableId( type = IdType.AUTO)
     private Long drillRecordId;
 
     /** 关联填报id */

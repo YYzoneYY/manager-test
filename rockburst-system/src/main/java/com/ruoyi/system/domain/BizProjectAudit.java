@@ -1,5 +1,7 @@
 package com.ruoyi.system.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -25,6 +27,7 @@ public class BizProjectAudit implements Serializable
     private static final long serialVersionUID = 1L;
 
     /** $column.columnComment */
+    @TableId( type = IdType.AUTO)
     private Long projectAuditId;
 
     /** 工程填报id */

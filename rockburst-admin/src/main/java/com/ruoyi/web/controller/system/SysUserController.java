@@ -3,6 +3,8 @@ package com.ruoyi.web.controller.system;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +39,7 @@ import com.ruoyi.system.service.ISysUserService;
  * 
  * @author ruoyi
  */
+@ApiOperation("用户信息")
 @RestController
 @RequestMapping("/system/user")
 public class SysUserController extends BaseController
@@ -56,7 +59,8 @@ public class SysUserController extends BaseController
     /**
      * 获取用户列表
      */
-    @PreAuthorize("@ss.hasPermi('system:user:list')")
+    @ApiOperation("获取用户列表")
+//    @PreAuthorize("@ss.hasPermi('system:user:list')")
     @GetMapping("/list")
     public TableDataInfo list(SysUser user)
     {

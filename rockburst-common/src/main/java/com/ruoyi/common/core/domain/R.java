@@ -2,6 +2,7 @@ package com.ruoyi.common.core.domain;
 
 import java.io.Serializable;
 import com.ruoyi.common.constant.HttpStatus;
+import com.ruoyi.common.core.page.Pagination;
 
 /**
  * 响应信息主体
@@ -23,6 +24,17 @@ public class R<T> implements Serializable
     private String msg;
 
     private T data;
+
+    public  R(int code, String msg, T data) {
+        this.code = code;
+        this.msg = msg;
+        this.data = data;
+
+    }
+
+    public R() {
+
+    }
 
     public static <T> R<T> ok()
     {
@@ -73,6 +85,11 @@ public class R<T> implements Serializable
         return apiResult;
     }
 
+    public PagingJsonResult<T> bindPagination(Pagination pagination) {
+        return new PagingJsonResult(this, pagination);
+    }
+
+
     public int getCode()
     {
         return code;
@@ -112,4 +129,6 @@ public class R<T> implements Serializable
     {
         return R.SUCCESS == ret.getCode();
     }
+
+
 }

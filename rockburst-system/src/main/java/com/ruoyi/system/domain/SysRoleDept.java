@@ -1,5 +1,6 @@
 package com.ruoyi.system.domain;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class SysRoleDept
 {
     /** 角色ID */
+    @TableId()
     private Long roleId;
     
     /** 部门ID */

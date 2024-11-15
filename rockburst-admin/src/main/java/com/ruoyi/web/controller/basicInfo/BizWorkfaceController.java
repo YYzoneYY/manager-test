@@ -3,9 +3,12 @@ package com.ruoyi.web.controller.basicInfo;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ruoyi.system.domain.BizWorkfaceDto;
+import cn.hutool.core.bean.BeanUtil;
+import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +36,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  */
 @Api("工作面管理Controller")
 @RestController
-@RequestMapping("/system/workface")
+@RequestMapping("/basicInfo/workface")
 public class BizWorkfaceController extends BaseController
 {
     @Autowired
@@ -45,7 +48,7 @@ public class BizWorkfaceController extends BaseController
     @ApiOperation("查询工作面管理列表")
     @PreAuthorize("@ss.hasPermi('system:workface:list')")
     @GetMapping("/list")
-    public TableDataInfo list(BizWorkfaceDto dto)
+    public TableDataInfo list(@ParameterObject BizWorkfaceDto dto, @ParameterObject Pagination page)
     {
         startPage();
         List<BizWorkface> list = bizWorkfaceService.selectBizWorkfaceList(dto);

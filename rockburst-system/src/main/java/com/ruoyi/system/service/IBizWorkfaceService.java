@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.system.domain.BizWorkface;
-import com.ruoyi.system.domain.BizWorkfaceDto;
+import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 
 /**
  * 工作面管理Service接口

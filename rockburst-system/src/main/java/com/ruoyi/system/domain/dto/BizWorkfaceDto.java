@@ -1,17 +1,19 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.system.domain.dto;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
+import com.ruoyi.system.constant.GroupAdd;
+import com.ruoyi.system.constant.GroupUpdate;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
-import com.ruoyi.common.annotation.Excel;
+
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 工作面管理对象 biz_workface
@@ -21,113 +23,118 @@ import com.ruoyi.common.annotation.Excel;
  */
 @Getter
 @Setter
-public class BizWorkface extends BaseSelfEntity
+public class BizWorkfaceDto
 {
     private static final long serialVersionUID = 1L;
 
-    /** 工作面的唯一标识符 */
-    @TableId( type = IdType.AUTO)
+    @NotNull(groups = GroupUpdate.class)
     private Long workfaceId;
 
     /** 所属矿井ID（外键） */
-    @Excel(name = "所属矿井ID", readConverterExp = "外=键")
+    @Schema(description = "所属矿井ID")
+    @NotNull(groups = GroupAdd.class)
     private Long mineId;
 
     /** 工作面名称 */
-    @Excel(name = "工作面名称")
+    @Schema(description = "工作面名称")
+    @NotNull(groups = GroupAdd.class)
     private String workfaceName;
 
     /** 工作面类型（如采掘、运输等） */
-    @Excel(name = "工作面类型", readConverterExp = "如=采掘、运输等")
+    @Schema(description = "工作面类型 采掘、运输等")
+    @NotNull(groups = GroupAdd.class)
     private String type;
 
     /** 工作面状态（如开工、停工等） */
-    @Excel(name = "工作面状态", readConverterExp = "如=开工、停工等")
+    @Schema(description = "工作面状态 ")
+    @NotNull(groups = GroupAdd.class)
     private Integer status;
 
     /** 年生产能力（单位：吨） */
-    @Excel(name = "年生产能力", readConverterExp = "单=位：吨")
+    @Schema(description = "年生产能力 单=位：吨")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal capacity;
 
     /** 工作面开始工作日期 */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "工作面开始工作日期", width = 30, dateFormat = "yyyy-MM-dd")
+    @Schema(description = "工作面开始工作日期 ")
     private Date workStartDate;
 
     /** 工作面结束日期 */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "工作面结束日期", width = 30, dateFormat = "yyyy-MM-dd")
+    @Schema(description = "工作面结束日期 ")
     private Date workEndDate;
 
     /** 工作面负责人 */
-    @Excel(name = "工作面负责人")
+    @Schema(description = "工作面负责人 ")
+    @NotNull(groups = GroupAdd.class)
     private String leader;
 
     /** 所属采区 */
-    @Excel(name = "所属采区")
+    @Schema(description = "所属采区 ")
+    @NotNull(groups = GroupAdd.class)
     private Long areaId;
 
     /** 煤层名称 */
-    @Excel(name = "煤层名称")
+    @Schema(description = "煤层名称 ")
     private String coalSeam;
 
     /** 工作面采高（单位：米） */
-    @Excel(name = "工作面采高", readConverterExp = "单=位：米")
+    @Schema(description = "工作面采高 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal faceHeight;
 
     /** 采煤方式（如露天采矿、地下开采等） */
-    @Excel(name = "采煤方式", readConverterExp = "如=露天采矿、地下开采等")
+    @Schema(description = "采煤方式 露天采矿、地下开采")
     private String miningType;
 
     /** 倾向长度（单位：米） */
-    @Excel(name = "倾向长度", readConverterExp = "单=位：米")
+    @Schema(description = "倾向长度 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal dipLength;
 
     /** 走向长度（单位：米） */
-    @Excel(name = "走向长度", readConverterExp = "单=位：米")
+    @Schema(description = "走向长度 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal strikeLength;
 
     /** 煤容量（单位：吨） */
-    @Excel(name = "煤容量", readConverterExp = "单=位：吨")
+    @Schema(description = "煤容量 单=位：吨")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal coalCapacity;
 
     /** 煤层走向倾角（单位：度） */
-    @Excel(name = "煤层走向倾角", readConverterExp = "单=位：度")
+    @Schema(description = "煤层走向倾角 单=位：度")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal seamInclination;
 
     /** 平均埋深（单位：米） */
-    @Excel(name = "平均埋深", readConverterExp = "单=位：米")
+    @Schema(description = "平均埋深 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal avgBurialDepth;
 
     /** 上边界采深（单位：米） */
-    @Excel(name = "上边界采深", readConverterExp = "单=位：米")
+    @Schema(description = "上边界采深 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal upperBoundaryDepth;
 
     /** 下边界采深（单位：米） */
-    @Excel(name = "下边界采深", readConverterExp = "单=位：米")
+    @Schema(description = "下边界采深 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal lowerBoundaryDepth;
 
     /** 推进长度（单位：米） */
-    @Excel(name = "推进长度", readConverterExp = "单=位：米")
+    @Schema(description = "推进长度 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal advanceLength;
 
     /** 水平应力（单位：MPa） */
-    @Excel(name = "水平应力", readConverterExp = "单=位：MPa")
+    @Schema(description = "水平应力 单=位：MPa")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal horizontalStress;
 
     /** 其他备注或说明 */
-    @Excel(name = "其他备注或说明")
+    @Schema(description = "其他备注或说明 ")
     private String notes;
 
 

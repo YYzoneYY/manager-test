@@ -1,10 +1,17 @@
 package com.ruoyi.web.controller.projectFill;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ruoyi.common.core.domain.BasePermission;
+import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.PageDomain;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
+import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +28,8 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.service.IBizProjectRecordService;
+
+import java.util.List;
 
 /**
  * 工程填报记录Controller
@@ -42,21 +51,21 @@ public class BizProjectRecordController extends BaseController
     @ApiOperation("查询工程填报记录列表")
 //    @PreAuthorize("@ss.hasPermi('project:record:list')")
     @GetMapping("/list")
-    public Object list(BizProjectRecordDto dto)
+    public Object list(@ParameterObject BizProjectRecordDto dto, Pagination pagination)
     {
-        startPage();
-        return getDataTable(bizProjectRecordService.getlist(new BasePermission(), dto));
+        MPage<BizProjectRecordListVo> llis =  bizProjectRecordService.getlist(new BasePermission(), dto , pagination);
+        return R.ok(llis);
     }
 
 
-    @ApiOperation("查询工程填报审核列表")
-//    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
-    @GetMapping("/auditList")
-    public Object auditList(BizProjectRecordDto dto)
-    {
-        startPage();
-        return getDataTable(bizProjectRecordService.getlist(new BasePermission(), dto));
-    }
+//    @ApiOperation("查询工程填报审核列表")
+////    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
+//    @GetMapping("/auditList")
+//    public Object auditList(BizProjectRecordDto dto)
+//    {
+//        startPage();
+//        return getDataTable(bizProjectRecordService.getlist(new BasePermission(), dto));
+//    }
 
     @ApiOperation("防冲工程查询")
 //    @PreAuthorize("@ss.hasPermi('project:record:auditList')")

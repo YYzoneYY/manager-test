@@ -32,7 +32,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  */
 @Api("采区管理Controller")
 @RestController
-@RequestMapping("/system/area")
+@RequestMapping("/basicInfo/area")
 public class BizMiningAreaController extends BaseController
 {
     @Autowired

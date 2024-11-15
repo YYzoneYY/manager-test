@@ -2,6 +2,9 @@ package com.ruoyi.system.domain;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.ruoyi.common.annotation.Excel;
@@ -25,7 +28,7 @@ public class BizProjectRecord extends BaseEntity
     private static final long serialVersionUID = 1L;
 
     /** 工程id */
-
+    @TableId( type = IdType.AUTO)
     private Long projectId;
 
     @Schema(description = "钻孔类型")
