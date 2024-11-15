@@ -32,7 +32,7 @@ public interface IBizProjectRecordService  extends IService<BizProjectRecord>
     MPage<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto , Pagination pagination);
 
 
-    List<BizProjectRecordListVo> selectproList(BasePermission permission, BizProjectRecordDto dto);
+    MPage<BizProjectRecordListVo> selectproList(BasePermission permission, BizProjectRecordDto dto , Pagination pagination);
 
 
     BizProStatsVo statsProject(BasePermission permission, BizProjectRecordDto dto);

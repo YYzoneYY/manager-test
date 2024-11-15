@@ -88,7 +88,7 @@ public class BizProjectRecordServiceImpl extends ServiceImpl<BizProjectRecordMap
 
 
     @Override
-    public List<BizProjectRecordListVo> selectproList(BasePermission permission, BizProjectRecordDto dto) {
+    public MPage<BizProjectRecordListVo> selectproList(BasePermission permission, BizProjectRecordDto dto , Pagination pagination) {
 
         Date currentDate = null;
         Date startDate = null;
@@ -109,8 +109,8 @@ public class BizProjectRecordServiceImpl extends ServiceImpl<BizProjectRecordMap
 //                .select(BizProjectRecord::getProjectId,BizProjectRecordVo::getConstructUnitName)
 //                .select(BizProjectRecord::getProjectId,BizProjectRecordVo::getConstructShiftName)
                 .between(BizProjectRecord::getConstructTime,startDate,currentDate);
-        List<BizProjectRecordListVo> sss = bizProjectRecordMapper.selectJoinList(BizProjectRecordListVo.class, queryWrapper);
-        return sss;
+        IPage<BizProjectRecordListVo> sss = bizProjectRecordMapper.selectJoinPage(pagination,BizProjectRecordListVo.class, queryWrapper);
+        return new MPage<>(sss);
     }
 
 

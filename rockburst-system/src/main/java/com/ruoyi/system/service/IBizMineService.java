@@ -3,7 +3,10 @@ package com.ruoyi.system.service;
 import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizMine;
+import com.ruoyi.system.domain.dto.BizMineDto;
 
 /**
  * 矿井管理Service接口
@@ -27,7 +30,7 @@ public interface IBizMineService extends IService<BizMine>
      * @param bizMine 矿井管理
      * @return 矿井管理集合
      */
-    public List<BizMine> selectBizMineList(BizMine bizMine);
+    public MPage<BizMine> selectBizMineList(BizMineDto bizMine, Pagination pagination);
 
     /**
      * 新增矿井管理

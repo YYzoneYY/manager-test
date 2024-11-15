@@ -51,7 +51,7 @@ public class BizProjectRecordController extends BaseController
     @ApiOperation("查询工程填报记录列表")
 //    @PreAuthorize("@ss.hasPermi('project:record:list')")
     @GetMapping("/list")
-    public Object list(@ParameterObject BizProjectRecordDto dto, Pagination pagination)
+    public R<MPage<BizProjectRecordListVo>> list(@ParameterObject BizProjectRecordDto dto, Pagination pagination)
     {
         MPage<BizProjectRecordListVo> llis =  bizProjectRecordService.getlist(new BasePermission(), dto , pagination);
         return R.ok(llis);
@@ -70,10 +70,9 @@ public class BizProjectRecordController extends BaseController
     @ApiOperation("防冲工程查询")
 //    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
     @GetMapping("/selectproList")
-    public Object selectproList(BizProjectRecordDto dto)
+    public R<MPage<BizProjectRecordListVo>> selectproList(@ParameterObject BizProjectRecordDto dto, Pagination pagination)
     {
-        startPage();
-        return getDataTable(bizProjectRecordService.selectproList(new BasePermission(), dto));
+        return R.ok(bizProjectRecordService.selectproList(new BasePermission(), dto,pagination));
     }
 
 

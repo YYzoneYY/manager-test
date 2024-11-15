@@ -3,14 +3,19 @@ package com.ruoyi.system.service.impl;
 import java.util.Arrays;
 import java.util.List;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.dto.BizMineDto;
 import com.ruoyi.system.mapper.BizProjectRecordMapper;
 import com.ruoyi.system.service.IBizProjectRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,11 +55,12 @@ public class BizMineServiceImpl  extends ServiceImpl<BizMineMapper, BizMine> imp
      * @return 矿井管理
      */
     @Override
-    public List<BizMine> selectBizMineList(BizMine bizMine)
+    public MPage<BizMine> selectBizMineList(BizMineDto bizMine, Pagination pagination)
     {
         QueryWrapper<BizMine> queryWrapper = new QueryWrapper<BizMine>();
-        queryWrapper.lambda().like(BizMine::getMineName, bizMine.getMineName());
-        return bizMineMapper.selectListDeep(queryWrapper);
+        queryWrapper.lambda().like(StrUtil.isNotEmpty( bizMine.getMineName()), BizMine::getMineName, bizMine.getMineName());
+        IPage<BizMine> list = bizMineMapper.selectPage(pagination,queryWrapper);
+        return new MPage<>(list);
     }
 
     /**
