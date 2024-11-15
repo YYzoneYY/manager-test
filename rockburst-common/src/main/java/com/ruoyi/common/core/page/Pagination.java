@@ -35,6 +35,18 @@ public class Pagination extends Page {
         return this.pageSize;
     }
 
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+        super.size = pageSize;
+    }
+
+    public void setPageNum(int pageNum) {
+        this.pageNum = pageNum;
+        super.current = pageNum;
+    }
+
+
+
     public long getTotalCount() {
         return this.total;
     }

@@ -11,6 +11,7 @@ import com.ruoyi.system.domain.dto.BizProjectRecordDto;
 import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,7 +51,7 @@ public class BizProjectRecordController extends BaseController
     @ApiOperation("查询工程填报记录列表")
 //    @PreAuthorize("@ss.hasPermi('project:record:list')")
     @GetMapping("/list")
-    public Object list(BizProjectRecordDto dto, Pagination pagination)
+    public Object list(@ParameterObject BizProjectRecordDto dto, Pagination pagination)
     {
         MPage<BizProjectRecordListVo> llis =  bizProjectRecordService.getlist(new BasePermission(), dto , pagination);
         return R.ok(llis);
