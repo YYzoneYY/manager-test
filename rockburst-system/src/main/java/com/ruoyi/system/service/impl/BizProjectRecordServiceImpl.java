@@ -10,6 +10,8 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.annotation.DataScopeSelf;
@@ -18,6 +20,8 @@ import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
@@ -58,7 +62,7 @@ public class BizProjectRecordServiceImpl extends ServiceImpl<BizProjectRecordMap
 
 
     @DataScopeSelf
-    public List<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto){
+    public MPage<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto, Pagination pagination){
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
         MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
@@ -69,7 +73,7 @@ public class BizProjectRecordServiceImpl extends ServiceImpl<BizProjectRecordMap
 //todo               .leftJoin(,BizProjectRecord::getConstructShiftId)
                 .select(BizProjectRecord::getProjectId,BizProjectRecord::getDeptId)
                 .leftJoin(BizMine.class,BizMine::getMineId,BizProjectRecord::getDeptId)
-                .and(i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
+                .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
                         .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
                 .eq(dto.getConstructUnitId()!=null,BizProjectRecord::getConstructUnitId,dto.getConstructUnitId())
                 .eq(dto.getConstructLocationId()!=null,BizProjectRecord::getConstructLocationId,dto.getConstructLocationId())
@@ -78,8 +82,8 @@ public class BizProjectRecordServiceImpl extends ServiceImpl<BizProjectRecordMap
                 .eq(dto.getStatus()!=null,BizProjectRecord::getStatus,dto.getStatus())
                 .between(StrUtil.isNotEmpty(dto.getStartTime()),BizProjectRecord::getConstructTime,DateUtils.parseDate(dto.getStartTime()),DateUtils.parseDate(dto.getEndTime()))
                 .eq(dto.getStatus()!=null,BizProjectRecord::getStatus,dto.getStatus());
-        List<BizProjectRecordListVo> sss = bizProjectRecordMapper.selectJoinList(BizProjectRecordListVo.class, queryWrapper);
-        return sss;
+        IPage<BizProjectRecordListVo> sss = bizProjectRecordMapper.selectJoinPage(pagination , BizProjectRecordListVo.class, queryWrapper);
+        return new MPage<>(sss);
     }
 
 

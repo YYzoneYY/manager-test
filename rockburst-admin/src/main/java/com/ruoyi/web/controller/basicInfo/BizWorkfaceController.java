@@ -3,7 +3,8 @@ package com.ruoyi.web.controller.basicInfo;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ruoyi.system.domain.BizWorkfaceDto;
+import cn.hutool.core.bean.BeanUtil;
+import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,7 +34,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  */
 @Api("工作面管理Controller")
 @RestController
-@RequestMapping("/system/workface")
+@RequestMapping("/basicInfo/workface")
 public class BizWorkfaceController extends BaseController
 {
     @Autowired

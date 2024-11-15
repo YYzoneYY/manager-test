@@ -2,8 +2,12 @@ package com.ruoyi.system.service;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.github.pagehelper.Page;
 import com.ruoyi.common.core.domain.BasePermission;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
@@ -25,7 +29,7 @@ public interface IBizProjectRecordService  extends IService<BizProjectRecord>
      * @param projectId 工程填报记录主键
      * @return 工程填报记录
      */
-    List<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto);
+    MPage<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto , Pagination pagination);
 
 
     List<BizProjectRecordListVo> selectproList(BasePermission permission, BizProjectRecordDto dto);

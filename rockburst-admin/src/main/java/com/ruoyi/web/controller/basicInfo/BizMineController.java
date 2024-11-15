@@ -3,11 +3,20 @@ package com.ruoyi.web.controller.basicInfo;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.ruoyi.common.core.domain.R;
+import com.ruoyi.system.domain.Entity.SurveyAreAdd;
+import com.ruoyi.system.domain.Entity.SurveyAreOther;
+import com.ruoyi.system.domain.dto.BizMineDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+//import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,7 +43,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 @Api("矿井管理Controller")
 //@Tag(description = "矿井管理Controller", name = "矿井管理Controller")
 @RestController
-@RequestMapping("/system/mine")
+@RequestMapping("/basicInfo/mine")
 public class BizMineController extends BaseController
 {
     @Autowired
@@ -43,35 +52,23 @@ public class BizMineController extends BaseController
     /**
      * 查询矿井管理列表
      */
-    @ApiOperation("查询矿井管理列表")
-    @PreAuthorize("@ss.hasPermi('system:mine:list')")
-    @GetMapping("/list")
-    public TableDataInfo list(BizMine bizMine)
-    {
-        startPage();
-        List<BizMine> list = bizMineService.selectBizMineList(bizMine);
-        return getDataTable(list);
-    }
+//    @ApiOperation("查询矿井管理列表")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @GetMapping("/list")
+//    public R<Object> list(@ParameterObject BizMineDto dto)
+//    {
+//        startPage();
+//        List<BizMine> list = bizMineService.selectBizMineList(null);
+//        return getDataTable(list);
+//    }
 
-    /**
-     * 导出矿井管理列表
-     */
-    @ApiOperation("导出矿井管理列表")
-    @PreAuthorize("@ss.hasPermi('system:mine:export')")
-    @Log(title = "矿井管理", businessType = BusinessType.EXPORT)
-    @PostMapping("/export")
-    public void export(HttpServletResponse response, BizMine bizMine)
-    {
-        List<BizMine> list = bizMineService.selectBizMineList(bizMine);
-        ExcelUtil<BizMine> util = new ExcelUtil<BizMine>(BizMine.class);
-        util.exportExcel(response, list, "矿井管理数据");
-    }
+
 
     /**
      * 获取矿井管理详细信息
      */
     @ApiOperation("获取矿井管理详细信息")
-    @PreAuthorize("@ss.hasPermi('system:mine:query')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
     @GetMapping(value = "/{mineId}")
     public AjaxResult getInfo(@PathVariable("mineId") Long mineId)
     {
@@ -82,31 +79,35 @@ public class BizMineController extends BaseController
      * 新增矿井管理
      */
     @ApiOperation("新增矿井管理")
-    @PreAuthorize("@ss.hasPermi('system:mine:add')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:add')")
     @Log(title = "矿井管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody BizMine bizMine)
+    public AjaxResult add(@RequestBody @Validated(value = {SurveyAreAdd.class}) BizMineDto dto)
     {
-        return toAjax(bizMineService.insertBizMine(bizMine));
+        BizMine entity = new BizMine();
+        BeanUtil.copyProperties(dto, entity);
+        return toAjax(bizMineService.insertBizMine(entity));
     }
 
     /**
      * 修改矿井管理
      */
     @ApiOperation("修改矿井管理")
-    @PreAuthorize("@ss.hasPermi('system:mine:edit')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:edit')")
     @Log(title = "矿井管理", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody BizMine bizMine)
+    public AjaxResult edit(@RequestBody @Validated(value = {SurveyAreAdd.class}) BizMineDto dto)
     {
-        return toAjax(bizMineService.updateBizMine(bizMine));
+        BizMine entity = new BizMine();
+        BeanUtil.copyProperties(dto, entity);
+        return toAjax(bizMineService.updateBizMine(entity));
     }
 
     /**
      * 删除矿井管理
      */
     @ApiOperation("删除矿井管理")
-    @PreAuthorize("@ss.hasPermi('system:mine:remove')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
     @Log(title = "矿井管理", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{mineIds}")
     public AjaxResult remove(@PathVariable Long[] mineIds)

@@ -3,6 +3,9 @@ package com.ruoyi.web.controller.system;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +33,7 @@ import com.ruoyi.system.service.ISysDictTypeService;
  * 
  * @author ruoyi
  */
+@Api("数据字典信息")
 @RestController
 @RequestMapping("/system/dict/data")
 public class SysDictDataController extends BaseController
@@ -62,7 +66,8 @@ public class SysDictDataController extends BaseController
     /**
      * 查询字典数据详细
      */
-    @PreAuthorize("@ss.hasPermi('system:dict:query')")
+//    @PreAuthorize("@ss.hasPermi('system:dict:query')")
+    @ApiOperation("查询字典数据详细")
     @GetMapping(value = "/{dictCode}")
     public AjaxResult getInfo(@PathVariable Long dictCode)
     {
@@ -72,6 +77,7 @@ public class SysDictDataController extends BaseController
     /**
      * 根据字典类型查询字典数据信息
      */
+    @ApiOperation("根据字典类型查询字典数据信息")
     @GetMapping(value = "/type/{dictType}")
     public AjaxResult dictType(@PathVariable String dictType)
     {
