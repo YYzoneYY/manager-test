@@ -75,7 +75,7 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
             throw new RuntimeException("施工单位id不能为空！");
         }
         ConstructionUnitEntity constructionUnitEntity = constructionUnitMapper.selectById(constructionUnitDTO.getConstructionUnitId());
-        if (ObjectUtil.isNotEmpty(constructionUnitEntity)) {
+        if (ObjectUtil.isEmpty(constructionUnitEntity)) {
             throw new RuntimeException("施工单位不存在！");
         }
         LambdaQueryWrapper<ConstructionUnitEntity> queryWrapper = new LambdaQueryWrapper<>();

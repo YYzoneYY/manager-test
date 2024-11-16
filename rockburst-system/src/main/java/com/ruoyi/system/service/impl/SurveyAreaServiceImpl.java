@@ -72,7 +72,7 @@ public class SurveyAreaServiceImpl extends ServiceImpl<SurveyAreaMapper, SurveyA
             throw new ServiceException("测区id不能为空!");
         }
         SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectById(surveyAreaDTO.getMiningAreaId());
-        if (ObjectUtil.isNotEmpty(surveyAreaEntity)) {
+        if (ObjectUtil.isEmpty(surveyAreaEntity)) {
             throw new ServiceException("测区不存在!");
         }
         LambdaQueryWrapper<SurveyAreaEntity> queryWrapper = new LambdaQueryWrapper<>();
@@ -102,7 +102,7 @@ public class SurveyAreaServiceImpl extends ServiceImpl<SurveyAreaMapper, SurveyA
         LambdaQueryWrapper<SurveyAreaEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SurveyAreaEntity::getSurveyAreaId,surveyAreaId);
         SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectOne(queryWrapper);
-        if (ObjectUtil.isNotEmpty(surveyAreaEntity)) {
+        if (ObjectUtil.isEmpty(surveyAreaEntity)) {
             throw new ServiceException("未找到此数据!");
         }
         SurveyAreaDTO surveyAreaDTO = new SurveyAreaDTO();

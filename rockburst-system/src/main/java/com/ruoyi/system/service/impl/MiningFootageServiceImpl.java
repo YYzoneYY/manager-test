@@ -89,7 +89,7 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
             throw new RuntimeException("回采进尺id不能为空");
         }
         MiningFootageEntity miningFootageEntity = miningFootageMapper.selectById(miningFootageDTO.getMiningFootageId());
-        if (ObjectUtil.isNotEmpty(miningFootageEntity)) {
+        if (ObjectUtil.isEmpty(miningFootageEntity)) {
             throw new RuntimeException("回采进尺不存在");
         }
         BizWorkface bizWorkface = bizWorkfaceMapper.selectById(miningFootageEntity.getWorkfaceId());

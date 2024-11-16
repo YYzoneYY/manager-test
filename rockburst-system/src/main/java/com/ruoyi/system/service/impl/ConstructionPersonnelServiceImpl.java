@@ -83,7 +83,7 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
             throw new RuntimeException("施工人员id不能为空！");
         }
         ConstructionPersonnelEntity constructionPersonnelEntity = constructionPersonnelMapper.selectById(constructPersonnelDTO.getConstructionPersonnelId());
-        if (ObjectUtil.isNotEmpty(constructionPersonnelEntity)) {
+        if (ObjectUtil.isEmpty(constructionPersonnelEntity)) {
             throw new RuntimeException("施工人员不存在！");
         }
         LambdaQueryWrapper<ConstructionPersonnelEntity> queryWrapper = new LambdaQueryWrapper<>();
