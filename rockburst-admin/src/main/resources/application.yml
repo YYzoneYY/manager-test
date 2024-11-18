@@ -37,11 +37,12 @@ logging:
     com.ruoyi: debug
     org.springframework: warn
 # Minio配置
-#minio:
-#  url: http://47.92.215.128:19000
-#  accessKey: vDlL40BBLuRH4gulETWx
-#  secretKey: YTkovNEnt3AVWEOJfKRda055d4HAcelAlH9gJ2HD
-#  bucketName: bust-dev
+minio:
+  url:
+  accessKey:
+  secretKey:
+  bucketName:
+
 file:
   bucketName: bust-dev
   oss:
@@ -79,13 +80,13 @@ spring:
   # redis 配置
   redis:
     # 地址
-    host: 47.92.215.128
+    host: localhost
     # 端口，默认为6379
     port: 6379
     # 数据库索引
     database: 0
     # 密码
-    password: 123456
+    password:
     # 连接超时时间
     timeout: 10s
     lettuce:

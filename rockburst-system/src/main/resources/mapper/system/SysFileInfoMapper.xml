@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysFileInfoMapper">
+    <resultMap id="BaseResultMap" type="com.ruoyi.system.domain.SysFileInfo">
+        <id column="file_id" jdbcType="BIGINT" property="fileId" />
+        <result column="file_old_name" jdbcType="VARCHAR" property="fileOldName" />
+        <result column="file_new_name" jdbcType="VARCHAR" property="fileNewName" />
+        <result column="file_size" jdbcType="BIGINT" property="fileSize" />
+        <result column="file_url" jdbcType="VARCHAR" property="fileUrl" />
+        <result column="file_path" jdbcType="VARCHAR" property="filePath" />
+        <result column="file_suffix" jdbcType="VARCHAR" property="fileSuffix" />
+        <result column="bucket_name" jdbcType="VARCHAR" property="bucketName" />
+        <result column="create_by" jdbcType="BIGINT" property="createBy" />
+        <result column="create_time" jdbcType="BIGINT" property="createTime" />
+        <result column="update_by" jdbcType="BIGINT" property="updateBy" />
+        <result column="update_time" jdbcType="BIGINT" property="updateTime" />
+         <result column="del_flag" jdbcType="CHAR" property="delFlag" />
+    </resultMap>
+    <sql id="Base_Column_List">
+    file_id, file_old_name, file_new_name, file_size, file_url, file_path, file_suffix,
+    bucket_name, create_by, create_time, update_by, update_time, del_flag
+   </sql>
+
+    <select id="selectByFileIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from sys_file_info
+        where file_id in
+        <foreach collection="lis" index="" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+</mapper>

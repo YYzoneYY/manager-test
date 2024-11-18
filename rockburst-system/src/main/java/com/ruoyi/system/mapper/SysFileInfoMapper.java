@@ -18,8 +18,10 @@
 package com.ruoyi.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.ruoyi.system.domain.SysFileItem;
+import com.ruoyi.system.domain.SysFileInfo;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  *
@@ -27,6 +29,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2019-06-18 17:18:42
  */
 @Mapper
-public interface SysFileMapper extends BaseMapper<SysFileItem> {
+public interface SysFileInfoMapper extends BaseMapper<SysFileInfo> {
 
+    List<SysFileInfo> selectByFileIds(List<Long> fileIds);
 }

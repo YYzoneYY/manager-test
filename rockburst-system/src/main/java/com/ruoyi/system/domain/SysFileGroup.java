@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Data
 @Schema(description = "文件")
 @EqualsAndHashCode(callSuper = true)
-public class SysFileGroup extends Model<SysFileItem> {
+public class SysFileGroup extends Model<SysFileInfo> {
 
 	private static final long serialVersionUID = 1L;
 
