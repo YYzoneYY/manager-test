@@ -58,7 +58,9 @@ public class BizMineServiceImpl  extends ServiceImpl<BizMineMapper, BizMine> imp
     public MPage<BizMine> selectBizMineList(BizMineDto bizMine, Pagination pagination)
     {
         QueryWrapper<BizMine> queryWrapper = new QueryWrapper<BizMine>();
-        queryWrapper.lambda().like(StrUtil.isNotEmpty( bizMine.getMineName()), BizMine::getMineName, bizMine.getMineName());
+        queryWrapper.lambda()
+                .like(StrUtil.isNotEmpty( bizMine.getMineName()), BizMine::getMineName, bizMine.getMineName())
+                .eq(BizMine::getDelFlag, BizBaseConstant.DELFLAG_N);
         IPage<BizMine> list = bizMineMapper.selectPage(pagination,queryWrapper);
         return new MPage<>(list);
     }

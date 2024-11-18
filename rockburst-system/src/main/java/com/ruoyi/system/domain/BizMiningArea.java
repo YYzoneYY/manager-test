@@ -9,10 +9,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
+import io.swagger.annotations.ApiModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import com.ruoyi.common.annotation.Excel;
+import lombok.experimental.Accessors;
 
 /**
  * 采区管理对象 biz_mining_area
@@ -23,6 +25,8 @@ import com.ruoyi.common.annotation.Excel;
 
 @Getter
 @Setter
+@Accessors(chain = true)
+@ApiModel("采区管理对象")
 public class BizMiningArea extends BaseSelfEntity
 {
     private static final long serialVersionUID = 1L;

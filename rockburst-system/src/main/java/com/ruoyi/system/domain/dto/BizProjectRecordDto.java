@@ -28,8 +28,8 @@ public class BizProjectRecordDto {
     @ApiModelProperty(value = "search -- 施工单位id")
     private Long constructUnitId;
 
-    @ApiModelProperty(value = "search -- 施工地点id")
-    private Long constructLocationId;
+    @ApiModelProperty(value = "search -- 施工地点")
+    private String constructLocation;
 
     @ApiModelProperty(value = "search -- 钻孔类型")
     private String drillType;

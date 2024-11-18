@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
+import com.ruoyi.common.core.domain.BaseSelfEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +21,7 @@ import java.io.Serializable;
 
 @Getter
 @Setter
-public class BizVideo implements Serializable
+public class BizVideo extends BaseSelfEntity
 {
     private static final long serialVersionUID = 1L;
 
@@ -28,27 +30,27 @@ public class BizVideo implements Serializable
     private Long videoId;
 
     /** 文件大小 */
-    @Excel(name = "文件大小")
+    @ApiModelProperty(name = "文件大小")
     private String fileSize;
 
     /** 文件名 */
-    @Excel(name = "文件名")
+    @ApiModelProperty(name = "文件名")
     private String fileName;
 
     /** 存放位置 */
-    @Excel(name = "存放位置")
+    @ApiModelProperty(name = "存放位置")
     private String bucket;
 
     /** 视频地址 */
-    @Excel(name = "视频地址")
+    @ApiModelProperty(name = "视频地址")
     private String fileUrl;
 
     /** 参数 */
-    @Excel(name = "参数")
+    @ApiModelProperty(name = "参数")
     private String param;
 
     /** 工程id */
-    @Excel(name = "工程id")
+    @ApiModelProperty(name = "工程id")
     private Long projectId;
 
 }

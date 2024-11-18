@@ -4,6 +4,9 @@ import lombok.Data;
 
 public class BizBaseConstant {
 
+    public static final String DELFLAG_N = "0";
+    public static final String DELFLAG_Y = "2";
+
     // 矿井 营运状态
     public static final Integer MINE_STATUS_ON = 1;
     // 矿井 停止营运状态

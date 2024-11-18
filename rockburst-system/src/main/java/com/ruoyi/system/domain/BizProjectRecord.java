@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
+import com.ruoyi.common.core.domain.BaseSelfEntity;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +25,7 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class BizProjectRecord extends BaseEntity
+public class BizProjectRecord extends BaseSelfEntity
 {
     private static final long serialVersionUID = 1L;
 
@@ -31,88 +33,89 @@ public class BizProjectRecord extends BaseEntity
     @TableId( type = IdType.AUTO)
     private Long projectId;
 
-    @Schema(description = "钻孔类型")
+    @ApiModelProperty(value = "钻孔类型")
     private String drillType;
 
-    @Schema(description = "计划类型")
+    @ApiModelProperty(value = "计划类型")
     private String planType;
 
     /** 施工时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "施工时间", width = 30, dateFormat = "yyyy-MM-dd")
+    @ApiModelProperty(value = "施工时间")
     private Date constructTime;
 
     /** 施工单位 */
-    @Excel(name = "施工单位")
-    private String constructUnitId;
+    @ApiModelProperty(value = "施工单位")
+    private Long constructUnitId;
 
     /** 施工班次 */
-    @Excel(name = "施工班次")
-    private String constructShiftId;
+    @ApiModelProperty(value = "施工班次")
+    private Long constructShiftId;
 
     /** 距离 */
-    @Excel(name = "距离")
+    @ApiModelProperty(value = "距离")
     private String constructRange;
 
     /** 施工地点 */
-    @Excel(name = "施工地点")
-    private String constructLocationId;
+    @ApiModelProperty(value = "施工地点")
+    private String constructLocation;
 
     /** 定位方式 */
-    @Excel(name = "定位方式")
+    @ApiModelProperty(value = "定位方式")
     private String positionType;
 
     /** 钢带起始 */
-    @Excel(name = "钢带起始")
+    @ApiModelProperty(value = "钢带起始")
     private String steelBeltStart;
 
     /** 导线点 */
-    @Excel(name = "导线点")
+    @ApiModelProperty(value = "导线点")
     private String travePointId;
 
     /** 钢带终止 */
-    @Excel(name = "钢带终止")
+    @ApiModelProperty(value = "钢带终止")
     private String steelBeltEnd;
 
     /** 钻孔编号 */
-    @Excel(name = "钻孔编号")
+    @ApiModelProperty(value = "钻孔编号")
     private String drillNum;
 
     /** 位置 */
-    @Excel(name = "位置")
+    @ApiModelProperty(value = "位置")
     private String location;
 
     /** 状态 */
-    @Excel(name = "状态")
+    @ApiModelProperty(value = "状态")
     private Integer status;
 
     /** 施工负责人 */
-    @Excel(name = "施工负责人")
+    @ApiModelProperty(value = "施工负责人")
     private String projecrHeader;
 
     /** 施工员 */
-    @Excel(name = "施工员")
+    @ApiModelProperty(value = "施工员")
     private String worker;
 
     /** 安检员 */
-    @Excel(name = "安检员")
+    @ApiModelProperty(value = "安检员")
     private String securityer;
 
     /** 验收视频源文件 */
-    @Excel(name = "验收视频源文件")
+    @ApiModelProperty(value = "验收视频源文件")
     private String originalFile;
 
     /** 进钻参数 */
-    @Excel(name = "进钻参数")
+    @ApiModelProperty(value = "进钻参数")
     private String drillParam;
 
     /** 钻屑量 */
-    @Excel(name = "钻屑量")
+    @ApiModelProperty(value = "钻屑量")
     private String crumbWeight;
 
     /** 钻屑量 */
-//    @Excel(name = "钻屑量")
+    @ApiModelProperty(value = "钻屑量")
     private Long deptId;
 
+    @ApiModelProperty(value = "钻屑量")
     private Integer isRead;
 }

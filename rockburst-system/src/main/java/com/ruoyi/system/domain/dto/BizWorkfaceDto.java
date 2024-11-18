@@ -7,6 +7,7 @@ import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,110 +32,110 @@ public class BizWorkfaceDto
     private Long workfaceId;
 
     /** 所属矿井ID（外键） */
-    @Schema(description = "所属矿井ID")
+    @ApiModelProperty(value = "所属矿井ID")
     @NotNull(groups = GroupAdd.class)
     private Long mineId;
 
     /** 工作面名称 */
-    @Schema(description = "工作面名称")
+    @ApiModelProperty(value = "工作面名称")
     @NotNull(groups = GroupAdd.class)
     private String workfaceName;
 
     /** 工作面类型（如采掘、运输等） */
-    @Schema(description = "工作面类型 采掘、运输等")
+    @ApiModelProperty(value = "工作面类型", example = " 采掘、运输等")
     @NotNull(groups = GroupAdd.class)
     private String type;
 
     /** 工作面状态（如开工、停工等） */
-    @Schema(description = "工作面状态 ")
+    @ApiModelProperty(value = "工作面状态 ")
     @NotNull(groups = GroupAdd.class)
     private Integer status;
 
     /** 年生产能力（单位：吨） */
-    @Schema(description = "年生产能力 单=位：吨")
+    @ApiModelProperty(value = "年生产能力", example = " 单=位：吨")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal capacity;
 
     /** 工作面开始工作日期 */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Schema(description = "工作面开始工作日期 ")
+    @ApiModelProperty(value = "工作面开始工作日期 ")
     private Date workStartDate;
 
     /** 工作面结束日期 */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Schema(description = "工作面结束日期 ")
+    @ApiModelProperty(value = "工作面结束日期 ")
     private Date workEndDate;
 
     /** 工作面负责人 */
-    @Schema(description = "工作面负责人 ")
+    @ApiModelProperty(value = "工作面负责人 ")
     @NotNull(groups = GroupAdd.class)
     private String leader;
 
     /** 所属采区 */
-    @Schema(description = "所属采区 ")
+    @ApiModelProperty(value = "所属采区 ")
     @NotNull(groups = GroupAdd.class)
-    private Long areaId;
+    private Long miningAreaId;
 
     /** 煤层名称 */
-    @Schema(description = "煤层名称 ")
+    @ApiModelProperty(value = "煤层名称 ")
     private String coalSeam;
 
     /** 工作面采高（单位：米） */
-    @Schema(description = "工作面采高 单=位：米")
+    @ApiModelProperty(value = "工作面采高 ", example = "单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal faceHeight;
 
     /** 采煤方式（如露天采矿、地下开采等） */
-    @Schema(description = "采煤方式 露天采矿、地下开采")
+    @ApiModelProperty(value = "采煤方式", example = " 露天采矿、地下开采")
     private String miningType;
 
     /** 倾向长度（单位：米） */
-    @Schema(description = "倾向长度 单=位：米")
+    @ApiModelProperty(value = "倾向长度", example = " 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal dipLength;
 
     /** 走向长度（单位：米） */
-    @Schema(description = "走向长度 单=位：米")
+    @ApiModelProperty(value = "走向长度", example = " 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal strikeLength;
 
     /** 煤容量（单位：吨） */
-    @Schema(description = "煤容量 单=位：吨")
+    @ApiModelProperty(value = "煤容量", example = " 单=位：吨")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal coalCapacity;
 
     /** 煤层走向倾角（单位：度） */
-    @Schema(description = "煤层走向倾角 单=位：度")
+    @ApiModelProperty(value = "煤层走向倾角 ", example = " 单=位：度")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal seamInclination;
 
     /** 平均埋深（单位：米） */
-    @Schema(description = "平均埋深 单=位：米")
+    @ApiModelProperty(value = "平均埋深 ", example = "单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal avgBurialDepth;
 
     /** 上边界采深（单位：米） */
-    @Schema(description = "上边界采深 单=位：米")
+    @ApiModelProperty(value = "上边界采深 ", example = " 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal upperBoundaryDepth;
 
     /** 下边界采深（单位：米） */
-    @Schema(description = "下边界采深 单=位：米")
+    @ApiModelProperty(value = "下边界采深 ", example = " 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal lowerBoundaryDepth;
 
     /** 推进长度（单位：米） */
-    @Schema(description = "推进长度 单=位：米")
+    @ApiModelProperty(value = "推进长度  ", example = " 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal advanceLength;
 
     /** 水平应力（单位：MPa） */
-    @Schema(description = "水平应力 单=位：MPa")
+    @ApiModelProperty(value = "水平应力 ", example = "单=位：MPa")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal horizontalStress;
 
     /** 其他备注或说明 */
-    @Schema(description = "其他备注或说明 ")
+    @ApiModelProperty(value = "其他备注或说明 ")
     private String notes;
 
 

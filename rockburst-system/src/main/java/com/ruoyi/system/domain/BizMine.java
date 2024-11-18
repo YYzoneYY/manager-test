@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.ruoyi.common.annotation.Excel;
+import lombok.experimental.Accessors;
 
 /**
  * 矿井管理对象 biz_mine
@@ -25,6 +26,7 @@ import com.ruoyi.common.annotation.Excel;
 
 @Getter
 @Setter
+@Accessors(chain = true)
 @ApiModel("矿井管理对象")
 public class BizMine extends BaseSelfEntity
 {

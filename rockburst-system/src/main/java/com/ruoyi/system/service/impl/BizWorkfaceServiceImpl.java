@@ -4,9 +4,17 @@ import java.util.List;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.system.constant.BizBaseConstant;
+import com.ruoyi.system.domain.BizMine;
+import com.ruoyi.system.domain.BizMiningArea;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
+import com.ruoyi.system.domain.vo.BizWorkfaceVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.system.mapper.BizWorkfaceMapper;
@@ -32,9 +40,18 @@ public class BizWorkfaceServiceImpl  extends ServiceImpl<BizWorkfaceMapper, BizW
      * @return 工作面管理
      */
     @Override
-    public BizWorkface selectBizWorkfaceByWorkfaceId(Long workfaceId)
+    public BizWorkfaceVo selectBizWorkfaceByWorkfaceId(Long workfaceId)
     {
-        return bizWorkfaceMapper.selectById(workfaceId);
+        MPJLambdaWrapper<BizWorkface> queryWrapper = new MPJLambdaWrapper<BizWorkface>();
+        queryWrapper
+                .leftJoin(BizMine.class, BizMine::getMineId,BizWorkfaceVo::getMineId)
+                .leftJoin(BizMiningArea.class, BizMiningArea::getMiningAreaId,BizWorkface::getMiningAreaId)
+                .selectAll(BizWorkface.class)
+                .selectAs(BizMine::getMineName,BizWorkfaceVo::getMineName)
+                .selectAs(BizMiningArea::getMiningAreaName,BizWorkfaceVo::getMiningAreaName)
+                .eq(BizWorkface::getWorkfaceId,workfaceId)
+                .eq(BizWorkface::getDelFlag, BizBaseConstant.DELFLAG_N);
+        return bizWorkfaceMapper.selectJoinOne(BizWorkfaceVo.class,queryWrapper);
     }
 
     /**
@@ -44,14 +61,23 @@ public class BizWorkfaceServiceImpl  extends ServiceImpl<BizWorkfaceMapper, BizW
      * @return 工作面管理
      */
     @Override
-    public List<BizWorkface> selectBizWorkfaceList(BizWorkfaceDto dto)
+    public MPage<BizWorkfaceVo> selectBizWorkfaceList(BizWorkfaceDto dto, Pagination pagination)
     {
-        QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<BizWorkface>();
-        queryWrapper.lambda().eq(dto.getAreaId()!= null, BizWorkface::getAreaId, dto.getAreaId())
+        MPJLambdaWrapper<BizWorkface> queryWrapper = new MPJLambdaWrapper<BizWorkface>();
+        queryWrapper
+                .leftJoin(BizMine.class, BizMine::getMineId,BizWorkfaceVo::getMineId)
+                .leftJoin(BizMiningArea.class, BizMiningArea::getMiningAreaId,BizWorkface::getMiningAreaId)
+                .selectAll(BizWorkface.class)
+                .selectAs(BizMine::getMineName,BizWorkfaceVo::getMineName)
+                .selectAs(BizMiningArea::getMiningAreaName,BizWorkfaceVo::getMiningAreaName)
+                .eq(dto.getMineId() != null,BizWorkface::getMineId,dto.getMineId())
+                .eq(dto.getMiningAreaId()!= null, BizWorkface::getMiningAreaId, dto.getMiningAreaId())
                 .like(StrUtil.isNotEmpty(dto.getWorkfaceName()), BizWorkface::getWorkfaceName, dto.getWorkfaceName())
                 .eq(StrUtil.isNotEmpty(dto.getType()), BizWorkface::getType, dto.getType())
+                .eq(BizWorkface::getDelFlag, BizBaseConstant.DELFLAG_N)
                 .eq(dto.getStatus()!= null, BizWorkface::getStatus, dto.getStatus());
-        return bizWorkfaceMapper.selectList(queryWrapper);
+        IPage<BizWorkfaceVo> list = bizWorkfaceMapper.selectJoinPage(pagination,BizWorkfaceVo.class,queryWrapper);
+        return new MPage<>(list);
     }
 
     /**
@@ -63,8 +89,8 @@ public class BizWorkfaceServiceImpl  extends ServiceImpl<BizWorkfaceMapper, BizW
     @Override
     public int insertBizWorkface(BizWorkface bizWorkface)
     {
-        bizWorkface.setCreateTime(DateUtils.getNowDate());
-        return 1;
+
+        return bizWorkfaceMapper.insert(bizWorkface);
     }
 
     /**

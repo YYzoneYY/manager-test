@@ -26,13 +26,15 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.*;
+import com.ruoyi.system.domain.Entity.ClassesEntity;
+import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
 import com.ruoyi.system.domain.vo.BizProStatsVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordVo;
 import com.ruoyi.system.mapper.*;
-import io.minio.MinioClient;
+//import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.system.service.IBizProjectRecordService;
@@ -57,8 +59,8 @@ public class BizProjectRecordServiceImpl extends ServiceImpl<BizProjectRecordMap
 
     @Autowired
     private BizDrillRecordMapper bizDrillRecordMapper;
-    @Autowired
-    private MinioClient getMinioClient;
+//    @Autowired
+//    private MinioClient getMinioClient;
 
 
     @DataScopeSelf
@@ -68,15 +70,16 @@ public class BizProjectRecordServiceImpl extends ServiceImpl<BizProjectRecordMap
         MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
         queryWrapper
                 .selectAll(BizMine.class)
-//todo                .leftJoin(,BizProjectRecord::getConstructUnitId)
-//todo               .leftJoin(,BizProjectRecord::getConstructLocationId)
-//todo               .leftJoin(,BizProjectRecord::getConstructShiftId)
+                .selectAs(ConstructionUnitEntity::getConstructionUnitName,BizProjectRecordListVo::getConstructUnitName)
+                .selectAs(ClassesEntity::getClassesName,BizProjectRecordListVo::getConstructShiftName)
+                .leftJoin(ConstructionUnitEntity.class,ConstructionUnitEntity::getConstructionUnitId,BizProjectRecord::getConstructUnitId)
+                .leftJoin(ClassesEntity.class,ClassesEntity::getClassesId,BizProjectRecord::getConstructShiftId)
                 .select(BizProjectRecord::getProjectId,BizProjectRecord::getDeptId)
                 .leftJoin(BizMine.class,BizMine::getMineId,BizProjectRecord::getDeptId)
                 .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
                         .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
                 .eq(dto.getConstructUnitId()!=null,BizProjectRecord::getConstructUnitId,dto.getConstructUnitId())
-                .eq(dto.getConstructLocationId()!=null,BizProjectRecord::getConstructLocationId,dto.getConstructLocationId())
+                .eq(StrUtil.isNotEmpty(dto.getConstructLocation()),BizProjectRecord::getConstructLocation,dto.getConstructLocation())
                 .eq(dto.getDrillType()!=null,BizProjectRecord::getDrillType,dto.getDrillType())
                 .eq(dto.getShiftId()!=null,BizProjectRecord::getConstructShiftId,dto.getShiftId())
                 .eq(dto.getStatus()!=null,BizProjectRecord::getStatus,dto.getStatus())
@@ -102,12 +105,10 @@ public class BizProjectRecordServiceImpl extends ServiceImpl<BizProjectRecordMap
         MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
         queryWrapper
                 .selectAll(BizProjectRecord.class)
-//todo                .leftJoin(,BizProjectRecord::getConstructUnitId)
-//               .leftJoin(,BizProjectRecord::getConstructLocationId)
-//               .leftJoin(,BizProjectRecord::getConstructShiftId)
-//                .select(BizProjectRecord::getProjectId,BizProjectRecordVo::getConstructLocationName)
-//                .select(BizProjectRecord::getProjectId,BizProjectRecordVo::getConstructUnitName)
-//                .select(BizProjectRecord::getProjectId,BizProjectRecordVo::getConstructShiftName)
+                .selectAs(ConstructionUnitEntity::getConstructionUnitName,BizProjectRecordListVo::getConstructUnitName)
+                .selectAs(ClassesEntity::getClassesName,BizProjectRecordListVo::getConstructShiftName)
+                .leftJoin(ConstructionUnitEntity.class,ConstructionUnitEntity::getConstructionUnitId,BizProjectRecord::getConstructUnitId)
+                .leftJoin(ClassesEntity.class,ClassesEntity::getClassesId,BizProjectRecord::getConstructShiftId)
                 .between(BizProjectRecord::getConstructTime,startDate,currentDate);
         IPage<BizProjectRecordListVo> sss = bizProjectRecordMapper.selectJoinPage(pagination,BizProjectRecordListVo.class, queryWrapper);
         return new MPage<>(sss);

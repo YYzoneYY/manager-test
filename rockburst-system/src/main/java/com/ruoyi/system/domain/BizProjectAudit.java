@@ -2,6 +2,8 @@ package com.ruoyi.system.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.ruoyi.common.core.domain.BaseSelfEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -22,7 +24,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class BizProjectAudit implements Serializable
+public class BizProjectAudit extends BaseSelfEntity
 {
     private static final long serialVersionUID = 1L;
 
@@ -31,20 +33,22 @@ public class BizProjectAudit implements Serializable
     private Long projectAuditId;
 
     /** 工程填报id */
-    @Excel(name = "工程填报id")
+    @ApiModelProperty(name = "工程填报id")
     private Long projectId;
 
     /** 审核状态 */
-    @Excel(name = "审核状态")
+    @ApiModelProperty(name = "审核状态")
     private Integer status;
 
 
+    @ApiModelProperty(name = "审核状态")
     private String msg;
 
+    @ApiModelProperty(name = "审核状态")
     private String level;
 
     /** 序号 */
-    @Excel(name = "序号")
+    @ApiModelProperty(name = "序号")
     private Long no;
 
 

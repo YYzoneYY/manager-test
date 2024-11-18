@@ -37,11 +37,17 @@ logging:
     com.ruoyi: debug
     org.springframework: warn
 # Minio配置
-minio:
-  url: http://localhost:9000
-  accessKey: minioadmin
-  secretKey: minioadmin
-  bucketName: ruoyi
+#minio:
+#  url: http://47.92.215.128:19000
+#  accessKey: vDlL40BBLuRH4gulETWx
+#  secretKey: YTkovNEnt3AVWEOJfKRda055d4HAcelAlH9gJ2HD
+#  bucketName: bust-dev
+file:
+  bucketName: bust-dev
+  oss:
+    accessKey: 9nLLPYeJs3CX1jj3GC1r
+    secretKey: finms5hOxZXwc6ZfUfVV5qPpfazIRNibN7PH1erG
+    endpoint: http://47.92.215.128:19000
 # 用户配置
 user:
   password:
@@ -116,6 +122,10 @@ pagehelper:
   helperDialect: mysql
   supportMethodsArguments: true
   params: count=countSql
+
+springdoc:
+  api-docs:
+    path: /openapi/v3/api-docs
 
 # Swagger配置
 swagger:

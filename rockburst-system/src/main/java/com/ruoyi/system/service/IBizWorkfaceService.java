@@ -3,8 +3,11 @@ package com.ruoyi.system.service;
 import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
+import com.ruoyi.system.domain.vo.BizWorkfaceVo;
 
 /**
  * 工作面管理Service接口
@@ -20,7 +23,7 @@ public interface IBizWorkfaceService  extends IService<BizWorkface>
      * @param workfaceId 工作面管理主键
      * @return 工作面管理
      */
-    public BizWorkface selectBizWorkfaceByWorkfaceId(Long workfaceId);
+    public BizWorkfaceVo selectBizWorkfaceByWorkfaceId(Long workfaceId);
 
     /**
      * 查询工作面管理列表
@@ -28,7 +31,7 @@ public interface IBizWorkfaceService  extends IService<BizWorkface>
      * @param bizWorkface 工作面管理
      * @return 工作面管理集合
      */
-    public List<BizWorkface> selectBizWorkfaceList(BizWorkfaceDto bizWorkface);
+    public MPage<BizWorkfaceVo> selectBizWorkfaceList(BizWorkfaceDto dto, Pagination pagination);
 
     /**
      * 新增工作面管理

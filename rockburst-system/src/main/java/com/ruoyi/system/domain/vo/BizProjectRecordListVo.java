@@ -13,7 +13,6 @@ public class BizProjectRecordListVo extends BizProjectRecord {
 
     private String constructUnitName;
     private String constructShiftName;
-    private String constructLocationName;
 
 
 

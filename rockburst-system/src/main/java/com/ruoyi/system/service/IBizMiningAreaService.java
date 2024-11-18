@@ -3,7 +3,11 @@ package com.ruoyi.system.service;
 import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizMiningArea;
+import com.ruoyi.system.domain.dto.BizMiningAreaDto;
+import com.ruoyi.system.domain.vo.BizMiningAreaVo;
 
 /**
  * 采区管理Service接口
@@ -19,7 +23,7 @@ public interface IBizMiningAreaService extends IService<BizMiningArea>
      * @param miningAreaId 采区管理主键
      * @return 采区管理
      */
-    public BizMiningArea selectBizMiningAreaByMiningAreaId(Long miningAreaId);
+    public BizMiningAreaVo selectBizMiningAreaByMiningAreaId(Long miningAreaId);
 
     /**
      * 查询采区管理列表
@@ -27,7 +31,7 @@ public interface IBizMiningAreaService extends IService<BizMiningArea>
      * @param bizMiningArea 采区管理
      * @return 采区管理集合
      */
-    public List<BizMiningArea> selectBizMiningAreaList(BizMiningArea bizMiningArea);
+     MPage<BizMiningAreaVo> selectBizMiningAreaList(BizMiningAreaDto bizMiningArea, Pagination pagination);
 
     /**
      * 新增采区管理

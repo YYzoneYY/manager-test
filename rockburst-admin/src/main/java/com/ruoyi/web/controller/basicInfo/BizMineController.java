@@ -4,13 +4,20 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 
+import com.ruoyi.system.domain.BizMiningArea;
 import com.ruoyi.system.domain.dto.BizMineDto;
+import com.ruoyi.system.mapper.BizMineMapper;
+import com.ruoyi.system.service.IBizMiningAreaService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,7 +51,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @author ruoyi
  * @date 2024-11-11
  */
-@Api(value = "矿井管理Controller",description = "矿井管理Controller")
+@Api("矿井管理Controller")
 //@Tag(description = "矿井管理Controller", name = "矿井管理Controller")
 @RestController
 @RequestMapping("/basicInfo/mine")
@@ -51,6 +59,9 @@ public class BizMineController extends BaseController
 {
     @Autowired
     private IBizMineService bizMineService;
+
+    @Autowired
+    private IBizMiningAreaService   bizMiningAreaService;
 
     /**
      * 查询矿井管理列表
@@ -63,6 +74,20 @@ public class BizMineController extends BaseController
         MPage<BizMine> list = bizMineService.selectBizMineList(dto,pagination);
         return R.ok(list);
     }
+
+
+    /**
+     * 查询矿井管理列表
+     */
+//    @ApiOperation("查询矿井下拉列表")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @GetMapping("/downList")
+//    public R<MPage<BizMine>> downList()
+//    {
+//
+//        List<BizMine> list = bizMineService.getBaseMapper().selectList(new QueryWrapper<BizMine>().orderByDesc("create_time"));
+//        return R.ok(list);
+//    }
 
 
 
@@ -114,6 +139,31 @@ public class BizMineController extends BaseController
     @DeleteMapping("/{mineIds}")
     public AjaxResult remove(@PathVariable Long[] mineIds)
     {
-        return toAjax(bizMineService.deleteBizMineByMineIds(mineIds));
+        QueryWrapper<BizMiningArea> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().in(BizMiningArea::getMineId, mineIds).eq(BizMiningArea::getDelFlag, BizBaseConstant.DELFLAG_N);
+        Long count = bizMiningAreaService.getBaseMapper().selectCount(queryWrapper);
+        Assert.isTrue(count > 0, "选择的矿井下还有采区");
+        UpdateWrapper<BizMine> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().in(BizMine::getMineId, mineIds).set(BizMine::getDelFlag,BizBaseConstant.DELFLAG_Y);
+        return toAjax(bizMineService.update(updateWrapper));
+    }
+
+
+    /**
+     * 删除矿井管理
+     */
+    @ApiOperation("删除矿井管理")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
+    @Log(title = "矿井管理", businessType = BusinessType.DELETE)
+    @DeleteMapping("/one/{mineId}")
+    public AjaxResult remove(@PathVariable("mineId") Long mineId)
+    {
+        QueryWrapper<BizMiningArea> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizMiningArea::getMineId, mineId).eq(BizMiningArea::getDelFlag, BizBaseConstant.DELFLAG_N);
+        Long count = bizMiningAreaService.getBaseMapper().selectCount(queryWrapper);
+        Assert.isTrue(count > 0, "选择的矿井下还有采区");
+        BizMine entity = new BizMine();
+        entity.setMineId(mineId).setDelFlag(BizBaseConstant.DELFLAG_Y);
+        return toAjax(bizMineService.updateBizMine(entity));
     }
 }
