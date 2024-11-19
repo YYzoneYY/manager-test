@@ -19,7 +19,7 @@ public class ConstantsInfo {
     //未删除(逻辑)
     public static final Integer ZERO_DEL_FLAG = 0;
     //已删除(逻辑)
-    public static final Integer TWO_DEL_FLAG = 2;
+    public static final String TWO_DEL_FLAG = "2";
 
     // 工作面下拉框标识
     public static final String TAG = "1";

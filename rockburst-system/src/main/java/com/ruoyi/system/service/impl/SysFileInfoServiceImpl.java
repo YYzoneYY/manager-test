@@ -21,6 +21,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 
 import com.ruoyi.common.config.MinioConfig;
+import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.file.FileTypeUtils;
 import com.ruoyi.common.utils.file.NewFileUploadUtils;
 import com.ruoyi.system.domain.SysFileInfo;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -73,23 +75,28 @@ public class SysFileInfoServiceImpl extends ServiceImpl<SysFileInfoMapper, SysFi
         sysFileInfo.setBucketName(defaultBucketName);
         PutObjectArgs args;
         try {
+            InputStream inputStream = file.getInputStream();
             args = PutObjectArgs.builder()
                     .bucket(defaultBucketName)
                     .object(fileName)
-                    .stream(file.getInputStream(), file.getSize(), -1)
+                    .stream(inputStream, file.getSize(), -1)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE)
                     //.region("cn-a")
                     .build();
             minioClient.putObject(args);
+            inputStream.close();
         } catch (Exception e) {
             log.error("文件上传失败!" + e.getMessage(), e);
             throw new RuntimeException("文件上传失败!");
         }
         String url = minioConfig.getEndpoint() + "/" + defaultBucketName + "/" + fileName;
         sysFileInfo.setFileUrl(url);
-        sysFileInfo.setCreateTime(System.currentTimeMillis());
+        Long ts = System.currentTimeMillis();
+        sysFileInfo.setCreateTime(ts);
+        sysFileInfo.setUpdateTime(ts);
         // todo 最后统一鉴权 SecurityUtils.getUserId()
         sysFileInfo.setCreateBy(1L);
+        sysFileInfo.setUpdateBy(1L);
         if (sysFileInfoMapper.insert(sysFileInfo) < 1) {
             throw new RuntimeException("文件信息插入库失败!");
         }
@@ -106,7 +113,7 @@ public class SysFileInfoServiceImpl extends ServiceImpl<SysFileInfoMapper, SysFi
     @Override
     public void batchLogicalDelete(Long[] fileIds) {
         SysFileInfo sysFileInfo = new SysFileInfo();
-        sysFileInfo.setDelFlag("2");
+        sysFileInfo.setDelFlag(ConstantsInfo.TWO_DEL_FLAG);
         // todo 最后统一鉴权 SecurityUtils.getUserId()
         sysFileInfo.setCreateBy(1L);
         sysFileInfo.setUpdateBy(1L);
