@@ -2,6 +2,7 @@ package com.ruoyi.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ruoyi.system.domain.Entity.ClassesEntity;
+import com.ruoyi.system.domain.Entity.TunnelEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -11,5 +12,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 
 @Mapper
-public interface TunnelMapper extends BaseMapper<ClassesEntity> {
+public interface TunnelMapper extends BaseMapper<TunnelEntity> {
 }
