@@ -38,17 +38,17 @@ logging:
     org.springframework: warn
 # Minio配置
 minio:
-  url:
-  accessKey:
-  secretKey:
-  bucketName:
+  endpoint: ${miniourl:http://192.168.31.114:9000}
+  accessKey: ${minioakey:root}
+  secretKey: ${minioskey:Root@2024}
+  bucketName: ${miniobname:videoTest} #存储桶名称
 
-file:
-  bucketName: bust-dev
-  oss:
-    accessKey: 9nLLPYeJs3CX1jj3GC1r
-    secretKey: finms5hOxZXwc6ZfUfVV5qPpfazIRNibN7PH1erG
-    endpoint: http://47.92.215.128:19000
+#file:
+#  bucketName: bust-dev
+#  oss:
+#    accessKey: 9nLLPYeJs3CX1jj3GC1r
+#    secretKey: finms5hOxZXwc6ZfUfVV5qPpfazIRNibN7PH1erG
+#    endpoint: http://47.92.215.128:19000
 # 用户配置
 user:
   password:

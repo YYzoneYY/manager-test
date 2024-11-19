@@ -18,11 +18,11 @@
     <dependencies>
 
         <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.12.38</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.amazonaws</groupId>-->
+<!--            <artifactId>aws-java-sdk-s3</artifactId>-->
+<!--            <version>1.12.38</version>-->
+<!--        </dependency>-->
 <!--        <dependency>-->
 <!--            <groupId>org.springdoc</groupId>-->
 <!--            <artifactId>springdoc-openapi-ui</artifactId>-->
@@ -32,14 +32,15 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.9.0</version>
+            <version>3.6.0</version>
+            <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
-            <version>1.3.70</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.jetbrains.kotlin</groupId>-->
+<!--            <artifactId>kotlin-stdlib</artifactId>-->
+<!--            <version>1.3.70</version>-->
+<!--        </dependency>-->
 
         <!-- Minio 文件存储 -->
         <dependency>
