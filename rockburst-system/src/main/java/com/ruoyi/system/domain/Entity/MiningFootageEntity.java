@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("miming_footage")
+@TableName("mining_footage")
 public class MiningFootageEntity extends BusinessBaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
