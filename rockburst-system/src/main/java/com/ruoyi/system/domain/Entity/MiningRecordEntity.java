@@ -29,7 +29,7 @@ import java.math.BigDecimal;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("miming_record")
+@TableName("mining_record")
 public class MiningRecordEntity extends BusinessBaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
