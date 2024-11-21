@@ -13,6 +13,17 @@ public class BizBaseConstant {
     public static final Integer MINE_STATUS_OFF = 0;
 
 
+    // 工作面开采状态 未开采
+    public static final Integer WORKFACE_STATUS_WKC = 0;
+    // 工作面开采状态 开采中
+    public static final Integer WORKFACE_STATUS_KCZ = 1;
+    // 工作面开采状态 开采完成
+    public static final Integer WORKFACE_STATUS_KCWC = 2;
+    // 工作面开采状态 停止开采
+    public static final Integer WORKFACE_STATUS_TZKC = 3;
+    // 工作面开采状态 安全封闭
+    public static final Integer WORKFACE_STATUS_AQFB = 4;
+
     //填报类型
 
     public static final String FILL_TYPE_CD = "CD";

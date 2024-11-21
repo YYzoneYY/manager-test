@@ -1,7 +1,16 @@
 package com.ruoyi.web.controller.projectFill;
 
+import java.sql.Struct;
 import java.util.List;
+
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ruoyi.common.core.domain.R;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.core.page.PageDomain;
+import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.system.domain.dto.BizVideoDto;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,66 +48,56 @@ public class BizVideoController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('project:video:list')")
     @GetMapping("/list")
-    public TableDataInfo list(BizVideo bizVideo)
+    public R<List<BizVideo>> list(@RequestBody BizVideoDto dto)
     {
-        startPage();
-        List<BizVideo> list = bizVideoService.list();
-        return getDataTable(list);
+        QueryWrapper<BizVideo> queryWrapper = new QueryWrapper<BizVideo>();
+        queryWrapper.lambda().like(StrUtil.isNotBlank(dto.getFileName()), BizVideo::getFileName, dto.getFileName());
+        List<BizVideo> list = bizVideoService.list(queryWrapper);
+        return R.ok(list);
     }
 
-    /**
-     * 导出工程视频列表
-     */
-    @PreAuthorize("@ss.hasPermi('project:video:export')")
-    @Log(title = "工程视频", businessType = BusinessType.EXPORT)
-    @PostMapping("/export")
-    public void export(HttpServletResponse response, BizVideo bizVideo)
-    {
-        List<BizVideo> list = bizVideoService.list();
-        ExcelUtil<BizVideo> util = new ExcelUtil<BizVideo>(BizVideo.class);
-        util.exportExcel(response, list, "工程视频数据");
-    }
 
-    /**
-     * 获取工程视频详细信息
-     */
-    @PreAuthorize("@ss.hasPermi('project:video:query')")
-    @GetMapping(value = "/{videoId}")
-    public AjaxResult getInfo(@PathVariable("videoId") Long videoId)
-    {
-        return success(bizVideoService.getById(videoId));
-    }
 
-    /**
-     * 新增工程视频
-     */
-    @PreAuthorize("@ss.hasPermi('project:video:add')")
-    @Log(title = "工程视频", businessType = BusinessType.INSERT)
-    @PostMapping
-    public AjaxResult add(@RequestBody BizVideo bizVideo)
-    {
-        return toAjax(bizVideoService.save(bizVideo));
-    }
-
-    /**
-     * 修改工程视频
-     */
-    @PreAuthorize("@ss.hasPermi('project:video:edit')")
-    @Log(title = "工程视频", businessType = BusinessType.UPDATE)
-    @PutMapping
-    public AjaxResult edit(@RequestBody BizVideo bizVideo)
-    {
-        return toAjax(bizVideoService.updateById(bizVideo));
-    }
-
-    /**
-     * 删除工程视频
-     */
-    @PreAuthorize("@ss.hasPermi('project:video:remove')")
-    @Log(title = "工程视频", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{videoIds}")
-    public AjaxResult remove(@PathVariable Long[] videoIds)
-    {
-        return toAjax(bizVideoService.removeById(videoIds));
-    }
+//    /**
+//     * 获取工程视频详细信息
+//     */
+//    @PreAuthorize("@ss.hasPermi('project:video:query')")
+//    @GetMapping(value = "/{videoId}")
+//    public AjaxResult getInfo(@PathVariable("videoId") Long videoId)
+//    {
+//        return success(bizVideoService.getById(videoId));
+//    }
+//
+//    /**
+//     * 新增工程视频
+//     */
+//    @PreAuthorize("@ss.hasPermi('project:video:add')")
+//    @Log(title = "工程视频", businessType = BusinessType.INSERT)
+//    @PostMapping
+//    public AjaxResult add(@RequestBody BizVideo bizVideo)
+//    {
+//        return toAjax(bizVideoService.save(bizVideo));
+//    }
+//
+//    /**
+//     * 修改工程视频
+//     */
+//    @PreAuthorize("@ss.hasPermi('project:video:edit')")
+//    @Log(title = "工程视频", businessType = BusinessType.UPDATE)
+//    @PutMapping
+//    public AjaxResult edit(@RequestBody BizVideo bizVideo)
+//    {
+//        return toAjax(bizVideoService.updateById(bizVideo));
+//    }
+//
+//    /**
+//     * 删除工程视频
+//     */
+//    @PreAuthorize("@ss.hasPermi('project:video:remove')")
+//    @Log(title = "工程视频", businessType = BusinessType.DELETE)
+//	@DeleteMapping("/{videoIds}")
+//    public AjaxResult remove(@PathVariable Long[] videoIds)
+//    {
+//        return toAjax(bizVideoService.removeById(videoIds));
+//    }
 }

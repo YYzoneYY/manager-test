@@ -1,6 +1,8 @@
 package com.ruoyi.web.controller.projectFill;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.pagehelper.Page;
 import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
@@ -58,15 +60,6 @@ public class BizProjectRecordController extends BaseController
     }
 
 
-//    @ApiOperation("查询工程填报审核列表")
-////    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
-//    @GetMapping("/auditList")
-//    public Object auditList(BizProjectRecordDto dto)
-//    {
-//        startPage();
-//        return getDataTable(bizProjectRecordService.getlist(new BasePermission(), dto));
-//    }
-
     @ApiOperation("防冲工程查询")
 //    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
     @GetMapping("/selectproList")
@@ -81,9 +74,12 @@ public class BizProjectRecordController extends BaseController
      */
 //    @PreAuthorize("@ss.hasPermi('project:record:query')")
     @GetMapping(value = "/{projectId}")
-    public AjaxResult getInfo(@PathVariable("projectId") Long projectId)
+    public R<BizProjectRecordListVo> getInfo(@PathVariable("projectId") Long projectId)
     {
-        return success(bizProjectRecordService.selectById(projectId));
+        BizProjectRecord vo = bizProjectRecordService.getByIdDeep(projectId);
+        BizProjectRecordListVo vo1 = new BizProjectRecordListVo();
+        BeanUtil.copyProperties(vo, vo1);
+        return R.ok(vo1);
     }
 
     /**
@@ -92,9 +88,9 @@ public class BizProjectRecordController extends BaseController
     @PreAuthorize("@ss.hasPermi('project:record:add')")
     @Log(title = "工程填报记录", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody BizProjectRecordAddDto dto)
+    public R<?> add(@RequestBody BizProjectRecordAddDto dto)
     {
-        return toAjax(bizProjectRecordService.saveRecord(dto));
+        return R.ok(bizProjectRecordService.saveRecord(dto));
     }
 
     /**
@@ -103,9 +99,9 @@ public class BizProjectRecordController extends BaseController
     @PreAuthorize("@ss.hasPermi('project:record:edit')")
     @Log(title = "工程填报记录", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody BizProjectRecord bizProjectRecord)
+    public R<?> edit(@RequestBody BizProjectRecordAddDto bizProjectRecord)
     {
-        return toAjax(bizProjectRecordService.updateById(bizProjectRecord));
+        return R.ok(bizProjectRecordService.updateRecord(bizProjectRecord));
     }
 
     /**
@@ -114,37 +110,37 @@ public class BizProjectRecordController extends BaseController
     @PreAuthorize("@ss.hasPermi('project:record:remove')")
     @Log(title = "工程填报记录", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{projectIds}")
-    public AjaxResult remove(@PathVariable Long[] projectIds)
+    public R<?> remove(@PathVariable Long[] projectIds)
     {
-        return toAjax(bizProjectRecordService.removeById(projectIds));
+        return R.ok(bizProjectRecordService.removeById(projectIds));
     }
 
 
     @PreAuthorize("@ss.hasPermi('project:record:edit')")
     @Log(title = "修改阅读状态", businessType = BusinessType.UPDATE)
     @PutMapping("/read/{projecctId}")
-    public AjaxResult read(@PathVariable("projecctId") Long projecctId)
+    public R<?> read(@PathVariable("projecctId") Long projecctId)
     {
         BizProjectRecord bizProjectRecord = new BizProjectRecord();
         bizProjectRecord.setProjectId(projecctId).setIsRead(1);
-        return toAjax(bizProjectRecordService.updateById(bizProjectRecord));
+        return R.ok(bizProjectRecordService.updateById(bizProjectRecord));
     }
 
-    @PreAuthorize("@ss.hasPermi('project:record:edit')")
-    @Log(title = "区队审核工程填报记录", businessType = BusinessType.UPDATE)
-    @PutMapping("/firstAudit")
-    public AjaxResult firstAudit(@RequestBody BizProjectRecordDto dto)
-    {
-        return toAjax(bizProjectRecordService.firstAudit(dto));
-    }
-
-    @PreAuthorize("@ss.hasPermi('project:record:edit')")
-    @Log(title = "科室审核工程填报记录", businessType = BusinessType.UPDATE)
-    @PutMapping("/secondAudit")
-    public AjaxResult secondAudit(@RequestBody BizProjectRecordDto dto)
-    {
-        return toAjax(bizProjectRecordService.secondAudit(dto));
-    }
+//    @PreAuthorize("@ss.hasPermi('project:record:edit')")
+//    @Log(title = "区队审核工程填报记录", businessType = BusinessType.UPDATE)
+//    @PutMapping("/firstAudit")
+//    public AjaxResult firstAudit(@RequestBody BizProjectRecordDto dto)
+//    {
+//        return toAjax(bizProjectRecordService.firstAudit(dto));
+//    }
+//
+//    @PreAuthorize("@ss.hasPermi('project:record:edit')")
+//    @Log(title = "科室审核工程填报记录", businessType = BusinessType.UPDATE)
+//    @PutMapping("/secondAudit")
+//    public AjaxResult secondAudit(@RequestBody BizProjectRecordDto dto)
+//    {
+//        return toAjax(bizProjectRecordService.secondAudit(dto));
+//    }
 
 
 }

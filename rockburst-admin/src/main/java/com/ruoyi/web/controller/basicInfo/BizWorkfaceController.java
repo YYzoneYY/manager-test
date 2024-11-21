@@ -13,8 +13,11 @@ import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
+import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
+import com.ruoyi.system.mapper.BizWorkfaceMapper;
+import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.SurveyAreaService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,6 +60,9 @@ public class BizWorkfaceController extends BaseController
 
     @Autowired
     private SurveyAreaService surveyAreaService;
+
+    @Autowired
+    private TunnelMapper tunnelMapper;
 
     /**
      * 查询工作面管理列表
@@ -125,8 +131,12 @@ public class BizWorkfaceController extends BaseController
                 .eq(SurveyAreaEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = surveyAreaService.getBaseMapper().selectCount(queryWrapper);
         Assert.isTrue(count > 0, "选择的工作面下还有采区");
-        //todo 巷道 还没有基础接口
-        Assert.isTrue(count > 0, "选择的工作面下还有巷道");
+
+        QueryWrapper<TunnelEntity> tunnelQueryWrapper = new QueryWrapper<>();
+        tunnelQueryWrapper.lambda().eq(TunnelEntity::getWorkFaceId, workfaceId);
+//                .eq(TunnelEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
+        Long tunnelCount = tunnelMapper.selectCount(tunnelQueryWrapper);
+        Assert.isTrue(tunnelCount > 0, "选择的工作面下还有巷道");
         BizWorkface entity = new BizWorkface();
         entity.setWorkfaceId(workfaceId).setDelFlag(BizBaseConstant.DELFLAG_N);
         return toAjax( bizWorkfaceService.updateById(entity));
