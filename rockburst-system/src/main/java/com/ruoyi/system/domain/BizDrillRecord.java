@@ -1,8 +1,5 @@
 package com.ruoyi.system.domain;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -11,10 +8,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
+
+import java.util.Date;
 
 /**
  * 钻孔参数记录对象 biz_drill_record
@@ -36,6 +31,10 @@ public class BizDrillRecord extends BaseSelfEntity
     /** 关联填报id */
     @ApiModelProperty(name = "关联填报id")
     private Long projectId;
+
+    /** 关联填报id */
+    @ApiModelProperty(name = "计划id")
+    private Long planId;
 
     /** 序号 */
     @ApiModelProperty(name = "序号")

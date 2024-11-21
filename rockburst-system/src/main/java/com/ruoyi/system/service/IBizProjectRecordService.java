@@ -5,6 +5,7 @@ import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.dto.BizPlanDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto1;
@@ -15,6 +16,7 @@ import com.ruoyi.system.domain.vo.BizProjectRecordVo;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 工程填报记录Service接口
@@ -38,7 +40,7 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
 
     BizProStatsVo statsProject(BasePermission permission, BizProjectRecordDto dto);
 
-
+    MPage<Map<String, Object>> monitorProject(BizPlanDto dto, Pagination pagination);
 
     List<BizProjectRecordListVo> auditList(BizProjectRecord bizProjectRecord);
 
