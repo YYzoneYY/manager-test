@@ -25,6 +25,9 @@ public class ConstantsInfo {
     public static final String ONE_TAG = "1";
     public static final String TWO_TAG = "2";
 
+    public static final String SECTION_SHAPE_DICT_TYPE = "section_shape";
+    public static final String SUPPORT_FORM_DICT_TYPE = "support_form";
+
     public static final Integer LEVEL = 1;
 
     // 不明确是否分层

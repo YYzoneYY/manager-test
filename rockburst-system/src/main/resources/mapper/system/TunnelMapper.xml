@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TunnelMapper">
+    <select id="selectTunnelList" parameterType="com.ruoyi.system.domain.dto.SelectTunnelDTO" resultType="com.ruoyi.system.domain.vo.TunnelVO">
+        select
+        t.tunnel_id as tunnelId,
+        t.tunnel_name as tunnelName,
+        t.work_face_id as workFaceId,
+        t.section_shape as sectionShape,
+        t.tunnel_width as tunnelWidth,
+        t.tunnel_height as tunnelHeight,
+        t.tunnel_length as tunnelLength,
+        t.extent as extent,
+        t.tunnel_status as tunnelStatus,
+        t.create_time as createTime,
+        t.update_time as updateTime,
+        t.del_flag as delFlag
+        from tunnel as t
+        <where>
+            <if test="tunnelName != null and tunnelName != ''">
+                and t.tunnel_name like concat('%',#{tunnelName},'%')
+            </if>
+            <if test="workFaceId != null and workFaceId !=''">
+                and t.work_face_id = #{workFaceId}
+            </if>
+            <if test="tunnelStatus != null">
+                and t.tunnel_status = #{tunnelStatus}
+            </if>
+            <if test="startTime != null">
+                and t.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and t.create_time &lt;= #{endTime}
+            </if>
+            and t.del_flag = '0'
+        </where>
+        order by t.create_time desc
+    </select>
+</mapper>
