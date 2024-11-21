@@ -27,8 +27,10 @@ public class TunnelEntity extends BusinessBaseEntity implements Serializable {
     private Long workFaceId;
     private String sectionShape;
     private String supportForm;
-    private String tunnelType;
     private BigDecimal tunnelWidth;
     private BigDecimal tunnelHeight;
+    private BigDecimal tunnelLength;
     private BigDecimal tunnelArea;
+    private String tunnelStatus;
+    private String delFlag;
 }

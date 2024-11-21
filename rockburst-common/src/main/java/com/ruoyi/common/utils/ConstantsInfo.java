@@ -21,8 +21,11 @@ public class ConstantsInfo {
     //已删除(逻辑)
     public static final String TWO_DEL_FLAG = "2";
 
-    // 工作面下拉框标识
-    public static final String TAG = "1";
+    // 施工文档标识
+    public static final String ONE_TAG = "1";
+    public static final String TWO_TAG = "2";
+
+    public static final Integer LEVEL = 1;
 
     // 不明确是否分层
     public static final String UNKNOWN = "0";

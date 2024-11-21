@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ConstructDocumentMapper">
+
+    <select id="queryByPage" parameterType="com.ruoyi.system.domain.dto.SelectDocumentDTO"
+            resultType="com.ruoyi.system.domain.Entity.ConstructDocumentEntity">
+        with recursive tmp as (
+            select c1.*
+            from construct_document c1 where c1.super_id is null and c1.del_flag = '0'
+            union all
+            select c2.*
+            from construct_document c2, tmp c3
+            where c2.super_id = c3.data_id
+        )
+        select c.* from tmp c where c.del_flag = '0' order by sort asc
+    </select>
+
+    <!--获取上级层级名称下拉列表-->
+    <select id="selectDropDownList" resultType="com.ruoyi.system.domain.dto.DropDownListDTO">
+        select cd.data_id   as sId,
+               cd.level_name as sName
+        from construct_document as cd
+        where cd.tag != '1' and cd.del_flag = '0'
+    </select>
+</mapper>
