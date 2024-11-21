@@ -57,7 +57,7 @@ public class BizDrillRecord extends BaseSelfEntity
 
     /** 钻孔高度 */
     @ApiModelProperty(name = "钻孔高度")
-    private Long height;
+    private String height;
 
     /** 钻孔直径 */
     @ApiModelProperty(name = "钻孔直径")
@@ -73,7 +73,11 @@ public class BizDrillRecord extends BaseSelfEntity
 
     /** 状态 */
     @ApiModelProperty(name = "状态")
-    private String status;
+    private Integer status;
+
+    /** 状态 */
+    @ApiModelProperty(name = "工具")
+    private String borer;
 
     @ApiModelProperty(name = "钻孔组")
     private String drillCrumbJosn;

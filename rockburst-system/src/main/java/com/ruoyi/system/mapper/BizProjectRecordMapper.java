@@ -7,6 +7,7 @@ import com.github.yulichang.base.MPJBaseMapper;
 import com.ruoyi.system.domain.BizDrillRecord;
 import com.ruoyi.system.domain.BizProjectRecord;
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
 
 /**
  * 工程填报记录Mapper接口

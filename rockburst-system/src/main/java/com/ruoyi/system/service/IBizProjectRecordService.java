@@ -1,19 +1,20 @@
 package com.ruoyi.system.service;
 
-import java.util.List;
-
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.github.pagehelper.Page;
+import com.github.yulichang.extension.mapping.base.MPJDeepService;
 import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
+import com.ruoyi.system.domain.dto.BizProjectRecordDto1;
 import com.ruoyi.system.domain.vo.BizProStatsVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordVo;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 /**
  * 工程填报记录Service接口
@@ -21,7 +22,7 @@ import com.ruoyi.system.domain.vo.BizProjectRecordVo;
  * @author ruoyi
  * @date 2024-11-09
  */
-public interface IBizProjectRecordService  extends IService<BizProjectRecord>
+public interface IBizProjectRecordService  extends MPJDeepService<BizProjectRecord>
 {
     /**
      * 查询工程填报记录
@@ -45,6 +46,9 @@ public interface IBizProjectRecordService  extends IService<BizProjectRecord>
     int saveRecord(BizProjectRecordAddDto dto);
 
 
+    int updateRecord(BizProjectRecordAddDto dto);
+
+
     int updateRecordById(BizProjectRecordAddDto dto);
 
     BizProjectRecordVo selectById(Long bizProjectRecordId);
@@ -53,4 +57,13 @@ public interface IBizProjectRecordService  extends IService<BizProjectRecord>
      int firstAudit(BizProjectRecordDto projectRecordDto);
 
      int secondAudit(BizProjectRecordDto projectRecordDto);
+
+
+
+    void getReport(BizProjectRecordDto1 dto, HttpServletResponse response);
+
+
+    void getDayReport(Long mineId, String statsDate , Long deptId, HttpServletResponse response) throws UnsupportedEncodingException;
+
+
 }

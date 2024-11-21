@@ -1,9 +1,15 @@
 package com.ruoyi.web.controller.projectFill;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
-
+import com.ruoyi.common.core.domain.R;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.system.domain.dto.BizDrillRecordDto;
 import io.swagger.annotations.Api;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,66 +48,14 @@ public class BizDrillRecordController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('drill:record:list')")
     @GetMapping("/list")
-    public TableDataInfo list(BizDrillRecord bizDrillRecord)
+    public R<List<BizDrillRecord>> list(@ParameterObject BizDrillRecordDto dto , Pagination pagination)
     {
-        startPage();
-        List<BizDrillRecord> list = bizDrillRecordService.list();
-        return getDataTable(list);
+        QueryWrapper<BizDrillRecord> queryWrapper = new QueryWrapper<BizDrillRecord>();
+        queryWrapper.lambda().eq(dto.getStatus() != null , BizDrillRecord::getStatus, dto.getStatus());
+        List<BizDrillRecord> list = bizDrillRecordService.list(queryWrapper);
+        return R.ok(list);
     }
 
-    /**
-     * 导出钻孔参数记录列表
-     */
-    @PreAuthorize("@ss.hasPermi('drill:record:export')")
-    @Log(title = "钻孔参数记录", businessType = BusinessType.EXPORT)
-    @PostMapping("/export")
-    public void export(HttpServletResponse response, BizDrillRecord bizDrillRecord)
-    {
-        List<BizDrillRecord> list = bizDrillRecordService.list();
-        ExcelUtil<BizDrillRecord> util = new ExcelUtil<BizDrillRecord>(BizDrillRecord.class);
-        util.exportExcel(response, list, "钻孔参数记录数据");
-    }
 
-    /**
-     * 获取钻孔参数记录详细信息
-     */
-    @PreAuthorize("@ss.hasPermi('drill:record:query')")
-    @GetMapping(value = "/{drillRecordId}")
-    public AjaxResult getInfo(@PathVariable("drillRecordId") Long drillRecordId)
-    {
-        return success(bizDrillRecordService.list());
-    }
 
-    /**
-     * 新增钻孔参数记录
-     */
-    @PreAuthorize("@ss.hasPermi('drill:record:add')")
-    @Log(title = "钻孔参数记录", businessType = BusinessType.INSERT)
-    @PostMapping
-    public AjaxResult add(@RequestBody BizDrillRecord bizDrillRecord)
-    {
-        return toAjax(bizDrillRecordService.save(bizDrillRecord));
-    }
-
-    /**
-     * 修改钻孔参数记录
-     */
-    @PreAuthorize("@ss.hasPermi('drill:record:edit')")
-    @Log(title = "钻孔参数记录", businessType = BusinessType.UPDATE)
-    @PutMapping
-    public AjaxResult edit(@RequestBody BizDrillRecord bizDrillRecord)
-    {
-        return toAjax(bizDrillRecordService.updateById(null));
-    }
-
-    /**
-     * 删除钻孔参数记录
-     */
-    @PreAuthorize("@ss.hasPermi('drill:record:remove')")
-    @Log(title = "钻孔参数记录", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{drillRecordIds}")
-    public AjaxResult remove(@PathVariable Long[] drillRecordIds)
-    {
-        return toAjax(bizDrillRecordService.removeById(1));
-    }
 }
