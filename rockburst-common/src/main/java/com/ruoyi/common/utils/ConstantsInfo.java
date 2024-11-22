@@ -35,6 +35,10 @@ public class ConstantsInfo {
     public static final String TO_BE_SUBMITTED = "0";
     // 审核状态-待审核
     public static final String AUDIT_STATUS_DICT_VALUE = "1";
+    // 审核状态-审核中
+    public static final String IN_REVIEW_DICT_VALUE = "2";
+    // 审核状态-已审核
+    public static final String AUDITED_DICT_VALUE = "3";
     // 审核状态-已驳回
     public static final String REJECTED = "4";
 
