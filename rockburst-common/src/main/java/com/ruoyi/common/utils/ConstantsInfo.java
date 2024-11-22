@@ -17,7 +17,7 @@ public class ConstantsInfo {
     public static final String ONE_STATUS = "1";
 
     //未删除(逻辑)
-    public static final Integer ZERO_DEL_FLAG = 0;
+    public static final String ZERO_DEL_FLAG = "0";
     //已删除(逻辑)
     public static final String TWO_DEL_FLAG = "2";
 
@@ -27,8 +27,21 @@ public class ConstantsInfo {
 
     public static final String SECTION_SHAPE_DICT_TYPE = "section_shape";
     public static final String SUPPORT_FORM_DICT_TYPE = "support_form";
+    public static final String AUDIT_STATUS_DICT_TYPE = "audit_status";
 
     public static final Integer LEVEL = 1;
+
+    // 审核状态-待提交
+    public static final String TO_BE_SUBMITTED = "0";
+    // 审核状态-待审核
+    public static final String AUDIT_STATUS_DICT_VALUE = "1";
+    // 审核状态-已驳回
+    public static final String REJECTED = "4";
+
+    // 类型 -掘进
+    public static final String TUNNELING = "1";
+    // 类型 - 回采
+    public static final String STOPE = "2";
 
     // 不明确是否分层
     public static final String UNKNOWN = "0";
