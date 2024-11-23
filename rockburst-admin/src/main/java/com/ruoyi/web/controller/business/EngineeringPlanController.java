@@ -66,4 +66,16 @@ public class EngineeringPlanController {
     public R<Object> submitForReview(@ApiParam(name = "engineeringPlanId", value = "计划id", required = true) @RequestParam Long engineeringPlanId){
         return R.ok(this.engineeringPlanService.submitForReview(engineeringPlanId));
     }
+
+    @ApiOperation(value = "撤回", notes = "撤回")
+    @RequestMapping("/withdraw")
+    public R<Object> withdraw(@ApiParam(name = "engineeringPlanId", value = "计划id", required = true) @RequestParam Long engineeringPlanId){
+        return R.ok(this.engineeringPlanService.withdraw(engineeringPlanId));
+    }
+
+    @ApiOperation(value = "删除计划", notes = "删除计划")
+    @RequestMapping("/deletePlan")
+    public R<Boolean> deletePlan(@ApiParam(name = "engineeringPlanIds", value = "计划id数组", required = true) @RequestParam Long[] engineeringPlanIds){
+        return R.ok(this.engineeringPlanService.deletePlan(engineeringPlanIds));
+    }
 }

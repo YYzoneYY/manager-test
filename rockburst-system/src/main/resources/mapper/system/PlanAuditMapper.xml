@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.PlanAuditMapper">
+
+    <!--获取同一计划，最大的审核次数-->
+    <select id="selectMaxNumber" resultType="java.lang.Integer">
+        select ifnull(max(number), 0)
+        from plan_audit as pa
+        where pa.engineering_plan_id = #{engineeringPlanId} and pa.del_flag = '0'
+    </select>
+
+
+    <select id="queryPage" parameterType="com.ruoyi.system.domain.dto.SelectPlanDTO"
+            resultType="com.ruoyi.system.domain.vo.EngineeringPlanVO">
+        select
+        p.engineering_plan_id as engineeringPlanId,
+        p.plan_name as planName,
+        p.construction_unit_id as constructionUnitId,
+        p.construct_site as constructSite,
+        p.drill_type as drillType,
+        p.drill_number as drillNumber,
+        p.hole_depth as holeDep,
+        p.start_time as startTime,
+        p.end_time as endTime,
+        (case when p.type = '1' then '掘进' when p.type = '2' then '回采' end) as type,
+        p.state as state,
+        p.del_flag as delFlag
+        from engineering_plan as p
+        <where>
+            <if test="planName != null and planName != ''">
+                and p.plan_name like concat('%',#{planName},'%')
+            </if>
+            <if test="type != null and type != ''">
+                and p.type = #{type}
+            </if>
+            <if test="constructionUnitId != null and constructionUnitId != ''">
+                and p.construction_unit_id = #{constructionUnitId}
+            </if>
+            <if test="drillType != null and drillType != ''">
+                and p.drill_type = #{drillType}
+            </if>
+            <if test="startTime != null">
+                and p.start_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and p.end_time &lt;= #{endTime}
+            </if>
+            and p.state in ('1','2') and p.del_flag = '0'
+        </where>
+        order by c.create_time desc
+    </select>
+
+    <!--审核历史分页查询-->
+    <select id="auditHistoryPage" parameterType="com.ruoyi.system.domain.dto.SelectPlanDTO"
+            resultType="com.ruoyi.system.domain.vo.EngineeringPlanVO">
+        select
+        p.engineering_plan_id as engineeringPlanId,
+        p.plan_name as planName,
+        p.construction_unit_id as constructionUnitId,
+        p.construct_site as constructSite,
+        p.drill_type as drillType,
+        p.drill_number as drillNumber,
+        p.hole_depth as holeDep,
+        p.start_time as startTime,
+        p.end_time as endTime,
+        (case when p.type = '1' then '掘进' when p.type = '2' then '回采' end) as type,
+        p.state as state,
+        p.del_flag as delFlag
+        from engineering_plan as p
+        <where>
+            <if test="planName != null and planName != ''">
+                and p.plan_name like concat('%',#{planName},'%')
+            </if>
+            <if test="type != null and type != ''">
+                and p.type = #{type}
+            </if>
+            <if test="constructionUnitId != null and constructionUnitId != ''">
+                and p.construction_unit_id = #{constructionUnitId}
+            </if>
+            <if test="drillType != null and drillType != ''">
+                and p.drill_type = #{drillType}
+            </if>
+            <if test="state != null and state != ''">
+                and p.state = #{state}
+            </if>
+            <if test="startTime != null">
+                and p.start_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and p.end_time &lt;= #{endTime}
+            </if>
+            and p.state in ('3','4') and p.del_flag = '0'
+        </where>
+        order by c.create_time desc
+    </select>
+</mapper>

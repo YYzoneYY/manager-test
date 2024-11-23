@@ -10,9 +10,12 @@ import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.system.domain.BizProjectAudit;
+import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.Entity.EngineeringPlanEntity;
+import com.ruoyi.system.domain.Entity.PlanAuditEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.EngineeringPlanDTO;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
@@ -23,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author: shikai
@@ -38,6 +43,9 @@ public class EngineeringPlanServiceImpl extends ServiceImpl<EngineeringPlanMappe
     private EngineeringPlanMapper engineeringPlanMapper;
 
     @Resource
+    private PlanAuditMapper planAuditMapper;
+
+    @Resource
     private SysDictDataMapper sysDictDataMapper;
 
     @Resource
@@ -48,6 +56,9 @@ public class EngineeringPlanServiceImpl extends ServiceImpl<EngineeringPlanMappe
 
     @Resource
     private BizWorkfaceMapper bizWorkfaceMapper;
+
+    @Resource
+    private BizProjectRecordMapper bizProjectRecordMapper;
 
     /**
      * 工程计划新增
@@ -131,7 +142,7 @@ public class EngineeringPlanServiceImpl extends ServiceImpl<EngineeringPlanMappe
         engineeringPlanDTO.setStartTimeFmt(DateUtils.getDateStrByTime(engineeringPlanEntity.getStartTime()));
         engineeringPlanDTO.setEndTimeFmt(DateUtils.getDateStrByTime(engineeringPlanEntity.getEndTime()));
         if (engineeringPlanEntity.getState().equals(ConstantsInfo.REJECTED)) {
-            // todo 获取驳回原因
+            // 获取驳回原因
             engineeringPlanDTO.setRejectReason(getRejectReason(engineeringPlanEntity.getEngineeringPlanId()));
         }
         return engineeringPlanDTO;
@@ -165,7 +176,7 @@ public class EngineeringPlanServiceImpl extends ServiceImpl<EngineeringPlanMappe
                 String auditStatus = sysDictDataMapper.selectDictLabel(ConstantsInfo.AUDIT_STATUS_DICT_TYPE, engineeringPlanVO.getState());
                 engineeringPlanVO.setStatusFmt(auditStatus);
                 if (engineeringPlanVO.getState().equals(ConstantsInfo.REJECTED)) {
-                    // todo 获取驳回原因
+                    // 获取驳回原因
                     engineeringPlanVO.setRejectReason(getRejectReason(engineeringPlanVO.getEngineeringPlanId()));
                 }
             });
@@ -198,9 +209,55 @@ public class EngineeringPlanServiceImpl extends ServiceImpl<EngineeringPlanMappe
     }
 
     /**
+     * 撤回
+     * @param engineeringPlanId 计划id
+     * @return 返回结果
+     */
+    @Override
+    public String withdraw(Long engineeringPlanId) {
+        String flag = "";
+        if (ObjectUtil.isEmpty(engineeringPlanId)) {
+            throw new RuntimeException("参数错误,主键不能为空");
+        }
+        EngineeringPlanEntity engineeringPlanEntity = engineeringPlanMapper.selectById(engineeringPlanId);
+        if (ObjectUtil.isNull(engineeringPlanEntity)) {
+            throw new RuntimeException("未找到此计划");
+        }
+        EngineeringPlanEntity planEntity = new EngineeringPlanEntity();
+        BeanUtils.copyProperties(engineeringPlanEntity, planEntity);
+        planEntity.setState(ConstantsInfo.TO_BE_SUBMITTED);
+        flag = engineeringPlanMapper.updateById(planEntity) > 0 ? "撤回成功" :  "撤回失败,请联系管理员";
+        return flag;
+    }
+
+    /**
+     * 批量删除
+     * @param engineeringPlanIds 主键id数组
+     * @return 返回结果
+     */
+    @Override
+    public boolean deletePlan(Long[] engineeringPlanIds) {
+        boolean flag = false;
+        if (engineeringPlanIds.length == 0) {
+            throw new RuntimeException("请选择要删除的数据!");
+        }
+        List<Long > planIds = Arrays.asList(engineeringPlanIds);
+//        planIds.forEach(planId -> {
+//            List<BizProjectRecord> bizProjectRecords = bizProjectRecordMapper.selectList(new LambdaQueryWrapper<BizProjectRecord>()
+//                    .eq(BizProjectRecord::getPlanId, planId)
+//                    .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+//            if (ListUtils.isNotNull(bizProjectRecords)) {
+//                throw new RuntimeException("该计划下有未完成的项目,不能删除");
+//            }
+//        });
+        flag = this.removeBatchByIds(planIds);
+        return flag;
+    }
+
+    /**
      * 获取施工单位名称
      */
-    private String getConstructionUnitName(Long constructionUnitId) {
+    public String getConstructionUnitName(Long constructionUnitId) {
         String constructionUnitName = null;
         ConstructionUnitEntity constructionUnitEntity = constructionUnitMapper.selectOne(new LambdaQueryWrapper<ConstructionUnitEntity>()
                 .eq(ConstructionUnitEntity::getConstructionUnitId, constructionUnitId)
@@ -215,7 +272,7 @@ public class EngineeringPlanServiceImpl extends ServiceImpl<EngineeringPlanMappe
     /**
      * 获取施工地点
      */
-    private String getConstructSite(Long constructSite, String type) {
+    public String getConstructSite(Long constructSite, String type) {
         String constructSiteName = null;
         if (ObjectUtil.equals(type, ConstantsInfo.TUNNELING)) {
             TunnelEntity tunnelEntity = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
@@ -237,8 +294,14 @@ public class EngineeringPlanServiceImpl extends ServiceImpl<EngineeringPlanMappe
         return constructSiteName;
     }
 
-    // todo 获取驳回原因
+    /**
+     * 获取驳回原因
+     */
     private String getRejectReason(Long engineeringPlanId) {
-        return "";
+        PlanAuditEntity planAuditEntity = planAuditMapper.selectById(engineeringPlanId);
+        if (ObjectUtil.isNull(planAuditEntity)) {
+            throw new RuntimeException("未找到此计划");
+        }
+        return planAuditEntity.getAuditResult();
     }
 }

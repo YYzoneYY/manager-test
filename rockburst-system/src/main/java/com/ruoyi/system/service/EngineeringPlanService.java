@@ -49,4 +49,18 @@ public interface EngineeringPlanService extends IService<EngineeringPlanEntity> 
      * @return 返回结果
      */
     String submitForReview(Long engineeringPlanId);
+
+    /**
+     * 撤回
+     * @param engineeringPlanId 计划id
+     * @return 返回结果
+     */
+    String withdraw(Long engineeringPlanId);
+
+    /**
+     * 批量删除
+     * @param engineeringPlanIds 主键id数组
+     * @return 返回结果
+     */
+    boolean deletePlan(Long[] engineeringPlanIds);
 }

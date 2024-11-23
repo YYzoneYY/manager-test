@@ -31,6 +31,8 @@ public class ConstantsInfo {
 
     public static final Integer LEVEL = 1;
 
+    public static final Integer NUMBER = 1;
+
     // 审核状态-待提交
     public static final String TO_BE_SUBMITTED = "0";
     // 审核状态-待审核
