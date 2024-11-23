@@ -223,6 +223,7 @@ public class EngineeringPlanServiceImpl extends ServiceImpl<EngineeringPlanMappe
         if (ObjectUtil.isNull(engineeringPlanEntity)) {
             throw new RuntimeException("未找到此计划");
         }
+        checkStatus(engineeringPlanEntity.getState());
         EngineeringPlanEntity planEntity = new EngineeringPlanEntity();
         BeanUtils.copyProperties(engineeringPlanEntity, planEntity);
         planEntity.setState(ConstantsInfo.TO_BE_SUBMITTED);
@@ -303,5 +304,23 @@ public class EngineeringPlanServiceImpl extends ServiceImpl<EngineeringPlanMappe
             throw new RuntimeException("未找到此计划");
         }
         return planAuditEntity.getAuditResult();
+    }
+
+    /**
+     * 状态校验
+     */
+    private void checkStatus(String status) {
+        if (status.equals(ConstantsInfo.TO_BE_SUBMITTED)) {
+            throw new RuntimeException("此计划还未提交审核,无法撤回");
+        }
+        if (status.equals(ConstantsInfo.IN_REVIEW_DICT_VALUE)) {
+            throw new RuntimeException("此计划正在审核中,无法撤回");
+        }
+        if (status.equals(ConstantsInfo.AUDITED_DICT_VALUE)) {
+            throw new RuntimeException("此计划已审核通过,无法撤回");
+        }
+        if (status.equals(ConstantsInfo.REJECTED)) {
+            throw new RuntimeException("此计划已驳回,无法撤回");
+        }
     }
 }
