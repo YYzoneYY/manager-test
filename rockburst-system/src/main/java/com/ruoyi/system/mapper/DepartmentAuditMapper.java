@@ -24,4 +24,6 @@ public interface DepartmentAuditMapper extends BaseMapper<DepartmentAuditEntity>
 
     Page<ProjectVO> queryByPage(@Param("selectDeptAuditDTO") SelectDeptAuditDTO selectDeptAuditDTO,
                                 @Param("projectIds") List<Long> projectIds);
+
+    Page<ProjectVO> auditHistoryPage(SelectProjectDTO selectProjectDTO);
 }

@@ -101,6 +101,17 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         flag = planAuditMapper.insert(planAuditEntity);
         if (flag <= 0) {
             throw new RuntimeException("审核失败,请联系管理员");
+        } else {
+            if (ConstantsInfo.AUDIT_SUCCESS.equals(planAuditDTO.getAuditResult())) {
+                engineeringPlanEntity.setState(ConstantsInfo.AUDITED_DICT_VALUE);
+            }
+            engineeringPlanEntity.setState(ConstantsInfo.REJECTED);
+            EngineeringPlanEntity planEntity = new EngineeringPlanEntity();
+            BeanUtils.copyProperties(engineeringPlanEntity, planEntity);
+            int update = engineeringPlanMapper.updateById(planEntity);
+            if (update <= 0) {
+                throw new RuntimeException("审核失败,请联系管理员");
+            }
         }
         return flag;
     }
