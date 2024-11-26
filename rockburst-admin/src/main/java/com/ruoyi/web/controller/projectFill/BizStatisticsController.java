@@ -9,9 +9,12 @@ import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.dto.BizPlanDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto1;
+import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
+import com.ruoyi.system.domain.vo.BizProjectRecordPaibanVo;
 import com.ruoyi.system.service.IBizProjectRecordService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +39,15 @@ public class BizStatisticsController extends BaseController
     @Autowired
     private IBizProjectRecordService bizProjectRecordService;
 
+
+    @ApiOperation("防冲工程查询")
+//    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
+    @GetMapping("/selectproList")
+    public R<MPage<BizProjectRecordListVo>> selectproList(@ParameterObject BizProjectRecordDto dto, Pagination pagination)
+    {
+        return R.ok(bizProjectRecordService.selectproList(new BasePermission(), dto,pagination));
+    }
+
     /**
      * 查询工程填报记录列表
      */
@@ -46,6 +58,15 @@ public class BizStatisticsController extends BaseController
     public Object statsProject(BizProjectRecordDto dto)
     {
         return bizProjectRecordService.statsProject(new BasePermission(), dto);
+    }
+
+
+    @ApiOperation("牌板查询")
+//    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
+    @GetMapping("/selectPaiList")
+    public R<MPage<BizProjectRecordPaibanVo>> selectPaiList(@ParameterObject BizProjectRecordDto dto, Pagination pagination)
+    {
+        return R.ok(bizProjectRecordService.selectPaiList(new BasePermission(), dto,pagination));
     }
 
 
@@ -73,6 +94,13 @@ public class BizStatisticsController extends BaseController
     }
 
 
-
+    @Anonymous
+    @ApiOperation("444")
+    @GetMapping("444")
+//    public void get444(@RequestParam(required = true) Long mineId, @RequestParam(required = true) String statsDate ,@RequestParam(required = true) Long deptId, HttpServletResponse response) throws IOException {
+    public void get444(HttpServletResponse response) throws IOException {
+//        bizProjectRecordService.get444(response);
+        bizProjectRecordService.sss555(response);
+    }
 
 }
