@@ -33,6 +33,9 @@
             <if test="type != null and type != ''">
                 and p.type = #{type}
             </if>
+            <if test="constructSite != null and constructSite != ''">
+                and p.construct_site = #{constructSite}
+            </if>
             <if test="constructionUnitId != null and constructionUnitId != ''">
                 and p.construction_unit_id = #{constructionUnitId}
             </if>
@@ -73,6 +76,9 @@
             </if>
             <if test="type != null and type != ''">
                 and p.type = #{type}
+            </if>
+            <if test="constructSite != null and constructSite != ''">
+                and p.construct_site = #{constructSite}
             </if>
             <if test="constructionUnitId != null and constructionUnitId != ''">
                 and p.construction_unit_id = #{constructionUnitId}

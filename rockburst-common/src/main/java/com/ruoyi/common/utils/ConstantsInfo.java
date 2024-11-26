@@ -44,6 +44,10 @@ public class ConstantsInfo {
     // 审核状态-已驳回
     public static final String REJECTED = "4";
 
+    // 审核结果
+    public static final String AUDIT_SUCCESS = "1";
+    public static final String AUDIT_REJECT = "2";
+
     // 类型 -掘进
     public static final String TUNNELING = "1";
     // 类型 - 回采

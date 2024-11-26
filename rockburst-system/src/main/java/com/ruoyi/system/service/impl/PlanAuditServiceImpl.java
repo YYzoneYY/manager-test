@@ -1,6 +1,7 @@
 package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -54,7 +55,9 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         if (ObjectUtil.isNull(engineeringPlanId)) {
             throw new RuntimeException("参数错误");
         }
-        EngineeringPlanEntity engineeringPlanEntity = engineeringPlanMapper.selectById(engineeringPlanId);
+        EngineeringPlanEntity engineeringPlanEntity = engineeringPlanMapper.selectOne(new LambdaQueryWrapper<EngineeringPlanEntity>()
+                .eq(EngineeringPlanEntity::getEngineeringPlanId, engineeringPlanId)
+                .eq(EngineeringPlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(engineeringPlanEntity)) {
             throw new RuntimeException("未找到此计划,无法进行审核");
         }
@@ -73,7 +76,9 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
     @Override
     public int addAudit(PlanAuditDTO planAuditDTO) {
         int flag = 0;
-        EngineeringPlanEntity engineeringPlanEntity = engineeringPlanMapper.selectById(planAuditDTO.getEngineeringPlanId());
+        EngineeringPlanEntity engineeringPlanEntity = engineeringPlanMapper.selectOne(new LambdaQueryWrapper<EngineeringPlanEntity>()
+                .eq(EngineeringPlanEntity::getEngineeringPlanId, planAuditDTO.getEngineeringPlanId())
+                .eq(EngineeringPlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(engineeringPlanEntity)) {
             throw new RuntimeException("未找到此计划,无法进行审核");
         }

@@ -3,17 +3,16 @@ package com.ruoyi.system.domain.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @author: shikai
- * @date: 2024/11/22
+ * @date: 2024/11/25
  * @description:
  */
 
 @Data
-public class SelectPlanDTO {
-
-    @ApiModelProperty(value = "计划名称")
-    private String planName;
+public class SelectProjectDTO {
 
     @ApiModelProperty(value = "类型")
     private String type;
@@ -24,15 +23,15 @@ public class SelectPlanDTO {
     @ApiModelProperty(value = "施工单位")
     private Long constructionUnitId;
 
-    @ApiModelProperty(value = "钻孔类型")
-    private String drillType;
+    @ApiModelProperty(value = "填报类型")
+    private String fillingType;
 
     @ApiModelProperty(value = "状态")
     private String state;
 
     @ApiModelProperty(value = "开始时间")
-    private Long startTime;
+    private Date startTime;
 
     @ApiModelProperty(value = "结束时间")
-    private Long endTime;
+    private Date endTime;
 }
