@@ -13,7 +13,7 @@ import java.util.Map;
 @Accessors(chain = true)
 public class BizProStatsVo {
 
-    private Map<String,Object> locationMap;
-    private Map<String,Object> typeMap;
-    private Map<String,Object> unitMap;
+    private List<Map<String,Object>> locationMap;
+    private List<Map<String,Object>> typeMap;
+    private List<Map<String,Object>> unitMap;
 }

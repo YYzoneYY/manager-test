@@ -81,6 +81,9 @@ public class BizDrillRecord extends BaseSelfEntity
     @ApiModelProperty(name = "钻孔组")
     private String drillCrumbJosn;
 
+    @ApiModelProperty(name = "钻屑量")
+    private String crumbWeight;
+
     @ApiModelProperty(name = "钻孔详情")
     private String detailJson;
 

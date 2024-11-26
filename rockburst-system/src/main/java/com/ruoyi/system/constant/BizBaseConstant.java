@@ -1,11 +1,13 @@
 package com.ruoyi.system.constant;
 
-import lombok.Data;
-
 public class BizBaseConstant {
 
     public static final String DELFLAG_N = "0";
     public static final String DELFLAG_Y = "2";
+
+
+    public static final String CONSTRUCT_TYPE_H = "hc";
+    public static final String CONSTRUCT_TYPE_J = "jj";
 
     // 矿井 营运状态
     public static final Integer MINE_STATUS_ON = 1;
