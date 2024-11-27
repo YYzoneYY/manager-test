@@ -16,6 +16,7 @@ import com.github.yulichang.base.MPJBaseServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.annotation.DataScopeSelf;
 import com.ruoyi.common.core.domain.BasePermission;
+import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
@@ -27,6 +28,7 @@ import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
+import com.ruoyi.system.domain.Entity.EngineeringPlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizPlanDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
@@ -89,6 +91,10 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     private MiningFootageMapper miningFootageMapper;
     @Autowired
     private BizTravePointMapper bizTravePointMapper;
+
+    @Autowired
+    EngineeringPlanMapper engineeringPlanMapper;
+
 
 //    @Autowired
 //    private MinioClient getMinioClient;
@@ -261,23 +267,20 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Override
     public MPage<Map<String, Object>> monitorProject(BizPlanDto dto, Pagination pagination) {
 
-//todo 计划还没写        SysDept代表计划
-//        MPJLambdaWrapper<SysDept> queryWrapper = new MPJLambdaWrapper<>();
-//        queryWrapper
-//                .selectAll(SysDept.class)
-//                .selectCount(BizDrillRecord::getDrillRecordId,"drillNum")
-//                .selectSum(BizDrillRecord::getRealDeep,"deepNum")
-//                .leftJoin(BizDrillRecord.class,BizDrillRecord::getPlanId,SysDept::getPlanId)
-//                .eq(BizDrillRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
-//                .eq(SysDept::getDelFlag,BizBaseConstant.DELFLAG_N)
-//                .eq(StrUtil.isNotBlank(dto.getSearchDate()),计划时间,dto.getSearchDate())
-//                .eq(dto.getDrillType() != null ,类型,dto.getDrillType())
-//                .eq(dto.getTunnelId() != null , 施工地点 , dto.getTunnelId())
-//                .groupBy(SysDept::getplanId);
-//
-//        IPage<Map<String,Object>> ps =  sysDeptMapper.pagemap(pagination,queryWrapper);
-//        return new MPage<>(ss);
-        return new MPage<>(null);
+        MPJLambdaWrapper<EngineeringPlanEntity> queryWrapper = new MPJLambdaWrapper<>();
+        queryWrapper
+                .selectAll(EngineeringPlanEntity.class)
+                .selectCount(BizDrillRecord::getDrillRecordId,"drillNum")
+                .selectSum(BizDrillRecord::getRealDeep,"deepNum")
+                .leftJoin(BizDrillRecord.class,BizDrillRecord::getPlanId,EngineeringPlanEntity::getEngineeringPlanId)
+                .eq(BizDrillRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
+                .eq(SysDept::getDelFlag,BizBaseConstant.DELFLAG_N)
+//                .eq(StrUtil.isNotBlank(dto.getSearchDate()),EngineeringPlanEntity::getEndTime,dto.getSearchDate())
+                .eq(dto.getDrillType() != null ,EngineeringPlanEntity::getDrillType,dto.getDrillType())
+                .eq(dto.getTunnelId() != null , EngineeringPlanEntity::getConstructSite , dto.getTunnelId())
+                .groupBy(EngineeringPlanEntity::getEngineeringPlanId);
+        IPage<Map<String,Object>> ps =  engineeringPlanMapper.selectJoinMapsPage(pagination,queryWrapper);
+        return new MPage<>(ps);
     }
 
     @Override
@@ -317,12 +320,6 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             bizVideo.setProjectId(projectId);
             bizVideoMapper.insert(bizVideo);
         });
-        BizProjectAudit audit = new BizProjectAudit();
-        audit.setProjectId(dto.getProjectId())
-                .setMsg("提交")
-                .setLevel("AUTHOR")
-                .setStatus(0);
-        bizProjectAuditMapper.insert(audit);
         return 1;
     }
 
@@ -361,12 +358,6 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         BeanUtil.copyProperties(dto, entity);
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0);
         bizProjectRecordMapper.updateById(entity);
-        BizProjectAudit audit = new BizProjectAudit();
-        audit.setProjectId(dto.getProjectId())
-                .setMsg("提交")
-                .setLevel("AUTHOR")
-                .setStatus(0);
-        bizProjectAuditMapper.insert(audit);
         return 1;
     }
 

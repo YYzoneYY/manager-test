@@ -31,7 +31,7 @@ import java.util.Map;
  * @author ruoyi
  * @date 2024-11-09
  */
-@Api("工程填报记录Controller")
+@Api(tags = "防冲工程")
 @RestController
 @RequestMapping("/project/record")
 public class BizStatisticsController extends BaseController
