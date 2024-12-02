@@ -35,6 +35,19 @@
     <!-- 依赖声明 -->
     <dependencyManagement>
         <dependencies>
+
+            <!-- Elasticsearch的依赖配置-->
+            <dependency>
+                <groupId>co.elastic.clients</groupId>
+                <artifactId>elasticsearch-java</artifactId>
+                <version>7.12.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+            </dependency>
+
             <!-- https://mvnrepository.com/artifact/com.alibaba/easyexcel -->
             <dependency>
                 <groupId>com.alibaba</groupId>

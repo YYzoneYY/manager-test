@@ -21,6 +21,18 @@ public class ConstantsInfo {
     //已删除(逻辑)
     public static final String TWO_DEL_FLAG = "2";
 
+    // 测点增加标识
+    public static final String MANUALLY_ADD = "1"; //手动新增
+    public static final String AUTOMATIC_ACCESS = "2"; //自动接入
+
+    // 测点编码初始值
+    public static final String INITIAL_VALUE = "1100MN11010001";
+
+    // 预警配置类型
+    public static final String THRESHOLD_CONFIG = "thresholdConfig"; // 预警阈值配置
+    public static final String INCREMENT_CONFIG = "incrementConfig"; // 预警增量配置
+    public static final String GROWTH_RATE_CONFIG = "growthRateConfig"; // 预警增速配置
+
     // 施工文档标识
     public static final String ONE_TAG = "1";
     public static final String TWO_TAG = "2";
