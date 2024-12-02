@@ -9,10 +9,7 @@ import com.ruoyi.system.domain.dto.SelectPlanDTO;
 import com.ruoyi.system.service.EngineeringPlanService;
 import io.swagger.annotations.*;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -32,19 +29,19 @@ public class EngineeringPlanController {
 
 
     @ApiOperation(value = "计划新增", notes = "计划新增")
-    @RequestMapping("/addPlan")
+    @PostMapping(value = "/addPlan")
     public R<Object> addPlan(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) EngineeringPlanDTO engineeringPlanDTO){
         return R.ok(this.engineeringPlanService.insertPlan(engineeringPlanDTO));
     }
 
     @ApiOperation(value = "计划修改", notes = "计划修改")
-    @RequestMapping("/updatePlan")
+    @PostMapping(value = "/updatePlan")
     public R<Object> updatePlan(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) EngineeringPlanDTO engineeringPlanDTO){
         return R.ok(this.engineeringPlanService.updatePlan(engineeringPlanDTO));
     }
 
     @ApiOperation(value = "根据id查询", notes = "根据id查询")
-    @RequestMapping("/queryById")
+    @GetMapping(value = "/queryById")
     public R<Object> queryById(@ApiParam(name = "engineeringPlanId", value = "计划id", required = true) @RequestParam Long engineeringPlanId){
         return R.ok(this.engineeringPlanService.queryById(engineeringPlanId));
     }
@@ -54,7 +51,7 @@ public class EngineeringPlanController {
             @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
-    @RequestMapping("/queryPage")
+    @GetMapping(value = "/queryPage")
     public R<Object> queryPage(@RequestBody SelectPlanDTO selectPlanDTO,
                                 @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                 @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize){
@@ -62,19 +59,19 @@ public class EngineeringPlanController {
     }
 
     @ApiOperation(value = "提交审核", notes = "提交审核")
-    @RequestMapping("/submitForReview")
+    @GetMapping(value = "/submitForReview")
     public R<Object> submitForReview(@ApiParam(name = "engineeringPlanId", value = "计划id", required = true) @RequestParam Long engineeringPlanId){
         return R.ok(this.engineeringPlanService.submitForReview(engineeringPlanId));
     }
 
     @ApiOperation(value = "撤回", notes = "撤回")
-    @RequestMapping("/withdraw")
+    @GetMapping(value = "/withdraw")
     public R<Object> withdraw(@ApiParam(name = "engineeringPlanId", value = "计划id", required = true) @RequestParam Long engineeringPlanId){
         return R.ok(this.engineeringPlanService.withdraw(engineeringPlanId));
     }
 
     @ApiOperation(value = "删除计划", notes = "删除计划")
-    @RequestMapping("/deletePlan")
+    @DeleteMapping(value = "/deletePlan")
     public R<Boolean> deletePlan(@ApiParam(name = "engineeringPlanIds", value = "计划id数组", required = true) @RequestParam Long[] engineeringPlanIds){
         return R.ok(this.engineeringPlanService.deletePlan(engineeringPlanIds));
     }

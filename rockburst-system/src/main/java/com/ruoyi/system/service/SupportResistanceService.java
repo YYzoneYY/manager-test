@@ -49,4 +49,11 @@ public interface SupportResistanceService extends IService<SupportResistanceEnti
      * @return 返回结果
      */
     boolean deleteByIds(Long[] supportResistanceIds);
+
+    /**
+     * (批量)启用/禁用
+     * @param supportResistanceIds id数组
+     * @return 返回结果
+     */
+    int batchEnableDisable(Long[] supportResistanceIds);
 }

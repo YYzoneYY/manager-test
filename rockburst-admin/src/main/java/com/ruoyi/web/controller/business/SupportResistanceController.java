@@ -60,8 +60,14 @@ public class SupportResistanceController {
     }
 
     @ApiOperation(value = "删除工作面支架阻力测点", notes = "删除工作面支架阻力测点")
-    @RequestMapping(value = "/delete")
+    @DeleteMapping(value = "/delete")
     public R<Boolean> delete(@ApiParam(name = "supportResistanceIds", value = "id数组", readOnly = true) @RequestParam Long[] supportResistanceIds) {
         return R.ok(this.supportResistanceService.deleteByIds(supportResistanceIds));
+    }
+
+    @ApiOperation(value = "批量启用/禁用", notes = "批量启用/禁用")
+    @PutMapping(value = "/batchEnableDisable")
+    public R<Object> batchEnableDisable(@ApiParam(name = "supportResistanceIds", value = "id数组", readOnly = true) @RequestParam Long[] supportResistanceIds) {
+        return R.ok(this.supportResistanceService.batchEnableDisable(supportResistanceIds));
     }
 }

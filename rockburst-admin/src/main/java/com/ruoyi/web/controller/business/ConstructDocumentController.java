@@ -29,13 +29,13 @@ public class ConstructDocumentController {
     private ConstructDocumentService constructDocumentService;
 
     @ApiOperation(value = "新增层级")
-    @RequestMapping(value = "/addLevel")
+    @PostMapping(value = "/addLevel")
     public R<Object> addLevel(@RequestBody LevelDTO levelDTO) {
         return R.ok(this.constructDocumentService.insertLevel(levelDTO));
     }
 
     @ApiOperation(value = "修改层级")
-    @RequestMapping(value = "/updateLevel")
+    @PutMapping(value = "/updateLevel")
     public R<Object> updateLevel(@RequestBody LevelDTO levelDTO) {
         return R.ok(this.constructDocumentService.updateLevel(levelDTO));
     }
@@ -88,7 +88,7 @@ public class ConstructDocumentController {
 
 
     @ApiOperation(value = "上移/下移")
-    @RequestMapping(value = "/adjustOrder")
+    @PostMapping(value = "/adjustOrder")
     public R<Object> moveOrder(@RequestBody AdjustOrderDTO adjustOrderDTO) {
         return R.ok(this.constructDocumentService.moveOrder(adjustOrderDTO));
     }

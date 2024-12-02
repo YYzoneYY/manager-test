@@ -9,10 +9,7 @@ import com.ruoyi.system.domain.dto.TunnelDTO;
 import com.ruoyi.system.service.TunnelService;
 import io.swagger.annotations.*;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -33,19 +30,19 @@ public class TunnelController {
 
 
     @ApiOperation(value = "新增巷道", notes = "新增巷道")
-    @RequestMapping(value = "/add")
+    @GetMapping("/add")
     public R<Object> addTunnel(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) TunnelDTO tunnelDTO) {
         return R.ok(tunnelService.insertTunnel(tunnelDTO));
     }
 
     @ApiOperation(value = "巷道编辑", notes = "巷道编辑")
-    @RequestMapping(value = "/update")
+    @PutMapping(value = "/update")
     public R<Object> updateTunnel(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class})TunnelDTO tunnelDTO) {
         return R.ok(tunnelService.updateTunnel(tunnelDTO));
     }
 
     @ApiOperation(value = "巷道详情", notes = "巷道详情")
-    @RequestMapping(value = "/detail")
+    @GetMapping("/detail")
     public R<TunnelDTO> detail(@RequestBody TunnelDTO tunnelDTO) {
         return R.ok(tunnelService.detail(tunnelDTO.getTunnelId()));
     }
@@ -55,7 +52,7 @@ public class TunnelController {
             @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
-    @RequestMapping(value = "/pageQueryList")
+    @GetMapping(value = "/pageQueryList")
     public R<Object> pageQueryList(@RequestBody SelectTunnelDTO selectTunnelDTO,
                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
