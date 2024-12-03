@@ -26,7 +26,10 @@ public class ConstantsInfo {
     public static final String AUTOMATIC_ACCESS = "2"; //自动接入
 
     // 测点编码初始值
-    public static final String INITIAL_VALUE = "1100MN11010001";
+    public static final String SUPPORT_RESISTANCE_INITIAL_VALUE = "1100MN11010001"; // 支架阻力测点初始值
+    public static final String Drill_Stress_INITIAL_VALUE = "1100MN12010001"; // 钻孔应力测点初始值
+    public static final String ANCHOR_STRESS_INITIAL_VALUE = "1100MN13010001"; // 锚杆应力测点初始值
+    public static final String ANCHOR_CABLE_STRESS_INITIAL_VALUE = "1100MN13020001"; // 锚杆应力测点初始值
 
     // 预警配置类型
     public static final String THRESHOLD_CONFIG = "thresholdConfig"; // 预警阈值配置

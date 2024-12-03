@@ -74,12 +74,13 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         BeanUtils.copyProperties(supportResistanceDTO, supportResistanceEntity);
         String maxMeasureNum = supportResistanceMapper.selectMaxMeasureNum();
         if (maxMeasureNum.isEmpty()) {
-            supportResistanceEntity.setMeasureNum(ConstantsInfo.INITIAL_VALUE);
+            supportResistanceEntity.setMeasureNum(ConstantsInfo.SUPPORT_RESISTANCE_INITIAL_VALUE);
         }
         String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
         supportResistanceEntity.setMeasureNum(nextValue);
         supportResistanceEntity.setCreateTime(System.currentTimeMillis());
         supportResistanceEntity.setCreateBy(1L);
+        supportResistanceEntity.setTag(ConstantsInfo.MANUALLY_ADD);
         flag = supportResistanceMapper.insert(supportResistanceEntity);
         if (flag <= 0) {
             throw new RuntimeException("测点新增失败,请联系管理员");
@@ -213,18 +214,19 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         }
         List<Long> ids = Arrays.asList(supportResistanceIds);
         ids.forEach(supportResistanceId -> {
-            SupportResistanceEntity supportResistanceEntity = supportResistanceMapper.selectById(supportResistanceId);
+            SupportResistanceEntity supportResistanceEntity = supportResistanceMapper.selectOne(new LambdaQueryWrapper<SupportResistanceEntity>()
+                    .eq(SupportResistanceEntity::getSupportResistanceId, supportResistanceId)
+                    .eq(SupportResistanceEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
             if (ObjectUtil.isNull(supportResistanceEntity)) {
                 throw new RuntimeException("未找到id为" + supportResistanceId + "的数据");
             }
             if (supportResistanceEntity.getStatus().equals(ConstantsInfo.ENABLE)) {
                 supportResistanceEntity.setStatus(ConstantsInfo.DISABLE);
-                supportResistanceMapper.updateById(supportResistanceEntity);
             }
             if (supportResistanceEntity.getStatus().equals(ConstantsInfo.DISABLE)) {
                 supportResistanceEntity.setStatus(ConstantsInfo.ENABLE);
-                supportResistanceMapper.updateById(supportResistanceEntity);
             }
+            supportResistanceMapper.updateById(supportResistanceEntity);
         });
         return flag;
     }

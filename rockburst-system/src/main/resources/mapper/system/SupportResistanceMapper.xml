@@ -29,7 +29,7 @@
                 AND sr.survey_area_id = #{surveyAreaId}
             </if>
             <if test="workFaceId != null and workFaceId != ''">
-                AND sr.work_face_id = #{workFaceId}
+                AND sr.workface_id = #{workFaceId}
             </if>
             <if test="status != null and status != ''">
                 AND sr.status = #{status}

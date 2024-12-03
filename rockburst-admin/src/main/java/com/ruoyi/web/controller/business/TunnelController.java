@@ -61,7 +61,7 @@ public class TunnelController {
 
     @ApiOperation(value = "巷道删除", notes = "巷道删除")
     @RequestMapping(value = "/delete")
-    public R<Object> deleteTunnel(@RequestBody Long[] tunnelIds) {
+    public R<Object> deleteTunnel(@ApiParam(name = "tunnelIds", value = "巷道id数组", required = true) @RequestParam Long[] tunnelIds) {
         return R.ok(tunnelService.deleteByIds(tunnelIds));
     }
 }

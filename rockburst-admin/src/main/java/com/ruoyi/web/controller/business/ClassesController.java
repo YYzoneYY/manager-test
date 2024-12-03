@@ -63,7 +63,7 @@ public class ClassesController {
 
     @ApiOperation(value = "删除班次", notes = "删除班次")
     @RequestMapping(value = "/delete")
-    public R<Boolean> delete(@ApiParam(name = "classesIds", value = "id数组", readOnly = true) @RequestParam Long[] classesIds){
+    public R<Boolean> delete(@ApiParam(name = "classesIds", value = "id数组", required = true) @RequestParam Long[] classesIds){
         return R.ok(classesService.deleteClasses(classesIds));
     }
 

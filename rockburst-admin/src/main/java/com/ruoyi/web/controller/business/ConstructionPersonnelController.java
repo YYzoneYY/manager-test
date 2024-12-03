@@ -67,7 +67,7 @@ public class ConstructionPersonnelController {
 
     @ApiOperation(value = "删除施工人员", notes = "删除施工人员")
     @DeleteMapping(value = "/delete")
-    public R<Boolean> delete(@ApiParam(name = "personnelIds", value = "施工人员id数组", readOnly = true) @RequestParam Long[] personnelIds) {
+    public R<Boolean> delete(@ApiParam(name = "personnelIds", value = "施工人员id数组", required = true) @RequestParam Long[] personnelIds) {
         return R.ok(personnelService.deleteConstructionPersonnel(personnelIds));
     }
 
