@@ -11,7 +11,7 @@
         ORDER BY SUBSTRING(measure_num, -4) DESC LIMIT 1;
     </select>
 
-    <select id="selectQueryPage" parameterType="com.ruoyi.system.domain.dto.DrillingStressDTO" resultType="com.ruoyi.system.domain.vo.DrillingStressVO">
+    <select id="selectQueryPage" parameterType="com.ruoyi.system.domain.dto.MeasureSelectDTO" resultType="com.ruoyi.system.domain.vo.DrillingStressVO">
         SELECT
             ds.drilling_stress_id AS drillingStressId,
             ds.measure_num AS measureNum,

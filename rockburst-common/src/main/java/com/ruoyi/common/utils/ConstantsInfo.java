@@ -31,6 +31,9 @@ public class ConstantsInfo {
     public static final String ANCHOR_STRESS_INITIAL_VALUE = "1100MN13010001"; // 锚杆应力测点初始值
     public static final String ANCHOR_CABLE_STRESS_INITIAL_VALUE = "1100MN13020001"; // 锚杆应力测点初始值
 
+    public static final String ANCHOR_STRESS_TYPE = "1301";
+    public static final String ANCHOR_CABLE_STRESS_TYPE = "1302";
+
     // 预警配置类型
     public static final String THRESHOLD_CONFIG = "thresholdConfig"; // 预警阈值配置
     public static final String INCREMENT_CONFIG = "incrementConfig"; // 预警增量配置
