@@ -9,6 +9,7 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.SupportResistanceEntity;
@@ -73,12 +74,13 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         BeanUtils.copyProperties(supportResistanceDTO, supportResistanceEntity);
         String maxMeasureNum = supportResistanceMapper.selectMaxMeasureNum();
         if (maxMeasureNum.isEmpty()) {
-            supportResistanceEntity.setMeasureNum(ConstantsInfo.INITIAL_VALUE);
+            supportResistanceEntity.setMeasureNum(ConstantsInfo.SUPPORT_RESISTANCE_INITIAL_VALUE);
         }
         String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
         supportResistanceEntity.setMeasureNum(nextValue);
         supportResistanceEntity.setCreateTime(System.currentTimeMillis());
         supportResistanceEntity.setCreateBy(1L);
+        supportResistanceEntity.setTag(ConstantsInfo.MANUALLY_ADD);
         flag = supportResistanceMapper.insert(supportResistanceEntity);
         if (flag <= 0) {
             throw new RuntimeException("测点新增失败,请联系管理员");
@@ -186,7 +188,46 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
             throw new RuntimeException("请选择要删除的数据!");
         }
         List<Long> ids = Arrays.asList(supportResistanceIds);
+        ids.forEach(supportResistanceId -> {
+            SupportResistanceEntity supportResistanceEntity = supportResistanceMapper.selectById(supportResistanceId);
+            if (ObjectUtil.isNull(supportResistanceEntity)) {
+                throw new RuntimeException("未找到id为" + supportResistanceId + "的数据");
+            }
+            if (StringUtils.equals(ConstantsInfo.ENABLE, supportResistanceEntity.getStatus())) {
+                throw new RuntimeException("测点" + supportResistanceEntity.getMeasureNum() + "已启用,无法删除");
+            }
+        });
         flag = this.removeBatchByIds(ids);
+        return flag;
+    }
+
+    /**
+     * (批量)启用/禁用
+     * @param supportResistanceIds id数组
+     * @return 返回结果
+     */
+    @Override
+    public int batchEnableDisable(Long[] supportResistanceIds) {
+        int flag = 0;
+        if (supportResistanceIds.length == 0) {
+            throw new RuntimeException("请选择要禁用的数据!");
+        }
+        List<Long> ids = Arrays.asList(supportResistanceIds);
+        ids.forEach(supportResistanceId -> {
+            SupportResistanceEntity supportResistanceEntity = supportResistanceMapper.selectOne(new LambdaQueryWrapper<SupportResistanceEntity>()
+                    .eq(SupportResistanceEntity::getSupportResistanceId, supportResistanceId)
+                    .eq(SupportResistanceEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNull(supportResistanceEntity)) {
+                throw new RuntimeException("未找到id为" + supportResistanceId + "的数据");
+            }
+            if (supportResistanceEntity.getStatus().equals(ConstantsInfo.ENABLE)) {
+                supportResistanceEntity.setStatus(ConstantsInfo.DISABLE);
+            }
+            if (supportResistanceEntity.getStatus().equals(ConstantsInfo.DISABLE)) {
+                supportResistanceEntity.setStatus(ConstantsInfo.ENABLE);
+            }
+            supportResistanceMapper.updateById(supportResistanceEntity);
+        });
         return flag;
     }
 

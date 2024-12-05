@@ -5,10 +5,7 @@ import com.ruoyi.system.domain.dto.SelectPlanDTO;
 import com.ruoyi.system.service.EngineeringPlanService;
 import com.ruoyi.system.service.PlanAuditService;
 import io.swagger.annotations.*;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -29,7 +26,7 @@ public class PlanAuditHistoryController {
     private EngineeringPlanService engineeringPlanService;
 
     @ApiOperation(value = "查询详情", notes = "查询详情")
-    @RequestMapping("/queryById")
+    @GetMapping("/queryById")
     public R<Object> queryById(@ApiParam(name = "engineeringPlanId", value = "计划id", required = true) @RequestParam Long engineeringPlanId) {
         return R.ok(this.engineeringPlanService.queryById(engineeringPlanId));
     }
@@ -39,7 +36,7 @@ public class PlanAuditHistoryController {
             @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
-    @RequestMapping("/auditHistoryPage")
+    @GetMapping(value = "/auditHistoryPage")
     public R<Object> auditHistoryPage(@RequestBody SelectPlanDTO selectPlanDTO,
                                       @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                       @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {

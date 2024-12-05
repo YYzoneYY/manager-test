@@ -32,19 +32,19 @@ public class ClassesController {
     private ClassesService classesService;
 
     @ApiOperation(value = "新增班次", notes = "新增班次")
-    @RequestMapping(value = "/add")
+    @PostMapping(value = "/add")
     public R<Integer> addClasses(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) ClassesEntity classesEntity){
         return R.ok(classesService.insertClasses(classesEntity));
     }
 
     @ApiOperation(value = "班次修改", notes = "班次修改")
-    @RequestMapping(value = "/update")
+    @PutMapping(value = "/update")
     public R<Integer> updateClasses(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) ClassesEntity classesEntity){
         return R.ok(classesService.updateClasses(classesEntity));
     }
 
     @ApiOperation(value = "根据主键查询", notes = "根据主键查询")
-    @RequestMapping(value = "/getClassesById")
+    @GetMapping(value = "/getById")
     public R<ClassesEntity> getClassesById(@ApiParam(name = "classesId", value = "班次id", required = true) @RequestParam Long classesId){
         return R.ok(classesService.getClassesById(classesId));
     }
@@ -63,7 +63,7 @@ public class ClassesController {
 
     @ApiOperation(value = "删除班次", notes = "删除班次")
     @RequestMapping(value = "/delete")
-    public R<Boolean> delete(@ApiParam(name = "classesIds", value = "id数组", readOnly = true) @RequestParam Long[] classesIds){
+    public R<Boolean> delete(@ApiParam(name = "classesIds", value = "id数组", required = true) @RequestParam Long[] classesIds){
         return R.ok(classesService.deleteClasses(classesIds));
     }
 

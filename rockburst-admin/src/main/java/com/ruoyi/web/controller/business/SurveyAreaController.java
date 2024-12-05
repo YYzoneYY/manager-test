@@ -84,7 +84,7 @@ public class SurveyAreaController {
      */
     @ApiOperation(value = "批量删除测区", notes = "批量删除测区")
     @DeleteMapping(value = "/delete")
-    public R<Boolean> delete(@ApiParam(name = "surveyAreaIds", value = "测区id", readOnly = true) @RequestParam Long[] surveyAreaIds) {
+    public R<Boolean> delete(@ApiParam(name = "surveyAreaIds", value = "测区id", required = true) @RequestParam Long[] surveyAreaIds) {
         return R.ok(surveyAreaService.deleteSurveyArea(surveyAreaIds), "删除成功");
     }
 }

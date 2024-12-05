@@ -11,10 +11,10 @@ public class ConstantsInfo {
      * 数字标识 没有实际意义，需在编写时赋予含义
      */
     public static final String NEGATIVE_ONE_SIGN = "-1";
-    //未绑定
-    public static final String ZERO_STATUS = "0";
-    //已绑定
-    public static final String ONE_STATUS = "1";
+    //启用
+    public static final String ENABLE = "0";
+    //禁用
+    public static final String DISABLE = "1";
 
     //未删除(逻辑)
     public static final String ZERO_DEL_FLAG = "0";
@@ -26,7 +26,13 @@ public class ConstantsInfo {
     public static final String AUTOMATIC_ACCESS = "2"; //自动接入
 
     // 测点编码初始值
-    public static final String INITIAL_VALUE = "1100MN11010001";
+    public static final String SUPPORT_RESISTANCE_INITIAL_VALUE = "1100MN11010001"; // 支架阻力测点初始值
+    public static final String Drill_Stress_INITIAL_VALUE = "1100MN12010001"; // 钻孔应力测点初始值
+    public static final String ANCHOR_STRESS_INITIAL_VALUE = "1100MN13010001"; // 锚杆应力测点初始值
+    public static final String ANCHOR_CABLE_STRESS_INITIAL_VALUE = "1100MN13020001"; // 锚杆应力测点初始值
+
+    public static final String ANCHOR_STRESS_TYPE = "1301";
+    public static final String ANCHOR_CABLE_STRESS_TYPE = "1302";
 
     // 预警配置类型
     public static final String THRESHOLD_CONFIG = "thresholdConfig"; // 预警阈值配置
