@@ -1,8 +1,12 @@
 package com.ruoyi.web.controller.projectFill;
 
 import com.ruoyi.common.annotation.Anonymous;
+import com.ruoyi.system.domain.excel.ChartData;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.XSSFChart;
@@ -16,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/export")
@@ -36,7 +43,7 @@ public class CharController {
         XSSFSheet sheet = workbook.createSheet("Line Chart");
 
         // 创建数据表格
-        createDataTable(sheet, categories, warningValues, march3Data, march7Data);
+//        createDataTable(sheet, categories, warningValues, march3Data, march7Data);
 
         // 创建折线图
         createLineChart(sheet, categories.length);
@@ -48,19 +55,18 @@ public class CharController {
         workbook.close();
     }
 
-    private void createDataTable(Sheet sheet, String[] categories, double[] warningValues, double[] march3Data, double[] march7Data) {
-        Row headerRow = sheet.createRow(0);
-        headerRow.createCell(0).setCellValue("距离");
-        headerRow.createCell(1).setCellValue("预警值");
-        headerRow.createCell(2).setCellValue("3月3日");
-        headerRow.createCell(3).setCellValue("3月7日");
+    private void createDataTable(Sheet sheet, List<ChartData> datas) {
 
-        for (int i = 0; i < categories.length; i++) {
+        Row headerRow = sheet.createRow(0);
+        for (int c = 0; c < datas.get(0).getData().size(); c++) {
+            headerRow.createCell(c).setCellValue(datas.get(0).getData().get(c));
+        }
+
+        for (int i = 1; i < datas.size(); i++) {
             Row row = sheet.createRow(i + 1);
-            row.createCell(0).setCellValue(categories[i]);
-            row.createCell(1).setCellValue(warningValues[i]);
-            row.createCell(2).setCellValue(march3Data[i]);
-            row.createCell(3).setCellValue(march7Data[i]);
+            for (int c = 0; c < datas.get(i).getData().size(); c++) {
+                row.createCell(c).setCellValue( datas.get(i).getData().get(c));
+            }
         }
     }
 
@@ -69,9 +75,9 @@ public class CharController {
 //        ClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 5, 0, 20, 20);
         ClientAnchor anchor = sheet.getWorkbook().getCreationHelper().createClientAnchor();
         anchor.setCol1(0);  // 左上角列号
-        anchor.setRow1(10); // 左上角行号
+        anchor.setRow1(0); // 左上角行号
         anchor.setCol2(10); // 右下角列号
-        anchor.setRow2(25); // 右下角行号
+        anchor.setRow2(15); // 右下角行号
         XSSFChart chart = ((XSSFDrawing) drawing).createChart(anchor);
         chart.setTitleText("轨顺距离面");
         chart.setTitleOverlay(false);
@@ -100,8 +106,8 @@ public class CharController {
         XDDFLineChartData data = (XDDFLineChartData) chart.createData(ChartTypes.LINE, bottomAxis, leftAxis);
 
         data.addSeries(distances, warningData).setTitle("预警值", null);
-        data.addSeries(distances, march3Data).setTitle("3月3日", null);
-        data.addSeries(distances, march7Data).setTitle("3月7日", null);
+        data.addSeries(distances, march3Data).setTitle("11111", null);
+        data.addSeries(distances, march7Data).setTitle("2222", null);
 
         chart.plot(data);
 
@@ -117,5 +123,75 @@ public class CharController {
         XDDFLineChartData.Series series3 = (XDDFLineChartData.Series) data.getSeries().get(2);
         series3.setSmooth(false);
         series3.setMarkerStyle(MarkerStyle.SQUARE);
+    }
+
+
+    @Anonymous
+    @ApiOperation("chart")
+    @GetMapping("/line-sssssssss")
+    public void sssssssss(HttpServletResponse response) throws IOException {
+        // 模拟数据
+        String[] categories = {"2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m", "10m", "11m", "12m", "13m", "14m", "15m"};
+        Double[] warningValues = {3.1, 3.1, 3.1, 3.1, 3.1, 4.1, 4.1, 4.1, 6.1, 6.1, 6.1, 6.1, 8.1, 8.1};
+        Double[] march3Data = {2.1, 2.0, 2.2, 2.1, 2.0, 2.3, 2.1, 2.0, 2.4, 2.5, 2.6, 2.5, 2.7, 2.6};
+        Double[] march4Data = {2.0, 19.0, 2.0, 2.1, 2.0, 2.2, 2.0, 2.0, 2.3, 2.4, 2.5, 2.4, 2.6, 2.5};
+        Double[] march5Data = {2.0, 1.9, 2.0, 21.0, 2.0, 2.2, 2.0, 2.0, 2.3, 2.4, 2.5, 2.4, 2.6, 2.5};
+        Double[] march6Data = {2.0, 1.9, 2.0, 2.1, 2.0, 22.0, 2.0, 2.0, 2.3, 2.4, 2.5, 2.4, 2.6, 2.5};
+        Double[] march7Data = {2.0, 1.9, 2.0, 2.1, 2.0, 2.2, 2.0, 2.0, 23.0, 2.4, 2.5, 2.4, 2.6, 2.5};
+
+        ChartData chartData1 = new ChartData();chartData1.setData(Arrays.asList(warningValues));chartData1.setTitle("warningValues");
+        ChartData chartData3 = new ChartData();chartData3.setData(Arrays.asList(march3Data));chartData3.setTitle("march3Data");
+        ChartData chartData4 = new ChartData();chartData4.setData(Arrays.asList(march4Data));chartData4.setTitle("march4Data");
+        ChartData chartData5 = new ChartData();chartData5.setData(Arrays.asList(march5Data));chartData5.setTitle("march5Data");
+        ChartData chartData6 = new ChartData();chartData6.setData(Arrays.asList(march6Data));chartData6.setTitle("march6Data");
+        ChartData chartData7 = new ChartData();chartData7.setData(Arrays.asList(march7Data));chartData7.setTitle("march7Data");
+        List<ChartData> chartDatas = new ArrayList<>();
+        chartDatas.add(chartData1);
+        chartDatas.add(chartData3);
+        chartDatas.add(chartData4);
+        chartDatas.add(chartData5);
+        chartDatas.add(chartData6);
+        chartDatas.add(chartData7);
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Line Chart");
+        createDataTable(sheet,chartDatas);
+        sss(sheet,chartDatas,warningValues.length,response);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=line-chart.xlsx");
+        workbook.write(response.getOutputStream());
+        workbook.close();
+    }
+
+    void sss(XSSFSheet sheet,List<ChartData> datas,int categoryCount,HttpServletResponse response) throws IOException {
+
+
+        Drawing<?> drawing = sheet.createDrawingPatriarch();
+//        ClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 5, 0, 20, 20);
+        ClientAnchor anchor = sheet.getWorkbook().getCreationHelper().createClientAnchor();
+        anchor.setCol1(0);  // 左上角列号
+        anchor.setRow1(0); // 左上角行号
+        anchor.setCol2(10); // 右下角列号
+        anchor.setRow2(15); // 右下角行号
+        XSSFChart chart = ((XSSFDrawing) drawing).createChart(anchor);
+        chart.setTitleText("轨顺距离面");
+        chart.setTitleOverlay(false);
+        XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        bottomAxis.setTitle("距离");
+
+        XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+        leftAxis.setTitle("值");
+        leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+        // 添加系列
+        XDDFLineChartData data = (XDDFLineChartData) chart.createData(ChartTypes.LINE, bottomAxis, leftAxis);
+        XDDFDataSource<String> distances = XDDFDataSourcesFactory.fromStringCellRange(sheet,
+                new CellRangeAddress(1, categoryCount,0, 0));
+        for (int i = 1; i < datas.size(); i++) {
+            XDDFNumericalDataSource<Double> dataSource = XDDFDataSourcesFactory.fromNumericCellRange(sheet,
+                    new CellRangeAddress(1, categoryCount, i, i));
+            data.addSeries(distances, dataSource).setTitle(datas.get(i).getTitle(), null);
+        }
+        chart.plot(data);
+
+
     }
 }

@@ -78,11 +78,11 @@ public class BizStatisticsController extends BaseController
         return R.ok(bizProjectRecordService.monitorProject( dto , pagination));
     }
 
-
-    @ApiOperation("666")
+    @Anonymous
+    @ApiOperation("煤粉量日报表")
     @GetMapping("get666")
     public void get666(BizProjectRecordDto1 dto , HttpServletResponse response) throws IOException {
-        bizProjectRecordService.getReport(dto,response);
+        bizProjectRecordService.get444(response);
     }
 
 
