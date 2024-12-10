@@ -1,6 +1,6 @@
-package com.ruoyi.system.domain.vo;
+package com.ruoyi.system.domain.dto;
 
-import com.ruoyi.system.domain.Entity.EngineeringPlanEntity;
+import com.ruoyi.system.domain.Entity.PlanEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class EngineeringPlanVO  extends EngineeringPlanEntity {
+public class PlanDTO extends PlanEntity {
 
     @ApiModelProperty(value = "施工单位名称")
     private String constructionUnitName;
@@ -26,9 +26,6 @@ public class EngineeringPlanVO  extends EngineeringPlanEntity {
 
     @ApiModelProperty(value = "计划结束时间格式化")
     private String endTimeFmt;
-
-    @ApiModelProperty(value = "状态格式化")
-    private String statusFmt;
 
     @ApiModelProperty(value = "驳回原因")
     private String rejectReason;

@@ -11,7 +11,7 @@
 
 
     <select id="queryPage" parameterType="com.ruoyi.system.domain.dto.SelectPlanDTO"
-            resultType="com.ruoyi.system.domain.vo.EngineeringPlanVO">
+            resultType="com.ruoyi.system.domain.vo.PlanVO">
         select
         p.engineering_plan_id as engineeringPlanId,
         p.plan_name as planName,
@@ -55,7 +55,7 @@
 
     <!--审核历史分页查询-->
     <select id="auditHistoryPage" parameterType="com.ruoyi.system.domain.dto.SelectPlanDTO"
-            resultType="com.ruoyi.system.domain.vo.EngineeringPlanVO">
+            resultType="com.ruoyi.system.domain.vo.PlanVO">
         select
         p.engineering_plan_id as engineeringPlanId,
         p.plan_name as planName,

@@ -64,7 +64,8 @@ public class ConstructDocumentController {
         return R.ok(this.constructDocumentService.updateFile(constructFIleDTO, file, bucketName));
     }
 
-    @GetMapping("/queryByPage")
+
+    @PostMapping(value = "/queryByPage")
     @ApiOperation(value = "根据条件分页查询", notes = "根据条件分页查询")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "pageSize" , value = "每页显示记录数" , required = false, dataType = "Integer"),

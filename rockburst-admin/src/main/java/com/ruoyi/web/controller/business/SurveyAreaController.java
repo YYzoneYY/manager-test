@@ -72,7 +72,7 @@ public class SurveyAreaController {
             @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
-    @GetMapping(value = "/queryList")
+    @PostMapping(value = "/queryList")
     public R<TableData> queryList(@RequestBody SurveySelectDTO surveySelectDTO, @RequestParam(required = false) Integer pageNum, @RequestParam(required = false) Integer pageSize){
         return R.ok(surveyAreaService.pageQueryList(surveySelectDTO, pageNum, pageSize));
     }

@@ -18,16 +18,13 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.DepartAuditDTO;
 import com.ruoyi.system.domain.dto.SelectDeptAuditDTO;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
-import com.ruoyi.system.domain.vo.EngineeringPlanVO;
 import com.ruoyi.system.domain.vo.ProjectVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DepartmentAuditService;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

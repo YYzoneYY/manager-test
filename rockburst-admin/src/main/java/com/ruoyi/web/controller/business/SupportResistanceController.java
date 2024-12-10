@@ -46,7 +46,7 @@ public class SupportResistanceController {
             @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
-    @GetMapping(value = "/pageQueryList")
+    @PostMapping(value = "/pageQueryList")
     public R<Object> pageQueryList(@RequestBody MeasureSelectDTO measureSelectDTO,
                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {

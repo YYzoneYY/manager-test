@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ruoyi.system.mapper.EngineeringPlanMapper">
+<mapper namespace="com.ruoyi.system.mapper.PlanMapper">
 
     <select id="queryPage" parameterType="com.ruoyi.system.domain.dto.SelectPlanDTO"
-            resultType="com.ruoyi.system.domain.vo.EngineeringPlanVO">
+            resultType="com.ruoyi.system.domain.vo.PlanVO">
         select
         p.engineering_plan_id as engineeringPlanId,
         p.plan_name as planName,
