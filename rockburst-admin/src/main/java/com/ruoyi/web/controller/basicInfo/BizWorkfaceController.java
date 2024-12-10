@@ -1,48 +1,37 @@
 package com.ruoyi.web.controller.basicInfo;
 
-import java.util.List;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
+import com.ruoyi.system.domain.BizMiningArea;
+import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
-import com.ruoyi.system.mapper.BizWorkfaceMapper;
 import com.ruoyi.system.mapper.TunnelMapper;
+import com.ruoyi.system.service.IBizMiningAreaService;
+import com.ruoyi.system.service.IBizWorkfaceService;
 import com.ruoyi.system.service.SurveyAreaService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springdoc.api.annotations.ParameterObject;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.ruoyi.common.annotation.Log;
-import com.ruoyi.common.core.controller.BaseController;
-import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.system.domain.BizWorkface;
-import com.ruoyi.system.service.IBizWorkfaceService;
-import com.ruoyi.common.utils.poi.ExcelUtil;
-import com.ruoyi.common.core.page.TableDataInfo;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 工作面管理Controller
@@ -50,13 +39,16 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @author ruoyi
  * @date 2024-11-11
  */
-@Api("工作面管理Controller")
+@Api(tags = "basic-工作面管理")
 @RestController
 @RequestMapping("/basicInfo/workface")
 public class BizWorkfaceController extends BaseController
 {
     @Autowired
     private IBizWorkfaceService bizWorkfaceService;
+
+    @Autowired
+    private IBizMiningAreaService bizMiningAreaService;
 
     @Autowired
     private SurveyAreaService surveyAreaService;
@@ -76,7 +68,23 @@ public class BizWorkfaceController extends BaseController
         return R.ok(list);
     }
 
-
+    @ApiOperation("下拉全部矿列表")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+    @GetMapping("/checkList")
+    public R<List<BizWorkface>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,
+                                          @RequestParam(value = "矿区集合", required = false) Long[] mineIds,
+                                          @RequestParam(value = "采区集合", required = false) Long[] miningAreaIds)
+    {
+        QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .select(BizWorkface::getWorkfaceId,BizWorkface::getWorkfaceName)
+                .in(statuss != null && statuss.length > 0, BizWorkface::getStatus, statuss)
+                .in(mineIds != null && mineIds.length > 0, BizWorkface::getMineId, mineIds)
+                .in(miningAreaIds != null && miningAreaIds.length > 0, BizWorkface::getMiningAreaId, miningAreaIds)
+                .eq(BizWorkface::getDelFlag,BizBaseConstant.DELFLAG_N);
+        List<BizWorkface> list = bizWorkfaceService.getBaseMapper().selectList(queryWrapper);
+        return R.ok(list);
+    }
 
     /**
      * 获取工作面管理详细信息
@@ -84,9 +92,9 @@ public class BizWorkfaceController extends BaseController
     @ApiOperation("获取工作面管理详细信息")
     @PreAuthorize("@ss.hasPermi('system:workface:query')")
     @GetMapping(value = "/{workfaceId}")
-    public AjaxResult getInfo(@PathVariable("workfaceId") Long workfaceId)
+    public R getInfo(@PathVariable("workfaceId") Long workfaceId)
     {
-        return success(bizWorkfaceService.selectBizWorkfaceByWorkfaceId(workfaceId));
+        return R.ok(bizWorkfaceService.selectBizWorkfaceByWorkfaceId(workfaceId));
     }
 
     /**
@@ -96,11 +104,15 @@ public class BizWorkfaceController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:workface:add')")
     @Log(title = "工作面管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody @Validated(value = {GroupAdd.class}) BizWorkfaceDto dto)
+    public R add(@RequestBody @Validated(value = {GroupAdd.class}) BizWorkfaceDto dto)
     {
         BizWorkface entity = new BizWorkface();
         BeanUtil.copyProperties(dto, entity);
-        return toAjax(bizWorkfaceService.insertBizWorkface(entity));
+        BizMiningArea area = bizMiningAreaService.getBaseMapper().selectById(entity.getMiningAreaId());
+        if(area != null){
+            entity.setMineId(area.getMineId());
+        }
+        return R.ok(bizWorkfaceService.insertBizWorkface(entity));
     }
 
     /**
@@ -110,11 +122,15 @@ public class BizWorkfaceController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:workface:edit')")
     @Log(title = "工作面管理", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizWorkface dto)
+    public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizWorkface dto)
     {
         BizWorkface entity = new BizWorkface();
         BeanUtil.copyProperties(dto, entity);
-        return toAjax(bizWorkfaceService.updateById(entity));
+        BizMiningArea area = bizMiningAreaService.getBaseMapper().selectById(entity.getMiningAreaId());
+        if(area != null){
+            entity.setMineId(area.getMineId());
+        }
+        return R.ok(bizWorkfaceService.updateById(entity));
     }
 
     /**
@@ -124,22 +140,22 @@ public class BizWorkfaceController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:workface:remove')")
     @Log(title = "工作面管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/one/{workfaceId}")
-    public AjaxResult removeOne(@PathVariable Long workfaceId)
+    public R removeOne(@PathVariable Long workfaceId)
     {
         QueryWrapper<SurveyAreaEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(SurveyAreaEntity::getWorkFaceId, workfaceId)
                 .eq(SurveyAreaEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = surveyAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的工作面下还有采区");
+        Assert.isTrue(count == 0, "选择的工作面下还有测区");
 
         QueryWrapper<TunnelEntity> tunnelQueryWrapper = new QueryWrapper<>();
         tunnelQueryWrapper.lambda().eq(TunnelEntity::getWorkFaceId, workfaceId);
 //                .eq(TunnelEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long tunnelCount = tunnelMapper.selectCount(tunnelQueryWrapper);
-        Assert.isTrue(tunnelCount > 0, "选择的工作面下还有巷道");
+        Assert.isTrue(tunnelCount == 0, "选择的工作面下还有巷道");
         BizWorkface entity = new BizWorkface();
         entity.setWorkfaceId(workfaceId).setDelFlag(BizBaseConstant.DELFLAG_N);
-        return toAjax( bizWorkfaceService.updateById(entity));
+        return R.ok( bizWorkfaceService.updateById(entity));
     }
 
     /**
@@ -149,19 +165,19 @@ public class BizWorkfaceController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:workface:remove')")
     @Log(title = "工作面管理", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{workfaceIds}")
-    public AjaxResult remove(@PathVariable Long[] workfaceIds)
+    public R remove(@PathVariable Long[] workfaceIds)
     {
 
         QueryWrapper<SurveyAreaEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(SurveyAreaEntity::getWorkFaceId, workfaceIds)
                 .eq(SurveyAreaEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = surveyAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的工作面下还有采区");
+        Assert.isTrue(count == 0, "选择的工作面下还有测区");
         //todo 巷道 还没有基础接口
-        Assert.isTrue(count > 0, "选择的工作面下还有巷道");
+        Assert.isTrue(count == 0, "选择的工作面下还有巷道");
         UpdateWrapper<BizWorkface> updateWrapper = new UpdateWrapper<>();
         updateWrapper.lambda().in(BizWorkface::getWorkfaceId, workfaceIds)
                 .set(BizWorkface::getDelFlag, BizBaseConstant.DELFLAG_Y);
-        return toAjax( bizWorkfaceService.update(updateWrapper));
+        return R.ok( bizWorkfaceService.update(updateWrapper));
     }
 }

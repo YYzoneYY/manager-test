@@ -3,13 +3,9 @@ package com.ruoyi.system.domain.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseSelfEntity;
+import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
-import com.ruoyi.system.constant.GroupAdd;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,17 +27,18 @@ public class BizMiningAreaDto
     private static final long serialVersionUID = 1L;
 
     /** 采区的唯一标识符 */
+    @ApiModelProperty(value = "采区ID")
     @NotNull(groups = GroupUpdate.class)
     private Long miningAreaId;
 
     /** 所属矿井ID（外键） */
-    @ApiModelProperty(value = "所属矿井ID")
+    @ApiModelProperty(value = "所属矿井ID",required = true)
     @NotNull(groups = GroupAdd.class)
     private Long mineId;
 
     /** 采区名称 */
     @NotNull(groups = GroupAdd.class)
-    @ApiModelProperty(value = "采区名称")
+    @ApiModelProperty(value = "采区名称",required = true)
     private String miningAreaName;
 
     /** 采区面积（单位：平方米） */
@@ -52,7 +49,7 @@ public class BizMiningAreaDto
 
     /** 采区状态（如开采中、暂停开采等） */
     @NotNull(groups = GroupAdd.class)
-    @ApiModelProperty(value = "采区状态 如=1 开采中、2 暂停开采等")
+    @ApiModelProperty(value = "状态",required = true)
     private Integer status;
 
     /** 采区开采开始日期 */

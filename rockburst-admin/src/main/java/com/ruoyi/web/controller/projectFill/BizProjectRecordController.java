@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
  * @author ruoyi
  * @date 2024-11-09
  */
-@Api("工程填报记录Controller")
+@Api(tags = "工程填报记录")
 @RestController
 @RequestMapping("/project/record")
 public class BizProjectRecordController extends BaseController

@@ -25,7 +25,7 @@ public class FileUploadInfo {
     private String uploadId;
 
     // 桶名称
-    //private String bucketName;
+    private String bucketName;
 
     //md5
     private String fileMd5;

@@ -2,9 +2,9 @@ package com.ruoyi.web.controller.system;
 
 import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.system.domain.FileUploadInfo;
-import com.ruoyi.system.domain.utils.MinioUtils;
 import com.ruoyi.system.domain.utils.ResponseResult;
 import com.ruoyi.system.service.UploadService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +23,8 @@ import javax.annotation.Resource;
  *
  * 4.保存文件信息到数据库
  */
+
+@Api(tags = "大文件分片上传")
 @Slf4j
 @RestController
 @RequestMapping("/upload")
@@ -31,8 +33,8 @@ public class FileMinioController {
     @Resource
     private UploadService uploadService;
 
-    @Resource
-    private MinioUtils minioUtils;
+//    @Resource
+//    private MinioUtils minioUtils;
 
     /**
      * 校验文件是否存在
@@ -41,7 +43,7 @@ public class FileMinioController {
      * @return ResponseResult<Object>
      */
     @Anonymous
-    @ApiOperation("check")
+    @ApiOperation("检查文件是否存在、是否进行断点续传")
     @GetMapping("/multipart/check")
     public ResponseResult checkFileUploadedByMd5(@RequestParam("md5") String md5) {
         log.info("REST: 通过查询 <{}> 文件是否存在、是否进行断点续传", md5);
@@ -55,7 +57,7 @@ public class FileMinioController {
      * @return ResponseResult<Object>
      */
     @Anonymous
-    @ApiOperation("init")
+    @ApiOperation("分片初始化-获取文件分片上传的url")
     @PostMapping("/multipart/init")
     public ResponseResult initMultiPartUpload(@RequestBody FileUploadInfo fileUploadInfo) {
         log.info("REST: 通过 <{}> 初始化上传任务", fileUploadInfo);
@@ -69,7 +71,7 @@ public class FileMinioController {
      * @return ResponseResult<Object>
      */
     @Anonymous
-    @ApiOperation("merge")
+    @ApiOperation("合并")
     @PostMapping("/multipart/merge")
     public ResponseResult completeMultiPartUpload(@RequestBody FileUploadInfo fileUploadInfo) {
         log.info("REST: 通过 <{}> 合并上传任务", fileUploadInfo);
@@ -84,12 +86,12 @@ public class FileMinioController {
         return uploadService.fileIsExits(fileUploadInfo);
     }
 
-    @Anonymous
-    @ApiOperation("createBucket")
-    @RequestMapping("/createBucket")
-    public void createBucket(@RequestParam("bucketName")String bucketName){
-        String bucket = minioUtils.createBucket(bucketName);
-    }
+//    @Anonymous
+//    @ApiOperation("createBucket")
+//    @RequestMapping("/createBucket")
+//    public void createBucket(@RequestParam("bucketName")String bucketName){
+//        String bucket = minioUtils.createBucket(bucketName);
+//    }
 
 
 

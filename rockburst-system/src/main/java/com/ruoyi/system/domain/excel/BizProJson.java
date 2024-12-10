@@ -10,5 +10,5 @@ public class BizProJson {
 
     private String label;
 
-    private String value;
+    private Double value;
 }

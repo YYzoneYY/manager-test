@@ -1,31 +1,22 @@
 package com.ruoyi.system.service.impl;
 
-import java.util.Arrays;
-import java.util.List;
-
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
-import com.ruoyi.common.core.domain.entity.SysUser;
-import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.BizMine;
-import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.BizMiningArea;
 import com.ruoyi.system.domain.dto.BizMiningAreaDto;
 import com.ruoyi.system.domain.vo.BizMiningAreaVo;
-import com.ruoyi.system.mapper.BizProjectRecordMapper;
-import com.ruoyi.system.service.IBizProjectRecordService;
+import com.ruoyi.system.mapper.BizMiningAreaMapper;
+import com.ruoyi.system.service.IBizMiningAreaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.BizMiningAreaMapper;
-import com.ruoyi.system.domain.BizMiningArea;
-import com.ruoyi.system.service.IBizMiningAreaService;
+
+import java.util.Arrays;
 
 /**
  * 采区管理Service业务层处理
@@ -54,6 +45,8 @@ public class BizMiningAreaServiceImpl  extends ServiceImpl<BizMiningAreaMapper, 
         queryWrapper
                 .selectAll(BizMiningArea.class)
                 .selectAs(BizMine::getMineName,BizMiningAreaVo::getMineName)
+                .eq(bizMiningArea.getStatus() != null,BizMiningArea::getStatus,bizMiningArea.getStatus() )
+                .eq(bizMiningArea.getMiningAreaArea() != null,BizMiningArea::getMiningAreaArea,bizMiningArea.getMiningAreaArea() )
                 .like(StrUtil.isNotEmpty(bizMiningArea.getMiningAreaName()), BizMiningArea::getMiningAreaName, bizMiningArea.getMiningAreaName())
                 .leftJoin(BizMine.class,BizMine::getMineId,BizMiningArea::getMineId)
                 .eq(BizMiningArea::getDelFlag,BizBaseConstant.DELFLAG_N)

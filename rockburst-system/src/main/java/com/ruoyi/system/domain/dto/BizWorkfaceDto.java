@@ -3,12 +3,9 @@ package com.ruoyi.system.domain.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseSelfEntity;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,21 +30,26 @@ public class BizWorkfaceDto
 
     /** 所属矿井ID（外键） */
     @ApiModelProperty(value = "所属矿井ID")
-    @NotNull(groups = GroupAdd.class)
+//    @NotNull(groups = GroupAdd.class)
     private Long mineId;
 
+    @ApiModelProperty(value = "工作面编号",required = true)
+    @NotNull(groups = GroupAdd.class)
+    private String workfaceNo;
+
+
     /** 工作面名称 */
-    @ApiModelProperty(value = "工作面名称")
+    @ApiModelProperty(value = "工作面名称",required = true)
     @NotNull(groups = GroupAdd.class)
     private String workfaceName;
 
     /** 工作面类型（如采掘、运输等） */
-    @ApiModelProperty(value = "工作面类型", example = " 采掘、运输等")
+    @ApiModelProperty(value = "工作面类型", example = " 采掘、运输等",required = true)
     @NotNull(groups = GroupAdd.class)
     private String type;
 
     /** 工作面状态（如开工、停工等） */
-    @ApiModelProperty(value = "工作面状态 ")
+    @ApiModelProperty(value = "工作面状态 ",required = true)
     @NotNull(groups = GroupAdd.class)
     private Integer status;
 
@@ -68,11 +70,17 @@ public class BizWorkfaceDto
 
     /** 工作面负责人 */
     @ApiModelProperty(value = "工作面负责人 ")
-    @NotNull(groups = GroupAdd.class)
+//    @NotNull(groups = GroupAdd.class)
     private String leader;
 
+    /** 煤层厚度 */
+    @ApiModelProperty(value = "煤层厚度",required = true)
+    @JsonSerialize(using= ToStringSerializer.class)
+//    @NotNull(groups = GroupAdd.class)
+    private BigDecimal depth;
+
     /** 所属采区 */
-    @ApiModelProperty(value = "所属采区 ")
+    @ApiModelProperty(value = "所属采区 ",required = true)
     @NotNull(groups = GroupAdd.class)
     private Long miningAreaId;
 

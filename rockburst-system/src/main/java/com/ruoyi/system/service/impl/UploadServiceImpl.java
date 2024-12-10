@@ -1,11 +1,16 @@
 package com.ruoyi.system.service.impl;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.domain.FileUploadInfo;
+import com.ruoyi.system.domain.SysFileInfo;
 import com.ruoyi.system.domain.utils.MinioUtils;
 import com.ruoyi.system.domain.utils.RedisRepo;
 import com.ruoyi.system.domain.utils.ResponseResult;
 import com.ruoyi.system.domain.utils.ResultCode;
+import com.ruoyi.system.mapper.SysFileInfoMapper;
 import com.ruoyi.system.service.UploadService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +33,9 @@ public class UploadServiceImpl implements UploadService {
 
     @Resource
     private RedisRepo redisRepo;
+
+    @Resource
+    SysFileInfoMapper sysFileInfoMapper;
 
 
     /**
@@ -62,7 +70,7 @@ public class UploadServiceImpl implements UploadService {
         }
 
         // 获取桶名称
-        String bucketName = fileService.getBucketName(fileUploadInfo.getFileType());
+        String bucketName = fileService.getBucketName(fileUploadInfo.getBucketName());
 
         return fileService.getByFileMd5(fileUploadInfo.getFileName(), fileUploadInfo.getUploadId(), bucketName);
     }
@@ -80,7 +88,7 @@ public class UploadServiceImpl implements UploadService {
         log.info("tip message: 通过 <{}> 开始初始化<分片上传>任务", fileUploadInfo);
 
         // 获取文件桶名
-        String bucketName = fileService.getBucketName(fileUploadInfo.getFileType());
+        String bucketName = fileUploadInfo.getBucketName();
 
         // 单文件上传可拆分，可直接上传完成
         if (fileUploadInfo.getPartCount() == 1) {
@@ -110,17 +118,37 @@ public class UploadServiceImpl implements UploadService {
     public ResponseResult mergeMultipartUpload(FileUploadInfo fileUploadInfo) {
 
         log.info("tip message: 通过 <{}> 开始合并<分片上传>任务", fileUploadInfo);
-
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser currentUser = loginUser.getUser();
         // 获取桶名称
-        String bucketName = fileService.getBucketName(fileUploadInfo.getFileType());
+        String bucketName = fileUploadInfo.getBucketName();
 
         // 获取合并结果
         boolean result = fileService.mergeMultipartUpload(fileUploadInfo.getFileName(), fileUploadInfo.getUploadId(), bucketName);
 
+
+        SysFileInfo sysFileInfo = new SysFileInfo();
+        sysFileInfo.setFileOldName(fileUploadInfo.getFileName());
+        String fileName = fileUploadInfo.getFileName();
+        sysFileInfo.setFileNewName(fileName.substring(fileName.lastIndexOf("/") + 1));
+        sysFileInfo.setFilePath(fileName.substring(0, fileName.lastIndexOf("/") + 1));
+        sysFileInfo.setFileSuffix(fileUploadInfo.getFileType());
+        sysFileInfo.setFileSize(fileUploadInfo.getFileSize().longValue());
+        sysFileInfo.setBucketName(fileUploadInfo.getBucketName());
+        Long ts = System.currentTimeMillis();
+        sysFileInfo.setCreateTime(ts);
+        sysFileInfo.setUpdateTime(ts);
+        sysFileInfo.setCreateBy(currentUser.getUserId());
+        sysFileInfo.setUpdateBy(currentUser.getUserId());
         //获取上传文件地址
         if(result){
-            String filePath = fileService.getFilePath(fileUploadInfo.getFileType().toLowerCase(), fileUploadInfo.getFileName());
-            return ResponseResult.success(filePath);
+            String filePath = fileService.getFilePath(fileUploadInfo.getBucketName().toLowerCase(), fileUploadInfo.getFileName());
+            sysFileInfo.setFileUrl(filePath);
+            if (sysFileInfoMapper.insert(sysFileInfo) < 1) {
+                throw new RuntimeException("文件信息插入库失败!");
+            }
+            return ResponseResult.success(sysFileInfoMapper.selectById(sysFileInfo.getFileId()));
+//            return ResponseResult.success(filePath);
         }
 
         log.error("error message: 文件合并异常");
@@ -144,7 +172,7 @@ public class UploadServiceImpl implements UploadService {
     }
 
     public ResponseResult fileIsExits(FileUploadInfo fileUploadInfo){
-        boolean b = fileService.doesObjectExist(fileUploadInfo.getFileType(), fileUploadInfo.getFileName());
+        boolean b = fileService.doesObjectExist(fileUploadInfo.getBucketName(), fileUploadInfo.getFileName());
 
         if(b){
             return ResponseResult.success();

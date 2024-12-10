@@ -17,33 +17,17 @@
 
 package com.ruoyi.web.controller.system;
 
-import com.google.common.collect.HashMultimap;
-import com.ruoyi.common.annotation.Anonymous;
-import com.ruoyi.common.config.CustomMinioClient;
-import com.ruoyi.common.config.MinioConfig;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.system.domain.SysFileInfo;
 import com.ruoyi.system.service.SysFileInfoService;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MinioClient;
-import io.minio.UploadPartResponse;
-import io.minio.errors.*;
-import io.minio.http.Method;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 
 @RestController
@@ -52,73 +36,6 @@ import java.util.concurrent.TimeUnit;
 public class SysFileInfoController {
     @Resource
     private SysFileInfoService sysFileInfoService;
-    @Resource
-    private MinioClient minioClient;
-
-
-    @Resource
-    private MinioConfig minioConfig;
-
-    static final long CHUNK_SIZE = 5 * 1024 * 1024;
-
-    @Anonymous
-    @ApiOperation("chunk")
-    @PostMapping("/chunk")
-    public ResponseEntity<String> uploadChunk(@RequestParam("file") MultipartFile file,
-                                              @RequestParam("chunkIndex") int chunkIndex,
-                                              @RequestParam("totalChunks") int totalChunks,
-                                              @RequestParam("fileName") String fileName) throws IOException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-
-//        try {
-        CustomMinioClient customMinioClient = new CustomMinioClient(minioClient);
-        String contentType = "application/octet-stream";
-        HashMultimap<String, String> headers = HashMultimap.create();
-        headers.put("Content-Type", contentType);
-        String uploadId = customMinioClient.initMultiPartUpload(minioConfig.getDefaultBucketName(), null, fileName, headers, null);
-        int bytesRead = (int)file.getSize();
-        Map<String, String> reqParams = new HashMap<>();
-        reqParams.put("uploadId", uploadId);
-        reqParams.put("partNumber", String.valueOf(chunkIndex));
-        String uploadUrl = customMinioClient.getPresignedObjectUrl(
-                GetPresignedObjectUrlArgs.builder()
-                        .method(Method.PUT)
-                        .bucket(minioConfig.getDefaultBucketName())
-                        .object(fileName)
-                        .expiry(1, TimeUnit.DAYS)
-                        .extraQueryParams(reqParams)
-                        .build());
-            processChunk(file, chunkIndex,bytesRead, uploadId,fileName);
-            return ResponseEntity.ok(uploadUrl);
-
-    }
-
-
-    private void processChunk(MultipartFile file,int chunkIndex, int bytesRead, String uploadId,String fileName) throws IOException, ServerException, InsufficientDataException, ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, XmlParserException, InvalidResponseException, InternalException {
-        CustomMinioClient customMinioClient = new CustomMinioClient(minioClient);
-        // 可控制并发数和分片大小以防止OOM
-        byte[] buffer = new byte[bytesRead];
-            String contentType = "application/octet-stream";
-            HashMultimap<String, String> headers = HashMultimap.create();
-            headers.put("Content-Type", contentType);
-            UploadPartResponse uploadPartResponse = customMinioClient.uploadMultiPart(minioConfig.getDefaultBucketName(), null, fileName,
-                    file.getBytes(), bytesRead,
-                    uploadId, chunkIndex, headers, null);
-            System.out.println("chunk[" + chunkIndex + "] buffer size: [" + buffer.length + " Byte] upload etag: [" + uploadPartResponse.etag() + "]");
-
-    }
-
-//    @Anonymous
-//    @ApiOperation("merge")
-//    @PostMapping("/merge")
-//    public ResponseEntity<String> mergeChunks(@RequestParam("fileName") String fileName,
-//                                              @RequestParam("uploadId") String uploadId,
-//                                              @RequestParam("totalChunks") int totalChunks) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-//        CustomMinioClient customMinioClient = new CustomMinioClient(minioClient);
-//        ObjectWriteResponse objectWriteResponse = customMinioClient.mergeMultipartUpload(minioConfig.getDefaultBucketName(), null,fileName, uploadId, parts, null, null);
-//        return ResponseEntity.ok("File merged successfully");
-//
-//
-//    }
 
 
     @PostMapping(value = "/upload")

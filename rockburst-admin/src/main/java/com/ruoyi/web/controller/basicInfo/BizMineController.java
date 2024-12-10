@@ -1,49 +1,32 @@
 package com.ruoyi.web.controller.basicInfo;
 
-import java.util.List;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
-
+import com.ruoyi.system.domain.BizMine;
 import com.ruoyi.system.domain.BizMiningArea;
 import com.ruoyi.system.domain.dto.BizMineDto;
-import com.ruoyi.system.mapper.BizMineMapper;
+import com.ruoyi.system.service.IBizMineService;
 import com.ruoyi.system.service.IBizMiningAreaService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-//import org.springdoc.api.annotations.ParameterObject;
 import org.springdoc.api.annotations.ParameterObject;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.ruoyi.common.annotation.Log;
-import com.ruoyi.common.core.controller.BaseController;
-import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.system.domain.BizMine;
-import com.ruoyi.system.service.IBizMineService;
-import com.ruoyi.common.utils.poi.ExcelUtil;
-import com.ruoyi.common.core.page.TableDataInfo;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 矿井管理Controller
@@ -51,7 +34,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @author ruoyi
  * @date 2024-11-11
  */
-@Api("矿井管理Controller")
+@Api(tags = "basic-矿井管理")
 //@Tag(description = "矿井管理Controller", name = "矿井管理Controller")
 @RestController
 @RequestMapping("/basicInfo/mine")
@@ -72,6 +55,20 @@ public class BizMineController extends BaseController
     public R<MPage<BizMine>> list(@ParameterObject BizMineDto dto, @ParameterObject Pagination pagination)
     {
         MPage<BizMine> list = bizMineService.selectBizMineList(dto,pagination);
+        return R.ok(list);
+    }
+
+
+    @ApiOperation("下拉全部矿列表")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+    @GetMapping("/checkList")
+    public R<List<BizMine>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss)
+    {
+        QueryWrapper<BizMine> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .in(statuss != null && statuss.length > 0, BizMine::getStatus, statuss)
+                .eq(BizMine::getDelFlag,BizBaseConstant.DELFLAG_N);
+        List<BizMine> list = bizMineService.getBaseMapper().selectList(queryWrapper);
         return R.ok(list);
     }
 
@@ -97,9 +94,9 @@ public class BizMineController extends BaseController
     @ApiOperation("获取矿井管理详细信息")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
     @GetMapping(value = "/{mineId}")
-    public AjaxResult getInfo(@PathVariable("mineId") Long mineId)
+    public R<BizMine> getInfo(@PathVariable("mineId") Long mineId)
     {
-        return success(bizMineService.selectBizMineByMineId(mineId));
+        return R.ok(bizMineService.selectBizMineByMineId(mineId));
     }
 
     /**
@@ -109,11 +106,11 @@ public class BizMineController extends BaseController
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:add')")
     @Log(title = "矿井管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody @Validated(value = {GroupAdd.class}) BizMineDto dto)
+    public R add(@RequestBody @Validated(value = {GroupAdd.class}) BizMineDto dto)
     {
         BizMine entity = new BizMine();
         BeanUtil.copyProperties(dto, entity);
-        return toAjax(bizMineService.insertBizMine(entity));
+        return R.ok(bizMineService.insertBizMine(entity));
     }
 
     /**
@@ -123,11 +120,11 @@ public class BizMineController extends BaseController
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:edit')")
     @Log(title = "矿井管理", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizMineDto dto)
+    public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizMineDto dto)
     {
         BizMine entity = new BizMine();
         BeanUtil.copyProperties(dto, entity);
-        return toAjax(bizMineService.updateBizMine(entity));
+        return R.ok(bizMineService.updateBizMine(entity));
     }
 
     /**
@@ -137,15 +134,15 @@ public class BizMineController extends BaseController
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
     @Log(title = "矿井管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/{mineIds}")
-    public AjaxResult remove(@PathVariable Long[] mineIds)
+    public R remove(@PathVariable Long[] mineIds)
     {
         QueryWrapper<BizMiningArea> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(BizMiningArea::getMineId, mineIds).eq(BizMiningArea::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = bizMiningAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的矿井下还有采区");
+        Assert.isTrue(count == 0, "选择的矿井下还有采区");
         UpdateWrapper<BizMine> updateWrapper = new UpdateWrapper<>();
         updateWrapper.lambda().in(BizMine::getMineId, mineIds).set(BizMine::getDelFlag,BizBaseConstant.DELFLAG_Y);
-        return toAjax(bizMineService.update(updateWrapper));
+        return R.ok(bizMineService.update(updateWrapper));
     }
 
 
@@ -156,14 +153,14 @@ public class BizMineController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
     @Log(title = "矿井管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/one/{mineId}")
-    public AjaxResult remove(@PathVariable("mineId") Long mineId)
+    public R remove(@PathVariable("mineId") Long mineId)
     {
         QueryWrapper<BizMiningArea> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(BizMiningArea::getMineId, mineId).eq(BizMiningArea::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = bizMiningAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的矿井下还有采区");
+        Assert.isTrue(count == 0, "选择的矿井下还有采区");
         BizMine entity = new BizMine();
         entity.setMineId(mineId).setDelFlag(BizBaseConstant.DELFLAG_Y);
-        return toAjax(bizMineService.updateBizMine(entity));
+        return R.ok(bizMineService.updateBizMine(entity));
     }
 }

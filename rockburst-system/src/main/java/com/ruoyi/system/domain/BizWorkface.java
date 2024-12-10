@@ -1,20 +1,21 @@
 package com.ruoyi.system.domain;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
+import com.ruoyi.system.constant.GroupAdd;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import com.ruoyi.common.annotation.Excel;
 import lombok.experimental.Accessors;
+
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 工作面管理对象 biz_workface
@@ -37,6 +38,10 @@ public class BizWorkface extends BaseSelfEntity
     /** 所属矿井ID（外键） */
     @ApiModelProperty(value = "所属矿井ID", example = "外=键")
     private Long mineId;
+
+    @ApiModelProperty(value = "工作面编号")
+    @NotNull(groups = GroupAdd.class)
+    private String workfaceNo;
 
     /** 工作面名称 */
     @ApiModelProperty(value = "工作面名称")
@@ -68,6 +73,11 @@ public class BizWorkface extends BaseSelfEntity
     /** 工作面负责人 */
     @ApiModelProperty(value = "工作面负责人")
     private String leader;
+
+    /** 煤层厚度 */
+    @ApiModelProperty(value = "煤层厚度")
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal depth;
 
     /** 所属采区 */
     @ApiModelProperty(value = "所属采区")
