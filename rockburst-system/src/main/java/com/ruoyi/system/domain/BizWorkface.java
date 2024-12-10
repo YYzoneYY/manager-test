@@ -6,12 +6,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
+import com.ruoyi.system.constant.GroupAdd;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -36,6 +38,10 @@ public class BizWorkface extends BaseSelfEntity
     /** 所属矿井ID（外键） */
     @ApiModelProperty(value = "所属矿井ID", example = "外=键")
     private Long mineId;
+
+    @ApiModelProperty(value = "工作面编号")
+    @NotNull(groups = GroupAdd.class)
+    private String workfaceNo;
 
     /** 工作面名称 */
     @ApiModelProperty(value = "工作面名称")

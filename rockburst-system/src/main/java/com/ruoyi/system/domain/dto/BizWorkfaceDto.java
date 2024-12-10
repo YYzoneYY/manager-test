@@ -33,6 +33,11 @@ public class BizWorkfaceDto
 //    @NotNull(groups = GroupAdd.class)
     private Long mineId;
 
+    @ApiModelProperty(value = "工作面编号",required = true)
+    @NotNull(groups = GroupAdd.class)
+    private String workfaceNo;
+
+
     /** 工作面名称 */
     @ApiModelProperty(value = "工作面名称",required = true)
     @NotNull(groups = GroupAdd.class)
