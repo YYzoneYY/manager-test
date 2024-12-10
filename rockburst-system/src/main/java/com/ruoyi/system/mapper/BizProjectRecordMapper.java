@@ -1,13 +1,8 @@
 package com.ruoyi.system.mapper;
 
-import java.util.List;
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.yulichang.base.MPJBaseMapper;
-import com.ruoyi.system.domain.BizDrillRecord;
 import com.ruoyi.system.domain.BizProjectRecord;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.stereotype.Repository;
 
 /**
  * 工程填报记录Mapper接口

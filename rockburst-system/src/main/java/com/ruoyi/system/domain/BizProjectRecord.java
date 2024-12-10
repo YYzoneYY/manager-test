@@ -1,6 +1,5 @@
 package com.ruoyi.system.domain;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -12,16 +11,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.github.yulichang.annotation.EntityMapping;
 import com.github.yulichang.annotation.FieldMapping;
-import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
 import com.ruoyi.system.domain.Entity.ClassesEntity;
 import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;

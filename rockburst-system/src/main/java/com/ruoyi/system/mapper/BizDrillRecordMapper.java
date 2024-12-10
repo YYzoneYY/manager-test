@@ -1,8 +1,5 @@
 package com.ruoyi.system.mapper;
 
-import java.util.List;
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.yulichang.base.MPJBaseMapper;
 import com.ruoyi.system.domain.BizDrillRecord;
 import org.apache.ibatis.annotations.Mapper;

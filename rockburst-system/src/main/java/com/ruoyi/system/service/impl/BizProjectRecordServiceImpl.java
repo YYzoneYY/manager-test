@@ -11,7 +11,6 @@ import com.github.yulichang.base.MPJBaseServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.annotation.DataScopeSelf;
 import com.ruoyi.common.core.domain.BasePermission;
-import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
@@ -23,7 +22,6 @@ import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
-import com.ruoyi.system.domain.Entity.EngineeringPlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizPlanDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
@@ -87,8 +85,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Autowired
     private BizTravePointMapper bizTravePointMapper;
 
-    @Autowired
-    EngineeringPlanMapper engineeringPlanMapper;
+//    @Autowired
+//    EngineeringPlanMapper engineeringPlanMapper;
 
     @Autowired
     ApachePoiLineChart apachePoiLineChart;
@@ -246,8 +244,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .selectAs(BizWorkface::getWorkfaceName,"workfaceName")
                 .selectAs(ConstructionUnitEntity::getConstructionUnitId, ConstructionUnitEntity::getConstructionUnitName)
                 .select(BizProjectRecord::getDrillNum,BizProjectRecord::getConstructTime,BizProjectRecord::getSteelBeltStart,BizProjectRecord::getSteelBeltEnd)
-                .select(BizDrillRecord::getRealDeep,BizDrillRecord::getDiameter,BizDrillRecord::getRemark)
-                .innerJoin(BizProjectRecord.class,BizProjectRecord::getProjectId,BizDrillRecord::getProjectId)
+                .select(BizDrillRecord::getRealDeep, BizDrillRecord::getDiameter, BizDrillRecord::getRemark)
+                .innerJoin(BizProjectRecord.class,BizProjectRecord::getProjectId, BizDrillRecord::getProjectId)
                 .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizProjectRecord::getTunnelId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId)
                 .leftJoin(ConstructionUnitEntity.class,ConstructionUnitEntity::getConstructionUnitId,BizProjectRecord::getConstructUnitId)
@@ -264,21 +262,21 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public MPage<Map<String, Object>> monitorProject(BizPlanDto dto, Pagination pagination) {
-
-        MPJLambdaWrapper<EngineeringPlanEntity> queryWrapper = new MPJLambdaWrapper<>();
-        queryWrapper
-                .selectAll(EngineeringPlanEntity.class)
-                .selectCount(BizDrillRecord::getDrillRecordId,"drillNum")
-                .selectSum(BizDrillRecord::getRealDeep,"deepNum")
-                .leftJoin(BizDrillRecord.class,BizDrillRecord::getPlanId,EngineeringPlanEntity::getEngineeringPlanId)
-                .eq(BizDrillRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
-                .eq(SysDept::getDelFlag,BizBaseConstant.DELFLAG_N)
-//                .eq(StrUtil.isNotBlank(dto.getSearchDate()),EngineeringPlanEntity::getEndTime,dto.getSearchDate())
-                .eq(dto.getDrillType() != null ,EngineeringPlanEntity::getDrillType,dto.getDrillType())
-                .eq(dto.getTunnelId() != null , EngineeringPlanEntity::getConstructSite , dto.getTunnelId())
-                .groupBy(EngineeringPlanEntity::getEngineeringPlanId);
-        IPage<Map<String,Object>> ps =  engineeringPlanMapper.selectJoinMapsPage(pagination,queryWrapper);
-        return new MPage<>(ps);
+//
+//        MPJLambdaWrapper<EngineeringPlanEntity> queryWrapper = new MPJLambdaWrapper<>();
+//        queryWrapper
+//                .selectAll(EngineeringPlanEntity.class)
+//                .selectCount(BizDrillRecord::getDrillRecordId,"drillNum")
+//                .selectSum(BizDrillRecord::getRealDeep,"deepNum")
+//                .leftJoin(BizDrillRecord.class, BizDrillRecord::getPlanId,EngineeringPlanEntity::getEngineeringPlanId)
+//                .eq(BizDrillRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
+//                .eq(SysDept::getDelFlag,BizBaseConstant.DELFLAG_N)
+////                .eq(StrUtil.isNotBlank(dto.getSearchDate()),EngineeringPlanEntity::getEndTime,dto.getSearchDate())
+//                .eq(dto.getDrillType() != null ,EngineeringPlanEntity::getDrillType,dto.getDrillType())
+//                .eq(dto.getTunnelId() != null , EngineeringPlanEntity::getConstructSite , dto.getTunnelId())
+//                .groupBy(EngineeringPlanEntity::getEngineeringPlanId);
+//        IPage<Map<String,Object>> ps =  engineeringPlanMapper.selectJoinMapsPage(pagination,queryWrapper);
+        return new MPage<>(null);
     }
 
     @Override
@@ -442,9 +440,9 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         projectQueryWrapper
                 .select(ConstructionUnitEntity::getConstructionUnitName)
                 .select(BizWorkface::getWorkfaceName)
-                .select(BizDrillRecord::getDirection,BizDrillRecord::getRealDeep)
+                .select(BizDrillRecord::getDirection, BizDrillRecord::getRealDeep)
                 .select(BizProjectRecord::getConstructUnitId,BizProjectRecord::getTunnelId,BizProjectRecord::getRemark)
-                .innerJoin(BizDrillRecord.class,BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
+                .innerJoin(BizDrillRecord.class, BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
                 .leftJoin(ConstructionUnitEntity.class,ConstructionUnitEntity::getConstructionUnitId,BizProjectRecord::getConstructUnitId)
                 .innerJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizProjectRecord::getTunnelId);
 //                .eq(BizDrillRecord::getDirection,direction)
@@ -493,7 +491,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .in(BizProjectRecord::getTunnelId,tunnelIds)
                 .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
                 .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
-                .innerJoin(BizDrillRecord.class,BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
+                .innerJoin(BizDrillRecord.class, BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId);
         List<BizProjectCDMAP> cdmaps = bizProjectRecordMapper.selectJoinList(BizProjectCDMAP.class,projectRecordQueryWrapper);
         Assert.isTrue(cdmaps != null && cdmaps.size() > 0, "没有记录");
