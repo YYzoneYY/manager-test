@@ -39,7 +39,7 @@ public class BizWorkfaceDto
     private String workfaceName;
 
     /** 工作面类型（如采掘、运输等） */
-    @ApiModelProperty(value = "工作面类型", example = " 采掘、运输等")
+    @ApiModelProperty(value = "工作面类型", example = " 采掘、运输等",required = true)
     @NotNull(groups = GroupAdd.class)
     private String type;
 
@@ -65,8 +65,14 @@ public class BizWorkfaceDto
 
     /** 工作面负责人 */
     @ApiModelProperty(value = "工作面负责人 ")
-    @NotNull(groups = GroupAdd.class)
+//    @NotNull(groups = GroupAdd.class)
     private String leader;
+
+    /** 煤层厚度 */
+    @ApiModelProperty(value = "煤层厚度",required = true)
+    @JsonSerialize(using= ToStringSerializer.class)
+//    @NotNull(groups = GroupAdd.class)
+    private BigDecimal depth;
 
     /** 所属采区 */
     @ApiModelProperty(value = "所属采区 ",required = true)
@@ -92,7 +98,7 @@ public class BizWorkfaceDto
     private BigDecimal dipLength;
 
     /** 走向长度（单位：米） */
-    @ApiModelProperty(value = "走向长度", example = " 单=位：米",required = true)
+    @ApiModelProperty(value = "走向长度", example = " 单=位：米")
     @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal strikeLength;
 

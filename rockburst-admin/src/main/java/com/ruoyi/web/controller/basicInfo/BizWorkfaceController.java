@@ -146,13 +146,13 @@ public class BizWorkfaceController extends BaseController
         queryWrapper.lambda().eq(SurveyAreaEntity::getWorkFaceId, workfaceId)
                 .eq(SurveyAreaEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = surveyAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的工作面下还有采区");
+        Assert.isTrue(count == 0, "选择的工作面下还有测区");
 
         QueryWrapper<TunnelEntity> tunnelQueryWrapper = new QueryWrapper<>();
         tunnelQueryWrapper.lambda().eq(TunnelEntity::getWorkFaceId, workfaceId);
 //                .eq(TunnelEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long tunnelCount = tunnelMapper.selectCount(tunnelQueryWrapper);
-        Assert.isTrue(tunnelCount > 0, "选择的工作面下还有巷道");
+        Assert.isTrue(tunnelCount == 0, "选择的工作面下还有巷道");
         BizWorkface entity = new BizWorkface();
         entity.setWorkfaceId(workfaceId).setDelFlag(BizBaseConstant.DELFLAG_N);
         return R.ok( bizWorkfaceService.updateById(entity));
@@ -172,9 +172,9 @@ public class BizWorkfaceController extends BaseController
         queryWrapper.lambda().in(SurveyAreaEntity::getWorkFaceId, workfaceIds)
                 .eq(SurveyAreaEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = surveyAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的工作面下还有采区");
+        Assert.isTrue(count == 0, "选择的工作面下还有测区");
         //todo 巷道 还没有基础接口
-        Assert.isTrue(count > 0, "选择的工作面下还有巷道");
+        Assert.isTrue(count == 0, "选择的工作面下还有巷道");
         UpdateWrapper<BizWorkface> updateWrapper = new UpdateWrapper<>();
         updateWrapper.lambda().in(BizWorkface::getWorkfaceId, workfaceIds)
                 .set(BizWorkface::getDelFlag, BizBaseConstant.DELFLAG_Y);

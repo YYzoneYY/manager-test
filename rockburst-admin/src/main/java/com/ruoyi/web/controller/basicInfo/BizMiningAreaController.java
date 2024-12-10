@@ -117,6 +117,7 @@ public class BizMiningAreaController extends BaseController
     /**
      * 删除采区管理
      */
+//    @Anonymous
     @ApiOperation("删除采区管理")
     @PreAuthorize("@ss.hasPermi('system:area:remove')")
     @Log(title = "采区管理", businessType = BusinessType.DELETE)
@@ -126,7 +127,7 @@ public class BizMiningAreaController extends BaseController
         QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(BizWorkface::getMiningAreaId, miningAreaId).eq(BizWorkface::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = bizWorkfaceService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的采区下还有工作面");
+        Assert.isTrue(count == 0, "选择的采区下还有工作面");
         BizMiningArea entity = new BizMiningArea();
         entity.setMiningAreaId(miningAreaId).setDelFlag(BizBaseConstant.DELFLAG_Y);
         return R.ok(bizMiningAreaService.updateById(entity));
@@ -143,7 +144,7 @@ public class BizMiningAreaController extends BaseController
         QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(BizWorkface::getMiningAreaId, miningAreaIds).eq(BizWorkface::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = bizWorkfaceService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的采区下还有工作面");
+        Assert.isTrue(count == 0, "选择的采区下还有工作面");
         UpdateWrapper<BizMiningArea> updateWrapper = new UpdateWrapper<>();
         updateWrapper.lambda().in(BizMiningArea::getMiningAreaId, miningAreaIds)
                 .set(BizMiningArea::getDelFlag, BizBaseConstant.DELFLAG_Y);

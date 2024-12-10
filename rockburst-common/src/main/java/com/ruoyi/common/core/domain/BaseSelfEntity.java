@@ -10,7 +10,6 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter
@@ -36,6 +35,7 @@ public class BaseSelfEntity implements Serializable {
 
     /** 创建者 */
     @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String createBy;
 
 

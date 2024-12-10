@@ -139,7 +139,7 @@ public class BizMineController extends BaseController
         QueryWrapper<BizMiningArea> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(BizMiningArea::getMineId, mineIds).eq(BizMiningArea::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = bizMiningAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的矿井下还有采区");
+        Assert.isTrue(count == 0, "选择的矿井下还有采区");
         UpdateWrapper<BizMine> updateWrapper = new UpdateWrapper<>();
         updateWrapper.lambda().in(BizMine::getMineId, mineIds).set(BizMine::getDelFlag,BizBaseConstant.DELFLAG_Y);
         return R.ok(bizMineService.update(updateWrapper));
@@ -158,7 +158,7 @@ public class BizMineController extends BaseController
         QueryWrapper<BizMiningArea> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(BizMiningArea::getMineId, mineId).eq(BizMiningArea::getDelFlag, BizBaseConstant.DELFLAG_N);
         Long count = bizMiningAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count > 0, "选择的矿井下还有采区");
+        Assert.isTrue(count == 0, "选择的矿井下还有采区");
         BizMine entity = new BizMine();
         entity.setMineId(mineId).setDelFlag(BizBaseConstant.DELFLAG_Y);
         return R.ok(bizMineService.updateBizMine(entity));

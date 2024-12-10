@@ -1,8 +1,5 @@
 package com.ruoyi.system.domain;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,8 +10,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import com.ruoyi.common.annotation.Excel;
 import lombok.experimental.Accessors;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 工作面管理对象 biz_workface
@@ -68,6 +67,11 @@ public class BizWorkface extends BaseSelfEntity
     /** 工作面负责人 */
     @ApiModelProperty(value = "工作面负责人")
     private String leader;
+
+    /** 煤层厚度 */
+    @ApiModelProperty(value = "煤层厚度")
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal depth;
 
     /** 所属采区 */
     @ApiModelProperty(value = "所属采区")
