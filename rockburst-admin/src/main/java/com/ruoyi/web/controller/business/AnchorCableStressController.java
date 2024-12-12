@@ -40,7 +40,7 @@ public class AnchorCableStressController {
 
     @ApiOperation(value = "根据主键查询", notes = "根据主键查询")
     @GetMapping(value = "/getById")
-    public R<AnchorCableStressDTO> detail(@ApiParam(name = "anchorCableStressId", value = "主键id", required = true) Long anchorCableStressId){
+    public R<AnchorCableStressDTO> detail(@ApiParam(name = "anchorCableStressId", value = "主键id", required = true) @RequestParam Long anchorCableStressId){
         return R.ok(this.anchorStressService.detail(anchorCableStressId));
     }
 

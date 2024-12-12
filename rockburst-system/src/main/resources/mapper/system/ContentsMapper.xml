@@ -2,4 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.ContentsMapper">
 
+    <select id="findAllByIdRecursive" resultType="com.ruoyi.system.domain.Entity.ContentsEntity" parameterType="map">
+        with recursive tmp as (select c1.*
+                               from contents c1
+                               where c1.contents_id = #{contentsId}
+                               union all
+                               select c2.*
+                               from contents c2
+                                inner join tmp on tmp.contents_id = c2.super_id)
+        select * from tmp
+    </select>
 </mapper>

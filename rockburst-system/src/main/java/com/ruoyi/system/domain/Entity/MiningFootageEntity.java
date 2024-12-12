@@ -39,7 +39,7 @@ public class MiningFootageEntity extends BusinessBaseEntity implements Serializa
     @ApiModelProperty("工作面id")
     @NotNull(groups = {ParameterValidationOther.class}, message = "工作面id不能为空")
     @TableField("workface_id")
-    private Long workfaceId;
+    private Long workFaceId;
 
     @ApiModelProperty("回采时间")
     @NotNull(groups = {ParameterValidationOther.class}, message = "回采时间不能为空")

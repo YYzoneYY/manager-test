@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ruoyi.system.domain.Entity.ContentsEntity;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 /**
  * @author: shikai
  * @date: 2024/12/7
@@ -12,4 +14,6 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface ContentsMapper extends BaseMapper<ContentsEntity> {
+
+    List<ContentsEntity> findAllByIdRecursive(Long contentsId);
 }

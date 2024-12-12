@@ -50,11 +50,11 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         if (miningFootageDTO.getMiningPace().compareTo(BigDecimal.ZERO) < 0) {
             throw new RuntimeException("输入的回采进尺不能或小于0");
         }
-        BizWorkface bizWorkface = bizWorkfaceMapper.selectById(miningFootageDTO.getWorkfaceId());
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectById(miningFootageDTO.getWorkFaceId());
         if (ObjectUtil.isEmpty(bizWorkface)) {
             throw new RuntimeException("选择的工作面不存在，请重新选择");
         }
-        BigDecimal surplusFaceTotal = surplusFaceTotal(miningFootageDTO.getWorkfaceId(), bizWorkface.getStrikeLength(), BigDecimal.ZERO);
+        BigDecimal surplusFaceTotal = surplusFaceTotal(miningFootageDTO.getWorkFaceId(), bizWorkface.getStrikeLength(), BigDecimal.ZERO);
         if (miningFootageDTO.getMiningPace().compareTo(surplusFaceTotal) > 0) {
             throw new RuntimeException("回采进尺不能大于剩余工作面长度" + surplusFaceTotal + "米");
         }
@@ -72,7 +72,7 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         BeanUtils.copyProperties(miningFootageDTO,miningFootageEntity);
         int insert = miningFootageMapper.insert(miningFootageEntity);
         if (insert > 0) {
-            changeWorkfaceStatus(miningFootageEntity.getWorkfaceId());
+            changeWorkfaceStatus(miningFootageEntity.getWorkFaceId());
         }
         BeanUtils.copyProperties(miningFootageEntity,miningFootageDTO);
         return miningFootageDTO;
@@ -92,8 +92,8 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         if (ObjectUtil.isEmpty(miningFootageEntity)) {
             throw new RuntimeException("回采进尺不存在");
         }
-        BizWorkface bizWorkface = bizWorkfaceMapper.selectById(miningFootageEntity.getWorkfaceId());
-        BigDecimal surplusFaceTotal = surplusFaceTotal(miningFootageDTO.getWorkfaceId(), bizWorkface.getStrikeLength(), BigDecimal.ZERO);
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectById(miningFootageEntity.getWorkFaceId());
+        BigDecimal surplusFaceTotal = surplusFaceTotal(miningFootageDTO.getWorkFaceId(), bizWorkface.getStrikeLength(), BigDecimal.ZERO);
         if (miningFootageDTO.getMiningPace().compareTo(surplusFaceTotal) > 0) {
             throw new RuntimeException("回采进尺不能大于剩余工作面长度" + surplusFaceTotal + "米");
         }
@@ -102,9 +102,9 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         miningFootageDTO.setUpdateBy(1L);
         boolean b = this.updateById(miningFootageEntity);
         if (b) {
-            changeWorkfaceStatus(miningFootageEntity.getWorkfaceId());
+            changeWorkfaceStatus(miningFootageEntity.getWorkFaceId());
             miningFootageDTO.setFlag(MiningFootageEnum.REVISE.getIndex());
-            miningFootageDTO.setWorkfaceId(miningFootageEntity.getWorkfaceId());
+            miningFootageDTO.setWorkFaceId(miningFootageEntity.getWorkFaceId());
             miningFootageDTO.setMiningTime(miningFootageEntity.getMiningTime());
             Long ts = System.currentTimeMillis();
             miningFootageDTO.setCreateTime(ts);
@@ -136,8 +136,8 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
                 .set(MiningFootageEntity::getFlag, MiningFootageEnum.ERASE.getIndex());//3-标识擦除
         int update = miningFootageMapper.update(null, updateWrapper);
         if (update > 0) {
-            changeWorkfaceStatus(miningFootageEntity.getWorkfaceId());
-            miningFootageDTO.setWorkfaceId(miningFootageEntity.getWorkfaceId());
+            changeWorkfaceStatus(miningFootageEntity.getWorkFaceId());
+            miningFootageDTO.setWorkFaceId(miningFootageEntity.getWorkFaceId());
             miningFootageDTO.setMiningTime(miningFootageEntity.getMiningTime());
             miningFootageDTO.setFlag(MiningFootageEnum.ERASE.getIndex()); //3-标识擦除
             miningFootageDTO.setMiningPaceEdit(BigDecimal.ZERO);
@@ -165,7 +165,7 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         }
         PageHelper.startPage(pageNum, pageSize);
         List<MiningFootageEntity> miningFootageEntities = miningFootageMapper.selectList(new LambdaQueryWrapper<MiningFootageEntity>()
-                .eq(MiningFootageEntity::getWorkfaceId, miningSelectDTO.getWorkFaceId()));
+                .eq(MiningFootageEntity::getWorkFaceId, miningSelectDTO.getWorkFaceId()));
         if (miningFootageEntities.isEmpty()){
             return null;
         }
@@ -178,7 +178,7 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
                     .collect(Collectors.toList());
 
             page.getResult().forEach(miningFootageDTO -> {
-                BigDecimal bigDecimal = miningPaceSum(miningFootageDTO.getWorkfaceId(), miningFootageDTO.getMiningTime());
+                BigDecimal bigDecimal = miningPaceSum(miningFootageDTO.getWorkFaceId(), miningFootageDTO.getMiningTime());
                 miningFootageDTO.setMiningPaceSum(bigDecimal);
                 collect.forEach(c -> {
                     if (miningFootageDTO.getMiningTime().equals(c)) {
@@ -202,7 +202,7 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
     public String queryByTime(Long miningTime, Long workfaceId) {
         LambdaQueryWrapper<MiningFootageEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(MiningFootageEntity::getMiningTime, miningTime)
-                .eq(MiningFootageEntity::getWorkfaceId, workfaceId);
+                .eq(MiningFootageEntity::getWorkFaceId, workfaceId);
         List<MiningFootageEntity> miningFootageEntities = miningFootageMapper.selectList(queryWrapper);
         if (!miningFootageEntities.isEmpty()) {
             return MiningFootageEnum.SAME_TIME.getIndex();
@@ -218,7 +218,7 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
     @Override
     public BigDecimal getSurplusLength(Long workfaceId) {
         Long selectCount = miningFootageMapper.selectCount(new LambdaQueryWrapper<MiningFootageEntity>()
-                .eq(MiningFootageEntity::getWorkfaceId, workfaceId));
+                .eq(MiningFootageEntity::getWorkFaceId, workfaceId));
         if (selectCount == 0) {
             return bizWorkfaceMapper.selectById(workfaceId).getStrikeLength();
         }

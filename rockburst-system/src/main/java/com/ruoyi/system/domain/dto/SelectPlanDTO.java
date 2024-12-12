@@ -12,20 +12,17 @@ import lombok.Data;
 @Data
 public class SelectPlanDTO {
 
-    @ApiModelProperty(value = "计划名称")
-    private String planName;
+    @ApiModelProperty(value = "目录id")
+    private Long contentsId;
 
     @ApiModelProperty(value = "类型")
     private String type;
 
-    @ApiModelProperty(value = "施工地点")
-    private Long constructSite;
-
-    @ApiModelProperty(value = "施工单位")
-    private Long constructionUnitId;
-
     @ApiModelProperty(value = "钻孔类型")
     private String drillType;
+
+    @ApiModelProperty(value = "计划名称")
+    private String planName;
 
     @ApiModelProperty(value = "状态")
     private String state;

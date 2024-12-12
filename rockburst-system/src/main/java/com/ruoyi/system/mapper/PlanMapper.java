@@ -6,6 +6,9 @@ import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
 import com.ruoyi.system.domain.vo.PlanVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -16,5 +19,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface PlanMapper extends BaseMapper<PlanEntity>{
 
-    Page<PlanVO> queryPage(SelectPlanDTO selectPlanDTO);
+    Page<PlanVO> queryPage(SelectPlanDTO selectPlanDTO, @Param("planIds") List<Long> planIds);
 }

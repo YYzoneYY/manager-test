@@ -34,5 +34,5 @@ public interface MiningFootageMapper extends BaseMapper<MiningFootageEntity> {
      * @param time 时间
      * @return 返回结果
      */
-    BigDecimal miningPaceSum(@Param("workfaceId") Long workfaceId,@Param("time")Long time );
+    BigDecimal miningPaceSum(@Param("workfaceId") Long workfaceId, @Param("time")Long time);
 }

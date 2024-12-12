@@ -55,7 +55,8 @@ public class MiningFootageController {
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
     @PostMapping(value = "/queryList")
-    public R<TableData> queryList(@RequestBody MiningSelectDTO miningSelectDTO, @RequestParam(required = false) Integer pageNum,
+    public R<TableData> queryList(@RequestBody MiningSelectDTO miningSelectDTO,
+                                  @RequestParam(required = false) Integer pageNum,
                                   @RequestParam(required = false) Integer pageSize){
         return R.ok(miningFootageService.pageQueryList(miningSelectDTO,pageNum,pageSize));
     }

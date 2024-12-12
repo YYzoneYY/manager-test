@@ -30,7 +30,7 @@ public class TunnelController {
 
 
     @ApiOperation(value = "新增巷道", notes = "新增巷道")
-    @GetMapping("/add")
+    @PostMapping("/add")
     public R<Object> addTunnel(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) TunnelDTO tunnelDTO) {
         return R.ok(tunnelService.insertTunnel(tunnelDTO));
     }
@@ -43,8 +43,8 @@ public class TunnelController {
 
     @ApiOperation(value = "巷道详情", notes = "巷道详情")
     @GetMapping("/detail")
-    public R<TunnelDTO> detail(@RequestBody TunnelDTO tunnelDTO) {
-        return R.ok(tunnelService.detail(tunnelDTO.getTunnelId()));
+    public R<TunnelDTO> detail(@ApiParam(name = "tunnelId", value = "巷道id", required = true) @RequestParam Long tunnelId) {
+        return R.ok(tunnelService.detail(tunnelId));
     }
 
     @ApiOperation(value = "根据条件参数分页查询数据列表", notes = "根据条件参数分页查询数据列表")

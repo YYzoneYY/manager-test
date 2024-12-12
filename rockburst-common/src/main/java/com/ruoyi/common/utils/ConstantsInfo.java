@@ -66,6 +66,11 @@ public class ConstantsInfo {
     public static final String AUDIT_SUCCESS = "1";
     public static final String AUDIT_REJECT = "2";
 
+    public static final String Year_plan = "1"; // 年计划
+    public static final String Month_plan = "2"; // 月计划
+    public static final String TEMPORARY_plan = "3"; // 临时计划
+    public static final String SPECIAL_plan = "4"; // 特殊计划
+
     // 类型 -掘进
     public static final String TUNNELING = "1";
     // 类型 - 回采

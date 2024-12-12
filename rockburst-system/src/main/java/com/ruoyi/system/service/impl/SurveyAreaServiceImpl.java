@@ -7,21 +7,29 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.system.domain.BizMiningArea;
+import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
-import com.ruoyi.system.domain.dto.SurveyAreaDTO;
-import com.ruoyi.system.domain.dto.SurveySelectDTO;
+import com.ruoyi.system.domain.Entity.TunnelEntity;
+import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.vo.SurveyAreaVO;
+import com.ruoyi.system.mapper.BizMiningAreaMapper;
+import com.ruoyi.system.mapper.BizWorkfaceMapper;
 import com.ruoyi.system.mapper.SurveyAreaMapper;
+import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.SurveyAreaService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author: shikai
@@ -34,6 +42,15 @@ public class SurveyAreaServiceImpl extends ServiceImpl<SurveyAreaMapper, SurveyA
 
     @Resource
     private SurveyAreaMapper surveyAreaMapper;
+
+    @Resource
+    private BizMiningAreaMapper bizMiningAreaMapper;
+
+    @Resource
+    private BizWorkfaceMapper bizWorkfaceMapper;
+
+    @Resource
+    private TunnelMapper tunnelMapper;
 
     /**
      * 新增测区
@@ -71,7 +88,9 @@ public class SurveyAreaServiceImpl extends ServiceImpl<SurveyAreaMapper, SurveyA
         if (ObjectUtil.isEmpty(surveyAreaDTO.getSurveyAreaId())) {
             throw new ServiceException("测区id不能为空!");
         }
-        SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectById(surveyAreaDTO.getMiningAreaId());
+        SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectOne(new LambdaQueryWrapper<SurveyAreaEntity>()
+                .eq(SurveyAreaEntity::getSurveyAreaId, surveyAreaDTO.getSurveyAreaId())
+                .eq(SurveyAreaEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isEmpty(surveyAreaEntity)) {
             throw new ServiceException("测区不存在!");
         }
@@ -100,7 +119,8 @@ public class SurveyAreaServiceImpl extends ServiceImpl<SurveyAreaMapper, SurveyA
     @Override
     public SurveyAreaDTO getSurveyAreaById(Long surveyAreaId) {
         LambdaQueryWrapper<SurveyAreaEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SurveyAreaEntity::getSurveyAreaId,surveyAreaId);
+        queryWrapper.eq(SurveyAreaEntity::getSurveyAreaId,surveyAreaId)
+                .eq(SurveyAreaEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
         SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectOne(queryWrapper);
         if (ObjectUtil.isEmpty(surveyAreaEntity)) {
             throw new ServiceException("未找到此数据!");
@@ -149,5 +169,75 @@ public class SurveyAreaServiceImpl extends ServiceImpl<SurveyAreaMapper, SurveyA
         List<Long> ids = Arrays.asList(surveyAreaIds);
         flag = this.removeBatchByIds(ids);
         return flag;
+    }
+
+    /**
+     * 获取采区下拉框
+     * @return 返回结果
+     */
+    @Override
+    public List<MiningAreaChoiceListDTO> getMiningAreaChoiceList() {
+        List<MiningAreaChoiceListDTO> miningAreaChoiceListDTOS = new ArrayList<>();
+        List<BizMiningArea> bizMiningAreas = bizMiningAreaMapper.selectList(new LambdaQueryWrapper<BizMiningArea>()
+                .eq(BizMiningArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ListUtils.isNotNull(bizMiningAreas)) {
+            miningAreaChoiceListDTOS = bizMiningAreas.stream().map(bizMiningArea -> {
+                MiningAreaChoiceListDTO miningAreaChoiceListDTO = new MiningAreaChoiceListDTO();
+                miningAreaChoiceListDTO.setLabel(bizMiningArea.getMiningAreaName());
+                miningAreaChoiceListDTO.setValue(bizMiningArea.getMiningAreaId());
+                return miningAreaChoiceListDTO;
+            }).collect(Collectors.toList());
+        }
+        return miningAreaChoiceListDTOS;
+    }
+
+    /**
+     * 获取工作面下拉框
+     * @param miningAreaId 采区id
+     * @return 返回结果
+     */
+    @Override
+    public List<FaceChoiceListDTO> getFaceChoiceList(Long miningAreaId) {
+        List<FaceChoiceListDTO> faceChoiceListDTOS = new ArrayList<>();
+        if (ObjectUtil.isNull(miningAreaId)) {
+            throw new RuntimeException("采区id不能为空!!");
+        }
+        List<BizWorkface> bizWorkFaces = bizWorkfaceMapper.selectList(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getMiningAreaId, miningAreaId)
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ListUtils.isNotNull(bizWorkFaces)) {
+            faceChoiceListDTOS = bizWorkFaces.stream().map(bizWorkface -> {
+                FaceChoiceListDTO faceChoiceListDTO = new FaceChoiceListDTO();
+                faceChoiceListDTO.setLabel(bizWorkface.getWorkfaceName());
+                faceChoiceListDTO.setValue(bizWorkface.getWorkfaceId());
+                return faceChoiceListDTO;
+            }).collect(Collectors.toList());
+        }
+        return faceChoiceListDTOS;
+    }
+
+    /**
+     * 获取工作面下拉框
+     * @param faceId 工作面id
+     * @return 返回结果
+     */
+    @Override
+    public List<TunnelChoiceListDTO> getTunnelChoiceList(Long faceId) {
+        List<TunnelChoiceListDTO> tunnelChoiceListDTOS = new ArrayList<>();
+        if (ObjectUtil.isNull(faceId)) {
+            throw new RuntimeException("工作面id不能为空!!");
+        }
+        List<TunnelEntity> tunnelEntities = tunnelMapper.selectList(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getWorkFaceId, faceId)
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ListUtils.isNotNull(tunnelEntities)) {
+            tunnelChoiceListDTOS = tunnelEntities.stream().map(tunnelEntity -> {
+                TunnelChoiceListDTO tunnelChoiceListDTO = new TunnelChoiceListDTO();
+                tunnelChoiceListDTO.setLabel(tunnelEntity.getTunnelName());
+                tunnelChoiceListDTO.setValue(tunnelEntity.getTunnelId());
+                return tunnelChoiceListDTO;
+            }).collect(Collectors.toList());
+        }
+        return tunnelChoiceListDTOS;
     }
 }

@@ -59,22 +59,18 @@ public class PlanEntity extends BusinessBaseEntity implements Serializable {
     private BigDecimal totalHoleDepth;
 
     @ApiModelProperty(value = "钻孔类型")
-    @NotBlank(groups = {ParameterValidationOther.class}, message = "钻孔类型不能为空")
     @TableField("drill_type")
     private String drillType;
 
     @ApiModelProperty(value = "计划开始时间")
-    @NotNull(groups = {ParameterValidationOther.class}, message = "计划开始时间不能为空")
     @TableField("start_time")
     private Long startTime;
 
     @ApiModelProperty(value = "计划结束时间")
-    @NotNull(groups = {ParameterValidationOther.class}, message = "计划结束时间不能为空")
     @TableField("end_time")
     private Long endTime;
 
     @ApiModelProperty(value = " 布置方式")
-    @NotBlank(groups = {ParameterValidationOther.class}, message = " 布置方式不能为空")
     @TableField("arrangement")
     private String arrangement;
 

@@ -3,14 +3,14 @@ package com.ruoyi.web.controller.business;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.*;
-import com.ruoyi.system.domain.dto.SurveyAreaDTO;
-import com.ruoyi.system.domain.dto.SurveySelectDTO;
+import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.service.SurveyAreaService;
 import io.swagger.annotations.*;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @title: 测区管理
@@ -86,5 +86,25 @@ public class SurveyAreaController {
     @DeleteMapping(value = "/delete")
     public R<Boolean> delete(@ApiParam(name = "surveyAreaIds", value = "测区id", required = true) @RequestParam Long[] surveyAreaIds) {
         return R.ok(surveyAreaService.deleteSurveyArea(surveyAreaIds), "删除成功");
+    }
+
+    @ApiOperation(value = "获取测区下拉框", notes = "获取测区下拉框")
+    @GetMapping(value = "/getMiningAreaChoiceList")
+    public R<List<MiningAreaChoiceListDTO>> getMiningAreaChoiceList(){
+    	return R.ok(surveyAreaService.getMiningAreaChoiceList());
+    }
+
+    @ApiOperation(value = "获取测区下拉框", notes = "获取测区下拉框")
+    @GetMapping(value = "/getFaceChoiceList")
+    public R<List<FaceChoiceListDTO>> getFaceChoiceList(@ApiParam(name = "miningAreaId", value = "测区id", required = true)
+                                                        @RequestParam Long miningAreaId){
+        return R.ok(surveyAreaService.getFaceChoiceList(miningAreaId));
+    }
+
+    @ApiOperation(value = "获取巷道下拉框", notes = "获取隧道下拉框")
+    @GetMapping(value = "/getTunnelChoiceList")
+    public R<List<TunnelChoiceListDTO>> getTunnelChoiceList(@ApiParam(name = "faceId", value = "面id", required = true)
+                                                            @RequestParam Long faceId){
+        return R.ok(surveyAreaService.getTunnelChoiceList(faceId));
     }
 }

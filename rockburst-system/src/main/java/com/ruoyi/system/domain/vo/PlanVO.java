@@ -1,9 +1,12 @@
 package com.ruoyi.system.domain.vo;
 
 import com.ruoyi.system.domain.Entity.PlanEntity;
+import com.ruoyi.system.domain.dto.RelatesInfoDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -15,11 +18,11 @@ import lombok.EqualsAndHashCode;
 @Data
 public class PlanVO extends PlanEntity {
 
-    @ApiModelProperty(value = "施工单位名称")
-    private String constructionUnitName;
+    @ApiModelProperty(value = "目录id")
+    private Long contentsId;
 
-    @ApiModelProperty(value = "施工地点名称")
-    private String constructSiteFmt;
+    @ApiModelProperty(value = "关联信息")
+    private List<RelatesInfoDTO> relatesInfoDTOS;
 
     @ApiModelProperty(value = "计划开始时间格式化")
     private String startTimeFmt;
