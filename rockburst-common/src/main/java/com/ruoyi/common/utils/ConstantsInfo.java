@@ -47,6 +47,11 @@ public class ConstantsInfo {
     public static final String SUPPORT_FORM_DICT_TYPE = "support_form";
     public static final String AUDIT_STATUS_DICT_TYPE = "audit_status";
 
+
+    public static final String WORKLOAD = "工作量";
+    public static final String DISTANCE = "距离";
+    public static final String WORKLOAD_DISTANCE = "工作量,距离";
+
     public static final Integer LEVEL = 1;
 
     public static final Integer NUMBER = 1;

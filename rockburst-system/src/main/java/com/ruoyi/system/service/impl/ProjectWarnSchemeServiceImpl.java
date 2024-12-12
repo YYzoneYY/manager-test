@@ -11,6 +11,7 @@ import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.ProjectWarnSchemeEntity;
 import com.ruoyi.system.domain.dto.DistanceRuleDTO;
@@ -200,6 +201,8 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
             page.getResult().forEach(projectWarnSchemeVO -> {
                 String distanceRule= projectWarnSchemeVO.getDistanceRule().trim();
                 String workloadRule = projectWarnSchemeVO.getWorkloadRule().trim();
+                String warnType = getWarnType(distanceRule, workloadRule);
+                projectWarnSchemeVO.setWarnType(warnType);
                 try {
                     DistanceRuleDTO distanceRuleDTO = objectMapper.readValue(distanceRule, DistanceRuleDTO.class);
                     List<WorkloadRuleDTO> workloadRuleDTOS = objectMapper.readValue(workloadRule, new TypeReference<List<WorkloadRuleDTO>>() {});
@@ -287,5 +290,22 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 获取预警类型
+     */
+    private String getWarnType(String distanceRule, String workloadRule) {
+        String warnType = "";
+        if (StringUtils.isNotBlank(distanceRule) && StringUtils.isNotBlank(workloadRule)) {
+            warnType = ConstantsInfo.WORKLOAD_DISTANCE;
+        }
+        if (StringUtils.isNotBlank(distanceRule) && StringUtils.isBlank(workloadRule)) {
+            warnType = ConstantsInfo.DISTANCE;
+        }
+        if (StringUtils.isBlank(distanceRule) && StringUtils.isNotBlank(workloadRule)) {
+            warnType = ConstantsInfo.WORKLOAD;
+        }
+        return warnType;
     }
 }
