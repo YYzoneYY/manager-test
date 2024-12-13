@@ -1,28 +1,20 @@
 package com.ruoyi.system.service.impl;
 
-import java.util.Arrays;
-import java.util.List;
-
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ruoyi.common.core.domain.entity.SysUser;
-import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
-import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.BizMine;
 import com.ruoyi.system.domain.dto.BizMineDto;
-import com.ruoyi.system.mapper.BizProjectRecordMapper;
-import com.ruoyi.system.service.IBizProjectRecordService;
+import com.ruoyi.system.mapper.BizMineMapper;
+import com.ruoyi.system.service.IBizMineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.BizMineMapper;
-import com.ruoyi.system.domain.BizMine;
-import com.ruoyi.system.service.IBizMineService;
+
+import java.util.Arrays;
 
 /**
  * 矿井管理Service业务层处理
@@ -59,6 +51,9 @@ public class BizMineServiceImpl  extends ServiceImpl<BizMineMapper, BizMine> imp
     {
         QueryWrapper<BizMine> queryWrapper = new QueryWrapper<BizMine>();
         queryWrapper.lambda()
+                .eq(StrUtil.isNotEmpty(bizMine.getStatus()),BizMine::getStatus,bizMine.getStatus())
+                .like(StrUtil.isNotEmpty(bizMine.getMineCode()),BizMine::getMineCode,bizMine.getMineCode())
+                .like(StrUtil.isNotEmpty(bizMine.getSocialCreditCode()),BizMine::getSocialCreditCode,bizMine.getSocialCreditCode())
                 .like(StrUtil.isNotEmpty( bizMine.getMineName()), BizMine::getMineName, bizMine.getMineName())
                 .eq(BizMine::getDelFlag, BizBaseConstant.DELFLAG_N);
         IPage<BizMine> list = bizMineMapper.selectPage(pagination,queryWrapper);
@@ -75,7 +70,6 @@ public class BizMineServiceImpl  extends ServiceImpl<BizMineMapper, BizMine> imp
     public int insertBizMine(BizMine bizMine)
     {
 
-        bizMine.setStatus(BizBaseConstant.MINE_STATUS_ON);
         return bizMineMapper.insert(bizMine);
     }
 
