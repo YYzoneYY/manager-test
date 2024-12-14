@@ -10,7 +10,6 @@ import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.constant.BizBaseConstant;
-import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.BizMine;
 import com.ruoyi.system.domain.BizMiningArea;
@@ -66,7 +65,6 @@ public class BizMineController extends BaseController
     {
         QueryWrapper<BizMine> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
-                .in(statuss != null && statuss.length > 0, BizMine::getStatus, statuss)
                 .eq(BizMine::getDelFlag,BizBaseConstant.DELFLAG_N);
         List<BizMine> list = bizMineService.getBaseMapper().selectList(queryWrapper);
         return R.ok(list);
@@ -106,7 +104,7 @@ public class BizMineController extends BaseController
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:add')")
     @Log(title = "矿井管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public R add(@RequestBody @Validated(value = {GroupAdd.class}) BizMineDto dto)
+    public R add(@RequestBody  BizMineDto dto)
     {
         BizMine entity = new BizMine();
         BeanUtil.copyProperties(dto, entity);
