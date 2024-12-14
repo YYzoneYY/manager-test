@@ -7,7 +7,7 @@
         select sum(r.mining_pace) as minedLength
         from mining_footage mf
         <where>
-            mf.workface_id=#{workFaceId} and mf.del_flag = '0'
+            mf.workface_id=#{workfaceId} and mf.del_flag = '0'
         </where>
     </select>
 
@@ -37,7 +37,7 @@
                 </otherwise>
             </choose>
             and mf.del_flag = '0'
-            and mf.workface_id=#{workFaceId}
+            and mf.workface_id=#{workfaceId}
         </where>
         order by mf.mining_time desc
     </select>
