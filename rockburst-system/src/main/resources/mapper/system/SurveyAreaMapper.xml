@@ -17,22 +17,22 @@
         from survey_area as sa
         <where>
             <if test="surveyAreaName != null and surveyAreaName != ''">
-                and sa.survey_area_name like concat('%',#{SurveySelectDTO.surveyAreaName},'%')
+                and sa.survey_area_name like concat('%',#{surveyAreaName},'%')
             </if>
-            <if test="workFaceId != null">
-                and sa.workface_id = #{SurveySelectDTO.workFaceId}
+            <if test="workFaceId != null and workFaceId != ''">
+                and sa.workface_id = #{workFaceId}
             </if>
-            <if test="miningAreaId != null">
-                and sa.mining_area_id = #{SurveySelectDTO.miningAreaId}
+            <if test="miningAreaId != null and miningAreaId != ''">
+                and sa.mining_area_id = #{miningAreaId}
             </if>
-            <if test="tunnelId != null">
-                and sa.tunnel_id = #{SurveySelectDTO.tunnelId}
+            <if test="tunnelId != null and tunnelId != ''">
+                and sa.tunnel_id = #{tunnelId}
             </if>
-            <if test="startTime != null">
-                and sa.create_time &gt;= #{SurveySelectDTO.startTime}
+            <if test="startTime != null and startTime != ''">
+                and sa.create_time &gt;= #{startTime}
             </if>
-            <if test="endTime != null">
-                and sa.create_time &lt;= #{SurveySelectDTO.endTime}
+            <if test="endTime != null and endTime != ''">
+                and sa.create_time &lt;= #{endTime}
             </if>
             and sa.del_flag = '0'
         </where>

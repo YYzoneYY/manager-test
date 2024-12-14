@@ -106,11 +106,14 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
         if (ObjectUtil.isNull(tunnelId)) {
             throw new RuntimeException("参数错误,主键不能为空");
         }
-        TunnelEntity tunnelEntity = tunnelMapper.selectById(tunnelId);
+        TunnelEntity tunnelEntity = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getTunnelId, tunnelId)
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(tunnelEntity)) {
             throw new RuntimeException("未找到此巷道");
         }
         TunnelDTO tunnelDTO = new TunnelDTO();
+        BeanUtils.copyProperties(tunnelEntity, tunnelDTO);
         String workFaceName = getWorkFaceName(tunnelEntity.getWorkFaceId());
         tunnelDTO.setWorkFaceName(workFaceName);
         String shape = sysDictDataMapper.selectDictLabel(ConstantsInfo.SECTION_SHAPE_DICT_TYPE, tunnelEntity.getSectionShape());
