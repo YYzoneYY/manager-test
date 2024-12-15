@@ -49,4 +49,11 @@ public interface ProjectWarnSchemeService extends IService<ProjectWarnSchemeEnti
      * @return 返回结果
      */
     boolean deleteById(Long[] projectWarnSchemeIds);
+
+    /**
+     * (批量)启用/禁用
+     * @param projectWarnSchemeIds 主键id数组
+     * @return 返回结果
+     */
+    int batchEnableDisable(Long[] projectWarnSchemeIds);
 }

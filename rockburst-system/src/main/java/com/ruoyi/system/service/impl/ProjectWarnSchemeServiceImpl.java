@@ -176,7 +176,7 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
             throw new RuntimeException(e);
         }
 
-        return null;
+        return projectWarnSchemeDTO;
     }
 
     /**
@@ -231,10 +231,42 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
             throw new RuntimeException("请选择要删除的数据!");
         }
         List<Long> projectWarnSchemeIdList = Arrays.asList(projectWarnSchemeIds);
-//        projectWarnSchemeIdList.forEach(projectWarnSchemeId -> {
-//
-//        })
+        projectWarnSchemeIdList.forEach(projectWarnSchemeId -> {
+            ProjectWarnSchemeEntity projectWarnSchemeEntity = projectWarnSchemeMapper.selectOne(new LambdaQueryWrapper<ProjectWarnSchemeEntity>()
+                    .eq(ProjectWarnSchemeEntity::getProjectWarnSchemeId, projectWarnSchemeId)
+                    .eq(ProjectWarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNull(projectWarnSchemeEntity)) {
+                throw new RuntimeException("未找到id为" + projectWarnSchemeId + "的数据");
+            }
+            if (StringUtils.equals(ConstantsInfo.ENABLE, projectWarnSchemeEntity.getStatus())) {
+                throw new RuntimeException("该预警方案已启用,无法删除");
+            }
+        });
         flag = this.removeBatchByIds(projectWarnSchemeIdList);
+        return flag;
+    }
+
+    @Override
+    public int batchEnableDisable(Long[] projectWarnSchemeIds) {
+        int flag = 0;
+        if (projectWarnSchemeIds.length == 0) {
+            throw new RuntimeException("请选择要禁用的数据!");
+        }
+        List<Long> projectWarnSchemeIdList = Arrays.asList(projectWarnSchemeIds);
+        projectWarnSchemeIdList.forEach(projectWarnSchemeId -> {
+            ProjectWarnSchemeEntity projectWarnSchemeEntity = projectWarnSchemeMapper.selectOne(new LambdaQueryWrapper<ProjectWarnSchemeEntity>()
+                    .eq(ProjectWarnSchemeEntity::getProjectWarnSchemeId, projectWarnSchemeId)
+                    .eq(ProjectWarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNull(projectWarnSchemeEntity)) {
+                throw new RuntimeException("未找到id为" + projectWarnSchemeId + "的数据");
+            }
+            if (StringUtils.equals(ConstantsInfo.ENABLE, projectWarnSchemeEntity.getStatus())) {
+                projectWarnSchemeEntity.setStatus(ConstantsInfo.DISABLE);
+            } else {
+                projectWarnSchemeEntity.setStatus(ConstantsInfo.ENABLE);
+            }
+            projectWarnSchemeMapper.updateById(projectWarnSchemeEntity);
+        });
         return flag;
     }
 

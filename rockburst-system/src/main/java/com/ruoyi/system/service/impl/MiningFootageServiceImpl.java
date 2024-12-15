@@ -9,6 +9,7 @@ import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.enums.MiningFootageEnum;
 import com.ruoyi.common.enums.WorkFaceType;
+import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
@@ -68,13 +69,13 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         miningFootageDTO.setUpdateTime(ts);
         miningFootageDTO.setCreateBy(1L);
         miningFootageDTO.setUpdateBy(1L);
+        miningFootageDTO.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         MiningFootageEntity miningFootageEntity = new MiningFootageEntity();
         BeanUtils.copyProperties(miningFootageDTO,miningFootageEntity);
         int insert = miningFootageMapper.insert(miningFootageEntity);
         if (insert > 0) {
-            changeWorkfaceStatus(miningFootageEntity.getWorkFaceId());
+            BeanUtils.copyProperties(miningFootageEntity,miningFootageDTO);
         }
-        BeanUtils.copyProperties(miningFootageEntity,miningFootageDTO);
         return miningFootageDTO;
     }
 
@@ -102,7 +103,6 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         miningFootageDTO.setUpdateBy(1L);
         boolean b = this.updateById(miningFootageEntity);
         if (b) {
-            changeWorkfaceStatus(miningFootageEntity.getWorkFaceId());
             miningFootageDTO.setFlag(MiningFootageEnum.REVISE.getIndex());
             miningFootageDTO.setWorkFaceId(miningFootageEntity.getWorkFaceId());
             miningFootageDTO.setMiningTime(miningFootageEntity.getMiningTime());
@@ -136,7 +136,6 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
                 .set(MiningFootageEntity::getFlag, MiningFootageEnum.ERASE.getIndex());//3-标识擦除
         int update = miningFootageMapper.update(null, updateWrapper);
         if (update > 0) {
-            changeWorkfaceStatus(miningFootageEntity.getWorkFaceId());
             miningFootageDTO.setWorkFaceId(miningFootageEntity.getWorkFaceId());
             miningFootageDTO.setMiningTime(miningFootageEntity.getMiningTime());
             miningFootageDTO.setFlag(MiningFootageEnum.ERASE.getIndex()); //3-标识擦除
@@ -220,13 +219,31 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         Long selectCount = miningFootageMapper.selectCount(new LambdaQueryWrapper<MiningFootageEntity>()
                 .eq(MiningFootageEntity::getWorkFaceId, workfaceId));
         if (selectCount == 0) {
-            return bizWorkfaceMapper.selectById(workfaceId).getStrikeLength();
+            BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                    .eq(BizWorkface::getWorkfaceId, workfaceId)
+                    .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNull(bizWorkface)) {
+                throw new RuntimeException("未找到工作面信息");
+            }
+            return bizWorkface.getStrikeLength();
         }
         BigDecimal mineTotalLength = miningFootageMapper.minedLength(workfaceId); //已开采的的工作长度
-        BizWorkface bizWorkface = bizWorkfaceMapper.selectById(workfaceId);
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceId, workfaceId)
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNotEmpty(bizWorkface)) {
             BigDecimal strikeLength = bizWorkface.getStrikeLength(); //工作面的总长度
-            return strikeLength.subtract(mineTotalLength); //剩余可开采的工作面长度
+            BigDecimal subtract = strikeLength.subtract(mineTotalLength);//剩余可开采的工作面长度
+
+            BizWorkface workface = new BizWorkface();
+            BeanUtils.copyProperties(bizWorkface, workface);
+            if (subtract.equals(BigDecimal.ZERO) || subtract.compareTo(BigDecimal.ZERO) < 0) {
+                workface.setStatus(WorkFaceType.kcw.getCode());
+            } else {
+                workface.setStatus(WorkFaceType.kcz.getCode());
+            }
+            bizWorkfaceMapper.updateById(workface);
+            return subtract;
         } else {
             throw new RuntimeException("未找到工作面信息");
         }
@@ -240,28 +257,6 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
      */
     public BigDecimal miningPaceSum(Long workfaceId, Long time) {
         return miningFootageMapper.miningPaceSum(workfaceId, time);
-    }
-
-    /**
-     * 根据回采进尺修改工作面状态
-     * @param workfaceId 工作面id
-     */
-    private void changeWorkfaceStatus(Long workfaceId) {
-        BizWorkface bizWorkface = bizWorkfaceMapper.selectById(workfaceId);
-        if (ObjectUtil.isNotEmpty(bizWorkface)) {
-            BigDecimal strikeLength = bizWorkface.getStrikeLength(); //工作面的总长度
-            BigDecimal mineTotalLength = miningFootageMapper.minedLength(workfaceId); //已开采的的工作长度
-            BigDecimal subtract = strikeLength.subtract(mineTotalLength);//剩余可开采的工作面长度
-            BizWorkface bizWorkface1 = bizWorkfaceMapper.selectById(workfaceId);
-            BizWorkface workface = new BizWorkface();
-            BeanUtils.copyProperties(bizWorkface1, workface);
-            if (subtract.equals(BigDecimal.ZERO) || subtract.compareTo(BigDecimal.ZERO) < 0) {
-                workface.setStatus(WorkFaceType.kcw.getCode());
-            } else {
-                workface.setStatus(WorkFaceType.kcz.getCode());
-            }
-            bizWorkfaceMapper.updateById(workface);
-        }
     }
 
     /**

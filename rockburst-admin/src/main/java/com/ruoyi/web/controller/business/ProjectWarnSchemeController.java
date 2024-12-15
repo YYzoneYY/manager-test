@@ -61,4 +61,11 @@ public class ProjectWarnSchemeController {
                             @RequestParam Long[] projectWarnSchemeIds) {
         return R.ok(this.projectWarnSchemeService.deleteById(projectWarnSchemeIds));
     }
+
+    @ApiOperation(value = "批量启用/禁用", notes = "批量启用/禁用")
+    @PutMapping(value = "/batchEnableDisable")
+    public R<Object> batchEnableDisable(@ApiParam(name = "projectWarnSchemeIds", value = "主键id数组", required = true)
+                                        @RequestParam Long[] projectWarnSchemeIds){
+        return R.ok(this.projectWarnSchemeService.batchEnableDisable(projectWarnSchemeIds));
+    }
 }
