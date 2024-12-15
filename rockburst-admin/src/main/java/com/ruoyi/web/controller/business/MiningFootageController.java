@@ -39,14 +39,14 @@ public class MiningFootageController {
 
     @ApiOperation(value = "回采进尺修改", notes = "回采进尺修改")
     @PutMapping("/update")
-    public R<MiningFootageEntity> update(@RequestBody @Validated(value = {ParameterValidationUpdate.class, ParameterValidationOther.class}) MiningFootageDTO miningFootageDTO){
+    public R<MiningFootageEntity> update(@RequestBody @Validated(value = {ParameterValidationUpdate.class}) MiningFootageDTO miningFootageDTO){
         return R.ok(miningFootageService.updateMiningFootage(miningFootageDTO),"修改成功");
     }
 
     @ApiOperation(value = "回采进尺擦除", notes = "回采进尺擦除")
     @DeleteMapping(value = "/clear")
     public R<Integer> clear(@RequestBody MiningFootageDTO miningFootageDTO){
-        return R.ok(miningFootageService.clear(miningFootageDTO),"删除成功");
+        return R.ok(miningFootageService.clear(miningFootageDTO),"擦除成功");
     }
 
     @ApiOperation(value = "根据条件参数分页查询数据列表接口", notes = "根据条件参数分页查询数据列表接口")

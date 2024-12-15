@@ -75,6 +75,7 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
         }
         projectWarnSchemeEntity.setCreateTime(System.currentTimeMillis());
         projectWarnSchemeEntity.setCreateBy(1L);
+        projectWarnSchemeEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = projectWarnSchemeMapper.insert(projectWarnSchemeEntity);
         if (flag <= 0) {
             throw new RuntimeException("新增预警方案失败");
@@ -297,14 +298,14 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
      */
     private String getWarnType(String distanceRule, String workloadRule) {
         String warnType = "";
-        if (StringUtils.isNotBlank(distanceRule) && StringUtils.isNotBlank(workloadRule)) {
+        if (!distanceRule.trim().equals("null") && !workloadRule.trim().equals("null")) {
             warnType = ConstantsInfo.WORKLOAD_DISTANCE;
         }
-        if (StringUtils.isNotBlank(distanceRule) && StringUtils.isBlank(workloadRule)) {
-            warnType = ConstantsInfo.DISTANCE;
-        }
-        if (StringUtils.isBlank(distanceRule) && StringUtils.isNotBlank(workloadRule)) {
+        if (distanceRule.trim().equals("null") && !workloadRule.trim().equals("null")) {
             warnType = ConstantsInfo.WORKLOAD;
+        }
+        if (!distanceRule.trim().equals("null") && workloadRule.trim().equals("null")) {
+            warnType = ConstantsInfo.DISTANCE;
         }
         return warnType;
     }

@@ -3,8 +3,8 @@
 <mapper namespace="com.ruoyi.system.mapper.MiningFootageMapper">
 
     <!--统计开采的总长度-->
-    <select id="minedLength">
-        select sum(r.mining_pace) as minedLength
+    <select id="minedLength" resultType="java.math.BigDecimal">
+        select sum(mf.mining_pace) as minedLength
         from mining_footage mf
         <where>
             mf.workface_id=#{workfaceId} and mf.del_flag = '0'
@@ -37,7 +37,7 @@
                 </otherwise>
             </choose>
             and mf.del_flag = '0'
-            and mf.workface_id=#{workfaceId}
+            and mf.workface_id = #{workFaceId}
         </where>
         order by mf.mining_time desc
     </select>
