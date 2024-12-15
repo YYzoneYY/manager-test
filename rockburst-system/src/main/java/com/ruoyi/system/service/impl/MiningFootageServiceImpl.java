@@ -98,6 +98,7 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         if (miningFootageDTO.getMiningPace().compareTo(surplusFaceTotal) > 0) {
             throw new RuntimeException("回采进尺不能大于剩余工作面长度" + surplusFaceTotal + "米");
         }
+        miningFootageEntity.setMiningPace(miningFootageDTO.getMiningPaceEdit());
         miningFootageEntity.setFlag(MiningFootageEnum.REVISE.getIndex());
         miningFootageDTO.setUpdateTime(System.currentTimeMillis());
         miningFootageDTO.setUpdateBy(1L);
