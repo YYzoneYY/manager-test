@@ -11,18 +11,20 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
+import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
+import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.SelectTunnelDTO;
 import com.ruoyi.system.domain.dto.TunnelDTO;
 import com.ruoyi.system.domain.vo.TunnelVO;
-import com.ruoyi.system.mapper.BizWorkfaceMapper;
-import com.ruoyi.system.mapper.SysDictDataMapper;
-import com.ruoyi.system.mapper.TunnelMapper;
+import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.TunnelService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author: shikai
@@ -41,6 +43,12 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
 
     @Resource
     private SysDictDataMapper sysDictDataMapper;
+
+    @Resource
+    private RelatesInfoMapper relatesInfoMapper;
+
+    @Resource
+    private SurveyAreaMapper surveyAreaMapper;
 
     /**
      * 新增巷道
@@ -153,7 +161,28 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
 
     @Override
     public boolean deleteByIds(Long[] tunnelIds) {
-        return false;
+        boolean flag = false;
+        if (tunnelIds.length == 0) {
+            throw new RuntimeException("请选择要删除的数据!");
+        }
+        List<Long> tunnelIdList = Arrays.asList(tunnelIds);
+        tunnelIdList.forEach(tunnelId -> {
+            RelatesInfoEntity relatesInfoEntity = relatesInfoMapper.selectOne(new LambdaQueryWrapper<RelatesInfoEntity>()
+                    .eq(RelatesInfoEntity::getPositionId, tunnelId)
+                    .eq(RelatesInfoEntity::getType, ConstantsInfo.TUNNELING));
+            if (ObjectUtil.isNotNull(relatesInfoEntity)) {
+                throw new RuntimeException("此巷道已关联到计划，无法删除!");
+            }
+            SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectOne(new LambdaQueryWrapper<SurveyAreaEntity>()
+                    .eq(SurveyAreaEntity::getTunnelId, tunnelId)
+                    .eq(SurveyAreaEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNotNull(surveyAreaEntity)) {
+                throw new RuntimeException("此巷道已关联到测区，无法删除!");
+            }
+            // TODO 关联顶板离层测点信息，巷道位移信息，后续追加
+        });
+        flag = this.removeBatchByIds(tunnelIdList);
+        return flag;
     }
 
     /**
