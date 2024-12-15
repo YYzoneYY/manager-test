@@ -2,6 +2,7 @@ package com.ruoyi.system.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.MiningRecordEntity;
 import com.ruoyi.system.domain.dto.MiningFootageDTO;
@@ -37,14 +38,16 @@ public class MiningRecordServiceImpl extends ServiceImpl<MiningRecordMapper, Min
     }
 
     @Override
-    public List<MiningRecordDTO> queryByMiningRecordId(Long miningRecordId) {
-        List<MiningRecordDTO> miningRecordDTOS = miningRecordMapper.queryByMiningRecordId(miningRecordId);
-        miningRecordDTOS.forEach(miningRecordDTO -> {
-            miningRecordDTO.setMiningTimeFrm(DateUtils.getDateStrByTime(miningRecordDTO.getMiningTime()));
-            miningRecordDTO.setUpdateTimeFrm(DateUtils.getDateStrByTime(miningRecordDTO.getUpdateTime()));
+    public List<MiningRecordDTO> queryByMiningRecordId(Long miningFootageId) {
+        List<MiningRecordDTO> miningRecordDTOS = miningRecordMapper.queryByMiningFootageId(miningFootageId);
+        if (ListUtils.isNotNull(miningRecordDTOS)) {
+            miningRecordDTOS.forEach(miningRecordDTO -> {
+                miningRecordDTO.setMiningTimeFrm(DateUtils.getDateStrByTime(miningRecordDTO.getMiningTime()));
+                miningRecordDTO.setUpdateTimeFrm(DateUtils.getDateStrByTime(miningRecordDTO.getUpdateTime()));
             String name = sysUserMapper.selectNameById(miningRecordDTO.getUpdateBy());
             miningRecordDTO.setCreateByFmt(name);
-        });
+            });
+        }
         return miningRecordDTOS;
     }
 }

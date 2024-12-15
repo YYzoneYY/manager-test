@@ -17,5 +17,5 @@ public interface MiningRecordService extends IService<MiningRecordEntity> {
 
     public MiningFootageDTO insertMiningRecord(MiningFootageDTO miningFootageDTO);
 
-    List<MiningRecordDTO> queryByMiningRecordId(Long miningRecordId);
+    List<MiningRecordDTO> queryByMiningRecordId(Long miningFootageId);
 }

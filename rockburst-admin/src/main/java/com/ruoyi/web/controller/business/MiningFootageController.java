@@ -4,8 +4,10 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.MiningFootageDTO;
+import com.ruoyi.system.domain.dto.MiningRecordDTO;
 import com.ruoyi.system.domain.dto.MiningSelectDTO;
 import com.ruoyi.system.service.MiningFootageService;
+import com.ruoyi.system.service.MiningRecordService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author: shikai
@@ -30,6 +33,9 @@ public class MiningFootageController {
 
     @Resource
     private MiningFootageService miningFootageService;
+
+    @Resource
+    private MiningRecordService miningRecordService;
 
     @ApiOperation(value = "新增回采进尺", notes = "新增回采进尺")
     @PostMapping("/add")
@@ -72,5 +78,11 @@ public class MiningFootageController {
     @GetMapping(value = "/getSurplusLength")
     public R<Object> getSurplusLength(@RequestParam(value = "workfaceId") Long workfaceId){
         return R.ok(miningFootageService.getSurplusLength(workfaceId));
+    }
+
+    @ApiOperation(value = "根据回采进尺id查询回采进尺记录", notes = "根据回采进尺id查询回采进尺记录")
+    @GetMapping(value = "/getMiningRecord")
+    public R<List<MiningRecordDTO>> queryByMiningRecordId(@RequestParam(value = "miningFootageId") Long miningFootageId){
+        return R.ok(this.miningRecordService.queryByMiningRecordId(miningFootageId));
     }
 }

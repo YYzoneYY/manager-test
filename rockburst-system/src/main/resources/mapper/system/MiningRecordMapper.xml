@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.MiningRecordMapper">
 
-    <select id="queryByMiningRecordId" resultType="com.ruoyi.system.domain.dto.MiningRecordDTO">
+    <select id="queryByMiningFootageId" resultType="com.ruoyi.system.domain.dto.MiningRecordDTO">
         select
         mr.mining_time                                                      as miningTime,
         mr.create_by                                                        as createBy,
@@ -12,7 +12,7 @@
         mr.mining_pace_edit                                                 as miningPaceEdit
         from mining_record mr
         <where>
-            mr.mining_footage_id = #{miningRecordId}
+            mr.mining_footage_id = #{miningFootageId}
         </where>
         order by mr.update_time desc
     </select>

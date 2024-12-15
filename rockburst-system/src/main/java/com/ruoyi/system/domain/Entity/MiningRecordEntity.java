@@ -40,7 +40,7 @@ public class MiningRecordEntity extends BusinessBaseEntity implements Serializab
 
     @ApiModelProperty("工作面id")
     @TableField("workface_id")
-    private Long workfaceId;
+    private Long workFaceId;
 
     @ApiModelProperty("回采进尺id")
     @TableField("mining_footage_id")

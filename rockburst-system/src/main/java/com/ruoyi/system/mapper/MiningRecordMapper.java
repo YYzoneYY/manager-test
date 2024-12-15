@@ -24,6 +24,6 @@ public interface MiningRecordMapper extends BaseMapper<MiningRecordEntity> {
     /**
      * 查询修改记录列表
      */
-    List<MiningRecordDTO> queryByMiningRecordId(@Param("miningRecordId") Long miningRecordId);
+    List<MiningRecordDTO> queryByMiningFootageId(@Param("miningFootageId") Long miningFootageId);
 
 }
