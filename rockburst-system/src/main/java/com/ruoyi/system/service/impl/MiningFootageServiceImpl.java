@@ -163,21 +163,21 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
-        PageHelper.startPage(pageNum, pageSize);
         List<MiningFootageEntity> miningFootageEntities = miningFootageMapper.selectList(new LambdaQueryWrapper<MiningFootageEntity>()
                 .eq(MiningFootageEntity::getWorkFaceId, miningSelectDTO.getWorkFaceId()));
         if (miningFootageEntities.isEmpty()){
             return null;
         }
-        Page<MiningFootageDTO> page = miningFootageMapper.selectMiningFootageByPage(miningSelectDTO);
-        if (ListUtils.isNotNull(page.getResult())) {
-            List<Long> collect = page.getResult().stream().collect(Collectors.groupingBy(MiningFootageEntity::getMiningTime, Collectors.counting()))
+        PageHelper.startPage(pageNum, pageSize);
+        Page<MiningFootageDTO> miningFootageDTOPage = miningFootageMapper.selectMiningFootageByPage(miningSelectDTO);
+        if (ListUtils.isNotNull(miningFootageDTOPage.getResult())) {
+            List<Long> collect = miningFootageDTOPage.getResult().stream().collect(Collectors.groupingBy(MiningFootageEntity::getMiningTime, Collectors.counting()))
                     .entrySet().stream()
                     .filter(entry -> entry.getValue() > 1)
                     .map(entry -> entry.getKey())
                     .collect(Collectors.toList());
 
-            page.getResult().forEach(miningFootageDTO -> {
+            miningFootageDTOPage.getResult().forEach(miningFootageDTO -> {
                 BigDecimal bigDecimal = miningPaceSum(miningFootageDTO.getWorkFaceId(), miningFootageDTO.getMiningTime());
                 miningFootageDTO.setMiningPaceSum(bigDecimal);
                 collect.forEach(c -> {
@@ -187,8 +187,8 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
                 });
             });
         }
-        result.setTotal(page.getTotal());
-        result.setRows(page.getResult());
+        result.setTotal(miningFootageDTOPage.getTotal());
+        result.setRows(miningFootageDTOPage.getResult());
         return result;
     }
 

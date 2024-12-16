@@ -3,6 +3,7 @@ package com.ruoyi.system.domain.dto;
 import com.ruoyi.system.domain.Entity.MiningFootageEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
  * @date: 2024/11/13
  * @description:
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class MiningFootageDTO extends MiningFootageEntity {
 

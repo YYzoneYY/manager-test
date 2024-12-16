@@ -6,6 +6,7 @@ import com.ruoyi.system.domain.Entity.MiningFootageEntity;
 import com.ruoyi.system.domain.Entity.MiningRecordEntity;
 import com.ruoyi.system.domain.dto.MiningFootageDTO;
 import com.ruoyi.system.domain.dto.MiningSelectDTO;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -17,7 +18,7 @@ import java.math.BigDecimal;
  * @description:
  */
 
-@Repository
+@Mapper
 public interface MiningFootageMapper extends BaseMapper<MiningFootageEntity> {
 
     Page<MiningFootageDTO> selectMiningFootageByPage(MiningSelectDTO miningSelectDTO);
