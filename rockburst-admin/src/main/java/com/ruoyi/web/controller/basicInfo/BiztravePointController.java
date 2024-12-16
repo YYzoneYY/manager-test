@@ -52,7 +52,7 @@ public class BiztravePointController extends BaseController
     /**
      * 查询矿井管理列表
      */
-    @ApiOperation("查询矿井管理列表")
+    @ApiOperation("查询导线点管理列表")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/list")
     public R<MPage<BizTravePoint>> list(@ParameterObject BizTravePointDto dto, @ParameterObject Pagination pagination)
@@ -70,7 +70,7 @@ public class BiztravePointController extends BaseController
     }
 
 
-    @ApiOperation("下拉全部矿列表")
+    @ApiOperation("下拉导线点列表")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/checkList")
     public R<List<BizTravePoint>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,

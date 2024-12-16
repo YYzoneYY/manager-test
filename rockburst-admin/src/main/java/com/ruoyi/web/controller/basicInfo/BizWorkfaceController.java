@@ -68,7 +68,7 @@ public class BizWorkfaceController extends BaseController
         return R.ok(list);
     }
 
-    @ApiOperation("下拉全部矿列表")
+    @ApiOperation("下拉工作面列表")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/checkList")
     public R<List<BizWorkface>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,

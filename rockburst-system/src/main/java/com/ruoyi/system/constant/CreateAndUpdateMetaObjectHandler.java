@@ -3,12 +3,13 @@ package com.ruoyi.system.constant;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpStatus;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import com.ruoyi.common.core.domain.BaseSelfEntity;
+import com.ruoyi.common.core.domain.BaseToLongEntity;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.common.core.domain.BaseSelfEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,18 @@ public class CreateAndUpdateMetaObjectHandler implements MetaObjectHandler {
                 baseEntity.setCreateBy(username);
                 // 当前已登录 且 更新人为空 则填充
                 baseEntity.setUpdateBy(username);
+            }else if(ObjectUtil.isNotNull(metaObject) && metaObject.getOriginalObject() instanceof BaseToLongEntity){
+                BaseToLongEntity baseEntity = (BaseToLongEntity) metaObject.getOriginalObject();
+                Long current = ObjectUtil.isNotNull(baseEntity.getCreateTime())
+                        ? baseEntity.getCreateTime() : System.currentTimeMillis();
+                baseEntity.setCreateTime(current);
+                baseEntity.setUpdateTime(current);
+                String username = StringUtils.isNotBlank(baseEntity.getCreateBy())
+                        ? baseEntity.getCreateBy() : getLoginUsername();
+                // 当前已登录 且 创建人为空 则填充
+                baseEntity.setCreateBy(username);
+                // 当前已登录 且 更新人为空 则填充
+                baseEntity.setUpdateBy(username);
             }
         } catch (Exception e) {
             throw new ServiceException("自动注入异常 => " + e.getMessage(), HttpStatus.HTTP_UNAUTHORIZED);
@@ -52,6 +65,16 @@ public class CreateAndUpdateMetaObjectHandler implements MetaObjectHandler {
             if (ObjectUtil.isNotNull(metaObject) && metaObject.getOriginalObject() instanceof BaseSelfEntity) {
                 BaseSelfEntity baseEntity = (BaseSelfEntity) metaObject.getOriginalObject();
                 Date current = new Date();
+                // 更新时间填充(不管为不为空)
+                baseEntity.setUpdateTime(current);
+                String username = getLoginUsername();
+                // 当前已登录 更新人填充(不管为不为空)
+                if (StringUtils.isNotBlank(username)) {
+                    baseEntity.setUpdateBy(username);
+                }
+            } else if (ObjectUtil.isNotNull(metaObject) && metaObject.getOriginalObject() instanceof BaseToLongEntity) {
+                BaseToLongEntity baseEntity = (BaseToLongEntity) metaObject.getOriginalObject();
+                Long current = System.currentTimeMillis();
                 // 更新时间填充(不管为不为空)
                 baseEntity.setUpdateTime(current);
                 String username = getLoginUsername();
