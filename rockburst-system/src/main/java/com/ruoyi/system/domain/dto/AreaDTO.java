@@ -13,7 +13,7 @@ import lombok.Data;
 public class AreaDTO {
 
     @ApiModelProperty(value = "导向点")
-    private Long TraversePoint;
+    private String traversePoint;
 
     @ApiModelProperty(value = "距离")
     private String distance;

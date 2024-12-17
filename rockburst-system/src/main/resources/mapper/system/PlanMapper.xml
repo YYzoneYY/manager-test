@@ -23,24 +23,24 @@
             #{planId}
         </foreach>
             <if test="selectPlanDTO.planName != null and selectPlanDTO.planName != ''">
-                and p.plan_name like concat('%',#{planName},'%')
+                and p.plan_name like concat('%',#{selectPlanDTO.planName},'%')
             </if>
             <if test="selectPlanDTO.type != null and selectPlanDTO.type != ''">
-                and p.type = #{type}
+                and p.type = #{selectPlanDTO.type}
             </if>
             <if test="selectPlanDTO.drillType != null and selectPlanDTO.drillType != ''">
-                and p.drill_type = #{drillType}
+                and p.drill_type = #{selectPlanDTO.drillType}
             </if>
             <if test="selectPlanDTO.state != null and selectPlanDTO.state != ''">
-                and p.state = #{state}
+                and p.state = #{selectPlanDTO.state}
             </if>
-            <if test="selectPlanDTO.startTime != null">
-                and p.start_time &gt;= #{startTime}
+            <if test="selectPlanDTO.startTime != null and selectPlanDTO.startTime != ''">
+                and p.start_time &gt;= #{selectPlanDTO.startTime}
             </if>
-            <if test="selectPlanDTO.endTime != null">
-                and p.end_time &lt;= #{endTime}
+            <if test="selectPlanDTO.endTime != null and selectPlanDTO.endTime != ''">
+                and p.end_time &lt;= #{selectPlanDTO.endTime}
             </if>
             and p.del_flag = '0'
-        order by c.create_time desc
+        order by p.create_time desc
     </select>
 </mapper>

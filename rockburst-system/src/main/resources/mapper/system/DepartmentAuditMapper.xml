@@ -24,26 +24,26 @@
         from biz_project_record as bpr
         <where>
             <if test="selectDeptAuditDTO.type != null and selectDeptAuditDTO.type != ''">
-                and bpr.construct_type = #{constructType}
+                and bpr.construct_type = #{selectDeptAuditDTO.constructType}
             </if>
             <if test="selectDeptAuditDTO.constructSite != null and selectDeptAuditDTO.constructSite != ''">
-                and bpr.Tunnel_id = #{constructSite}
+                and bpr.Tunnel_id = #{selectDeptAuditDTO.constructSite}
             </if>
             <if test="selectDeptAuditDTO.constructionUnitId != null and selectDeptAuditDTO.constructionUnitId != ''">
-                and bpr.construct_unit_id = #{constructUnitId}
+                and bpr.construct_unit_id = #{selectDeptAuditDTO.constructUnitId}
             </if>
             <if test="selectDeptAuditDTO.fillingType != null and selectDeptAuditDTO.fillingType != ''">
-                and bpr.drill_type = #{fillingType}
+                and bpr.drill_type = #{selectDeptAuditDTO.fillingType}
             </if>
             <if test="selectDeptAuditDTO.startTime != null and selectDeptAuditDTO.endTime != null">
-                and bpr.construct_time between #{startTime} and #{endTime}
+                and bpr.construct_time between #{selectDeptAuditDTO.startTime} and #{selectDeptAuditDTO.endTime}
             </if>
             <if test="projectIds != null and projectIds.size() > 0 ''">
                 and bpr.project_id in (${projectIds})
             </if>
-            and p.del_flag = '0'
+            and bpr.del_flag = '0'
         </where>
-        order by c.construct_time desc
+        order by bpr.construct_time desc
     </select>
 
     <!--审核历史分页查询-->
@@ -83,6 +83,6 @@
             </if>
             and bpr.status in (3,4) and p.del_flag = '0'
         </where>
-        order by c.construct_time desc
+        order by bpr.construct_time desc
     </select>
 </mapper>
