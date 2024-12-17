@@ -35,7 +35,7 @@ public class PlanController {
     }
 
     @ApiOperation(value = "计划修改", notes = "计划修改")
-    @PostMapping(value = "/updatePlan")
+    @PutMapping(value = "/updatePlan")
     public R<Object> updatePlan(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) PlanDTO planDTO){
         return R.ok(this.planService.updatePlan(planDTO));
     }

@@ -44,8 +44,11 @@ public class ContentsServiceImpl extends ServiceImpl<ContentsMapper, ContentsEnt
         if (ObjectUtil.isNull(contentsEntity.getContentsName())) {
             throw new RuntimeException("目录名称不能为空!");
         }
-        if (ObjectUtil.isNull(contentsEntity.getSuperId())) {
-            throw new RuntimeException("父级目录不能为空!");
+        List<PlanContentsMappingEntity> planContentsMappingEntities = planContentsMappingMapper.selectList(null);
+        if (ListUtils.isNotNull(planContentsMappingEntities)) {
+            if (ObjectUtil.isNull(contentsEntity.getSuperId())) {
+                throw new RuntimeException("上级层级不能为空!");
+            }
         }
         Long selectCount = contentsMapper.selectCount(new LambdaQueryWrapper<ContentsEntity>()
                 .eq(ContentsEntity::getContentsName, contentsEntity.getContentsName())
