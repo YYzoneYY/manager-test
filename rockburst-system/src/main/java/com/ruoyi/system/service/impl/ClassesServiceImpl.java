@@ -55,6 +55,7 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
         classesEntity.setUpdateTime(ts);
         classesEntity.setCreateBy(1L);
         classesEntity.setUpdateBy(1L);
+        classesEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         return classesMapper.insert(classesEntity);
     }
 
@@ -92,7 +93,9 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
      */
     @Override
     public ClassesEntity getClassesById(Long classesId) {
-        ClassesEntity selectClassesEntity = classesMapper.selectById(classesId);
+        ClassesEntity selectClassesEntity = classesMapper.selectOne(new LambdaQueryWrapper<ClassesEntity>()
+                .eq(ClassesEntity::getClassesId, classesId)
+                .eq(ClassesEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isEmpty(selectClassesEntity)) {
             throw new RuntimeException("班次不存在");
         }

@@ -9,8 +9,8 @@
         cp.name as name,
         cp.construction_unit_id as constructionUnitId,
         cp.profession as profession,
-        cn.create_time as createTime,
-        cn.update_time as updateTime,
+        cp.create_time as createTime,
+        cp.update_time as updateTime,
         cp.del_flag as delFlag
         from construction_personnel as cp
         <where>

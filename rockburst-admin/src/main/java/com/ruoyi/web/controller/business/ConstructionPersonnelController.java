@@ -61,7 +61,8 @@ public class ConstructionPersonnelController {
     })
     @PostMapping(value = "/pageQueryList")
     public R<TableData> pageQueryList(@RequestBody PersonnelSelectDTO personnelSelectDTO,
-                                      @RequestParam(required = false) Integer pageNum, @RequestParam(required = false) Integer pageSize) {
+                                      @RequestParam(required = false) Integer pageNum,
+                                      @RequestParam(required = false) Integer pageSize) {
         return R.ok(personnelService.pageQueryList(personnelSelectDTO, pageNum, pageSize));
     }
 

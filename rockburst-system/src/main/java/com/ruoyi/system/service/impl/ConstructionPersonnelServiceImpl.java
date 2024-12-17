@@ -66,6 +66,7 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
         // TODO: 2024/11/11 系统暂时去掉token,最后统一做鉴权；userId会从token取
         constructionPersonnelEntity.setCreateBy(1L);
         constructionPersonnelEntity.setUpdateBy(1L);
+        constructionPersonnelEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         constructionPersonnelMapper.insert(constructionPersonnelEntity);
         BeanUtils.copyProperties(constructionPersonnelEntity,constructPersonnelDTO);
         return constructPersonnelDTO;
@@ -82,7 +83,10 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
         if (ObjectUtil.isEmpty(constructPersonnelDTO.getConstructionPersonnelId())) {
             throw new RuntimeException("施工人员id不能为空！");
         }
-        ConstructionPersonnelEntity constructionPersonnelEntity = constructionPersonnelMapper.selectById(constructPersonnelDTO.getConstructionPersonnelId());
+        ConstructionPersonnelEntity constructionPersonnelEntity = constructionPersonnelMapper.selectOne(
+                new LambdaQueryWrapper<ConstructionPersonnelEntity>()
+                        .eq(ConstructionPersonnelEntity::getConstructionPersonnelId,constructPersonnelDTO.getConstructionPersonnelId())
+                        .ne(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isEmpty(constructionPersonnelEntity)) {
             throw new RuntimeException("施工人员不存在！");
         }
@@ -155,7 +159,10 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
         Page<ConstructPersonnelVO> page = constructionPersonnelMapper.selectConstructionPersonnelByPage(personnelSelectDTO);
         if (ListUtils.isNotNull(page.getResult())) {
             page.getResult().forEach(constructPersonnelVO -> {
-                ConstructionUnitEntity constructionUnitEntity = constructionUnitMapper.selectById(constructPersonnelVO.getConstructionUnitId());
+                ConstructionUnitEntity constructionUnitEntity = constructionUnitMapper.selectOne(
+                        new LambdaQueryWrapper<ConstructionUnitEntity>()
+                                .eq(ConstructionUnitEntity::getConstructionUnitId,constructPersonnelVO.getConstructionUnitId())
+                                .eq(ConstructionUnitEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
                 if (ObjectUtil.isNotEmpty(constructionUnitEntity)) {
                     constructPersonnelVO.setConstructionUnitFmt(constructionUnitEntity.getConstructionUnitName());
                 }

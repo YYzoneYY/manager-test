@@ -12,7 +12,7 @@
         from classes as c
         <where>
             <if test="classesName != null and classesName != ''">
-                and c.construction_unit_name like concat('%',#{classesName},'%')
+                and c.classes_name like concat('%',#{classesName},'%')
             </if>
             <if test="startTime != null">
                 and c.create_time &gt;= #{startTime}
