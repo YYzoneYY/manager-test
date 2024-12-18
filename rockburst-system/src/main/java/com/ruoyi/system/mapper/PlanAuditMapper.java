@@ -6,6 +6,9 @@ import com.ruoyi.system.domain.Entity.PlanAuditEntity;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
 import com.ruoyi.system.domain.vo.PlanVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -23,5 +26,5 @@ public interface PlanAuditMapper extends BaseMapper<PlanAuditEntity> {
     /**
      * 审核历史分页查询
      */
-    Page<PlanVO> auditHistoryPage(SelectPlanDTO selectPlanDTO);
+    Page<PlanVO> auditHistoryPage(@Param("selectPlanDTO") SelectPlanDTO selectPlanDTO, @Param("planIds") List<Long> planIds);
 }

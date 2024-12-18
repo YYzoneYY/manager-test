@@ -12,36 +12,36 @@ import com.ruoyi.system.domain.dto.SelectPlanDTO;
  * @description:
  */
 public interface PlanAuditService extends IService<PlanAuditEntity> {
-//
-//    /**
-//     * 点击审核按钮
-//     * @param engineeringPlanId 计划id
-//     * @return 返回结果
-//     */
-//    int audit(Long engineeringPlanId);
-//
-//    /**
-//     * 审核
-//     * @param planAuditDTO 参数DTO
-//     * @return 返回结果
-//     */
-//    int addAudit(PlanAuditDTO planAuditDTO);
-//
-//    /**
-//     * 分页查询
-//     * @param selectPlanDTO 查询参数DTO
-//     * @param pageNum 当前页码
-//     * @param pageSize 条数
-//     * @return 返回结果
-//     */
-//    TableData queryPage(SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize);
-//
-//    /**
-//     * 审核历史分页查询
-//     * @param selectPlanDTO 查询参数DTO
-//     * @param pageNum 当前页码
-//     * @param pageSize 条数
-//     * @return 返回结果
-//     */
-//    TableData auditHistoryPage(SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize);
+
+    /**
+     * 点击审核按钮
+     * @param planId 计划id
+     * @return 返回结果
+     */
+    int audit(Long planId);
+
+    /**
+     * 审核
+     * @param planAuditDTO 参数DTO
+     * @return 返回结果
+     */
+    int addAudit(PlanAuditDTO planAuditDTO);
+
+    /**
+     * 分页查询
+     * @param selectPlanDTO 查询参数DTO
+     * @param pageNum 当前页码
+     * @param pageSize 条数
+     * @return 返回结果
+     */
+    TableData queryPage(SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize);
+
+    /**
+     * 审核历史分页查询
+     * @param selectPlanDTO 查询参数DTO
+     * @param pageNum 当前页码
+     * @param pageSize 条数
+     * @return 返回结果
+     */
+    TableData auditHistoryPage(SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize);
 }

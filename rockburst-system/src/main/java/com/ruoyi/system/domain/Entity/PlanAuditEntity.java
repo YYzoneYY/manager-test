@@ -33,8 +33,8 @@ public class PlanAuditEntity extends BusinessBaseEntity implements Serializable 
 
     @ApiModelProperty(value = "计划id")
     @NotNull(groups = {ParameterValidationOther.class}, message = "计划id不能为空")
-    @TableField("engineering_plan_id")
-    private Long engineeringPlanId;
+    @TableField("plan_id")
+    private Long planId;
 
     @ApiModelProperty(value = "审核结果")
     @NotBlank(groups = {ParameterValidationOther.class}, message = "审核结果不能为空")

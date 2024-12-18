@@ -16,7 +16,7 @@ public class PlanAuditDTO {
     private Long planAuditId;
 
     @ApiModelProperty(value = "计划id")
-    private Long engineeringPlanId;
+    private Long planId;
 
     @ApiModelProperty(value = "审核结果")
     private String auditResult;

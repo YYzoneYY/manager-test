@@ -13,31 +13,24 @@
     <select id="queryPage" parameterType="com.ruoyi.system.domain.dto.SelectPlanDTO"
             resultType="com.ruoyi.system.domain.vo.PlanVO">
         select
-        p.engineering_plan_id as engineeringPlanId,
+        p.plan_id as planId,
+        p.plan_type as planType,
+        (case when p.type = '1' then '掘进' when p.type = '2' then '回采' end) as type,
         p.plan_name as planName,
-        p.construction_unit_id as constructionUnitId,
-        p.construct_site as constructSite,
         p.drill_type as drillType,
-        p.drill_number as drillNumber,
-        p.hole_depth as holeDep,
+        p.total_drill_number as totalDrillNumber
+        p.total_hole_depth as totalHoleDepth
         p.start_time as startTime,
         p.end_time as endTime,
-        (case when p.type = '1' then '掘进' when p.type = '2' then '回采' end) as type,
         p.state as state,
         p.del_flag as delFlag
-        from engineering_plan as p
+        from plan as p
         <where>
             <if test="planName != null and planName != ''">
                 and p.plan_name like concat('%',#{planName},'%')
             </if>
             <if test="type != null and type != ''">
                 and p.type = #{type}
-            </if>
-            <if test="constructSite != null and constructSite != ''">
-                and p.construct_site = #{constructSite}
-            </if>
-            <if test="constructionUnitId != null and constructionUnitId != ''">
-                and p.construction_unit_id = #{constructionUnitId}
             </if>
             <if test="drillType != null and drillType != ''">
                 and p.drill_type = #{drillType}
@@ -48,52 +41,49 @@
             <if test="endTime != null">
                 and p.end_time &lt;= #{endTime}
             </if>
-            and p.state in ('1','2') and p.del_flag = '0'
+            and p.state = '2' and p.del_flag = '0'
         </where>
         order by c.create_time desc
     </select>
 
     <!--审核历史分页查询-->
-    <select id="auditHistoryPage" parameterType="com.ruoyi.system.domain.dto.SelectPlanDTO"
-            resultType="com.ruoyi.system.domain.vo.PlanVO">
-        select
-        p.engineering_plan_id as engineeringPlanId,
+    <select id="auditHistoryPage" resultType="com.ruoyi.system.domain.vo.PlanVO">
+        c.contents_id as contentsId,
+        p.plan_id as planId,
         p.plan_name as planName,
-        p.construction_unit_id as constructionUnitId,
-        p.construct_site as constructSite,
+        p.plan_type as planType,
+        p.total_drill_number as totalDrillNum,
+        p.total_hole_depth as totalHoleDepth,
         p.drill_type as drillType,
-        p.drill_number as drillNumber,
-        p.hole_depth as holeDep,
         p.start_time as startTime,
         p.end_time as endTime,
         (case when p.type = '1' then '掘进' when p.type = '2' then '回采' end) as type,
         p.state as state,
         p.del_flag as delFlag
-        from engineering_plan as p
+        from plan as p
+        left join plan_contents_mapping as c on p.plan_id = c.plan_id
+        where p.plan_id in
         <where>
-            <if test="planName != null and planName != ''">
-                and p.plan_name like concat('%',#{planName},'%')
+            <foreach collection="planIds" item="planId" index="index" open="(" close=")" separator="," >
+                #{planId}
+            </foreach>
+            <if test="selectPlanDTO.planName != null and selectPlanDTO.planName != ''">
+                and p.plan_name like concat('%',#{selectPlanDTO.planName},'%')
             </if>
-            <if test="type != null and type != ''">
-                and p.type = #{type}
+            <if test="selectPlanDTO.type != null and selectPlanDTO.type != ''">
+                and p.type = #{selectPlanDTO.type}
             </if>
-            <if test="constructSite != null and constructSite != ''">
-                and p.construct_site = #{constructSite}
+            <if test="selectPlanDTO.drillType != null and selectPlanDTO.drillType != ''">
+                and p.drill_type = #{selectPlanDTO.drillType}
             </if>
-            <if test="constructionUnitId != null and constructionUnitId != ''">
-                and p.construction_unit_id = #{constructionUnitId}
+            <if test="selectPlanDTO.state != null and selectPlanDTO.state != ''">
+                and p.state = #{selectPlanDTO.state}
             </if>
-            <if test="drillType != null and drillType != ''">
-                and p.drill_type = #{drillType}
+            <if test="selectPlanDTO.startTime != null and selectPlanDTO.startTime != ''">
+                and p.start_time &gt;= #{selectPlanDTO.startTime}
             </if>
-            <if test="state != null and state != ''">
-                and p.state = #{state}
-            </if>
-            <if test="startTime != null">
-                and p.start_time &gt;= #{startTime}
-            </if>
-            <if test="endTime != null">
-                and p.end_time &lt;= #{endTime}
+            <if test="selectPlanDTO.endTime != null and selectPlanDTO.endTime != ''">
+                and p.end_time &lt;= #{selectPlanDTO.endTime}
             </if>
             and p.state in ('3','4') and p.del_flag = '0'
         </where>

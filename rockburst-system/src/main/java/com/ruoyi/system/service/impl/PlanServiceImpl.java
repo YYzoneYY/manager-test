@@ -286,7 +286,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
      */
     private String getRejectReason(Long planId) {
         PlanAuditEntity planAuditEntity = planAuditMapper.selectOne(new LambdaQueryWrapper<PlanAuditEntity>()
-                .eq(PlanAuditEntity::getEngineeringPlanId, planId)
+                .eq(PlanAuditEntity::getPlanId, planId)
                 .eq(PlanAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(planAuditEntity)) {
             throw new RuntimeException("未找到此计划");
