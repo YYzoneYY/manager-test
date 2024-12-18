@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.ruoyi.system.domain.dto.ContentsTreeEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -23,7 +24,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("contents")
-public class ContentsEntity implements Serializable {
+public class ContentsEntity implements Serializable, ContentsTreeEntity<Long, Long> {
 
     private static final long serialVersionUID = 1L;
 
@@ -39,5 +40,18 @@ public class ContentsEntity implements Serializable {
     @TableField(value = "super_id")
     private Long superId;
 
+    @Override
+    public Long getValue() {
+        return contentsId;
+    }
 
+    @Override
+    public String getLabel() {
+        return contentsName;
+    }
+
+    @Override
+    public boolean isDisable() {
+        return this.superId == null;
+    }
 }

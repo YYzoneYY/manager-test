@@ -69,7 +69,9 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
         if (ObjectUtil.isEmpty(classesEntity.getClassesId())) {
             throw new RuntimeException("班次id不能为空");
         }
-        ClassesEntity selectClassesEntity = classesMapper.selectById(classesEntity.getClassesId());
+        ClassesEntity selectClassesEntity = classesMapper.selectOne(new LambdaQueryWrapper<ClassesEntity>()
+                .eq(ClassesEntity::getClassesId, classesEntity.getClassesId())
+                .eq(ClassesEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isEmpty(selectClassesEntity)) {
             throw new RuntimeException("班次不存在");
         }

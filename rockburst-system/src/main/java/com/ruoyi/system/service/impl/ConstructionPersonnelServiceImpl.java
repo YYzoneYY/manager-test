@@ -86,7 +86,7 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
         ConstructionPersonnelEntity constructionPersonnelEntity = constructionPersonnelMapper.selectOne(
                 new LambdaQueryWrapper<ConstructionPersonnelEntity>()
                         .eq(ConstructionPersonnelEntity::getConstructionPersonnelId,constructPersonnelDTO.getConstructionPersonnelId())
-                        .ne(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                        .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isEmpty(constructionPersonnelEntity)) {
             throw new RuntimeException("施工人员不存在！");
         }
@@ -130,7 +130,9 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
      */
     @Override
     public ConstructPersonnelDTO getConstructionPersonnelById(Long constructionPersonnelId) {
-        ConstructionPersonnelEntity constructionPersonnelEntity = constructionPersonnelMapper.selectById(constructionPersonnelId);
+        ConstructionPersonnelEntity constructionPersonnelEntity = constructionPersonnelMapper.selectOne(new LambdaQueryWrapper<ConstructionPersonnelEntity>()
+                .eq(ConstructionPersonnelEntity::getConstructionPersonnelId,constructionPersonnelId)
+                .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNotEmpty(constructionPersonnelEntity)) {
             ConstructPersonnelDTO constructPersonnelDTO = new ConstructPersonnelDTO();
             BeanUtils.copyProperties(constructionPersonnelEntity,constructPersonnelDTO);

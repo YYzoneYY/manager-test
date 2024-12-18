@@ -16,4 +16,15 @@ import java.util.List;
 public interface ContentsMapper extends BaseMapper<ContentsEntity> {
 
     List<ContentsEntity> findAllByIdRecursive(Long contentsId);
+
+    /**
+     * 获取树形结构
+     * @return 返回结构
+     */
+    List<ContentsEntity> findAllContents();
+
+    /**
+     * 递归查询子目录（包含自身）
+     */
+    List<ContentsEntity> findAllByContentsIdRecursive(Long contentsId);
 }

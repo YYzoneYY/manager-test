@@ -12,4 +12,28 @@
                                 inner join tmp on tmp.contents_id = c2.super_id)
         select * from tmp
     </select>
+
+    <!-- 递归查询子目录（包含自身） -->
+    <select id="findAllByContentsIdRecursive" resultType="com.ruoyi.system.domain.Entity.ContentsEntity">
+        with recursive tmp as (select c1.*
+                               from contents c1
+                               where c1.contents_id = #{contentsId}
+                               union all
+                               select c2.*
+                               from contents c2, tmp c3
+                               where c2.super_id = c3.contents_id)
+        select c.* from tmp c
+    </select>
+
+    <select id="findAllContents" resultType="com.ruoyi.system.domain.Entity.ContentsEntity">
+        with recursive tmp as (
+            select c1.*
+            from contents c1 where c1.super_id is null
+            union all
+            select c2.*
+            from contents c2, tmp c3
+            where c2.super_id = c3.contents_id
+        )
+        select c.* from tmp c
+    </select>
 </mapper>

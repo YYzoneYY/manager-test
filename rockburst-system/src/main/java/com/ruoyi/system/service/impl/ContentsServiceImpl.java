@@ -6,17 +6,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.system.domain.Entity.ContentsEntity;
 import com.ruoyi.system.domain.Entity.PlanContentsMappingEntity;
+import com.ruoyi.system.domain.dto.ContentsTreeDTO;
 import com.ruoyi.system.mapper.ContentsMapper;
 import com.ruoyi.system.mapper.PlanContentsMappingMapper;
 import com.ruoyi.system.service.ContentsService;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -137,5 +137,70 @@ public class ContentsServiceImpl extends ServiceImpl<ContentsMapper, ContentsEnt
             });
         }
         return planIdList;
+    }
+
+    /**
+     * 获取所有目录树形结构
+     */
+    @Override
+    public List<ContentsTreeDTO> queryAllContentsTree() {
+        List<ContentsEntity> contents = contentsMapper.findAllContents();
+        List<ContentsTreeDTO> contentsTreeDTOS = new ArrayList<>();
+        if (ListUtils.isNotNull(contents)) {
+            contents.stream().filter(contentsEntity -> contentsEntity.getSuperId() == null)
+                    .peek(contentsEntity -> contentsTreeDTOS.add(new ContentsTreeDTO(contentsEntity.getLabel(),
+                            String.valueOf(contentsEntity.getValue()), contentsEntity.isDisable(),
+                            ContentsTreeDTO.treeRecursive(contentsEntity.getValue(), contents))))
+                    .collect(Collectors.toList());
+        }
+        Set<ContentsTreeDTO> treeDTOSet = new HashSet<>(contentsTreeDTOS);
+        TreeSet<ContentsTreeDTO> sortSet = new TreeSet<>(new Comparator<ContentsTreeDTO>() {
+            @Override
+            public int compare(ContentsTreeDTO o1, ContentsTreeDTO o2) {
+                return Integer.parseInt(o2.getValue()) - Integer.parseInt(o1.getValue());
+            }
+        });
+        sortSet.addAll(treeDTOSet);
+        return new ArrayList<ContentsTreeDTO>(sortSet);
+    }
+
+    /**
+     * 获取子目录树形结构（包含自己）
+     * @return 返回结果
+     */
+    @Override
+    public List<ContentsTreeDTO> getContentsTree(Long contentsId, String contentsName) {
+        List<ContentsEntity> contentsEntities = contentsMapper.findAllByContentsIdRecursive(contentsId);
+        List<ContentsTreeDTO> contentsTreeDTOS = new ArrayList<>();
+        contentsEntities.stream().filter(contentsEntity -> contentsEntity.getContentsId().equals(contentsId))
+                .peek(contentsEntity -> contentsTreeDTOS.add(new ContentsTreeDTO(contentsEntity.getLabel(),
+                        String.valueOf(contentsEntity.getValue()), contentsEntity.isDisable(),
+                        ContentsTreeDTO.treeRecursive(contentsEntity.getValue(), contentsEntities))))
+                .collect(Collectors.toList());
+        if (contentsName != null && contentsName.isEmpty()) {
+            treeMatch(contentsTreeDTOS, contentsName);
+        }
+        return contentsTreeDTOS;
+    }
+
+    /**
+     * 条件筛选
+     */
+    private List<ContentsTreeDTO> treeMatch(List<ContentsTreeDTO> contentsTreeDTOS, String contentsName) {
+        Iterator<ContentsTreeDTO> iterator = contentsTreeDTOS.iterator();
+        while (iterator.hasNext()) {
+            ContentsTreeDTO contentsTreeDTO = iterator.next();
+            if (!contentsTreeDTO.getLabel().contains(contentsName)) { //不包含
+                if (!CollectionUtils.isEmpty(contentsTreeDTO.getChildren())) { //子不为空
+                    contentsTreeDTO.setChildren(treeMatch(contentsTreeDTO.getChildren(), contentsName));
+                    if (CollectionUtils.isEmpty(contentsTreeDTO.getChildren())) {
+                        iterator.remove();
+                    }
+                } else {
+                    iterator.remove();
+                }
+            }
+        }
+        return contentsTreeDTOS;
     }
 }
