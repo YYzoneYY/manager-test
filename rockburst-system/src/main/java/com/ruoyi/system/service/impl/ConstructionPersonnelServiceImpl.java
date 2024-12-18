@@ -99,7 +99,7 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
         }
         Long constructionPersonnelId = constructionPersonnelEntity.getConstructionPersonnelId();
         BeanUtils.copyProperties(constructPersonnelDTO,constructionPersonnelEntity);
-        constructionPersonnelEntity.setConstructionUnitId(constructionPersonnelId);
+        constructionPersonnelEntity.setConstructionPersonnelId(constructionPersonnelId);
         constructionPersonnelEntity.setUpdateTime(System.currentTimeMillis());
         constructionPersonnelEntity.setUpdateBy(1L);
         constructionPersonnelMapper.updateById(constructionPersonnelEntity);
