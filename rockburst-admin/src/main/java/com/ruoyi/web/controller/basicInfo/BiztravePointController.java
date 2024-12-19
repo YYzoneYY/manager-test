@@ -92,7 +92,7 @@ public class BiztravePointController extends BaseController
      */
     @ApiOperation("获取导线点管理详细信息")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
-    @GetMapping(value = "/{mineId}")
+    @GetMapping(value = "/{pointId}")
     public R<BizTravePoint> getInfo(@PathVariable("pointId") Long pointId)
     {
         return R.ok(bizTravePointService.getBaseMapper().selectById(pointId));
