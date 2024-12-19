@@ -18,8 +18,8 @@
         (case when p.type = '1' then '掘进' when p.type = '2' then '回采' end) as type,
         p.plan_name as planName,
         p.drill_type as drillType,
-        p.total_drill_number as totalDrillNumber
-        p.total_hole_depth as totalHoleDepth
+        p.total_drill_number as totalDrillNumber,
+        p.total_hole_depth as totalHoleDepth,
         p.start_time as startTime,
         p.end_time as endTime,
         p.state as state,
@@ -43,11 +43,12 @@
             </if>
             and p.state = '2' and p.del_flag = '0'
         </where>
-        order by c.create_time desc
+        order by p.create_time desc
     </select>
 
     <!--审核历史分页查询-->
     <select id="auditHistoryPage" resultType="com.ruoyi.system.domain.vo.PlanVO">
+        select distinct
         c.contents_id as contentsId,
         p.plan_id as planId,
         p.plan_name as planName,
@@ -63,7 +64,6 @@
         from plan as p
         left join plan_contents_mapping as c on p.plan_id = c.plan_id
         where p.plan_id in
-        <where>
             <foreach collection="planIds" item="planId" index="index" open="(" close=")" separator="," >
                 #{planId}
             </foreach>
@@ -86,7 +86,6 @@
                 and p.end_time &lt;= #{selectPlanDTO.endTime}
             </if>
             and p.state in ('3','4') and p.del_flag = '0'
-        </where>
-        order by c.create_time desc
+        order by p.create_time desc
     </select>
 </mapper>
