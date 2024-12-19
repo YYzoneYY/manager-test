@@ -41,7 +41,7 @@
             <if test="endTime != null">
                 and p.end_time &lt;= #{endTime}
             </if>
-            and p.state = '2' and p.del_flag = '0'
+            and p.state in ('1','2') and p.del_flag = '0'
         </where>
         order by p.create_time desc
     </select>
