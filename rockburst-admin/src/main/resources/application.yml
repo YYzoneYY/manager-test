@@ -38,10 +38,10 @@ logging:
     org.springframework: warn
 # Minio配置
 minio:
-  endpoint: ${miniourl:http://192.168.31.114:9000}
-  accessKey: ${minioakey:root}
-  secretKey: ${minioskey:Root@2024}
-  bucketName: ${miniobname:videoTest} #存储桶名称
+  endpoint: ${miniourl:http://47.92.215.128:19000}
+  accessKey: ${minioakey:9nLLPYeJs3CX1jj3GC1r}
+  secretKey: ${minioskey:finms5hOxZXwc6ZfUfVV5qPpfazIRNibN7PH1erG}
+  bucketName: ${miniobname:bust-dev} #存储桶名称
 
 #file:
 #  bucketName: bust-dev
@@ -80,7 +80,7 @@ spring:
   # redis 配置
   redis:
     # 地址
-    host: localhost
+    host: 47.92.215.128
     # 端口，默认为6379
     port: 6379
     # 数据库索引
