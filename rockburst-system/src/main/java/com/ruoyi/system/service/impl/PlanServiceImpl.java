@@ -283,6 +283,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             }
         });
         flag = this.removeBatchByIds(planIdList);
+        if (flag) {
+            relatesInfoService.deleteById(planIdList);
+            planContentsMappingMapper.deleteBatchIds(planIdList);
+        }
         return flag;
     }
 
