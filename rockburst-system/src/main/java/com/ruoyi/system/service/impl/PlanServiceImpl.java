@@ -209,8 +209,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
-        PageHelper.startPage(pageNum, pageSize);
         List<Long> panIds = contentsService.queryByCondition(selectPlanDTO.getContentsId());
+        PageHelper.startPage(pageNum, pageSize);
         Page<PlanVO> page = planMapper.queryPage(selectPlanDTO, panIds);
         if (ListUtils.isNotNull(page.getResult())) {
             page.getResult().forEach(planVO -> {

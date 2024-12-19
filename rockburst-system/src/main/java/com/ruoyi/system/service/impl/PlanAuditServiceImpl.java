@@ -150,8 +150,8 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
-        PageHelper.startPage(pageNum, pageSize);
         List<Long> panIds = contentsService.queryByCondition(selectPlanDTO.getContentsId());
+        PageHelper.startPage(pageNum, pageSize);
         Page<PlanVO> page = planAuditMapper.auditHistoryPage(selectPlanDTO, panIds);
         Page<PlanVO> planVOPage = getPlanListFmt(page);
         result.setTotal(planVOPage.getTotal());
