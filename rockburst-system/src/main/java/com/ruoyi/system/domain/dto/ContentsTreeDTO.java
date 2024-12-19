@@ -30,7 +30,7 @@ public class ContentsTreeDTO {
 
         for (ContentsTreeEntity<?, T> tContentsTreeEntity : contentsTreeEntity) {
             if (id.equals(tContentsTreeEntity.getSuperId())) {
-                contentsTreeDTOS.add(new ContentsTreeDTO(tContentsTreeEntity.getLabel(), (String) tContentsTreeEntity.getValue(),
+                contentsTreeDTOS.add(new ContentsTreeDTO(tContentsTreeEntity.getLabel(), String.valueOf(tContentsTreeEntity.getValue()),
                         tContentsTreeEntity.isDisable(), treeRecursive(tContentsTreeEntity.getValue(), contentsTreeEntity)));
             }
         }
