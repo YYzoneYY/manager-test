@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -152,10 +153,15 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         }
         List<Long> panIds = contentsService.queryByCondition(selectPlanDTO.getContentsId());
         PageHelper.startPage(pageNum, pageSize);
-        Page<PlanVO> page = planAuditMapper.auditHistoryPage(selectPlanDTO, panIds);
-        Page<PlanVO> planVOPage = getPlanListFmt(page);
-        result.setTotal(planVOPage.getTotal());
-        result.setRows(planVOPage.getResult());
+        if (ObjectUtil.isNotNull(panIds) && panIds.size() > 0) {
+            Page<PlanVO> page = planAuditMapper.auditHistoryPage(selectPlanDTO, panIds);
+            Page<PlanVO> planVOPage = getPlanListFmt(page);
+            result.setTotal(planVOPage.getTotal());
+            result.setRows(planVOPage.getResult());
+        } else {
+            result.setTotal(0L);
+            result.setRows(new ArrayList<>());
+        }
         return result;
     }
 
