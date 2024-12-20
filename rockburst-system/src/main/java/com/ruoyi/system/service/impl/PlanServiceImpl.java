@@ -211,24 +211,29 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         }
         List<Long> panIds = contentsService.queryByCondition(selectPlanDTO.getContentsId());
         PageHelper.startPage(pageNum, pageSize);
-        Page<PlanVO> page = planMapper.queryPage(selectPlanDTO, panIds);
-        if (ListUtils.isNotNull(page.getResult())) {
-            page.getResult().forEach(planVO -> {
-                List<RelatesInfoDTO> relatesInfoDTOS = relatesInfoService.getByPlanId(planVO.getPlanId());
-                planVO.setRelatesInfoDTOS(relatesInfoDTOS);
-                planVO.setStartTimeFmt(DateUtils.getDateStrByTime(planVO.getStartTime()));
-                planVO.setEndTimeFmt(DateUtils.getDateStrByTime(planVO.getEndTime()));
-                //审核状态字典lable
-                String auditStatus = sysDictDataMapper.selectDictLabel(ConstantsInfo.AUDIT_STATUS_DICT_TYPE, planVO.getState());
-                planVO.setStatusFmt(auditStatus);
-                if (planVO.getState().equals(ConstantsInfo.REJECTED)) {
-                    // 获取驳回原因
-                    planVO.setRejectReason(getRejectReason(planVO.getPlanId()));
-                }
-            });
+        if (ObjectUtil.isNotNull(panIds) && panIds.size() > 0) {
+            Page<PlanVO> page = planMapper.queryPage(selectPlanDTO, panIds);
+            if (ListUtils.isNotNull(page.getResult())) {
+                page.getResult().forEach(planVO -> {
+                    List<RelatesInfoDTO> relatesInfoDTOS = relatesInfoService.getByPlanId(planVO.getPlanId());
+                    planVO.setRelatesInfoDTOS(relatesInfoDTOS);
+                    planVO.setStartTimeFmt(DateUtils.getDateStrByTime(planVO.getStartTime()));
+                    planVO.setEndTimeFmt(DateUtils.getDateStrByTime(planVO.getEndTime()));
+                    //审核状态字典lable
+                    String auditStatus = sysDictDataMapper.selectDictLabel(ConstantsInfo.AUDIT_STATUS_DICT_TYPE, planVO.getState());
+                    planVO.setStatusFmt(auditStatus);
+                    if (planVO.getState().equals(ConstantsInfo.REJECTED)) {
+                        // 获取驳回原因
+                        planVO.setRejectReason(getRejectReason(planVO.getPlanId()));
+                    }
+                });
+            }
+            result.setTotal(page.getTotal());
+            result.setRows(page.getResult());
+        } else {
+            result.setTotal(0L);
+            result.setRows(new ArrayList<>());
         }
-        result.setTotal(page.getTotal());
-        result.setRows(page.getResult());
         return result;
     }
 
@@ -278,6 +283,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             }
         });
         flag = this.removeBatchByIds(planIdList);
+        if (flag) {
+            relatesInfoService.deleteById(planIdList);
+            planContentsMappingMapper.deleteBatchIds(planIdList);
+        }
         return flag;
     }
 

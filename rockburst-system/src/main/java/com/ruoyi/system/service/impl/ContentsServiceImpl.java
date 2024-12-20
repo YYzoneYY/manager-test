@@ -128,6 +128,9 @@ public class ContentsServiceImpl extends ServiceImpl<ContentsMapper, ContentsEnt
     public List<Long> queryByCondition(Long contentsId) {
         List<Long> ids = contentsMapper.findAllByIdRecursive(contentsId)
                 .stream().map(ContentsEntity::getContentsId).collect(Collectors.toList());
+        if (ids.isEmpty()) {
+           throw new RuntimeException("层级id错误！请联系管理员！");
+        }
         List<PlanContentsMappingEntity> planContentsMappingEntities = planContentsMappingMapper.selectList(new LambdaQueryWrapper<PlanContentsMappingEntity>()
                 .in(PlanContentsMappingEntity::getContentsId, ids));
         List<Long> planIdList = new ArrayList<Long>();
