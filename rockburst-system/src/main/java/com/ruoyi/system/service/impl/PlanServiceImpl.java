@@ -165,7 +165,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         if (ObjectUtil.isNull(planId)) {
             throw new RuntimeException("参数错误,主键不能为空");
         }
-        PlanEntity planEntity = planMapper.selectById(planId);
+        PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
+                .eq(PlanEntity::getPlanId, planId)
+                .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(planEntity)) {
             throw new RuntimeException("未找到此计划");
         }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.PlanAuditEntity;
 import com.ruoyi.system.domain.dto.PlanAuditDTO;
+import com.ruoyi.system.domain.dto.PlanDTO;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
 
 /**
@@ -18,7 +19,7 @@ public interface PlanAuditService extends IService<PlanAuditEntity> {
      * @param planId 计划id
      * @return 返回结果
      */
-    int audit(Long planId);
+    PlanDTO audit(Long planId);
 
     /**
      * 审核

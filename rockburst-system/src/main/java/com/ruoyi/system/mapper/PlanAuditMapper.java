@@ -19,7 +19,7 @@ import java.util.List;
 @Mapper
 public interface PlanAuditMapper extends BaseMapper<PlanAuditEntity> {
 
-    Integer selectMaxNumber(Long engineeringPlanId);
+    Integer selectMaxNumber(@Param("planId") Long planId);
 
     Page<PlanVO> queryPage(SelectPlanDTO selectPlanDTO);
 
