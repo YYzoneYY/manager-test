@@ -19,7 +19,7 @@ public class MqttSubClient {
 
     private void subScribeDataPublishTopic(){
         //订阅test_queue主题
-       subscribe("test_queue");
+//       subscribe("test_queue");
     }
 
     /**
