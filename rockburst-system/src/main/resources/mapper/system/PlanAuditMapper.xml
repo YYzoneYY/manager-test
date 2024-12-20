@@ -6,7 +6,7 @@
     <select id="selectMaxNumber" resultType="java.lang.Integer">
         select ifnull(max(number), 0)
         from plan_audit as pa
-        where pa.engineering_plan_id = #{engineeringPlanId} and pa.del_flag = '0'
+        where pa.plan_id = #{planId} and pa.del_flag = '0'
     </select>
 
 
