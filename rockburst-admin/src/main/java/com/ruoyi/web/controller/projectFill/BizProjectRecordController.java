@@ -89,10 +89,23 @@ public class BizProjectRecordController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('project:record:remove')")
     @Log(title = "工程填报记录", businessType = BusinessType.DELETE)
+    @DeleteMapping("/{projectId}")
+    public R<?> removeById(@PathVariable Long projectId)
+    {
+        return R.ok(bizProjectRecordService.removeByProId(projectId));
+    }
+
+
+    /**
+     * 删除工程填报记录
+     */
+    @PreAuthorize("@ss.hasPermi('project:record:remove')")
+    @Log(title = "工程填报记录", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{projectIds}")
     public R<?> remove(@PathVariable Long[] projectIds)
     {
-        return R.ok(bizProjectRecordService.removeById(projectIds));
+
+        return R.ok(bizProjectRecordService.removeByProIds(projectIds));
     }
 
 

@@ -38,6 +38,7 @@ public class BizBaseConstant {
 
 
     //填报状态
+    //初始填报状态
     public static final Integer FILL_STATUS_PEND = 0;
     public static final Integer FILL_STATUS_TEAM_PASS = 1;
     public static final Integer FILL_STATUS_DEPART_PASS = 2;

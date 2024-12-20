@@ -3,7 +3,6 @@ package com.ruoyi.system.domain.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.ruoyi.common.core.domain.BaseSelfEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,8 +20,34 @@ public class BizVideoDto
 {
     private static final long serialVersionUID = 1L;
 
+
+
+    /** $column.columnComment */
+    @TableId( type = IdType.AUTO)
+    private Long videoId;
+
+    /** 文件大小 */
+    @ApiModelProperty(name = "文件大小")
+    private String fileSize;
+
     /** 文件名 */
     @ApiModelProperty(name = "文件名")
     private String fileName;
+
+    /** 存放位置 */
+    @ApiModelProperty(name = "存放位置")
+    private String bucket;
+
+    /** 视频地址 */
+    @ApiModelProperty(name = "视频地址")
+    private String fileUrl;
+
+    /** 参数 */
+    @ApiModelProperty(name = "参数")
+    private String param;
+
+    /** 工程id */
+    @ApiModelProperty(name = "工程id")
+    private Long projectId;
 
 }
