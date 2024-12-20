@@ -103,10 +103,10 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
     @Override
     public int addAudit(PlanAuditDTO planAuditDTO) {
         int flag = 0;
-        PlanEntity engineeringPlanEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
+        PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
                 .eq(PlanEntity::getPlanId, planAuditDTO.getPlanId())
                 .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(engineeringPlanEntity)) {
+        if (ObjectUtil.isNull(planEntity)) {
             throw new RuntimeException("未找到此计划,无法进行审核");
         }
         Integer i = planAuditMapper.selectMaxNumber(planAuditDTO.getPlanId());
@@ -130,12 +130,13 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
             throw new RuntimeException("审核失败,请联系管理员");
         } else {
             if (ConstantsInfo.AUDIT_SUCCESS.equals(planAuditDTO.getAuditResult())) {
-                engineeringPlanEntity.setState(ConstantsInfo.AUDITED_DICT_VALUE);
+                planEntity.setState(ConstantsInfo.AUDITED_DICT_VALUE);
+            } else {
+                planEntity.setState(ConstantsInfo.REJECTED);
             }
-            engineeringPlanEntity.setState(ConstantsInfo.REJECTED);
-            PlanEntity planEntity = new PlanEntity();
-            BeanUtils.copyProperties(engineeringPlanEntity, planEntity);
-            int update = planMapper.updateById(planEntity);
+            PlanEntity plan = new PlanEntity();
+            BeanUtils.copyProperties(planEntity, plan);
+            int update = planMapper.updateById(plan);
             if (update <= 0) {
                 throw new RuntimeException("审核失败,请联系管理员");
             }
@@ -214,11 +215,13 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
     /**
      * 获取驳回原因
      */
-    private String getRejectReason(Long engineeringPlanId) {
-        PlanAuditEntity planAuditEntity = planAuditMapper.selectById(engineeringPlanId);
+    private String getRejectReason(Long planId) {
+        PlanAuditEntity planAuditEntity = planAuditMapper.selectOne(new LambdaQueryWrapper<PlanAuditEntity>()
+                .eq(PlanAuditEntity::getPlanId, planId)
+                .eq(PlanAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(planAuditEntity)) {
             throw new RuntimeException("未找到此计划");
         }
-        return planAuditEntity.getAuditResult();
+        return planAuditEntity.getRejectionReason();
     }
 }
