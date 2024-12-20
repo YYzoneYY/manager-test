@@ -38,10 +38,21 @@ logging:
     org.springframework: warn
 # Minio配置
 minio:
-  endpoint: ${miniourl:http://192.168.31.114:9000}
-  accessKey: ${minioakey:root}
-  secretKey: ${minioskey:Root@2024}
-  bucketName: ${miniobname:videoTest} #存储桶名称
+  endpoint: ${miniourl:http://47.92.215.128:19000}
+  accessKey: ${minioakey:9nLLPYeJs3CX1jj3GC1r}
+  secretKey: ${minioskey:finms5hOxZXwc6ZfUfVV5qPpfazIRNibN7PH1erG}
+  defaultBucketName: ${miniobname:bust-dev} #存储桶名称
+
+#MQTT配置信息
+mqtt:
+  host: tcp://47.92.215.128:1883
+  clientid: mqttjs_cloud
+  username: dingyue
+  password: 123456
+  timeout: 1000
+  keepalive: 10
+
+
 
 #file:
 #  bucketName: bust-dev
