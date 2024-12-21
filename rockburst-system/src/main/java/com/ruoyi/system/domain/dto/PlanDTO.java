@@ -29,6 +29,9 @@ public class PlanDTO extends PlanEntity {
     @ApiModelProperty(value = "计划结束时间格式化")
     private String endTimeFmt;
 
+    @ApiModelProperty(value = "审核结果")
+    private String auditResult;
+
     @ApiModelProperty(value = "驳回原因")
     private String rejectReason;
 }

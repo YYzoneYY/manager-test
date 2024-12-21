@@ -37,6 +37,25 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
     MPage<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto , Pagination pagination);
 
 
+
+    int saveRecord(BizProjectRecordAddDto dto);
+
+
+    int updateRecord(BizProjectRecordAddDto dto);
+
+    int removeByProId(Long projectId);
+
+
+    int removeByProIds(Long[] projectIds);
+
+
+    BizProjectRecordVo selectById(Long bizProjectRecordId);
+
+
+
+
+
+
     MPage<BizProjectRecordListVo> selectproList(BasePermission permission, BizProjectRecordDto dto , Pagination pagination);
 
 
@@ -48,18 +67,9 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
 
     MPage<Map<String, Object>> monitorProject(BizPlanDto dto, Pagination pagination);
 
+
+
     List<BizProjectRecordListVo> auditList(BizProjectRecord bizProjectRecord);
-
-
-    int saveRecord(BizProjectRecordAddDto dto);
-
-
-    int updateRecord(BizProjectRecordAddDto dto);
-
-
-    int updateRecordById(BizProjectRecordAddDto dto);
-
-    BizProjectRecordVo selectById(Long bizProjectRecordId);
 
 
      int firstAudit(BizProjectRecordDto projectRecordDto);

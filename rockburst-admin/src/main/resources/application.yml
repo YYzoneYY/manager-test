@@ -41,7 +41,19 @@ minio:
   endpoint: ${miniourl:http://47.92.215.128:19000}
   accessKey: ${minioakey:9nLLPYeJs3CX1jj3GC1r}
   secretKey: ${minioskey:finms5hOxZXwc6ZfUfVV5qPpfazIRNibN7PH1erG}
-  bucketName: ${miniobname:bust-dev} #存储桶名称
+  defaultBucketName: ${miniobname:bust-dev} #存储桶名称
+
+#MQTT配置信息
+mqtt:
+  host: tcp://47.104.160.255:1883
+  clientid: mqttjs_cloud
+  username: dingyue
+  password: 123456
+  timeout: 1000
+  keepalive: 10
+  topic: /iot/data
+
+
 
 #file:
 #  bucketName: bust-dev

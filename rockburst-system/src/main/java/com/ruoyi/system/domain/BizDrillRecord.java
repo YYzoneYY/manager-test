@@ -38,7 +38,7 @@ public class BizDrillRecord extends BaseSelfEntity
 
     /** 序号 */
     @ApiModelProperty(name = "序号")
-    private Long no;
+    private Integer no;
 
     /** 开始时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -69,6 +69,22 @@ public class BizDrillRecord extends BaseSelfEntity
     /** 实际深度 */
     @ApiModelProperty(name = "实际深度")
     private String realDeep;
+
+    /** 实际深度 */
+    @ApiModelProperty(name = "装药量")
+    private String chargeWeight;
+
+    /** 实际深度 */
+    @ApiModelProperty(name = "封孔长度")
+    private String  pluggingLength;
+
+    /** 实际深度 */
+    @ApiModelProperty(name = "爆破时间")
+    private String  detonationTime;
+
+    /** 实际深度 */
+    @ApiModelProperty(name = "方位角")
+    private String bearingAngle;
 
     /** 状态 */
     @ApiModelProperty(name = "状态")

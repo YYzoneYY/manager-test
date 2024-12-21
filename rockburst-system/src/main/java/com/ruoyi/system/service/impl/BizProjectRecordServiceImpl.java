@@ -23,10 +23,7 @@ import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
-import com.ruoyi.system.domain.dto.BizPlanDto;
-import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
-import com.ruoyi.system.domain.dto.BizProjectRecordDto;
-import com.ruoyi.system.domain.dto.BizProjectRecordDto1;
+import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.excel.BizProJson;
 import com.ruoyi.system.domain.excel.ChartData;
 import com.ruoyi.system.domain.excel.ChartDataAll;
@@ -43,6 +40,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * 工程填报记录Service业务层处理
@@ -111,7 +109,6 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .eq(dto.getTunnelId() != null,BizProjectRecord::getTunnelId,dto.getTunnelId())
                 .eq(dto.getDrillType()!=null,BizProjectRecord::getDrillType,dto.getDrillType())
                 .eq(dto.getConstructShiftId()!=null,BizProjectRecord::getConstructShiftId,dto.getConstructShiftId())
-                .eq(dto.getStatus()!=null,BizProjectRecord::getStatus,dto.getStatus())
                 .between(StrUtil.isNotEmpty(dto.getStartTime()),BizProjectRecord::getConstructTime,DateUtils.parseDate(dto.getStartTime()),DateUtils.parseDate(dto.getEndTime()))
                 .eq(dto.getStatus()!=null,BizProjectRecord::getStatus,dto.getStatus());
         IPage<BizProjectRecordListVo> sss = this.pageDeep(pagination , queryWrapper);
@@ -303,59 +300,104 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public int saveRecord(BizProjectRecordAddDto dto) {
+
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser currentUser = loginUser.getUser();
+
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
-        entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0);
-
+        entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());
         long  projectId =  this.getBaseMapper().insert(entity);
-        dto.getDrillRecords().forEach(drillRecord -> {
-            drillRecord.setProjectId(projectId);
-            bizDrillRecordMapper.insert(drillRecord);
+
+        IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
+            BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
+            BizDrillRecord bizDrillRecord  = new BizDrillRecord();
+            BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
+            bizDrillRecord.setProjectId(projectId).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
+            bizDrillRecordMapper.insert(bizDrillRecord);
         });
+
         dto.getVideos().forEach(bizVideo -> {
-            bizVideo.setProjectId(projectId);
-            bizVideoMapper.insert(bizVideo);
+            BizVideo video = new BizVideo();
+            BeanUtil.copyProperties(bizVideo, video);
+            video.setProjectId(projectId);
+            bizVideoMapper.insert(video);
         });
         return 1;
     }
 
 
+
     @Override
     public int updateRecord(BizProjectRecordAddDto dto) {
-        this.updateById(dto);
+        BizProjectRecord entity = new BizProjectRecord();
+        BeanUtil.copyProperties(dto, entity);
+        this.updateById(entity);
+
         UpdateWrapper<BizDrillRecord> drillUpdateWrapper= new UpdateWrapper<>();
         drillUpdateWrapper.lambda().eq(BizDrillRecord::getProjectId,dto.getProjectId()).set(BizDrillRecord::getDelFlag,BizBaseConstant.DELFLAG_Y);
         bizDrillRecordMapper.update(null,drillUpdateWrapper);
+
         UpdateWrapper<BizVideo> videoUpdateWrapper= new UpdateWrapper<>();
         videoUpdateWrapper.lambda().eq(BizVideo::getProjectId,dto.getProjectId()).set(BizVideo::getDelFlag,BizBaseConstant.DELFLAG_Y);
         bizVideoMapper.update(null,videoUpdateWrapper);
 
         if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
-            dto.getDrillRecords().forEach(drillRecord -> {
-                drillRecord.setDrillRecordId(null);
-                drillRecord.setProjectId(dto.getProjectId());
-                bizDrillRecordMapper.insert(drillRecord);
+            IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
+                BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
+                BizDrillRecord bizDrillRecord  = new BizDrillRecord();
+                BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
+                bizDrillRecord.setProjectId(dto.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
+                bizDrillRecordMapper.insert(bizDrillRecord);
             });
         }
         if(dto.getVideos() != null && dto.getVideos().size() > 0){
             dto.getVideos().forEach(bizVideo -> {
-                bizVideo.setVideoId(null);
-                bizVideo.setProjectId(dto.getProjectId());
-                bizVideoMapper.insert(bizVideo);
+                BizVideo video = new BizVideo();
+                BeanUtil.copyProperties(bizVideo, video);
+                video.setProjectId(dto.getProjectId());
+                bizVideoMapper.insert(video);
             });
         }
 
         return 1;
     }
 
+
     @Override
-    public int updateRecordById(BizProjectRecordAddDto dto) {
-        BizProjectRecord entity = new BizProjectRecord();
-        BeanUtil.copyProperties(dto, entity);
-        entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0);
-        bizProjectRecordMapper.updateById(entity);
+    public int removeByProId(Long projectId) {
+
+        UpdateWrapper<BizDrillRecord> drillUpdateWrapper= new UpdateWrapper<>();
+        drillUpdateWrapper.lambda().eq(projectId != null, BizDrillRecord::getProjectId,projectId)
+                .set(BizDrillRecord::getDelFlag,BizBaseConstant.DELFLAG_Y);
+        bizDrillRecordMapper.update(null,drillUpdateWrapper);
+
+        UpdateWrapper<BizVideo> videoUpdateWrapper= new UpdateWrapper<>();
+        videoUpdateWrapper.lambda().eq(projectId != null, BizVideo::getProjectId,projectId)
+                .set(BizVideo::getDelFlag,BizBaseConstant.DELFLAG_Y);
+        bizVideoMapper.update(null,videoUpdateWrapper);
+
+        this.removeById(projectId);
         return 1;
     }
+
+    @Override
+    public int removeByProIds(Long[] projectIds) {
+
+        UpdateWrapper<BizDrillRecord> drillUpdateWrapper= new UpdateWrapper<>();
+        drillUpdateWrapper.lambda().in(projectIds.length > 0, BizDrillRecord::getProjectId,projectIds)
+                .set(BizDrillRecord::getDelFlag,BizBaseConstant.DELFLAG_Y);
+        bizDrillRecordMapper.update(null,drillUpdateWrapper);
+
+        UpdateWrapper<BizVideo> videoUpdateWrapper= new UpdateWrapper<>();
+        videoUpdateWrapper.lambda().in(projectIds.length > 0, BizVideo::getProjectId,projectIds)
+                .set(BizVideo::getDelFlag,BizBaseConstant.DELFLAG_Y);
+        bizVideoMapper.update(null,videoUpdateWrapper);
+
+        this.removeByIds(Arrays.asList(projectIds));
+        return 1;
+    }
+
 
     @Override
     public int firstAudit(BizProjectRecordDto dto) {
