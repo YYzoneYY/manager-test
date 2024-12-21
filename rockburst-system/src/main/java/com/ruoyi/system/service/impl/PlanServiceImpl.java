@@ -29,6 +29,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author: shikai
@@ -125,6 +126,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         if (ObjectUtil.isEmpty(planEntity)) {
             throw new RuntimeException("该计划不存在");
         }
+        if (planEntity.getState().equals(ConstantsInfo.IN_REVIEW_DICT_VALUE)) {
+            throw new RuntimeException("该计划正在审核中，无法编辑");
+        }
+        if (planEntity.getState().equals(ConstantsInfo.AUDITED_DICT_VALUE)) {
+            throw new RuntimeException("该计划已审核通过，无法编辑");
+        }
         Long selectCount = planMapper.selectCount(new LambdaQueryWrapper<PlanEntity>()
                 .eq(PlanEntity::getPlanName, planDTO.getPlanName())
                 .eq(PlanEntity::getType, planDTO.getType())
@@ -137,6 +144,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         Long planId = planEntity.getPlanId();
         BeanUtils.copyProperties(planDTO, planEntity);
         planEntity.setPlanId(planId);
+        planEntity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
         planEntity.setUpdateTime(System.currentTimeMillis());
         planEntity.setUpdateBy(1L);
         flag = planMapper.updateById(planEntity);
@@ -298,11 +306,17 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
      * 获取审核结果
      */
     private String getAuditResult(Long planId) {
-        PlanAuditEntity planAuditEntity = planAuditMapper.selectOne(new LambdaQueryWrapper<PlanAuditEntity>()
-                .eq(PlanAuditEntity::getPlanId, planId)
-                .eq(PlanAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        // 在查询中进行排序和限制，只取最新的一条审核记录
+        PlanAuditEntity planAuditEntity = planAuditMapper.selectOne(
+                new LambdaQueryWrapper<PlanAuditEntity>()
+                        .eq(PlanAuditEntity::getPlanId, planId)
+                        .eq(PlanAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                        .orderByDesc(PlanAuditEntity::getCreateTime)
+                        .last("LIMIT 1")
+        );
+
         if (ObjectUtil.isNull(planAuditEntity)) {
-            throw new RuntimeException("未找到此计划");
+            throw new RuntimeException("未找到此计划，计划ID: " + planId);
         }
         return planAuditEntity.getAuditResult();
     }
@@ -311,11 +325,16 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
      * 获取驳回原因
      */
     private String getRejectReason(Long planId) {
-        PlanAuditEntity planAuditEntity = planAuditMapper.selectOne(new LambdaQueryWrapper<PlanAuditEntity>()
-                .eq(PlanAuditEntity::getPlanId, planId)
-                .eq(PlanAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        // 在查询中进行排序和限制，只取最新的一条审核记录
+        PlanAuditEntity planAuditEntity = planAuditMapper.selectOne(
+                new LambdaQueryWrapper<PlanAuditEntity>()
+                        .eq(PlanAuditEntity::getPlanId, planId)
+                        .eq(PlanAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                        .orderByDesc(PlanAuditEntity::getCreateTime)
+                        .last("LIMIT 1")
+        );
         if (ObjectUtil.isNull(planAuditEntity)) {
-            throw new RuntimeException("未找到此计划");
+            throw new RuntimeException("未找到此计划，计划ID: " + planId);
         }
         return planAuditEntity.getAuditResult();
     }
