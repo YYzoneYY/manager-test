@@ -142,13 +142,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         flag = planMapper.updateById(planEntity);
         if (flag > 0) {
             // 关联信息修改
-            if (ObjectUtil.isNotNull(planDTO.getRelatesInfoDTOS()) && !planDTO.getRelatesInfoDTOS().isEmpty()) {
-                List<Long> planIdList = new ArrayList<>();
-                planIdList.add(planId);
-                relatesInfoService.deleteById(planIdList);
-                relatesInfoService.insert(planEntity.getPlanId(), planDTO.getPlanType(),
-                        planDTO.getType(), planDTO.getRelatesInfoDTOS());
-            }
+            List<Long> planIdList = new ArrayList<>();
+            planIdList.add(planId);
+            relatesInfoService.deleteById(planIdList);
+            relatesInfoService.insert(planEntity.getPlanId(), planDTO.getPlanType(),
+                    planDTO.getType(), planDTO.getRelatesInfoDTOS());
         } else {
             throw new RuntimeException("计划编辑失败");
         }
@@ -187,6 +185,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         }
         if (ObjectUtil.isNotNull(planEntity.getEndTime())) {
             planDTO.setEndTimeFmt(DateUtils.getDateStrByTime(planEntity.getEndTime()));
+        }
+        if (planEntity.getState().equals(ConstantsInfo.AUDITED_DICT_VALUE) || planEntity.getState().equals(ConstantsInfo.REJECTED)) {
+            // 获取审核结果
+            planDTO.setAuditResult(getAuditResult(planEntity.getPlanId()));
         }
         if (planEntity.getState().equals(ConstantsInfo.REJECTED)) {
             // 获取驳回原因
@@ -290,6 +292,19 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             planContentsMappingMapper.deleteBatchIds(planIdList);
         }
         return flag;
+    }
+
+    /**
+     * 获取审核结果
+     */
+    private String getAuditResult(Long planId) {
+        PlanAuditEntity planAuditEntity = planAuditMapper.selectOne(new LambdaQueryWrapper<PlanAuditEntity>()
+                .eq(PlanAuditEntity::getPlanId, planId)
+                .eq(PlanAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(planAuditEntity)) {
+            throw new RuntimeException("未找到此计划");
+        }
+        return planAuditEntity.getAuditResult();
     }
 
     /**

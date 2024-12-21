@@ -16,7 +16,7 @@ ruoyi:
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
-  port: 8080
+  port: 8081
   servlet:
     # 应用的访问路径
     context-path: /
@@ -45,12 +45,13 @@ minio:
 
 #MQTT配置信息
 mqtt:
-  host: tcp://47.92.215.128:1883
+  host: tcp://47.104.160.255:1883
   clientid: mqttjs_cloud
   username: dingyue
   password: 123456
   timeout: 1000
   keepalive: 10
+  topic: /iot/data
 
 
 
