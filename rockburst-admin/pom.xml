@@ -34,6 +34,12 @@
             <artifactId>spring-integration-mqtt</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>co.elastic.clients</groupId>
+            <artifactId>elasticsearch-java</artifactId>
+            <version>8.15.1</version>
+        </dependency>
+
 <!--        <dependency>-->
 <!--            <groupId>org.eclipse.paho</groupId>-->
 <!--            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>-->
