@@ -69,10 +69,9 @@ public class RelatesInfoServiceImpl extends ServiceImpl<RelatesInfoMapper, Relat
     @Override
     public boolean deleteById(List<Long> planIdList) {
         boolean flag = false;
-        int i = relatesInfoMapper.deleteBatchIds(planIdList);
-        if (i > 0) {
-            flag = true;
-        }
+        LambdaQueryWrapper<RelatesInfoEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(RelatesInfoEntity::getPlanId, planIdList);
+        flag = this.remove(queryWrapper);
         return flag;
     }
 
