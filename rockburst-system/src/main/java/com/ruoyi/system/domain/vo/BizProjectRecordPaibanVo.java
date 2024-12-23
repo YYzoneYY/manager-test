@@ -21,14 +21,14 @@ public class BizProjectRecordPaibanVo  {
     private String diameter;
     private String tunnelName;
     private String workfaceName;
-    private String location;
+    private String constructLocation;
     private String type;
 
-    public String getLocation() {
+    public String getConstructLocation() {
         if (BizBaseConstant.CONSTRUCT_TYPE_J.equals(type)){
             return tunnelName;
         }
-        return tunnelName;
+        return workfaceName;
     }
 
     public Long getConstructionUnitId() {

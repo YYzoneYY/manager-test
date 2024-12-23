@@ -24,6 +24,8 @@ import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.dto.project.BizCardVDto;
+import com.ruoyi.system.domain.dto.project.BizWashProofDto;
 import com.ruoyi.system.domain.excel.BizProJson;
 import com.ruoyi.system.domain.excel.ChartData;
 import com.ruoyi.system.domain.excel.ChartDataAll;
@@ -75,6 +77,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Autowired
     private  BizWorkfaceMapper bizWorkfaceMapper;
 
+
+
     @Autowired
     private SysDeptMapper sysDeptMapper;
 
@@ -103,82 +107,60 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
         queryWrapper
                 .selectAll(BizProjectRecordListVo.class)
+                .selectAs(BizProjectRecord::getStatus, BizProjectRecordListVo::getConstructLocation)
                 .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
                         .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
                 .eq(dto.getConstructUnitId()!=null,BizProjectRecord::getConstructUnitId,dto.getConstructUnitId())
-                .eq(dto.getTunnelId() != null,BizProjectRecord::getTunnelId,dto.getTunnelId())
-                .eq(dto.getDrillType()!=null,BizProjectRecord::getDrillType,dto.getDrillType())
+                .eq(dto.getLocationId() != null,BizProjectRecord::getTunnelId,dto.getLocationId())
+                .eq(dto.getDrillType() !=null,BizProjectRecord::getDrillType,dto.getDrillType())
                 .eq(dto.getConstructShiftId()!=null,BizProjectRecord::getConstructShiftId,dto.getConstructShiftId())
                 .between(StrUtil.isNotEmpty(dto.getStartTime()),BizProjectRecord::getConstructTime,DateUtils.parseDate(dto.getStartTime()),DateUtils.parseDate(dto.getEndTime()))
                 .eq(dto.getStatus()!=null,BizProjectRecord::getStatus,dto.getStatus());
         IPage<BizProjectRecordListVo> sss = this.pageDeep(pagination , queryWrapper);
+        List<BizProjectRecordListVo> vos =  sss.getRecords();
+        List<BizProjectRecordListVo> vv = new ArrayList<>();
+        vv = BeanUtil.copyToList(vos,BizProjectRecordListVo.class);
+        sss.setRecords(vv);
         return new MPage<>(sss);
     }
 
 
-    @Override
-    public MPage<BizProjectRecordListVo> selectproList(BasePermission permission, BizProjectRecordDto dto , Pagination pagination) {
 
-        Date currentDate = null;
-        Date startDate = null;
-        if(dto.getDayNum() != null ){
-            currentDate = new Date();
-            startDate = DateUtil.offsetDay(currentDate, -dto.getDayNum());
-        }else {
-            currentDate = DateUtils.parseDate(dto.getStartTime());
-            startDate = DateUtils.parseDate(dto.getEndTime());
-        }
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        SysUser currentUser = loginUser.getUser();
-        MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
+
+    @Override
+    public MPage<BizProjectRecordListVo> selectproList(BasePermission permission, BizWashProofDto dto , Pagination pagination) {
+
+        MPJLambdaWrapper<BizProjectRecord> queryWrapper = getWrapper(permission,dto);
         queryWrapper
-                .selectAll(BizProjectRecord.class)
-                .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
-                        .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
-                .between(BizProjectRecord::getConstructTime,startDate,currentDate);
+                .selectAll(BizProjectRecord.class);
         IPage<BizProjectRecordListVo> sss = this.pageDeep(pagination, queryWrapper);
+        List<BizProjectRecordListVo> vos =  sss.getRecords();
+        List<BizProjectRecordListVo> vv = new ArrayList<>();
+        vv = BeanUtil.copyToList(vos,BizProjectRecordListVo.class);
+        sss.setRecords(vv);
         return new MPage<>(sss);
     }
 
 
     @Override
-    public BizProStatsVo statsProject(BasePermission permission, BizProjectRecordDto dto) {
-        Date currentDate = null;
-        Date startDate = null;
-        if(dto.getDayNum() != null ){
-            currentDate = new Date();
-            startDate = DateUtil.offsetDay(currentDate, -dto.getDayNum());
-        }else {
-            currentDate = DateUtils.parseDate(dto.getStartTime());
-            startDate = DateUtils.parseDate(dto.getEndTime());
-        }
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        SysUser currentUser = loginUser.getUser();
+    public BizProStatsVo statsProject(BasePermission permission, BizWashProofDto dto) {
 
-        MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
+        MPJLambdaWrapper<BizProjectRecord> queryWrapper = getWrapper(permission, dto );
         queryWrapper
                 .selectAs(TunnelEntity::getTunnelName,"name")
                 .selectCount(BizProjectRecord::getProjectId,"value")
-                .between(BizProjectRecord::getConstructTime,startDate,currentDate)
-                .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
-                        .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
-                .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
                 .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_J)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId, BizProjectRecord::getTunnelId)
                 .groupBy(BizProjectRecord::getTunnelId);
         List<Map<String,Object>> locationMap = bizProjectRecordMapper.selectJoinMaps(queryWrapper);
 
-        MPJLambdaWrapper<BizProjectRecord> queryWrapper1 = new MPJLambdaWrapper<>();
+        MPJLambdaWrapper<BizProjectRecord> queryWrapper1 = getWrapper(permission, dto );
         queryWrapper1
                 .selectAs(BizWorkface::getWorkfaceName,"name")
                 .selectCount(BizProjectRecord::getProjectId,"value")
-                .between(BizProjectRecord::getConstructTime,startDate,currentDate)
-                .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
-                        .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
-                .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
                 .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_H)
-                .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId, BizProjectRecord::getTunnelId)
-                .groupBy(BizProjectRecord::getTunnelId);
+                .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId, BizProjectRecord::getWorkfaceId)
+                .groupBy(BizProjectRecord::getWorkfaceId);
         List<Map<String,Object>> huicaiMap = bizProjectRecordMapper.selectJoinMaps(queryWrapper1);
         for (Map<String, Object> stringObjectMap : huicaiMap) {
             String  name = "回采"+stringObjectMap.get("name").toString();
@@ -189,15 +171,11 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
 
         queryWrapper.clear();
-        queryWrapper = new MPJLambdaWrapper<>();
+        queryWrapper = getWrapper(permission, dto );
         queryWrapper
                 .selectAs(SysDictData::getDictLabel,"name")
                 .selectCount(BizProjectRecord::getProjectId,"value")
                 .leftJoin(SysDictData.class,SysDictData::getDictValue,BizProjectRecord::getDrillType)
-                .between(BizProjectRecord::getConstructTime,startDate,currentDate)
-                .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
-                        .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
-                .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
                 .groupBy(BizProjectRecord::getDrillType);
         List<Map<String,Object>> drillTypeMap = bizProjectRecordMapper.selectJoinMaps(queryWrapper);
 
@@ -208,10 +186,6 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .selectAs(ConstructionUnitEntity::getConstructionUnitName,"name")
                 .selectCount(BizProjectRecord::getProjectId,"value")
                 .leftJoin(ConstructionUnitEntity.class,ConstructionUnitEntity::getConstructionUnitId,BizProjectRecord::getConstructUnitId)
-                .between(BizProjectRecord::getConstructTime,startDate,currentDate)
-                .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
-                        .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
-                .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
                 .groupBy(BizProjectRecord::getConstructUnitId);
         List<Map<String,Object>> unitMap = bizProjectRecordMapper.selectJoinMaps(queryWrapper);
 
@@ -221,8 +195,68 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     }
 
 
+    private List<Long> getLocationByName(String locationName){
+        List<Long> locationIds = new ArrayList<>();
+
+        if(StrUtil.isNotEmpty(locationName)){
+            QueryWrapper<TunnelEntity> tunnelQueryWrapper = new QueryWrapper<>();
+            tunnelQueryWrapper.lambda().select(TunnelEntity::getTunnelId).like(TunnelEntity::getTunnelName,locationName);
+            List<TunnelEntity> tunnelList = tunnelMapper.selectList(tunnelQueryWrapper);
+            if(tunnelList != null && tunnelList.size() > 0){
+                locationIds = tunnelList.stream().map(TunnelEntity::getTunnelId).collect(Collectors.toList());
+            }
+
+            QueryWrapper<BizWorkface> workFaceQueryWrapper = new QueryWrapper<>();
+            workFaceQueryWrapper.lambda().like(BizWorkface::getWorkfaceName,locationName);
+            List<BizWorkface> workFaceList = bizWorkfaceMapper.selectList(workFaceQueryWrapper);
+            if(workFaceList != null && workFaceList.size() > 0){
+                locationIds.addAll(workFaceList.stream().map(BizWorkface::getWorkfaceId).collect(Collectors.toList()));
+            }
+        }
+        return locationIds;
+    }
+
+    private  MPJLambdaWrapper<BizProjectRecord> getWrapper(BasePermission permission, BizWashProofDto dto ){
+
+        List<Long> locationIds = getLocationByName(dto.getConstructLocation());
+
+
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser currentUser = loginUser.getUser();
+        Date currentDate = null;
+        Date startDate = null;
+        if(dto.getDayNum() != null ){
+            currentDate = new Date();
+            startDate = DateUtil.offsetDay(currentDate, -dto.getDayNum());
+        }else {
+            currentDate = DateUtils.parseDate(dto.getStartTime());
+            startDate = DateUtils.parseDate(dto.getEndTime());
+        }
+
+        MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
+
+        queryWrapper
+                .eq(dto.getStatus() != null, BizProjectRecord::getStatus,dto.getStatus())
+                .eq(dto.getLocationId() != null, BizProjectRecord::getLocationId,dto.getLocationId())
+                .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
+                .eq(dto.getConstructUnitId() != null, BizProjectRecord::getConstructUnitId,dto.getConstructUnitId())
+                .eq(dto.getConstructShiftId() != null, BizProjectRecord::getConstructShiftId,dto.getConstructShiftId())
+                .eq(StrUtil.isNotEmpty(dto.getDrillNum()), BizProjectRecord::getDrillNum,dto.getDrillNum())
+                .eq(locationIds !=null && locationIds.size()>0, BizProjectRecord::getLocationId,locationIds)
+                .between(startDate != null && currentDate != null,BizProjectRecord::getConstructTime,startDate,currentDate)
+                .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
+                        .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()));
+        return queryWrapper;
+    }
+
+
+
+
+
+
+
     @Override
-    public MPage<BizProjectRecordPaibanVo> selectPaiList(BasePermission permission, BizProjectRecordDto dto, Pagination pagination) {
+    public MPage<BizProjectRecordPaibanVo> selectPaiList(BasePermission permission, BizCardVDto dto, Pagination pagination) {
         Date currentDate = null;
         Date startDate = null;
         if(dto.getDayNum() != null ){
@@ -243,11 +277,11 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .select(BizProjectRecord::getDrillNum,BizProjectRecord::getConstructTime,BizProjectRecord::getSteelBeltStart,BizProjectRecord::getSteelBeltEnd)
                 .select(BizDrillRecord::getRealDeep, BizDrillRecord::getDiameter, BizDrillRecord::getRemark)
                 .innerJoin(BizProjectRecord.class,BizProjectRecord::getProjectId, BizDrillRecord::getProjectId)
-                .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizProjectRecord::getTunnelId)
+                .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizProjectRecord::getWorkfaceId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId)
                 .leftJoin(ConstructionUnitEntity.class,ConstructionUnitEntity::getConstructionUnitId,BizProjectRecord::getConstructUnitId)
                 .leftJoin(ConstructionPersonnelEntity.class,ConstructionPersonnelEntity::getConstructionPersonnelId,BizProjectRecord::getWorker)
-                .between(BizProjectRecord::getConstructTime,startDate,currentDate)
+                .between(startDate != null && currentDate != null,BizProjectRecord::getConstructTime,startDate,currentDate)
                 .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
                         .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
                 .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
@@ -306,23 +340,34 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+        //掘进回采id
+        if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
+            entity.setWorkfaceId(dto.getLocationId());
+        }else {
+            entity.setTunnelId(dto.getLocationId());
+        }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());
-        long  projectId =  this.getBaseMapper().insert(entity);
+         this.getBaseMapper().insert(entity);
 
-        IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
-            BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
-            BizDrillRecord bizDrillRecord  = new BizDrillRecord();
-            BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
-            bizDrillRecord.setProjectId(projectId).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
-            bizDrillRecordMapper.insert(bizDrillRecord);
-        });
+        if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
+            IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
+                BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
+                BizDrillRecord bizDrillRecord  = new BizDrillRecord();
+                BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
+                bizDrillRecord.setStatus(0).setTravePointId(dto.getTravePointId()).setProjectId(entity.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
+                bizDrillRecordMapper.insert(bizDrillRecord);
+            });
+        }
 
-        dto.getVideos().forEach(bizVideo -> {
-            BizVideo video = new BizVideo();
-            BeanUtil.copyProperties(bizVideo, video);
-            video.setProjectId(projectId);
-            bizVideoMapper.insert(video);
-        });
+        if(dto.getVideos() != null && dto.getVideos().size() > 0){
+            dto.getVideos().forEach(bizVideo -> {
+                BizVideo video = new BizVideo();
+                BeanUtil.copyProperties(bizVideo, video);
+                video.setProjectId(entity.getProjectId());
+                bizVideoMapper.insert(video);
+            });
+        }
+
         return 1;
     }
 
@@ -332,6 +377,12 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     public int updateRecord(BizProjectRecordAddDto dto) {
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+        //掘进回采id
+        if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
+            entity.setWorkfaceId(dto.getLocationId());
+        }else {
+            entity.setTunnelId(dto.getLocationId());
+        }
         this.updateById(entity);
 
         UpdateWrapper<BizDrillRecord> drillUpdateWrapper= new UpdateWrapper<>();
@@ -347,7 +398,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
                 BizDrillRecord bizDrillRecord  = new BizDrillRecord();
                 BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
-                bizDrillRecord.setProjectId(dto.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
+                bizDrillRecord.setStatus(0).setTravePointId(dto.getTravePointId()).setProjectId(entity.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
                 bizDrillRecordMapper.insert(bizDrillRecord);
             });
         }
@@ -401,32 +452,32 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public int firstAudit(BizProjectRecordDto dto) {
-        BizProjectAudit audit = new BizProjectAudit();
-        audit.setProjectId(dto.getProjectId())
-                .setMsg(dto.getMsg())
-                .setLevel("TEAM")
-                .setStatus(dto.getAudit());
-        bizProjectAuditMapper.insert(audit);
-        BizProjectRecord entity = new BizProjectRecord();
-        entity.setProjectId(dto.getProjectId())
-                        .setStatus(dto.getStatus() == 1 ? BizBaseConstant.FILL_STATUS_TEAM_PASS:BizBaseConstant.FILL_STATUS_TEAM_BACK);
-        bizProjectRecordMapper.updateById(entity);
+//        BizProjectAudit audit = new BizProjectAudit();
+//        audit.setProjectId(dto.getProjectId())
+//                .setMsg(dto.getMsg())
+//                .setLevel("TEAM")
+//                .setStatus(dto.getAudit());
+//        bizProjectAuditMapper.insert(audit);
+//        BizProjectRecord entity = new BizProjectRecord();
+//        entity.setProjectId(dto.getProjectId())
+//                        .setStatus(dto.getStatus() == 1 ? BizBaseConstant.FILL_STATUS_TEAM_PASS:BizBaseConstant.FILL_STATUS_TEAM_BACK);
+//        bizProjectRecordMapper.updateById(entity);
         return 1;
     }
 
 
     @Override
     public int secondAudit(BizProjectRecordDto dto) {
-        BizProjectAudit audit = new BizProjectAudit();
-        audit.setProjectId(dto.getProjectId())
-                .setMsg(dto.getMsg())
-                .setLevel("DEPT")
-                .setStatus(dto.getAudit());
-        bizProjectAuditMapper.insert(audit);
-        BizProjectRecord entity = new BizProjectRecord();
-        entity.setProjectId(dto.getProjectId())
-                .setStatus(dto.getStatus() == 1 ? BizBaseConstant.FILL_STATUS_DEPART_PASS:BizBaseConstant.FILL_STATUS_DEPART_BACK);
-        bizProjectRecordMapper.updateById(entity);
+//        BizProjectAudit audit = new BizProjectAudit();
+//        audit.setProjectId(dto.getProjectId())
+//                .setMsg(dto.getMsg())
+//                .setLevel("DEPT")
+//                .setStatus(dto.getAudit());
+//        bizProjectAuditMapper.insert(audit);
+//        BizProjectRecord entity = new BizProjectRecord();
+//        entity.setProjectId(dto.getProjectId())
+//                .setStatus(dto.getStatus() == 1 ? BizBaseConstant.FILL_STATUS_DEPART_PASS:BizBaseConstant.FILL_STATUS_DEPART_BACK);
+//        bizProjectRecordMapper.updateById(entity);
         return 1;
     }
 

@@ -6,8 +6,8 @@ public class BizBaseConstant {
     public static final String DELFLAG_Y = "2";
 
 
-    public static final String CONSTRUCT_TYPE_H = "hc";
-    public static final String CONSTRUCT_TYPE_J = "jj";
+    public static final String CONSTRUCT_TYPE_H = "2";
+    public static final String CONSTRUCT_TYPE_J = "1";
 
     // 矿井 营运状态
     public static final Integer MINE_STATUS_ON = 1;

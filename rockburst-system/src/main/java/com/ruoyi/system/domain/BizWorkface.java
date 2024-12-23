@@ -32,7 +32,7 @@ public class BizWorkface extends BaseSelfEntity
     private static final long serialVersionUID = 1L;
 
     /** 工作面的唯一标识符 */
-    @TableId( type = IdType.AUTO)
+    @TableId( type = IdType.ASSIGN_ID)
     private Long workfaceId;
 
     /** 所属矿井ID（外键） */

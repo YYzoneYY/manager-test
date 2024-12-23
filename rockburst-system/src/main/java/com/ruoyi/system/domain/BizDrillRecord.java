@@ -3,12 +3,15 @@ package com.ruoyi.system.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -27,6 +30,10 @@ public class BizDrillRecord extends BaseSelfEntity
     /** $column.columnComment */
     @TableId( type = IdType.AUTO)
     private Long drillRecordId;
+
+    /** 关联填报id */
+    @ApiModelProperty(name = "填报id")
+    private Long travePointId;
 
     /** 关联填报id */
     @ApiModelProperty(name = "关联填报id")
@@ -56,27 +63,33 @@ public class BizDrillRecord extends BaseSelfEntity
 
     /** 钻孔高度 */
     @ApiModelProperty(name = "钻孔高度")
-    private String height;
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal height;
 
     /** 钻孔直径 */
     @ApiModelProperty(name = "钻孔直径")
-    private String diameter;
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal diameter;
 
     /** 计划深度 */
     @ApiModelProperty(name = "计划深度")
-    private String planDeep;
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal planDeep;
 
     /** 实际深度 */
     @ApiModelProperty(name = "实际深度")
-    private String realDeep;
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal realDeep;
 
     /** 实际深度 */
     @ApiModelProperty(name = "装药量")
-    private String chargeWeight;
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal chargeWeight;
 
     /** 实际深度 */
     @ApiModelProperty(name = "封孔长度")
-    private String  pluggingLength;
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal  pluggingLength;
 
     /** 实际深度 */
     @ApiModelProperty(name = "爆破时间")
@@ -94,8 +107,8 @@ public class BizDrillRecord extends BaseSelfEntity
     @ApiModelProperty(name = "工具")
     private String borer;
 
-    @ApiModelProperty(name = "钻孔组")
-    private String drillCrumbJosn;
+//    @ApiModelProperty(name = "钻孔组")
+//    private String drillCrumbJosn;
 
     @ApiModelProperty(name = "钻屑量")
     private String crumbWeight;

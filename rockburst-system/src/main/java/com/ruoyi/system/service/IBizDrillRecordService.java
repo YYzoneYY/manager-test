@@ -1,6 +1,6 @@
 package com.ruoyi.system.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.github.yulichang.extension.mapping.base.MPJDeepService;
 import com.ruoyi.system.domain.BizDrillRecord;
 
 /**
@@ -9,7 +9,7 @@ import com.ruoyi.system.domain.BizDrillRecord;
  * @author ruoyi
  * @date 2024-11-09
  */
-public interface IBizDrillRecordService extends IService<BizDrillRecord>
+public interface IBizDrillRecordService extends MPJDeepService<BizDrillRecord>
 {
     /**
      * 查询钻孔参数记录
