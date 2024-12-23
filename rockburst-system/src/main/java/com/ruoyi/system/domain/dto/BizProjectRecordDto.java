@@ -14,12 +14,12 @@ public class BizProjectRecordDto {
     @Schema(description = "审核 主键")
     private Long projectId;
 
-    @ApiModelProperty(value = "审核 填报0 通过 1 驳回 2")
-    @Schema(description = "审核 填报0 通过 1 驳回 2")
-    private Integer audit;
-
-    @ApiModelProperty(value = "审核 退回原因")
-    private String msg;
+//    @ApiModelProperty(value = "审核 填报0 通过 1 驳回 2")
+//    @Schema(description = "审核 填报0 通过 1 驳回 2")
+//    private Integer audit;
+//
+//    @ApiModelProperty(value = "审核 退回原因")
+//    private String msg;
 
     @ApiModelProperty(value = "search -- 查询天数")
     private Integer dayNum;
@@ -29,7 +29,7 @@ public class BizProjectRecordDto {
     private Long constructUnitId;
 
     @ApiModelProperty(value = "search -- 施工地点")
-    private String tunnelId;
+    private String locationId;
 
     @ApiModelProperty(value = "search -- 钻孔类型")
     private String drillType;

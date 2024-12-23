@@ -38,6 +38,7 @@ public class CreateAndUpdateMetaObjectHandler implements MetaObjectHandler {
                         ? baseEntity.getCreateBy() : getLoginUsername();
                 // 当前已登录 且 创建人为空 则填充
                 baseEntity.setCreateBy(username);
+                baseEntity.setDelFlag(BizBaseConstant.DELFLAG_N);
                 // 当前已登录 且 更新人为空 则填充
                 baseEntity.setUpdateBy(username);
             }else if(ObjectUtil.isNotNull(metaObject) && metaObject.getOriginalObject() instanceof BaseToLongEntity){
@@ -50,6 +51,8 @@ public class CreateAndUpdateMetaObjectHandler implements MetaObjectHandler {
                         ? baseEntity.getCreateBy() : getLoginUsername();
                 // 当前已登录 且 创建人为空 则填充
                 baseEntity.setCreateBy(username);
+                baseEntity.setDelFlag(BizBaseConstant.DELFLAG_N);
+
                 // 当前已登录 且 更新人为空 则填充
                 baseEntity.setUpdateBy(username);
             }

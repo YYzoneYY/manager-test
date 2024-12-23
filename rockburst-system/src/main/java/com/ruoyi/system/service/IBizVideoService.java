@@ -1,6 +1,6 @@
 package com.ruoyi.system.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.github.yulichang.extension.mapping.base.MPJDeepService;
 import com.ruoyi.system.domain.BizVideo;
 
 /**
@@ -9,7 +9,7 @@ import com.ruoyi.system.domain.BizVideo;
  * @author ruoyi
  * @date 2024-11-09
  */
-public interface IBizVideoService  extends IService<BizVideo>
+public interface IBizVideoService  extends MPJDeepService<BizVideo>
 {
 //    List<BizVideo> list();
     /**

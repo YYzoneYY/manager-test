@@ -3,11 +3,14 @@ package com.ruoyi.system.domain.dto;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -34,71 +37,78 @@ public class BizDrillRecordDto
     private Long planId;
 
     /** 序号 */
-    @ApiModelProperty(name = "序号",required = true)
+
+    @ApiModelProperty(value = "序号")
     private Integer no;
 
     /** 开始时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(name = "开始时间",required = true)
+    @ApiModelProperty(value = "开始时间")
     private Date startTime;
 
     /** 结束时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(name = "结束时间",required = true)
+    @ApiModelProperty(value = "结束时间")
     private Date endTime;
 
     /** 钻孔方向 */
-    @ApiModelProperty(name = "钻孔方向",required = true)
+    @ApiModelProperty(value = "钻孔方向")
     private String direction;
 
     /** 钻孔高度 */
-    @ApiModelProperty(name = "钻孔高度",required = true)
-    private String height;
+    @ApiModelProperty(value = "钻孔高度")
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal height;
 
     /** 钻孔直径 */
-    @ApiModelProperty(name = "钻孔直径",required = true)
-    private String diameter;
+    @ApiModelProperty(value = "钻孔直径")
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal diameter;
 
     /** 计划深度 */
-    @ApiModelProperty(name = "计划深度",required = true)
-    private String planDeep;
+    @ApiModelProperty(value = "计划深度")
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal planDeep;
 
     /** 实际深度 */
-    @ApiModelProperty(name = "实际深度",required = true)
-    private String realDeep;
+    @ApiModelProperty(value = "实际深度")
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal realDeep;
 
     /** 实际深度 */
-    @ApiModelProperty(name = "装药量")
-    private String chargeWeight;
+    @ApiModelProperty(value = "装药量")
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal chargeWeight;
 
     /** 实际深度 */
-    @ApiModelProperty(name = "封孔长度")
-    private String  pluggingLength;
+    @ApiModelProperty(value = "封孔长度")
+    @JsonSerialize(using= ToStringSerializer.class)
+    private BigDecimal  pluggingLength;
 
     /** 实际深度 */
-    @ApiModelProperty(name = "爆破时间")
+    @ApiModelProperty(value = "爆破时间")
     private String  detonationTime;
 
     /** 实际深度 */
-    @ApiModelProperty(name = "方位角")
+    @ApiModelProperty(value = "方位角")
     private String bearingAngle;
 
 
     /** 状态 */
-    @ApiModelProperty(name = "状态")
+    @ApiModelProperty(value = "状态")
     private Integer status;
 
     /** 状态 */
-    @ApiModelProperty(name = "工具",required = true)
+    @ApiModelProperty(value = "工具",required = true)
     private String borer;
 
-    @ApiModelProperty(name = "钻孔组")
-    private String drillCrumbJosn;
+//    @ApiModelProperty(name = "钻孔组")
+//    private String drillCrumbJosn;
 
-    @ApiModelProperty(name = "钻屑量",required = true)
+    @ApiModelProperty(value = "钻屑量",required = true)
     private String crumbWeight;
 
-    @ApiModelProperty(name = "钻孔详情",required = true)
+    @ApiModelProperty(value = "钻孔详情",required = true)
     private String detailJson;
 
 

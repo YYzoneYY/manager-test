@@ -1,16 +1,27 @@
 package com.ruoyi.system.domain.vo;
 
 import com.ruoyi.system.constant.BizBaseConstant;
+import com.ruoyi.system.domain.BizDrillRecord;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.BizVideo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Accessors(chain = true)
-public class BizProjectRecordListVo extends BizProjectRecord {
+public class BizProjectRecordDetailVo extends BizProjectRecord {
+
+
+    @ApiModelProperty(value = "视频数据")
+    private List<BizVideo> videoList;
+
+    @ApiModelProperty(value = "钻孔组数据")
+    private List<BizDrillRecord> drillRecordList;
 
     @ApiModelProperty(value = "施工地点")
     private String constructLocation;
@@ -18,17 +29,12 @@ public class BizProjectRecordListVo extends BizProjectRecord {
 
     public String getConstructLocation() {
         if(BizBaseConstant.CONSTRUCT_TYPE_J.equals(super.getConstructType())){
-            System.out.println("constructLocation = " + constructLocation);
             return super.getTunnelName();
         }
         return super.getWorkfaceName();
     }
 
     public void setConstructLocation(String constructLocation) {
-        if(BizBaseConstant.CONSTRUCT_TYPE_J.equals(super.getConstructType())){
-            System.out.println("constructLocation = " + constructLocation);
-            this.constructLocation =  super.getTunnelName();
-        }
-        this.constructLocation = super.getWorkfaceName();
+        this.constructLocation = constructLocation;
     }
 }

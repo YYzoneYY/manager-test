@@ -18,18 +18,18 @@ public class BizProjectRecordAddDto  {
     @TableId( type = IdType.AUTO)
     private Long projectId;
 
-    @ApiModelProperty(value = "钻孔类型")
+    @ApiModelProperty(value = "钻孔类型",required = true)
     private String drillType;
 
     @ApiModelProperty(value = "计划Id")
     private Long planId;
 
-    @ApiModelProperty(value = "施工类型 回踩 掘进")
+    @ApiModelProperty(value = "施工类型 回踩 掘进",required = true)
     private String constructType;
 
     /** 施工时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "施工时间")
+    @ApiModelProperty(value = "施工时间",required = true)
     private Date constructTime;
 
     /** 施工单位 */
@@ -40,16 +40,17 @@ public class BizProjectRecordAddDto  {
     @ApiModelProperty(value = "施工班次")
     private Long constructShiftId;
 
+    /** 位置 */
+    @ApiModelProperty(value = "施工地点",required = true)
+    private Long locationId;
+
     /** 距离 */
-    @ApiModelProperty(value = "距离")
+    @ApiModelProperty(value = "距离",required = true)
     private String constructRange;
 
-    /** 施工地点 */
-    @ApiModelProperty(value = "施工地点= 巷道id")
-    private Long tunnelId;
 
     /** 定位方式 */
-    @ApiModelProperty(value = "定位方式(一般都是导线点把)")
+    @ApiModelProperty(value = "定位方式(一般都是导线点把)",required = true)
     private String positionType;
 
     /** 钢带起始 */
@@ -57,7 +58,7 @@ public class BizProjectRecordAddDto  {
     private String steelBeltStart;
 
     /** 导线点 */
-    @ApiModelProperty(value = "导线点")
+    @ApiModelProperty(value = "导线点",required = true)
     private Long travePointId;
 
     /** 钢带终止 */
@@ -67,10 +68,6 @@ public class BizProjectRecordAddDto  {
     /** 钻孔编号 */
     @ApiModelProperty(value = "钻孔编号")
     private String drillNum;
-
-    /** 位置 */
-    @ApiModelProperty(value = "位置")
-    private String location;
 
     /** 状态 */
     @ApiModelProperty(value = "状态")
@@ -95,27 +92,6 @@ public class BizProjectRecordAddDto  {
     /** 安检员 */
     @ApiModelProperty(value = "验收员")
     private Long accepter;
-
-    /** 验收视频源文件 */
-    @ApiModelProperty(value = "验收视频源文件")
-    private String originalFile;
-
-    /** 进钻参数 */
-    @ApiModelProperty(value = "进钻参数")
-    private String drillParam;
-
-    /** 钻屑量 */
-    @ApiModelProperty(value = "钻屑量-有钻屑量的是必填")
-    private String crumbWeight;
-
-    /** 钻屑量 */
-    @ApiModelProperty(value = "部门id")
-    private Long deptId;
-
-
-    @ApiModelProperty(value = "阅读状态")
-    private Integer isRead;
-
 
 
     List<BizDrillRecordDto> drillRecords;

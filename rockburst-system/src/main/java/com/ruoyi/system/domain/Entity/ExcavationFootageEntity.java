@@ -44,7 +44,7 @@ public class ExcavationFootageEntity extends BusinessBaseEntity implements Seria
     @ApiModelProperty("掘进时间")
     @NotNull(groups = {ParameterValidationOther.class}, message = "掘进时间不能为空")
     @TableField("excavation_time")
-    private Long miningTime;
+    private Long excavationTime;
 
     @ApiModelProperty("掘进进度")
     @TableField("excavation_pace")
