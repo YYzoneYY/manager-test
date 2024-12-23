@@ -103,15 +103,20 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
         queryWrapper
                 .selectAll(BizProjectRecordListVo.class)
+                .selectAs(BizProjectRecord::getStatus, BizProjectRecordListVo::getConstructLocation)
                 .and(permission.getDeptIds() != null && permission.getDeptIds().size()>0 ,i->i.in(permission.getDeptIds() != null && permission.getDeptIds().size()>0 , BizProjectRecord::getDeptId,permission.getDeptIds())
                         .or().eq(permission.getDateScopeSelf() == 5,BizProjectRecord::getCreateBy,currentUser.getUserName()))
                 .eq(dto.getConstructUnitId()!=null,BizProjectRecord::getConstructUnitId,dto.getConstructUnitId())
-                .eq(dto.getTunnelId() != null,BizProjectRecord::getTunnelId,dto.getTunnelId())
-                .eq(dto.getDrillType()!=null,BizProjectRecord::getDrillType,dto.getDrillType())
+                .eq(dto.getLocationId() != null,BizProjectRecord::getTunnelId,dto.getLocationId())
+                .eq(dto.getDrillType() !=null,BizProjectRecord::getDrillType,dto.getDrillType())
                 .eq(dto.getConstructShiftId()!=null,BizProjectRecord::getConstructShiftId,dto.getConstructShiftId())
                 .between(StrUtil.isNotEmpty(dto.getStartTime()),BizProjectRecord::getConstructTime,DateUtils.parseDate(dto.getStartTime()),DateUtils.parseDate(dto.getEndTime()))
                 .eq(dto.getStatus()!=null,BizProjectRecord::getStatus,dto.getStatus());
         IPage<BizProjectRecordListVo> sss = this.pageDeep(pagination , queryWrapper);
+        List<BizProjectRecordListVo> vos =  sss.getRecords();
+        List<BizProjectRecordListVo> vv = new ArrayList<>();
+        vv = BeanUtil.copyToList(vos,BizProjectRecordListVo.class);
+        sss.setRecords(vv);
         return new MPage<>(sss);
     }
 
@@ -306,23 +311,34 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+        //掘进回采id
+        if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
+            entity.setWorkfaceId(dto.getLocationId());
+        }else {
+            entity.setTunnelId(dto.getLocationId());
+        }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());
-        long  projectId =  this.getBaseMapper().insert(entity);
+         this.getBaseMapper().insert(entity);
 
-        IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
-            BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
-            BizDrillRecord bizDrillRecord  = new BizDrillRecord();
-            BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
-            bizDrillRecord.setProjectId(projectId).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
-            bizDrillRecordMapper.insert(bizDrillRecord);
-        });
+        if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
+            IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
+                BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
+                BizDrillRecord bizDrillRecord  = new BizDrillRecord();
+                BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
+                bizDrillRecord.setStatus(0).setTravePointId(dto.getTravePointId()).setProjectId(entity.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
+                bizDrillRecordMapper.insert(bizDrillRecord);
+            });
+        }
 
-        dto.getVideos().forEach(bizVideo -> {
-            BizVideo video = new BizVideo();
-            BeanUtil.copyProperties(bizVideo, video);
-            video.setProjectId(projectId);
-            bizVideoMapper.insert(video);
-        });
+        if(dto.getVideos() != null && dto.getVideos().size() > 0){
+            dto.getVideos().forEach(bizVideo -> {
+                BizVideo video = new BizVideo();
+                BeanUtil.copyProperties(bizVideo, video);
+                video.setProjectId(entity.getProjectId());
+                bizVideoMapper.insert(video);
+            });
+        }
+
         return 1;
     }
 
@@ -332,6 +348,12 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     public int updateRecord(BizProjectRecordAddDto dto) {
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+        //掘进回采id
+        if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
+            entity.setWorkfaceId(dto.getLocationId());
+        }else {
+            entity.setTunnelId(dto.getLocationId());
+        }
         this.updateById(entity);
 
         UpdateWrapper<BizDrillRecord> drillUpdateWrapper= new UpdateWrapper<>();
@@ -347,7 +369,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
                 BizDrillRecord bizDrillRecord  = new BizDrillRecord();
                 BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
-                bizDrillRecord.setProjectId(dto.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
+                bizDrillRecord.setStatus(0).setTravePointId(dto.getTravePointId()).setProjectId(entity.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
                 bizDrillRecordMapper.insert(bizDrillRecord);
             });
         }
@@ -401,32 +423,32 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public int firstAudit(BizProjectRecordDto dto) {
-        BizProjectAudit audit = new BizProjectAudit();
-        audit.setProjectId(dto.getProjectId())
-                .setMsg(dto.getMsg())
-                .setLevel("TEAM")
-                .setStatus(dto.getAudit());
-        bizProjectAuditMapper.insert(audit);
-        BizProjectRecord entity = new BizProjectRecord();
-        entity.setProjectId(dto.getProjectId())
-                        .setStatus(dto.getStatus() == 1 ? BizBaseConstant.FILL_STATUS_TEAM_PASS:BizBaseConstant.FILL_STATUS_TEAM_BACK);
-        bizProjectRecordMapper.updateById(entity);
+//        BizProjectAudit audit = new BizProjectAudit();
+//        audit.setProjectId(dto.getProjectId())
+//                .setMsg(dto.getMsg())
+//                .setLevel("TEAM")
+//                .setStatus(dto.getAudit());
+//        bizProjectAuditMapper.insert(audit);
+//        BizProjectRecord entity = new BizProjectRecord();
+//        entity.setProjectId(dto.getProjectId())
+//                        .setStatus(dto.getStatus() == 1 ? BizBaseConstant.FILL_STATUS_TEAM_PASS:BizBaseConstant.FILL_STATUS_TEAM_BACK);
+//        bizProjectRecordMapper.updateById(entity);
         return 1;
     }
 
 
     @Override
     public int secondAudit(BizProjectRecordDto dto) {
-        BizProjectAudit audit = new BizProjectAudit();
-        audit.setProjectId(dto.getProjectId())
-                .setMsg(dto.getMsg())
-                .setLevel("DEPT")
-                .setStatus(dto.getAudit());
-        bizProjectAuditMapper.insert(audit);
-        BizProjectRecord entity = new BizProjectRecord();
-        entity.setProjectId(dto.getProjectId())
-                .setStatus(dto.getStatus() == 1 ? BizBaseConstant.FILL_STATUS_DEPART_PASS:BizBaseConstant.FILL_STATUS_DEPART_BACK);
-        bizProjectRecordMapper.updateById(entity);
+//        BizProjectAudit audit = new BizProjectAudit();
+//        audit.setProjectId(dto.getProjectId())
+//                .setMsg(dto.getMsg())
+//                .setLevel("DEPT")
+//                .setStatus(dto.getAudit());
+//        bizProjectAuditMapper.insert(audit);
+//        BizProjectRecord entity = new BizProjectRecord();
+//        entity.setProjectId(dto.getProjectId())
+//                .setStatus(dto.getStatus() == 1 ? BizBaseConstant.FILL_STATUS_DEPART_PASS:BizBaseConstant.FILL_STATUS_DEPART_BACK);
+//        bizProjectRecordMapper.updateById(entity);
         return 1;
     }
 

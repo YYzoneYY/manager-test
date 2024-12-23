@@ -27,27 +27,28 @@ public class BizVideoDto
     private Long videoId;
 
     /** 文件大小 */
-    @ApiModelProperty(name = "文件大小")
+
+    @ApiModelProperty(value = "文件大小")
     private String fileSize;
 
     /** 文件名 */
-    @ApiModelProperty(name = "文件名")
+    @ApiModelProperty(value = "文件名")
     private String fileName;
 
     /** 存放位置 */
-    @ApiModelProperty(name = "存放位置")
+    @ApiModelProperty(value = "存放位置")
     private String bucket;
 
     /** 视频地址 */
-    @ApiModelProperty(name = "视频地址")
+    @ApiModelProperty(value = "视频地址")
     private String fileUrl;
 
     /** 参数 */
-    @ApiModelProperty(name = "参数")
+    @ApiModelProperty(value = "参数")
     private String param;
 
     /** 工程id */
-    @ApiModelProperty(name = "工程id")
+    @ApiModelProperty(value = "工程id")
     private Long projectId;
 
 }

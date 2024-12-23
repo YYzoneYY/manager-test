@@ -19,7 +19,6 @@ import lombok.experimental.Accessors;
 import lombok.experimental.FieldNameConstants;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * 工程填报记录对象 biz_project_record
@@ -40,11 +39,19 @@ public class BizProjectRecord extends BaseSelfEntity
     @TableId( type = IdType.AUTO)
     private Long projectId;
 
+    /** 导线点 */
+    @ApiModelProperty(value = "导线点")
+    private Long travePointId;
+
     @ApiModelProperty(value = "钻孔类型")
     private String drillType;
 
     @ApiModelProperty(value = "计划Id")
     private Long planId;
+
+    /** 距离 */
+    @ApiModelProperty(value = "距离")
+    private String constructRange;
 
     @ApiModelProperty(value = "施工类型 回踩 掘进")
     private String constructType;
@@ -62,13 +69,20 @@ public class BizProjectRecord extends BaseSelfEntity
     @ApiModelProperty(value = "施工班次")
     private Long constructShiftId;
 
-    /** 距离 */
-    @ApiModelProperty(value = "距离")
-    private String constructRange;
+    /** 施工地点 */
+    @ApiModelProperty(value = "工作面id")
+    private Long workfaceId;
+
 
     /** 施工地点 */
-    @ApiModelProperty(value = "施工地点= 巷道id")
+    @ApiModelProperty(value = "巷道id")
     private Long tunnelId;
+
+    /** 施工地点 */
+    @ApiModelProperty(value = "施工地点(传入工作面id或者巷道id)")
+    private Long locationId;
+
+
 
     /** 定位方式 */
     @ApiModelProperty(value = "定位方式")
@@ -78,9 +92,7 @@ public class BizProjectRecord extends BaseSelfEntity
     @ApiModelProperty(value = "钢带起始")
     private String steelBeltStart;
 
-    /** 导线点 */
-    @ApiModelProperty(value = "导线点")
-    private Long travePointId;
+
 
     /** 钢带终止 */
     @ApiModelProperty(value = "钢带终止")
@@ -90,9 +102,6 @@ public class BizProjectRecord extends BaseSelfEntity
     @ApiModelProperty(value = "钻孔编号")
     private String drillNum;
 
-    /** 位置 */
-    @ApiModelProperty(value = "位置")
-    private String location;
 
     /** 状态 */
     @ApiModelProperty(value = "状态")
@@ -122,18 +131,17 @@ public class BizProjectRecord extends BaseSelfEntity
     @ApiModelProperty(value = "验收视频源文件")
     private String originalFile;
 
-    /** 进钻参数 */
-    @ApiModelProperty(value = "进钻参数")
-    private String drillParam;
+//    /** 进钻参数 */
+//    @ApiModelProperty(value = "进钻参数")
+//    private String drillParam;
 
-    /** 钻屑量 */
-    @ApiModelProperty(value = "钻屑量")
-    private String crumbWeight;
+//    /** 钻屑量 */
+//    @ApiModelProperty(value = "钻屑量")
+//    private String crumbWeight;
 
     /** 钻屑量 */
     @ApiModelProperty(value = "钻屑量")
     private Long deptId;
-
 
 
 //    @ApiModelProperty(value = "工作面id")
@@ -145,7 +153,7 @@ public class BizProjectRecord extends BaseSelfEntity
 
     @ApiModelProperty(value = "工作面")
     @TableField(exist = false)
-    @FieldMapping(tag = BizWorkface.class ,thisField = "tunnelId" , joinField = "workfaceId" , select = "workfaceName")
+    @FieldMapping(tag = BizWorkface.class ,thisField = "workfaceId" , joinField = "workfaceId" , select = "workfaceName")
     private String workfaceName;
 
     @ApiModelProperty(value = "巷道")
@@ -164,10 +172,6 @@ public class BizProjectRecord extends BaseSelfEntity
     @EntityMapping(thisField = "constructShiftId", joinField = "classesId")
     private ClassesEntity constructShift;
 
-//    @ApiModelProperty(value = "施工地点实例")
-//    @TableField(exist = false)
-//    @EntityMapping(thisField = "constructUnitId", joinField = "constructionUnitId")
-//    private TunnelEntity tunnel;
 
     /** 导线点 */
     @ApiModelProperty(value = "导线点实例")
@@ -206,14 +210,5 @@ public class BizProjectRecord extends BaseSelfEntity
     private ConstructionPersonnelEntity accepterEntity;
 
 
-    @ApiModelProperty(value = "视频数据")
-    @TableField(exist = false)
-    @EntityMapping(thisField = "projectId", joinField = "projectId")
-    private List<BizVideo> videoList;
-
-    @ApiModelProperty(value = "钻孔组数据")
-    @TableField(exist = false)
-    @EntityMapping(thisField = "projectId", joinField = "projectId")
-    private List<BizDrillRecord> drillRecordList;
 
 }

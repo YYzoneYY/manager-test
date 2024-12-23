@@ -3,6 +3,7 @@ package com.ruoyi.common.core.domain;
 import com.alibaba.fastjson2.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -52,6 +53,7 @@ public class BaseSelfEntity implements Serializable {
     private String remark;
 
     /** 删除标志（0代表存在 2代表删除） */
+    @TableLogic(value = "0", delval = "2")
     private String delFlag;
 
     public BaseSelfEntity() {
