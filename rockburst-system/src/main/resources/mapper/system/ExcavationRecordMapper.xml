@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.ExcavationRecordMapper">
+
+    <select id="queryByExcavationRecordId" resultType="com.ruoyi.system.domain.dto.ExcavationRecordDTO">
+        select
+        er.excavation_time                                                      as excavationTime,
+        er.create_by                                                        as createBy,
+        er.update_time                                                      as updateTime,
+        (case when er.flag = '2' then '修改' when er.flag = '3' then '擦除' end) as type,
+        er.excavation_pace                                                      as excavationPace,
+        er.excavation_pace_edit                                                 as excavationPaceEdit
+        from excavation_record er
+        <where>
+            er.excavation_footage_id = #{excavationFootageId}
+        </where>
+        order by er.update_time desc
+    </select>
 </mapper>

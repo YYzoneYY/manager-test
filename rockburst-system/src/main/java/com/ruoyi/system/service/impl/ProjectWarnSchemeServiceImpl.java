@@ -119,7 +119,7 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
             if (count > 0) {
                 throw new RuntimeException("已存在相同工作量规则的预警方案!!");
             }
-            String distanceRule = objectMapper.writeValueAsString(projectWarnSchemeDTO.getDistanceRule()).trim();
+            String distanceRule = objectMapper.writeValueAsString(projectWarnSchemeDTO.getDistanceRuleDTO()).trim();
             Long selectedCount = projectWarnSchemeMapper.selectCount(new LambdaQueryWrapper<ProjectWarnSchemeEntity>()
                     .eq(ProjectWarnSchemeEntity::getDistanceRule, distanceRule)
                     .eq(ProjectWarnSchemeEntity::getPlanType, projectWarnSchemeDTO.getPlanType())

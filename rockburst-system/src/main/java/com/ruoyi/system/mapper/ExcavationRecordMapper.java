@@ -1,7 +1,12 @@
 package com.ruoyi.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ruoyi.system.domain.Entity.ExcavationRecordEntity;
+import com.ruoyi.system.domain.dto.ExcavationRecordDTO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -10,5 +15,10 @@ import org.apache.ibatis.annotations.Mapper;
  */
 
 @Mapper
-public interface ExcavationRecordMapper extends BaseMapper<ExcavationRecordMapper> {
+public interface ExcavationRecordMapper extends BaseMapper<ExcavationRecordEntity> {
+
+    /**
+     * 根据recordId查询修改记录
+     */
+    List<ExcavationRecordDTO> queryByExcavationRecordId(@Param("excavationFootageId") Long excavationFootageId);
 }

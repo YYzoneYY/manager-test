@@ -1,4 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.ExcavationFootageMapper">
+
+    <!--统计掘进的总长度-->
+    <select id="excavationLength" resultType="java.math.BigDecimal">
+        select sum(mf.excavation_pace) as excavationLength
+        from excavation_footage ef
+        <where>
+            ef.tunnel_id = #{tunnelId} and ef.del_flag = '0'
+        </where>
+    </select>
+
+    <select id="selectQueryPage" parameterType="com.ruoyi.system.domain.dto.ExcavationSelectDTO" resultType="com.ruoyi.system.domain.dto.ExcavationFootageDTO">
+        select
+        ef.excavation_footage_id as excavationFootageId,
+        ef.tunnel_id as tunnelId,
+        ef.excavation_time as excavationTime,
+        ef.excavation_pace as excavationPace,
+        ef.flag as flag,
+        ef.create_time as createTime,
+        ef.update_time as updateTime
+        from excavation_footage ef
+        <where>
+            <if test="startTime != null">and ef.excavation_time &gt;= #{startTime}</if>
+            <if test="endTime != null">and ef.excavation_time &lt;= #{endTime}</if>
+            <choose>
+                <when test="pace == '0'.toString()">
+                    and ef.excavation_pace='0'
+                </when>
+
+                <when test="pace == '1'.toString()">
+                    and ef.excavation_pace <![CDATA[ <> ]]>'0'
+                </when>
+                <otherwise>
+                    and ef.del_flag = '0'
+                </otherwise>
+            </choose>
+            and ef.del_flag = '0'
+            and ef.tunnel_id = #{tunnelId}
+        </where>
+        order by ef.excavation_time desc
+    </select>
+
+    <select id="excavationPaceSum" resultType="java.math.BigDecimal">
+        select IFNULL(SUM(ef.excavation_pace),0) as excavationPace
+        from excavation_footage ef
+        <where>
+            ef.excavation_time <![CDATA[ <= ]]> #{time}
+            and ef.tunnel_id = #{tunnelId}
+            and ef.del_flag='0'
+        </where>
+    </select>
 </mapper>
