@@ -9,6 +9,8 @@ import com.ruoyi.system.domain.dto.BizPlanDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto1;
+import com.ruoyi.system.domain.dto.project.BizCardVDto;
+import com.ruoyi.system.domain.dto.project.BizWashProofDto;
 import com.ruoyi.system.domain.vo.BizProStatsVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordPaibanVo;
@@ -28,14 +30,9 @@ import java.util.Map;
  */
 public interface IBizProjectRecordService  extends MPJDeepService<BizProjectRecord>
 {
-    /**
-     * 查询工程填报记录
-     * 
-     * @param
-     * @return 工程填报记录
-     */
-    MPage<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto , Pagination pagination);
 
+    /*******************************************************基础***********************************************************/
+    MPage<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto , Pagination pagination);
 
 
     int saveRecord(BizProjectRecordAddDto dto);
@@ -54,15 +51,26 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
 
 
 
+    /********************************************************防冲 -  统计 **********************************************************/
 
 
-    MPage<BizProjectRecordListVo> selectproList(BasePermission permission, BizProjectRecordDto dto , Pagination pagination);
+    MPage<BizProjectRecordListVo> selectproList(BasePermission permission, BizWashProofDto dto , Pagination pagination);
 
 
-    BizProStatsVo statsProject(BasePermission permission, BizProjectRecordDto dto);
+    BizProStatsVo statsProject(BasePermission permission, BizWashProofDto dto);
 
 
-    MPage<BizProjectRecordPaibanVo> selectPaiList(BasePermission permission, BizProjectRecordDto dto, Pagination pagination);
+
+
+    /******************************************************** 牌版 **********************************************************/
+
+
+    MPage<BizProjectRecordPaibanVo> selectPaiList(BasePermission permission, BizCardVDto dto, Pagination pagination);
+
+
+
+    /******************************************************** 牌版 **********************************************************/
+
 
 
     MPage<Map<String, Object>> monitorProject(BizPlanDto dto, Pagination pagination);
