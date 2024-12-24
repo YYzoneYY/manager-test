@@ -46,7 +46,7 @@ public class ExcavationFootageController {
     }
 
     @ApiOperation(value = "修改掘进进尺", notes = "修改掘进进尺")
-    @PostMapping("/update")
+    @PutMapping("/update")
     public R<ExcavationFootageEntity> update(@RequestBody @Validated(value = {ParameterValidationUpdate.class})
                                            ExcavationFootageDTO excavationFootageDTO) {
         return R.ok(this.excavationFootageService.updateExcavationFootage(excavationFootageDTO));
@@ -77,7 +77,7 @@ public class ExcavationFootageController {
         return R.ok(this.excavationFootageService.queryByTime(excavationTime, tunnelId));
     }
 
-    @ApiOperation(value = "获取剩余工作面长度", notes = "获取剩余工作面长度")
+    @ApiOperation(value = "获取剩余巷道长度", notes = "获取剩余巷道长度")
     @GetMapping(value = "/getSurplusLength")
     public R<Object> getSurplusLength(@RequestParam(value = "tunnelId") Long tunnelId) {
         return R.ok(this.excavationFootageService.getSurplusLength(tunnelId));

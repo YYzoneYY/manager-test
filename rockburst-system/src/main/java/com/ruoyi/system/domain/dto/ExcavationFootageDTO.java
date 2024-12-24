@@ -28,6 +28,4 @@ public class ExcavationFootageDTO extends ExcavationFootageEntity {
     @ApiModelProperty("掘进时间相同的数据 1:代表有时间相同的，空(null):代表没有时间相同的")
     private String timeFlag;
 
-    @ApiModelProperty("已掘进长度")
-    private BigDecimal excavatedLength;
 }

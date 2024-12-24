@@ -4,7 +4,7 @@
 
     <!--统计掘进的总长度-->
     <select id="excavationLength" resultType="java.math.BigDecimal">
-        select sum(mf.excavation_pace) as excavationLength
+        select sum(ef.excavation_pace) as excavationLength
         from excavation_footage ef
         <where>
             ef.tunnel_id = #{tunnelId} and ef.del_flag = '0'
