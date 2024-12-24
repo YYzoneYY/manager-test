@@ -25,7 +25,4 @@ public class MiningFootageDTO extends MiningFootageEntity {
     //1 代表有时间相同的，空代表没有时间相同的
     @ApiModelProperty("开采时间相同的数据 1:代表有时间相同的，空(null):代表没有时间相同的")
     private String timeFlag;
-
-    @ApiModelProperty("已开采长度")
-    private BigDecimal minedLength;
 }
