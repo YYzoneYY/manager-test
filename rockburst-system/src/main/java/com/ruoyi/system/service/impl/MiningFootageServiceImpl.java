@@ -51,7 +51,9 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         if (miningFootageDTO.getMiningPace().compareTo(BigDecimal.ZERO) < 0) {
             throw new RuntimeException("输入的回采进尺不能或小于0");
         }
-        BizWorkface bizWorkface = bizWorkfaceMapper.selectById(miningFootageDTO.getWorkFaceId());
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceId, miningFootageDTO.getWorkFaceId())
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isEmpty(bizWorkface)) {
             throw new RuntimeException("选择的工作面不存在，请重新选择");
         }
@@ -89,19 +91,23 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         if (ObjectUtil.isEmpty(miningFootageDTO.getMiningFootageId())) {
             throw new RuntimeException("回采进尺id不能为空");
         }
-        MiningFootageEntity miningFootageEntity = miningFootageMapper.selectById(miningFootageDTO.getMiningFootageId());
+        MiningFootageEntity miningFootageEntity = miningFootageMapper.selectOne(new LambdaQueryWrapper<MiningFootageEntity>()
+                .eq(MiningFootageEntity::getMiningFootageId, miningFootageDTO.getMiningFootageId())
+                .eq(MiningFootageEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isEmpty(miningFootageEntity)) {
             throw new RuntimeException("回采进尺不存在");
         }
-        BizWorkface bizWorkface = bizWorkfaceMapper.selectById(miningFootageEntity.getWorkFaceId());
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceId, miningFootageEntity.getWorkFaceId())
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         BigDecimal surplusFaceTotal = surplusFaceTotal(miningFootageDTO.getWorkFaceId(), bizWorkface.getStrikeLength(), BigDecimal.ZERO);
         if (miningFootageDTO.getMiningPace().compareTo(surplusFaceTotal) > 0) {
             throw new RuntimeException("回采进尺不能大于剩余工作面长度" + surplusFaceTotal + "米");
         }
         miningFootageEntity.setMiningPace(miningFootageDTO.getMiningPaceEdit());
         miningFootageEntity.setFlag(MiningFootageEnum.REVISE.getIndex());
-        miningFootageDTO.setUpdateTime(System.currentTimeMillis());
-        miningFootageDTO.setUpdateBy(1L);
+        miningFootageEntity.setUpdateTime(System.currentTimeMillis());
+        miningFootageEntity.setUpdateBy(1L);
         boolean b = this.updateById(miningFootageEntity);
         if (b) {
             miningFootageDTO.setFlag(MiningFootageEnum.REVISE.getIndex());
@@ -127,7 +133,9 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         if (ObjectUtil.isEmpty(miningFootageDTO.getMiningFootageId())) {
             throw new RuntimeException("请选择数据");
         }
-        MiningFootageEntity miningFootageEntity = miningFootageMapper.selectById(miningFootageDTO.getMiningFootageId());
+        MiningFootageEntity miningFootageEntity = miningFootageMapper.selectOne(new LambdaQueryWrapper<MiningFootageEntity>()
+                .eq(MiningFootageEntity::getMiningFootageId, miningFootageDTO.getMiningFootageId())
+                .eq(MiningFootageEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isEmpty(miningFootageEntity)) {
             throw new RuntimeException("未找到数据");
         }
