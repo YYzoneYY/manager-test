@@ -57,6 +57,10 @@ public class BizTravePointDto
     @TableField()
     private Integer status;
 
+    @ApiModelProperty(value = "编号")
+    @TableField()
+    private String no;
+
 
 
 

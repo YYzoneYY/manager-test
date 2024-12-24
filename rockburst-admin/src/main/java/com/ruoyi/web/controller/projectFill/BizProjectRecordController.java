@@ -2,6 +2,7 @@ package com.ruoyi.web.controller.projectFill;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.BasePermission;
@@ -83,6 +84,20 @@ public class BizProjectRecordController extends BaseController
         List<BizVideo> videos =  bizVideoService.listDeep(videoQueryWrapper);
         vo.setVideoList(videos).setDrillRecordList(drillRecordList);
         return R.ok(vo);
+    }
+
+
+    @Anonymous
+    @ApiOperation("查询导线点是否已经被填报")
+//    @PreAuthorize("@ss.hasPermi('project:record:query')")
+    @GetMapping(value = "/point")
+    public R<Boolean> getPointInfo(@RequestParam("pointId") Long pointId,
+                                   @RequestParam("constructType") String constructType)
+    {
+        QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizProjectRecord::getConstructType,constructType).eq(BizProjectRecord::getTravePointId, pointId);
+        long i = bizProjectRecordService.count(queryWrapper);
+        return R.ok(i <= 0);
     }
 
     /**
