@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
@@ -28,12 +29,13 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
     private BizTravePointMapper bizTravePointMapper;
 
     @Override
-    public MPage<BizTravePointVo> geRuleList(Long workfaceId, Pagination pagination) {
+    public MPage<BizTravePointVo> geRuleList(Long workfaceId,String constructType, Pagination pagination) {
         MPJLambdaWrapper<BizTravePoint> queryWrapper = new MPJLambdaWrapper<BizTravePoint>();
         queryWrapper.leftJoin(BizProjectRecord.class,BizProjectRecord::getTravePointId,BizTravePoint::getPointId)
                 .selectSum(BizProjectRecord::getProjectId,BizTravePointVo::getDid)
                 .selectAll(BizTravePoint.class)
-                .in(workfaceId != null , BizTravePoint::getWorkfaceId, workfaceId)
+                .eq(StrUtil.isNotEmpty(constructType) , BizProjectRecord::getConstructType,constructType)
+                .eq(workfaceId != null , BizTravePoint::getWorkfaceId, workfaceId)
                 .eq(BizTravePoint::getDelFlag, BizBaseConstant.DELFLAG_N);
         IPage<BizTravePointVo> list = bizTravePointMapper.selectJoinPage(pagination,BizTravePointVo.class,queryWrapper);
         return new MPage<>(list);

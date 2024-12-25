@@ -15,5 +15,5 @@ import com.ruoyi.system.domain.vo.BizTravePointVo;
 public interface IBizTravePointService extends IService<BizTravePoint>
 {
 
-    MPage<BizTravePointVo> geRuleList(Long workfaceId,Pagination pagination);
+    MPage<BizTravePointVo> geRuleList(Long workfaceId,String constructType,Pagination pagination);
 }

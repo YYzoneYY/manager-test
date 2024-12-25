@@ -90,9 +90,9 @@ public class BiztravePointController extends BaseController
     @ApiOperation("尺子")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/rule")
-    public R<MPage<BizTravePointVo>> rule(@RequestParam Long workfaceId,@ParameterObject Pagination pagination)
+    public R<MPage<BizTravePointVo>> rule(@RequestParam Long workfaceId,@RequestParam String constructType,@ParameterObject Pagination pagination)
     {
-        return R.ok(bizTravePointService.geRuleList(workfaceId,pagination));
+        return R.ok(bizTravePointService.geRuleList(workfaceId,constructType,pagination));
     }
 
 
