@@ -5,6 +5,7 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.TeamAuditEntity;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
 import com.ruoyi.system.domain.dto.TeamAuditDTO;
+import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 
 /**
  * @author: shikai
@@ -18,7 +19,7 @@ public interface TeamAuditService extends IService<TeamAuditEntity> {
      * @param projectId 计划id
      * @return 返回结果
      */
-    int audit(Long projectId);
+    BizProjectRecordDetailVo audit(Long projectId);
 
     /**
      * 审核

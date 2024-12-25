@@ -18,9 +18,11 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.DepartAuditDTO;
 import com.ruoyi.system.domain.dto.SelectDeptAuditDTO;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
+import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.ProjectVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DepartmentAuditService;
+import com.ruoyi.system.service.IBizProjectRecordService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,33 +62,38 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
     @Resource
     private SysDictDataMapper sysDictDataMapper;
 
+    @Resource
+    private IBizProjectRecordService bizProjectRecordService;
+
     /**
      * 点击审核按钮
      * @param projectId 计划id
      * @return 返回结果
      */
     @Override
-    public int clickAudit(Long projectId) {
-        int flag = 0;
+    public BizProjectRecordDetailVo clickAudit(Long projectId) {
         if (ObjectUtil.isNull(projectId)) {
             throw new DepartmentAuditException("参数错误");
         }
         TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
                 .eq(TeamAuditEntity::getProjectId, projectId)
                 .eq(TeamAuditEntity::getDepartAuditState, ConstantsInfo.AUDIT_STATUS_DICT_VALUE)
-                .eq(TeamAuditEntity::getDepartAuditState, ConstantsInfo.AUDIT_SUCCESS)
+                .eq(TeamAuditEntity::getAuditResult, ConstantsInfo.AUDIT_SUCCESS)
                 .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(teamAuditEntity)) {
             throw new RuntimeException("此填报信息没有通过区队审核，暂无法进行审核");
         }
+        BizProjectRecordDetailVo bizProjectRecordDetailVo = new BizProjectRecordDetailVo();
         TeamAuditEntity teamAudit = new TeamAuditEntity();
         BeanUtils.copyProperties(teamAuditEntity, teamAudit);
         teamAudit.setDepartAuditState(ConstantsInfo.IN_REVIEW_DICT_VALUE);
-        flag = teamAuditMapper.updateById(teamAudit);
-        if (flag <= 0) {
-            throw new DepartmentAuditException("失败,请联系管理员");
+        int update = teamAuditMapper.updateById(teamAudit);
+        if (update <= 0) {
+            throw new DepartmentAuditException("科室审核失败,请联系管理员");
         }
-        return flag;
+        BizProjectRecordDetailVo projectRecordDetailVo = bizProjectRecordService.selectById(projectId);
+        BeanUtils.copyProperties(projectRecordDetailVo, bizProjectRecordDetailVo);
+        return bizProjectRecordDetailVo;
     }
 
     /**
@@ -276,14 +283,28 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
      * 获取驳回原因
      */
     private String getRejectReason(Long projectId) {
+        // 区队审核记录
+        TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
+                .eq(TeamAuditEntity::getProjectId, projectId)
+                .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .eq(TeamAuditEntity::getAuditResult, ConstantsInfo.REJECTED)
+                .orderByDesc(TeamAuditEntity::getCreateTime)
+                .last("LIMIT 1"));
+        // 科室审核记录
         DepartmentAuditEntity departmentAuditEntity = departmentAuditMapper.selectOne(new LambdaQueryWrapper<DepartmentAuditEntity>()
                 .eq(DepartmentAuditEntity::getProjectId, projectId)
                 .eq(DepartmentAuditEntity::getAuditResult, ConstantsInfo.REJECTED)
-                .eq(DepartmentAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(departmentAuditEntity)) {
-            throw new DepartmentAuditException("未找到此审核记录");
+                .eq(DepartmentAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .orderByDesc(DepartmentAuditEntity::getCreateTime)
+                .last("LIMIT 1"));
+        if (ObjectUtil.isNull(teamAuditEntity)) {
+            if (ObjectUtil.isNull(departmentAuditEntity)) {
+                throw new DepartmentAuditException("未找到此填报审核记录， 填报ID：" + projectId);
+            }
+            return departmentAuditEntity.getRejectionReason();
+        } else {
+            return teamAuditEntity.getRejectionReason();
         }
-        return departmentAuditEntity.getRejectionReason();
     }
 
     public static class DepartmentAuditException extends RuntimeException {

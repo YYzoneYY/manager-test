@@ -3,17 +3,12 @@ package com.ruoyi.system.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * 矿井管理对象 biz_mine
@@ -64,6 +59,10 @@ public class BizTravePoint extends BaseSelfEntity
     @ApiModelProperty(value = "状态")
     @TableField()
     private Integer status;
+
+    @ApiModelProperty(value = "编号")
+    @TableField()
+    private String no;
 
 
 

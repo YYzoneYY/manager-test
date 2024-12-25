@@ -74,11 +74,12 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         if (ObjectUtil.isNull(planEntity)) {
             throw new RuntimeException("未找到此计划,无法进行审核");
         }
-        PlanDTO planDTO = new PlanDTO();
         planEntity.setState(ConstantsInfo.IN_REVIEW_DICT_VALUE);
         int update = planMapper.updateById(planEntity);
         if (update > 0) {
-            BeanUtils.copyProperties(planEntity, planDTO);
+            PlanDTO planDTO = new PlanDTO();
+            PlanDTO dto = planService.queryById(planId);
+            BeanUtils.copyProperties(dto, planDTO);
             PlanContentsMappingEntity planContentsMappingEntity = planContentsMappingMapper.selectOne(
                     new LambdaQueryWrapper<PlanContentsMappingEntity>()
                             .eq(PlanContentsMappingEntity::getPlanId, planId));
@@ -216,12 +217,17 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
      * 获取驳回原因
      */
     private String getRejectReason(Long planId) {
-        PlanAuditEntity planAuditEntity = planAuditMapper.selectOne(new LambdaQueryWrapper<PlanAuditEntity>()
-                .eq(PlanAuditEntity::getPlanId, planId)
-                .eq(PlanAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        // 在查询中进行排序和限制，只取最新的一条审核记录
+        PlanAuditEntity planAuditEntity = planAuditMapper.selectOne(
+                new LambdaQueryWrapper<PlanAuditEntity>()
+                        .eq(PlanAuditEntity::getPlanId, planId)
+                        .eq(PlanAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                        .orderByDesc(PlanAuditEntity::getCreateTime)
+                        .last("LIMIT 1")
+        );
         if (ObjectUtil.isNull(planAuditEntity)) {
-            throw new RuntimeException("未找到此计划");
+            throw new RuntimeException("未找到此计划，计划ID: " + planId);
         }
-        return planAuditEntity.getRejectionReason();
+        return planAuditEntity.getAuditResult();
     }
 }

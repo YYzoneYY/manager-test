@@ -190,7 +190,7 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
             throw new RuntimeException("施工单位id不能为空！");
         }
         List<PersonnelChoiceListDTO> personnelChoiceListDTOS = new ArrayList<>();
-        if (profession.isEmpty()) {
+        if (ObjectUtil.isNull(profession)) {
             try {
                 List<ConstructionPersonnelEntity> constructionPersonnelEntities = constructionPersonnelMapper.selectList(new LambdaQueryWrapper<ConstructionPersonnelEntity>()
                         .eq(ConstructionPersonnelEntity::getConstructionUnitId, constructionUnitId)

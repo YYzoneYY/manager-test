@@ -16,6 +16,7 @@ import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.dto.BizTravePointDto;
+import com.ruoyi.system.domain.vo.BizTravePointVo;
 import com.ruoyi.system.service.IBizMineService;
 import com.ruoyi.system.service.IBizMiningAreaService;
 import com.ruoyi.system.service.IBizTravePointService;
@@ -24,6 +25,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -70,7 +72,7 @@ public class BiztravePointController extends BaseController
     }
 
 
-    @ApiOperation("下拉导线点列表")
+    @ApiOperation("下拉导线点列表-根据状态,工作面 查询导线点")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/checkList")
     public R<List<BizTravePoint>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,
@@ -84,6 +86,18 @@ public class BiztravePointController extends BaseController
         List<BizTravePoint> list = bizTravePointService.getBaseMapper().selectList(queryWrapper);
         return R.ok(list);
     }
+
+    @ApiOperation("尺子")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+    @GetMapping("/rule")
+    public R<MPage<BizTravePointVo>> rule(@RequestParam Long workfaceId,@ParameterObject Pagination pagination)
+    {
+        return R.ok(bizTravePointService.geRuleList(workfaceId,pagination));
+    }
+
+
+
+
 
 
 
@@ -109,6 +123,10 @@ public class BiztravePointController extends BaseController
     {
         BizTravePoint entity = new BizTravePoint();
         BeanUtil.copyProperties(dto, entity);
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizTravePoint::getWorkfaceId, dto.getWorkfaceId());
+        long i = bizTravePointService.count(queryWrapper);
+        Assert.isTrue(i <= 0 , "编号重复");
         return R.ok(bizTravePointService.getBaseMapper().insert(entity));
     }
 
@@ -123,6 +141,10 @@ public class BiztravePointController extends BaseController
     {
         BizTravePoint entity = new BizTravePoint();
         BeanUtil.copyProperties(dto, entity);
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizTravePoint::getWorkfaceId, dto.getWorkfaceId());
+        long i = bizTravePointService.count(queryWrapper);
+        Assert.isTrue(i <= 0 , "编号重复");
         return R.ok(bizTravePointService.updateById(entity));
     }
 

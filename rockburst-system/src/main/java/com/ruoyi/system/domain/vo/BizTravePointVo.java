@@ -1,8 +1,9 @@
-package com.ruoyi.system.domain.dto;
+package com.ruoyi.system.domain.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,9 +19,9 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class BizTravePointDto
+@ApiModel("导线点管理对象")
+public class BizTravePointVo
 {
-    private static final long serialVersionUID = 1L;
 
     /** 矿井的唯一标识符 */
     @TableId( type = IdType.AUTO)
@@ -60,6 +61,10 @@ public class BizTravePointDto
     @ApiModelProperty(value = "编号")
     @TableField()
     private String no;
+
+    @ApiModelProperty(value = "是否使用过")
+    @TableField(exist = false)
+    private Boolean did;
 
 
 

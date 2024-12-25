@@ -3,9 +3,8 @@ package com.ruoyi.system.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
-import com.ruoyi.system.domain.BizMine;
 import com.ruoyi.system.domain.BizTravePoint;
-import com.ruoyi.system.domain.dto.BizMineDto;
+import com.ruoyi.system.domain.vo.BizTravePointVo;
 
 /**
  * 矿井管理Service接口
@@ -16,4 +15,5 @@ import com.ruoyi.system.domain.dto.BizMineDto;
 public interface IBizTravePointService extends IService<BizTravePoint>
 {
 
+    MPage<BizTravePointVo> geRuleList(Long workfaceId,Pagination pagination);
 }

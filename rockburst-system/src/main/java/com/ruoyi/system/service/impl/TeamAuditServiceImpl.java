@@ -17,8 +17,10 @@ import com.ruoyi.system.domain.Entity.TeamAuditEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
 import com.ruoyi.system.domain.dto.TeamAuditDTO;
+import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.ProjectVO;
 import com.ruoyi.system.mapper.*;
+import com.ruoyi.system.service.IBizProjectRecordService;
 import com.ruoyi.system.service.TeamAuditService;
 import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
@@ -52,14 +54,16 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
     @Resource
     private BizWorkfaceMapper bizWorkfaceMapper;
 
+    @Resource
+    private IBizProjectRecordService bizProjectRecordService;
+
     /**
      * 点击审核按钮
      * @param projectId 计划id
      * @return 返回结果
      */
     @Override
-    public int audit(Long projectId) {
-        int flag = 0;
+    public BizProjectRecordDetailVo audit(Long projectId) {
         if (ObjectUtil.isNull(projectId)) {
             throw new RuntimeException("参数错误");
         }
@@ -69,14 +73,18 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
         if (ObjectUtil.isNull(bizProjectRecord)) {
             throw new RuntimeException("未找到此工程填报信息,无法进行审核");
         }
+        BizProjectRecordDetailVo bizProjectRecordDetailVo = new BizProjectRecordDetailVo();
         BizProjectRecord projectRecord = new BizProjectRecord();
         BeanUtils.copyProperties(bizProjectRecord, projectRecord);
         projectRecord.setStatus(Integer.valueOf(ConstantsInfo.IN_REVIEW_DICT_VALUE));
-        flag = bizProjectRecordMapper.updateById(projectRecord);
-        if (flag <= 0) {
+        int update = bizProjectRecordMapper.updateById(projectRecord);
+        if (update > 0) {
+            BizProjectRecordDetailVo projectRecordDetailVo = bizProjectRecordService.selectById(projectId);
+            BeanUtils.copyProperties(projectRecordDetailVo, bizProjectRecordDetailVo);
+            return bizProjectRecordDetailVo;
+        } else {
             throw new RuntimeException("审核失败,请联系管理员");
         }
-        return flag;
     }
 
     /**
@@ -154,11 +162,6 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
                 //审核状态字典lable
                 String auditStatus = sysDictDataMapper.selectDictLabel(ConstantsInfo.AUDIT_STATUS_DICT_TYPE, projectVO.getStatus());
                 projectVO.setStatusFmt(auditStatus);
-                if (projectVO.getStatus().equals(ConstantsInfo.REJECTED)) {
-                    // 获取驳回原因
-                    String rejectReason = getRejectReason(projectVO.getProjectId());
-                    projectVO.setRejectReason(rejectReason);
-                }
             });
         }
         return list;
@@ -202,18 +205,6 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
             constructSiteName = bizWorkface.getWorkfaceName();
         }
         return constructSiteName;
-    }
-
-    /**
-     * 获取驳回原因
-     */
-    private String getRejectReason(Long engineeringPlanId) {
-//        PlanAuditEntity planAuditEntity = planAuditMapper.selectById(engineeringPlanId);
-//        if (ObjectUtil.isNull(planAuditEntity)) {
-//            throw new RuntimeException("未找到此计划");
-//        }
-//        return planAuditEntity.getAuditResult();
-        return null;
     }
 
 }

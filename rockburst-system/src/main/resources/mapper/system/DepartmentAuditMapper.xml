@@ -12,13 +12,12 @@
     <select id="queryByPage" resultType="com.ruoyi.system.domain.vo.ProjectVO">
         select
         bpr.project_id as projectId,
-        (case when bpr.construct_type = '1' then '掘进' when bpr.construct_type = '2' then '回采' end) as constructType,
+        bpr.construct_type as constructType,
         bpr.drill_type as drillType,
         bpr.construct_unit_id as constructUnitId,
         bpr.construct_time as constructTime,
-        bpr.Tunnel_id as constructSiteId,
+        bpr.location_id as constructSiteId,
         bpr.drill_num as drillNum,
-        bpr.location as location,
         bpr.create_time as createTime,
         bpr.del_flag as delFlag
         from biz_project_record as bpr
@@ -27,7 +26,7 @@
                 and bpr.construct_type = #{selectDeptAuditDTO.constructType}
             </if>
             <if test="selectDeptAuditDTO.constructSite != null and selectDeptAuditDTO.constructSite != ''">
-                and bpr.Tunnel_id = #{selectDeptAuditDTO.constructSite}
+                and bpr.location_id = #{selectDeptAuditDTO.constructSite}
             </if>
             <if test="selectDeptAuditDTO.constructionUnitId != null and selectDeptAuditDTO.constructionUnitId != ''">
                 and bpr.construct_unit_id = #{selectDeptAuditDTO.constructUnitId}
@@ -51,13 +50,12 @@
             resultType="com.ruoyi.system.domain.vo.ProjectVO">
         select
         bpr.project_id as projectId,
-        (case when bpr.construct_type = '1' then '掘进' when bpr.construct_type = '2' then '回采' end) as constructType,
+        bpr.construct_type as constructType,
         bpr.drill_type as drillType,
         bpr.construct_unit_id as constructUnitId,
         bpr.construct_time as constructTime,
-        bpr.Tunnel_id as constructSiteId,
+        bpr.location_id as constructSiteId,
         bpr.drill_num as drillNum,
-        bpr.location as location,
         bpr.status as status,
         bpr.create_time as createTime,
         bpr.del_flag as delFlag
@@ -67,7 +65,7 @@
                 and bpr.construct_type = #{constructType}
             </if>
             <if test="constructSite != null and constructSite != ''">
-                and bpr.Tunnel_id = #{constructSite}
+                and bpr.location_id = #{constructSite}
             </if>
             <if test="constructionUnitId != null and constructionUnitId != ''">
                 and bpr.construct_unit_id = #{constructUnitId}
