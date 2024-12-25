@@ -16,6 +16,7 @@ import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.dto.BizTravePointDto;
+import com.ruoyi.system.domain.vo.BizTravePointVo;
 import com.ruoyi.system.service.IBizMineService;
 import com.ruoyi.system.service.IBizMiningAreaService;
 import com.ruoyi.system.service.IBizTravePointService;
@@ -84,6 +85,14 @@ public class BiztravePointController extends BaseController
                 .eq(BizTravePoint::getDelFlag,BizBaseConstant.DELFLAG_N);
         List<BizTravePoint> list = bizTravePointService.getBaseMapper().selectList(queryWrapper);
         return R.ok(list);
+    }
+
+    @ApiOperation("尺子")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+    @GetMapping("/rule")
+    public R<MPage<BizTravePointVo>> rule(@RequestParam Long workfaceId,@ParameterObject Pagination pagination)
+    {
+        return R.ok(bizTravePointService.geRuleList(workfaceId,pagination));
     }
 
 

@@ -1,6 +1,5 @@
 package com.ruoyi.web.controller.projectFill;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
@@ -10,10 +9,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.system.constant.BizBaseConstant;
-import com.ruoyi.system.domain.BizDrillRecord;
 import com.ruoyi.system.domain.BizProjectRecord;
-import com.ruoyi.system.domain.BizVideo;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
@@ -27,8 +23,6 @@ import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 工程填报记录Controller
@@ -67,23 +61,13 @@ public class BizProjectRecordController extends BaseController
     /**
      * 获取工程填报记录详细信息
      */
+    @Anonymous
     @ApiOperation("获取工程填报记录详细信息")
 //    @PreAuthorize("@ss.hasPermi('project:record:query')")
     @GetMapping(value = "/{projectId}")
     public R<BizProjectRecordDetailVo> getInfo(@PathVariable("projectId") Long projectId)
     {
-        BizProjectRecord record = bizProjectRecordService.getByIdDeep(projectId);
-        BizProjectRecordDetailVo vo = new BizProjectRecordDetailVo();
-        BeanUtil.copyProperties(record, vo);
-        QueryWrapper<BizDrillRecord> drillRecordQueryWrapper = new QueryWrapper<BizDrillRecord>();
-        drillRecordQueryWrapper.lambda().eq(BizDrillRecord::getProjectId, record.getProjectId()).eq(BizDrillRecord::getDelFlag, BizBaseConstant.DELFLAG_N);
-        List<BizDrillRecord> drillRecordList =  bizDrillRecordService.listDeep(drillRecordQueryWrapper);
-
-        QueryWrapper<BizVideo> videoQueryWrapper = new QueryWrapper<BizVideo>();
-        videoQueryWrapper.lambda().eq(BizVideo::getProjectId, record.getProjectId()).eq(BizVideo::getDelFlag, BizBaseConstant.DELFLAG_N);
-        List<BizVideo> videos =  bizVideoService.listDeep(videoQueryWrapper);
-        vo.setVideoList(videos).setDrillRecordList(drillRecordList);
-        return R.ok(vo);
+        return R.ok(bizProjectRecordService.selectById(projectId));
     }
 
 

@@ -311,20 +311,24 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     }
 
     @Override
-    public BizProjectRecordVo selectById(Long bizProjectRecordId) {
+    public BizProjectRecordDetailVo selectById(Long bizProjectRecordId) {
+        BizProjectRecord record =  this.getByIdDeep(bizProjectRecordId);
+        if(record == null || record.getProjectId() == null){
+            return null;
+        }
+        BizProjectRecordDetailVo vo = new BizProjectRecordDetailVo();
+        BeanUtil.copyProperties(record,vo);
 
-        MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
-        queryWrapper
-                .selectAll(BizProjectRecord.class)
-//todo                .leftJoin(,BizProjectRecord::getConstructUnitId)
-//               .leftJoin(,BizProjectRecord::getConstructLocationId)
-//               .leftJoin(,BizProjectRecord::getConstructShiftId)
-//                .select(BizProjectRecord::getProjectId,BizProjectRecordVo::getConstructLocationName)
-//                .select(BizProjectRecord::getProjectId,BizProjectRecordVo::getConstructUnitName)
-//                .select(BizProjectRecord::getProjectId,BizProjectRecordVo::getConstructShiftName)
-                .leftJoin(BizMine.class,BizMine::getMineId,BizProjectRecord::getDeptId)
-                .eq(BizProjectRecord::getProjectId,bizProjectRecordId);
-        return  bizProjectRecordMapper.selectJoinOne(BizProjectRecordVo.class, queryWrapper);
+        QueryWrapper<BizDrillRecord> drillRecordQueryWrapper = new QueryWrapper<BizDrillRecord>();
+        drillRecordQueryWrapper.lambda().eq(BizDrillRecord::getProjectId, record.getProjectId()).eq(BizDrillRecord::getDelFlag, BizBaseConstant.DELFLAG_N);
+        List<BizDrillRecord> drillRecordList =  bizDrillRecordMapper.selectList(drillRecordQueryWrapper);
+
+        QueryWrapper<BizVideo> videoQueryWrapper = new QueryWrapper<BizVideo>();
+        videoQueryWrapper.lambda().eq(BizVideo::getProjectId, record.getProjectId()).eq(BizVideo::getDelFlag, BizBaseConstant.DELFLAG_N);
+        List<BizVideo> videos =  bizVideoMapper.selectList(videoQueryWrapper);
+
+        vo.setVideoList(videos).setDrillRecordList(drillRecordList);
+        return  vo;
     }
 
     @Override

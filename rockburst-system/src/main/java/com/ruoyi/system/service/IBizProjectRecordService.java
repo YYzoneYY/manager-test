@@ -11,10 +11,7 @@ import com.ruoyi.system.domain.dto.BizProjectRecordDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto1;
 import com.ruoyi.system.domain.dto.project.BizCardVDto;
 import com.ruoyi.system.domain.dto.project.BizWashProofDto;
-import com.ruoyi.system.domain.vo.BizProStatsVo;
-import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
-import com.ruoyi.system.domain.vo.BizProjectRecordPaibanVo;
-import com.ruoyi.system.domain.vo.BizProjectRecordVo;
+import com.ruoyi.system.domain.vo.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -46,7 +43,9 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
     int removeByProIds(Long[] projectIds);
 
 
-    BizProjectRecordVo selectById(Long bizProjectRecordId);
+    BizProjectRecordDetailVo selectById(Long bizProjectRecordId);
+
+
 
 
 
