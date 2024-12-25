@@ -76,7 +76,7 @@ public class ConstructionPersonnelController {
     @GetMapping(value = "/getPersonnelChoiceList")
     public R<List<PersonnelChoiceListDTO>> getPersonnelChoiceList(@ApiParam(name = "constructionUnitId", value = "施工单位id", required = true)
                                                                       @RequestParam Long constructionUnitId,
-                                                                  @ApiParam(name = "profession", value = "工种", required = true) @RequestParam String profession) {
+                                                                  @ApiParam(name = "profession", value = "工种", required = true) @RequestParam(required = false) String profession) {
         return R.ok(personnelService.getPersonnelChoiceList(constructionUnitId, profession));
     }
 
