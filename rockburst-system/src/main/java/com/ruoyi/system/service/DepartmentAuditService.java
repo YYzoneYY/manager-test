@@ -6,6 +6,7 @@ import com.ruoyi.system.domain.Entity.DepartmentAuditEntity;
 import com.ruoyi.system.domain.dto.DepartAuditDTO;
 import com.ruoyi.system.domain.dto.SelectDeptAuditDTO;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
+import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 
 /**
  * @author: shikai
@@ -19,7 +20,7 @@ public interface DepartmentAuditService extends IService<DepartmentAuditEntity> 
      * @param projectId 计划id
      * @return 返回结果
      */
-    int clickAudit(Long projectId);
+    BizProjectRecordDetailVo clickAudit(Long projectId);
 
     /**
      * 科室审核
