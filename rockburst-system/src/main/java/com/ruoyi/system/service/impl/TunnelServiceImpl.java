@@ -60,6 +60,7 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
         int flag = 0;
         Long selectCount = tunnelMapper.selectCount(new LambdaQueryWrapper<TunnelEntity>()
                 .eq(TunnelEntity::getTunnelName, tunnelDTO.getTunnelName())
+                .eq(TunnelEntity::getWorkFaceId, tunnelDTO.getWorkFaceId())
                 .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (selectCount > 0) {
             throw new RuntimeException("巷道名称已存在");
@@ -89,6 +90,7 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
         }
         Long selectCount = tunnelMapper.selectCount(new LambdaQueryWrapper<TunnelEntity>()
                 .eq(TunnelEntity::getTunnelName, tunnelDTO.getTunnelName())
+                .eq(TunnelEntity::getWorkFaceId, tunnelDTO.getWorkFaceId())
                 .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
                 .ne(TunnelEntity::getTunnelId, tunnelDTO.getTunnelId()));
         if (selectCount > 0) {

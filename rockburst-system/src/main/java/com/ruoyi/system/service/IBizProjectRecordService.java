@@ -96,4 +96,17 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
 
     void sss555(HttpServletResponse response);
 
+    /**
+     * 提交审核
+     * @param projectId 工程填报id
+     * @return 返回结果
+     */
+    String submitForReview(Long projectId);
+
+    /**
+     * 撤回
+     * @param projectId 工程填报id
+     * @return 返回结果
+     */
+    String withdraw(Long projectId);
 }

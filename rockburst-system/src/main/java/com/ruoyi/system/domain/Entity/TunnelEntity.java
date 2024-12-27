@@ -45,6 +45,11 @@ public class TunnelEntity extends BusinessBaseEntity implements Serializable {
     @TableField("work_face_id")
     private Long workFaceId;
 
+    @ApiModelProperty(value = "巷道类型")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "巷道类型不能为空")
+    @TableField("tunnel_type")
+    private String tunnelType;
+
     @ApiModelProperty(value = "断面形状")
     @NotBlank(groups = {ParameterValidationOther.class}, message = "断面形状不能为空")
     @TableField("section_shape")

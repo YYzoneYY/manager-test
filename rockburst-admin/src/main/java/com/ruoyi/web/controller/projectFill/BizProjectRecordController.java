@@ -26,6 +26,7 @@ import com.ruoyi.system.service.IBizVideoService;
 import com.ruoyi.system.service.PlanService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -181,6 +182,18 @@ public class BizProjectRecordController extends BaseController
         BizProjectRecord bizProjectRecord = new BizProjectRecord();
         bizProjectRecord.setProjectId(projecctId).setIsRead(1);
         return R.ok(bizProjectRecordService.updateById(bizProjectRecord));
+    }
+
+    @ApiOperation(value = "提交审核", notes = "提交审核")
+    @GetMapping("/submitForReview")
+    public R<Object> submitForReview(@ApiParam(name = "projectId", value = "工程id", required = true) @RequestParam Long projectId) {
+        return R.ok(bizProjectRecordService.submitForReview(projectId));
+    }
+
+    @ApiOperation(value = "撤回", notes = "撤回")
+    @GetMapping(value = "/withdraw")
+    public R<Object> withdraw(@ApiParam(name = "projectId", value = "计划id", required = true) @RequestParam Long projectId){
+        return R.ok(bizProjectRecordService.withdraw(projectId));
     }
 
 //    @PreAuthorize("@ss.hasPermi('project:record:edit')")

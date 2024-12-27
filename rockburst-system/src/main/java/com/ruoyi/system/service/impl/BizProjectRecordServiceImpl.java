@@ -2,8 +2,10 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,8 +18,10 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
@@ -644,13 +648,69 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     }
 
+    @Override
+    public String submitForReview(Long projectId) {
+        String flag = "";
+        if (ObjectUtil.isNull(projectId)) {
+            throw new RuntimeException("参数错误,工程id不能为空！");
+        }
+        BizProjectRecord bizProjectRecord = bizProjectRecordMapper.selectOne(new LambdaQueryWrapper<BizProjectRecord>()
+                .eq(BizProjectRecord::getProjectId, projectId)
+                .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(bizProjectRecord)) {
+            throw new RuntimeException("未找到此工程填报信息,无法进行审核");
+        }
+        BizProjectRecord bizProject = new BizProjectRecord();
+        BeanUtils.copyProperties(bizProjectRecord, bizProject);
+        bizProject.setStatus(Integer.valueOf(ConstantsInfo.AUDIT_STATUS_DICT_VALUE));
+        flag = bizProjectRecordMapper.updateById(bizProject) > 0 ? "提交审核成功" : "提交审核失败,请联系管理员";
+        return flag;
+    }
+
+    @Override
+    public String withdraw(Long projectId) {
+        String flag = "";
+        if (ObjectUtil.isNull(projectId)) {
+            throw new RuntimeException("参数错误, 工程id不能为空！");
+        }
+        BizProjectRecord bizProjectRecord = bizProjectRecordMapper.selectOne(new LambdaQueryWrapper<BizProjectRecord>()
+                .eq(BizProjectRecord::getProjectId, projectId)
+                .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(bizProjectRecord)) {
+            throw new RuntimeException("未找到此工程填报信息,无法进行审核");
+        }
+        checkStatus(String.valueOf(bizProjectRecord.getStatus()));
+        BizProjectRecord bizProject = new BizProjectRecord();
+        BeanUtils.copyProperties(bizProjectRecord, bizProject);
+        bizProject.setStatus(Integer.valueOf(ConstantsInfo.TO_BE_SUBMITTED));
+        flag = bizProjectRecordMapper.updateById(bizProject) > 0 ? "撤回成功" : "撤回失败,请联系管理员";
+        return flag;
+    }
+
     private ChartData setAlarm(List<Double> alarms){
         ChartData chartData12 = new ChartData();
         chartData12.setData(alarms); chartData12.setTitle("预警值");
         return chartData12;
     }
 
-
+    /**
+     * 校验状态
+     * @param status 状态
+     */
+    private void checkStatus(String status) {
+        if (status.equals(ConstantsInfo.TO_BE_SUBMITTED)) {
+            throw new RuntimeException("此计划还未提交审核,无法撤回");
+        }
+        if (status.equals(ConstantsInfo.IN_REVIEW_DICT_VALUE)) {
+            throw new RuntimeException("此计划正在审核中,无法撤回");
+        }
+        if (status.equals(ConstantsInfo.AUDITED_DICT_VALUE)) {
+            throw new RuntimeException("此计划已审核通过,无法撤回");
+        }
+        if (status.equals(ConstantsInfo.REJECTED)) {
+            throw new RuntimeException("此计划已驳回,无法撤回");
+        }
+    }
 }
 
 
