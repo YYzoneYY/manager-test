@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.PlanDTO;
+import com.ruoyi.system.domain.dto.ProjectWarnChoiceListDTO;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -56,4 +59,10 @@ public interface PlanService extends IService<PlanEntity> {
      * @return 返回结果
      */
     boolean deletePlan(Long[] planIds);
+
+    /**
+     * 获取工程预警方案下拉列表
+     * @return 返回结果
+     */
+    List<ProjectWarnChoiceListDTO> getProjectWarnChoiceList();
 }

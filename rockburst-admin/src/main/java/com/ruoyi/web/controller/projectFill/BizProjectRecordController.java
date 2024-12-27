@@ -1,6 +1,9 @@
 package com.ruoyi.web.controller.projectFill;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
@@ -10,13 +13,17 @@ import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.Entity.PlanEntity;
+import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
+import com.ruoyi.system.domain.dto.project.BizProjectPlanDto;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import com.ruoyi.system.service.IBizDrillRecordService;
 import com.ruoyi.system.service.IBizProjectRecordService;
 import com.ruoyi.system.service.IBizVideoService;
+import com.ruoyi.system.service.PlanService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springdoc.api.annotations.ParameterObject;
@@ -43,6 +50,9 @@ public class BizProjectRecordController extends BaseController
     @Autowired
     private IBizVideoService bizVideoService;
 
+    @Autowired
+    private PlanService planService;
+
     /**
      * 查询工程填报记录列表
      */
@@ -55,7 +65,35 @@ public class BizProjectRecordController extends BaseController
         return R.ok(llis);
     }
 
+    /**
+     * 查询工程填报记录列表
+     */
+    @ApiOperation("查询施工计划列表")
+//    @PreAuthorize("@ss.hasPermi('project:record:list')")
+    @GetMapping("/planList")
+    public R<MPage<PlanEntity>> planlist(@ParameterObject BizProjectPlanDto dto, Pagination pagination)
+    {
+        long timestamp = System.currentTimeMillis();
+        MPJLambdaWrapper<PlanEntity> queryWrapper = new MPJLambdaWrapper<PlanEntity>();
+        queryWrapper.select(PlanEntity::getPlanId, PlanEntity::getPlanName)
+                .leftJoin(RelatesInfoEntity.class, RelatesInfoEntity::getPlanId, RelatesInfoEntity::getPlanId)
+                .eq(StrUtil.isNotEmpty(dto.getDrillType()), PlanEntity::getDrillType, dto.getDrillType())
+                .eq(StrUtil.isNotEmpty(dto.getState()), PlanEntity::getState, dto.getState())
+                .eq(StrUtil.isNotEmpty(dto.getType()), PlanEntity::getType,dto.getType())
+                .eq(StrUtil.isNotEmpty(dto.getType()), RelatesInfoEntity::getType,dto.getType())
+                .eq(dto.getLocationId() != null ,RelatesInfoEntity::getPositionId, dto.getLocationId())
+                .gt(dto.getIsfinish() != null && dto.getIsfinish() == 0,PlanEntity::getStartTime, timestamp)
+                .and(dto.getIsfinish() != null && dto.getIsfinish() == 1,
+                        i->i.le(PlanEntity::getStartTime,timestamp).ge(PlanEntity::getEndTime,timestamp));
+        IPage<PlanEntity> pages =  planService.page(pagination, queryWrapper);
+        return R.ok(new MPage<>(pages));
+    }
 
+
+    public static void main(String[] args) {
+        long timestamp = System.currentTimeMillis();
+        System.out.println("timestamp = " + timestamp);
+    }
 
 
     /**
