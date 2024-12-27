@@ -13,12 +13,14 @@ import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.ProjectWarnSchemeEntity;
 import com.ruoyi.system.domain.dto.DistanceRuleDTO;
 import com.ruoyi.system.domain.dto.ProjectWarnSchemeDTO;
 import com.ruoyi.system.domain.dto.SelectProjectWarnDTO;
 import com.ruoyi.system.domain.dto.WorkloadRuleDTO;
 import com.ruoyi.system.domain.vo.ProjectWarnSchemeVO;
+import com.ruoyi.system.mapper.PlanMapper;
 import com.ruoyi.system.mapper.ProjectWarnSchemeMapper;
 import com.ruoyi.system.service.ProjectWarnSchemeService;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,9 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
 
     @Resource
     private ProjectWarnSchemeMapper projectWarnSchemeMapper;
+
+    @Resource
+    private PlanMapper planMapper;
 
     /**
      * 新增工程预警方案
@@ -240,6 +245,12 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
             }
             if (StringUtils.equals(ConstantsInfo.ENABLE, projectWarnSchemeEntity.getStatus())) {
                 throw new RuntimeException("该预警方案已启用,无法删除");
+            }
+            List<PlanEntity> planEntities = planMapper.selectList(new LambdaQueryWrapper<PlanEntity>()
+                    .eq(PlanEntity::getProjectWarnSchemeId, projectWarnSchemeId)
+                    .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ListUtils.isNotNull(planEntities) && !planEntities.isEmpty()) {
+                throw new RuntimeException("该预警方案已被使用,无法删除");
             }
         });
         flag = this.removeBatchByIds(projectWarnSchemeIdList);
