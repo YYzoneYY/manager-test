@@ -5,6 +5,7 @@ import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.dto.PlanDTO;
+import com.ruoyi.system.domain.dto.ProjectWarnChoiceListDTO;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
 import com.ruoyi.system.service.PlanService;
 import io.swagger.annotations.*;
@@ -12,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author: shikai
@@ -70,5 +72,11 @@ public class PlanController {
     @DeleteMapping(value = "/deletePlan")
     public R<Boolean> deletePlan(@ApiParam(name = "planIds", value = "计划id数组", required = true) @RequestParam Long[] planIds){
         return R.ok(this.planService.deletePlan(planIds));
+    }
+
+    @ApiOperation(value = "获取工程预警下拉列表", notes = "获取工程预警下拉列表")
+    @GetMapping(value = "/getProjectWarnChoiceList")
+    public R<List<ProjectWarnChoiceListDTO>> getProjectWarnChoiceList() {
+        return R.ok(this.planService.getProjectWarnChoiceList());
     }
 }

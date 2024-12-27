@@ -78,6 +78,10 @@ public class PlanEntity extends BusinessBaseEntity implements Serializable {
     @TableField("state")
     private String state;
 
+    @ApiModelProperty(value = "工程预警方案id")
+    @TableField("project_warn_scheme_id")
+    private Long projectWarnSchemeId;
+
     @ApiModelProperty(value = "删除标志(0存在2删除)")
     @TableField("del_flag")
     @TableLogic(value = "0", delval = "2")

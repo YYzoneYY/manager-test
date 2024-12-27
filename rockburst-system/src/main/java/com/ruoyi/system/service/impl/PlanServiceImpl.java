@@ -13,10 +13,7 @@ import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.*;
-import com.ruoyi.system.domain.dto.AreaDTO;
-import com.ruoyi.system.domain.dto.PlanDTO;
-import com.ruoyi.system.domain.dto.RelatesInfoDTO;
-import com.ruoyi.system.domain.dto.SelectPlanDTO;
+import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.ContentsService;
@@ -30,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author: shikai
@@ -64,6 +62,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
 
     @Resource
     private BizProjectRecordMapper bizProjectRecordMapper;
+
+    @Resource
+    private ProjectWarnSchemeMapper projectWarnSchemeMapper;
 
     /**
      * 工程计划新增
@@ -300,6 +301,26 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             planContentsMappingMapper.deleteBatchIds(planIdList);
         }
         return flag;
+    }
+
+    /**
+     * 获取工程预警方案下拉列表
+     * @return 返回结果
+     */
+    @Override
+    public List<ProjectWarnChoiceListDTO> getProjectWarnChoiceList() {
+        List<ProjectWarnChoiceListDTO> projectWarnChoiceListDTOS = new ArrayList<>();
+        List<ProjectWarnSchemeEntity> projectWarnSchemeEntities = projectWarnSchemeMapper.selectList(new LambdaQueryWrapper<ProjectWarnSchemeEntity>()
+                .eq(ProjectWarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ListUtils.isNotNull(projectWarnSchemeEntities)) {
+            projectWarnChoiceListDTOS = projectWarnSchemeEntities.stream().map(projectWarnSchemeEntity -> {
+                ProjectWarnChoiceListDTO projectWarnChoiceListDTO = new ProjectWarnChoiceListDTO();
+                projectWarnChoiceListDTO.setLabel(projectWarnSchemeEntity.getSchemeName());
+                projectWarnChoiceListDTO.setValue(projectWarnSchemeEntity.getProjectWarnSchemeId());
+                return projectWarnChoiceListDTO;
+            }).collect(Collectors.toList());
+        }
+        return projectWarnChoiceListDTOS;
     }
 
     /**
