@@ -7,10 +7,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.AreaDTO;
+import com.ruoyi.system.domain.dto.PointDTO;
 import com.ruoyi.system.domain.dto.RelatesInfoDTO;
 import com.ruoyi.system.mapper.BizWorkfaceMapper;
 import com.ruoyi.system.mapper.RelatesInfoMapper;
@@ -21,7 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author: shikai
@@ -75,6 +80,7 @@ public class RelatesInfoServiceImpl extends ServiceImpl<RelatesInfoMapper, Relat
         return flag;
     }
 
+
     @Override
     public List<RelatesInfoDTO> getByPlanId(Long planId) {
         List<RelatesInfoDTO> relatesInfoDTOS = new ArrayList<>();
@@ -103,6 +109,38 @@ public class RelatesInfoServiceImpl extends ServiceImpl<RelatesInfoMapper, Relat
         return relatesInfoDTOS;
     }
 
+    /**
+     * 获取计划中已使用的导线点
+     * @param planType 计划类型
+     * @param type 类型
+     * @param tunnelId 巷道id
+     * @return 导线点集合
+     */
+    @Override
+    public List<Long> getTraversePoint(String planType, String type, Long tunnelId) {
+        Set<Long> traversePointIdSet = new HashSet<>();
+        List<RelatesInfoEntity> relatesInfoEntities = relatesInfoMapper.selectList(new LambdaQueryWrapper<RelatesInfoEntity>()
+                .eq(RelatesInfoEntity::getType, type)
+                .eq(RelatesInfoEntity::getPlanType, planType)
+                .eq(RelatesInfoEntity::getPositionId, tunnelId));
+        if (ListUtils.isNotNull(relatesInfoEntities)) {
+            relatesInfoEntities.forEach(relatesInfoEntity -> {
+                if (ObjectUtil.isNotNull(relatesInfoEntity.getArea())) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        List<AreaDTO> areaDTOS = objectMapper.readValue(relatesInfoEntity.getArea(),
+                                new TypeReference<List<AreaDTO>>() {});
+                        List<String> traversePoint = areaDTOS.stream().map(AreaDTO::getStartTraversePoint).collect(Collectors.toList());
+                        traversePoint.addAll(areaDTOS.stream().map(AreaDTO::getEndTraversePoint).collect(Collectors.toList()));
+                        traversePointIdSet.addAll(traversePoint.stream().map(Long::valueOf).collect(Collectors.toList()));
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        }
+        return  new ArrayList<>(traversePointIdSet);
+    }
 
     /**
      * 获取位置
