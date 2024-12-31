@@ -8,6 +8,7 @@ import com.ruoyi.system.domain.dto.PlanDTO;
 import com.ruoyi.system.domain.dto.ProjectWarnChoiceListDTO;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
 import com.ruoyi.system.service.PlanService;
+import com.ruoyi.system.service.RelatesInfoService;
 import io.swagger.annotations.*;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,9 @@ public class PlanController {
 
     @Resource
     private PlanService planService;
+
+    @Resource
+    private RelatesInfoService relatesInfoService;
 
 
     @ApiOperation(value = "计划新增", notes = "计划新增")
@@ -78,5 +82,18 @@ public class PlanController {
     @GetMapping(value = "/getProjectWarnChoiceList")
     public R<List<ProjectWarnChoiceListDTO>> getProjectWarnChoiceList() {
         return R.ok(this.planService.getProjectWarnChoiceList());
+    }
+
+    @ApiOperation(value = "获取计划中已使用的导线点", notes = "获取计划中已使用的导线点")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "type", value = "类型", required = true),
+            @ApiImplicitParam(name = "planType", value = "计划类型", required = true),
+            @ApiImplicitParam(name = "tunnelId", value = "巷道id", required = true)
+    })
+    @GetMapping(value = "/getTraversePoint")
+    public R<Object> getTraversePoint(@RequestParam(value = "type") String type,
+                                      @RequestParam(value = "planType") String planType,
+                                      @RequestParam(value = "tunnelId") Long tunnelId) {
+       return R.ok(this.relatesInfoService.getTraversePoint(planType, type, tunnelId));
     }
 }

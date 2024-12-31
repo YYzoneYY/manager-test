@@ -30,18 +30,24 @@ public interface ConstructDocumentService extends IService<ConstructDocumentEnti
     int updateLevel(LevelDTO levelDTO);
 
     /**
-     * 施工文档上传
-     * @param constructFIleDTO 参数DTO
+     * 文件上传
+     * @param file 文件
+     * @param bucketName 桶的名称
+     * @param dataId 层级id
      * @return 返回结果
      */
-    int addFile(ConstructFIleDTO constructFIleDTO, MultipartFile file, String bucketName);
+    int addFile(MultipartFile file, String bucketName, Long dataId);
 
     /**
-     * 施工文档修改
-     * @param constructFIleDTO 参数DTO
+     * 文档修改
+     * @param file 文件
+     * @param bucketName 桶的名称
+     * @param dataId id
+     * @param fileIds 文件id数组
+     * @param documentName 文档名称
      * @return 返回结果
      */
-    int updateFile(ConstructFIleDTO constructFIleDTO, MultipartFile file, String bucketName);
+    int updateFile(MultipartFile file, String bucketName, Long dataId, Long[] fileIds, String documentName);
 
     /**
      * 分页查询数据
@@ -64,5 +70,12 @@ public interface ConstructDocumentService extends IService<ConstructDocumentEnti
      * @return 返回结果
      */
     int moveOrder(AdjustOrderDTO adjustOrderDTO);
+
+    /**
+     * 删除数据
+     * @param dataId dataId
+     * @return 返回结果
+     */
+    boolean deleteByDataId(Long dataId);
 
 }

@@ -12,12 +12,17 @@ import lombok.Data;
 @Data
 public class AreaDTO {
 
-    @ApiModelProperty(value = "导向点")
-    private String traversePoint;
+    private Long tunnelId;
 
-    @ApiModelProperty(value = "距离")
-    private String distance;
+    @ApiModelProperty(value = "起始导向点")
+    private String startTraversePoint;
 
-    @ApiModelProperty(value = "标签(0:起始，1:终始)")
-    private String tag;
+    @ApiModelProperty(value = "起始距离")
+    private String startDistance;
+
+    @ApiModelProperty(value = "终始导向点")
+    private String endTraversePoint;
+
+    @ApiModelProperty(value = "终始距离")
+    private String endDistance;
 }

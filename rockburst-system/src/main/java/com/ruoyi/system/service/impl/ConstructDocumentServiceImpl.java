@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.SecurityUtils;
@@ -79,6 +80,8 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
         constructDocumentEntity.setCreateTime(ts);
         constructDocumentEntity.setUpdateBy(1L);
         constructDocumentEntity.setUpdateTime(ts);
+        constructDocumentEntity.setTag(ConstantsInfo.THREE_TAG);
+        constructDocumentEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         return constructDocumentMapper.insert(constructDocumentEntity);
     }
 
@@ -116,16 +119,21 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
         constructDocumentEntity.setLevel(level);
         constructDocumentEntity.setUpdateBy(1L);
         constructDocumentEntity.setUpdateTime(ts);
+        constructDocumentEntity.setTag(documentEntity.getTag());
+        constructDocumentEntity.setDelFlag(documentEntity.getDelFlag());
         return constructDocumentMapper.updateById(constructDocumentEntity);
     }
 
+
     /**
-     * 施工文档上传
-     * @param constructFIleDTO 参数DTO
+     * 文件上传
+     * @param file 文件
+     * @param bucketName 桶的名称
+     * @param dataId 层级id
      * @return 返回结果
      */
     @Override
-    public int addFile(ConstructFIleDTO constructFIleDTO, MultipartFile file, String bucketName) {
+    public int addFile(MultipartFile file, String bucketName, Long dataId) {
         if (ObjectUtil.isEmpty(file)) {
             throw new RuntimeException("文件不能为空");
         }
@@ -137,25 +145,33 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
               SysFileInfo upload = sysFileInfoService.upload(file, bucketName, "0");
               if (ObjectUtil.isNotEmpty(upload)) {
                    ConstructDocumentEntity constructDocumentEntity = new ConstructDocumentEntity();
+                   long ts = System.currentTimeMillis();
                    constructDocumentEntity.setDocumentName(upload.getFileOldName());
                    constructDocumentEntity.setFileId(upload.getFileId());
+                  constructDocumentEntity.setCreateTime(ts);
+                  constructDocumentEntity.setCreateBy(1L);
                    constructDocumentEntity.setUpdateBy(1L);
-                   constructDocumentEntity.setUpdateTime(System.currentTimeMillis());
-
-                   if (ObjectUtil.isNull(constructFIleDTO.getDataId())) {
-                       long ts = System.currentTimeMillis();
+                   constructDocumentEntity.setUpdateTime(ts);
+                   constructDocumentEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
+                   if (ObjectUtil.isNull(dataId)) {
                        constructDocumentEntity.setLevel(ConstantsInfo.LEVEL);
                        constructDocumentEntity.setSort(1L);
                        constructDocumentEntity.setTag(ConstantsInfo.ONE_TAG);
-                       constructDocumentEntity.setCreateTime(ts);
-                       constructDocumentEntity.setCreateBy(1L);
+
                        flag = constructDocumentMapper.insert(constructDocumentEntity);
                        if (flag <= 0) {
                            throw new RuntimeException("施工文档添加失败");
                        }
                    } else {
-                       constructDocumentEntity.setDataId(constructFIleDTO.getDataId());
-                       flag = constructDocumentMapper.updateById(constructDocumentEntity);
+                       Long count = constructDocumentMapper.selectCount(new LambdaQueryWrapper<ConstructDocumentEntity>()
+                               .eq(ConstructDocumentEntity::getSuperId, dataId));
+                       ConstructDocumentEntity documentEntity = constructDocumentMapper.selectOne(new LambdaQueryWrapper<ConstructDocumentEntity>()
+                               .eq(ConstructDocumentEntity::getDataId, dataId));
+                       constructDocumentEntity.setSuperId(dataId);
+                       constructDocumentEntity.setLevel(documentEntity.getLevel() + ConstantsInfo.LEVEL);
+                       constructDocumentEntity.setSort(count + 1);
+                       constructDocumentEntity.setTag(ConstantsInfo.TWO_TAG);
+                       flag = constructDocumentMapper.insert(constructDocumentEntity);
                        if (flag <= 0) {
                            throw new RuntimeException("施工文档添加失败");
                        }
@@ -168,13 +184,17 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
     }
 
     /**
-     * 施工文档修改
-     * @param constructFIleDTO 参数DTO
+     * 文档修改
+     * @param file 文件
+     * @param bucketName 桶的名称
+     * @param dataId id
+     * @param fileIds 文件id数组
+     * @param documentName 文档名称
      * @return 返回结果
      */
     @Override
-    public int updateFile(ConstructFIleDTO constructFIleDTO, MultipartFile file, String bucketName) {
-        if (ObjectUtil.isEmpty(constructFIleDTO.getDataId())) {
+    public int updateFile(MultipartFile file, String bucketName, Long dataId, Long[] fileIds, String documentName) {
+        if (ObjectUtil.isEmpty(dataId)) {
             throw new RuntimeException("主键id不能为空");
         }
         if (ObjectUtil.isEmpty(file)) {
@@ -184,7 +204,7 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
             throw new RuntimeException("存储桶名称不能为空");
         }
         ConstructDocumentEntity documentEntity = constructDocumentMapper.selectOne(new LambdaQueryWrapper<ConstructDocumentEntity>()
-                .eq(ConstructDocumentEntity::getDataId, constructFIleDTO.getDataId())
+                .eq(ConstructDocumentEntity::getDataId, dataId)
                 .eq(ConstructDocumentEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(documentEntity)) {
             throw new RuntimeException("未找到此文档");
@@ -192,20 +212,20 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
         int flag = 0;
         String fileName = "";
         try {
-            sysFileInfoService.batchLogicalDelete(constructFIleDTO.getFileIds());
+            sysFileInfoService.batchLogicalDelete(fileIds);
             SysFileInfo upload = sysFileInfoService.upload(file, bucketName, "0");
             ConstructDocumentEntity constructDocumentEntity = new ConstructDocumentEntity();
             if (ObjectUtil.isNotEmpty(upload)) {
                 BeanUtils.copyProperties(documentEntity,constructDocumentEntity);
-                if (StringUtils.isNotEmpty(constructFIleDTO.getDocumentName())) {
+                if (StringUtils.isNotEmpty(documentName)) {
                     Long selectCount = constructDocumentMapper.selectCount(new LambdaQueryWrapper<ConstructDocumentEntity>()
-                            .eq(ConstructDocumentEntity::getDocumentName, constructFIleDTO.getDocumentName())
+                            .eq(ConstructDocumentEntity::getDocumentName, documentName)
                             .eq(ConstructDocumentEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
-                            .ne(ConstructDocumentEntity::getDataId, constructFIleDTO.getDataId()));
+                            .ne(ConstructDocumentEntity::getDataId, dataId));
                     if (selectCount > 0) {
                         throw new RuntimeException("文档名称已存在");
                     }
-                    fileName = constructFIleDTO.getDocumentName();
+                    fileName = documentName;
                 }
                 fileName = upload.getFileOldName();
                 constructDocumentEntity.setDocumentName(fileName);
@@ -240,6 +260,7 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
+        PageHelper.startPage(pageNum, pageSize);
         Page<ConstructDocumentEntity> page = constructDocumentMapper.queryByPage(selectDocumentDTO);
         List<DocumentTreeDTO> documentTreeDTOS = new ArrayList<>();
         page.getResult().stream().filter(constructDocumentEntity -> constructDocumentEntity.getSuperId() == null)
@@ -323,6 +344,35 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
             constructDocumentMapper.updateById(documentEntity);
         }
         return 1;
+    }
+
+    /**
+     * 删除数据
+     * @param dataId dataId
+     * @return 返回结果
+     */
+    @Override
+    public boolean deleteByDataId(Long dataId) {
+        if (ObjectUtil.isNull(dataId)) {
+            throw new RuntimeException("参数错误,请选择数据！！");
+        }
+        ConstructDocumentEntity documentEntity = constructDocumentMapper.selectOne(new LambdaQueryWrapper<ConstructDocumentEntity>()
+                .eq(ConstructDocumentEntity::getDataId, dataId)
+                .eq(ConstructDocumentEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(documentEntity)) {
+            throw new RuntimeException("未找到id为" + dataId + "的数据");
+        }
+        Long selectCount = constructDocumentMapper.selectCount(new LambdaQueryWrapper<ConstructDocumentEntity>()
+                .eq(ConstructDocumentEntity::getSuperId, dataId)
+                .eq(ConstructDocumentEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (selectCount > 0) {
+            throw new RuntimeException("删除失败！存在子集数据，请先删除子节点数据！");
+        }
+        int update = constructDocumentMapper.deleteById(dataId);
+        if (update > 0) {
+            return true;
+        }
+        return false;
     }
 
     /**

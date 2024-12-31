@@ -1,6 +1,7 @@
 package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -373,6 +375,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         if (ListUtils.isNull(planDTO.getRelatesInfoDTOS())) {
             throw new RuntimeException("关联信息不能为空");
         }
+        // 月计划、临时计划导线点不可重复选择校验
+        if (planDTO.getPlanType().equals(ConstantsInfo.Month_PLAN) ||
+                planDTO.getPlanType().equals(ConstantsInfo.TEMPORARY_PLAN)) {
+            checkTraversePoint(planDTO);
+        }
         // 关联信息校验
         planDTO.getRelatesInfoDTOS().forEach(relatesInfoDTO -> {
             List<AreaDTO> areaDTOS = relatesInfoDTO.getAreaDTOS();
@@ -385,7 +392,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                 throw new RuntimeException("同一类型,区域不可重复!");
             }
             // 判断除特殊计划之外是否有重复的区域
-            if (!planDTO.getPlanType().equals(ConstantsInfo.SPECIAL_plan)) {
+            if (!planDTO.getPlanType().equals(ConstantsInfo.SPECIAL_PLAN)) {
                 Long aLong = relatesInfoMapper.selectCount(new LambdaQueryWrapper<RelatesInfoEntity>()
                         .eq(RelatesInfoEntity::getArea, areaDTOFmt));
                 if (aLong > 0) {
@@ -394,6 +401,92 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             }
         });
     }
+
+    /**
+     * 月计划、临时计划导线点不可重复选择校验
+     */
+    private void checkTraversePoint(PlanDTO planDTO) {
+       if (ObjectUtil.isNull(planDTO.getRelatesInfoDTOS()) || planDTO.getRelatesInfoDTOS().isEmpty()) {
+           throw new RuntimeException("关联信息不能为空");
+       }
+       if (ObjectUtil.isNull(planDTO.getPlanId())) {
+           planDTO.getRelatesInfoDTOS().forEach(relatesInfoDTO -> {
+               if (ObjectUtil.isNotNull(relatesInfoDTO.getAreaDTOS()) && !relatesInfoDTO.getAreaDTOS().isEmpty()) {
+                   relatesInfoDTO.getAreaDTOS().forEach(areaDTO -> {
+                       List<Long> traversePoint = relatesInfoService.getTraversePoint(planDTO.getPlanType(), planDTO.getType(),
+                               areaDTO.getTunnelId());
+                       Long startTraversePoint = Long.valueOf(areaDTO.getStartTraversePoint());
+                       Long endTraversePoint = Long.valueOf(areaDTO.getEndTraversePoint());
+                       boolean s = traversePoint.contains(startTraversePoint);
+                       boolean e = traversePoint.contains(endTraversePoint);
+                       if (s) {
+                           throw new RuntimeException("该导线点已存在于之前的计划区域中，不可在进行选择！导线点id为:" + startTraversePoint);
+                       }
+                       if (e) {
+                           throw new RuntimeException("该导线点已存在于之前的计划区域中，不可在进行选择！导线点id为:" + endTraversePoint);
+                       }
+                   });
+               }
+           });
+       } else {
+           List<RelatesInfoEntity> relatesInfoEntities = relatesInfoMapper.selectList(new LambdaQueryWrapper<RelatesInfoEntity>()
+                   .eq(RelatesInfoEntity::getPlanId, planDTO.getPlanId())
+                   .eq(RelatesInfoEntity::getType, planDTO.getType())
+                   .eq(RelatesInfoEntity::getPlanType, planDTO.getPlanType()));
+           planDTO.getRelatesInfoDTOS().forEach(relatesInfoDTO -> {
+               relatesInfoDTO.getAreaDTOS().forEach(areaDTO -> {
+                   relatesInfoEntities.forEach(relatesInfoEntity -> {
+                       if (ObjectUtil.isNotNull(relatesInfoEntity.getArea()) && !relatesInfoEntity.getArea().isEmpty()) {
+                           List<AreaDTO> areaDTOS = JSON.parseArray(relatesInfoEntity.getArea(), AreaDTO.class);
+                           areaDTOS.forEach( areaDTO1-> {
+                               if (!areaDTO.getStartTraversePoint().equals(areaDTO1.getStartTraversePoint())
+                                       && areaDTO.getEndTraversePoint().equals(areaDTO1.getEndTraversePoint())) {
+                                   check(planDTO.getPlanType(),planDTO.getType(),areaDTO.getTunnelId(),areaDTO, "1");
+                               }
+                               if (!areaDTO.getEndTraversePoint().equals(areaDTO1.getEndTraversePoint())
+                                       && areaDTO.getStartTraversePoint().equals(areaDTO1.getStartTraversePoint())) {
+                                   check(planDTO.getPlanType(),planDTO.getType(),areaDTO.getTunnelId(),areaDTO, "2");
+                               }
+                               if (!areaDTO.getStartTraversePoint().equals(areaDTO1.getStartTraversePoint()) &&
+                                       !areaDTO.getEndTraversePoint().equals(areaDTO1.getEndTraversePoint())) {
+                                   check(planDTO.getPlanType(),planDTO.getType(),areaDTO.getTunnelId(),areaDTO, "3");
+                               }
+                           });
+                       }
+                   });
+               });
+           });
+       }
+    }
+
+    private void check(String planType, String type, Long tunnelId, AreaDTO areaDTO, String tag) {
+        List<Long> traversePoint = relatesInfoService.getTraversePoint(planType,type,
+                tunnelId);
+        Long startTraversePoint = Long.valueOf(areaDTO.getStartTraversePoint());
+        Long endTraversePoint = Long.valueOf(areaDTO.getEndTraversePoint());
+        boolean s = traversePoint.contains(startTraversePoint);
+        boolean e = traversePoint.contains(endTraversePoint);
+        if (tag.equals(ConstantsInfo.ONE_TYPE)) {
+            if (s) {
+                throw new RuntimeException("该导线点已存在于之前的计划区域中，不可在进行选择！导线点id为:" + startTraversePoint);
+            }
+        }
+        if (tag.equals(ConstantsInfo.TWO_TYPE)) {
+            if (e) {
+                throw new RuntimeException("该导线点已存在于之前的计划区域中，不可在进行选择！导线点id为:" + endTraversePoint);
+            }
+        }
+        if (tag.equals(ConstantsInfo.THREE_TYPE)) {
+            if (s) {
+                throw new RuntimeException("该导线点已存在于之前的计划区域中，不可在进行选择！导线点id为:" + startTraversePoint);
+            }
+            if (e) {
+                throw new RuntimeException("该导线点已存在于之前的计划区域中，不可在进行选择！导线点id为:" + endTraversePoint);
+            }
+        }
+    }
+
+
 
     /**
      * 状态校验

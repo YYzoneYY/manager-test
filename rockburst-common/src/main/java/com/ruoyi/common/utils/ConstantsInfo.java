@@ -42,6 +42,7 @@ public class ConstantsInfo {
     // 施工文档标识
     public static final String ONE_TAG = "1";
     public static final String TWO_TAG = "2";
+    public static final String THREE_TAG = "3";
 
     public static final String SECTION_SHAPE_DICT_TYPE = "section_shape";
     public static final String SUPPORT_FORM_DICT_TYPE = "support_form";
@@ -51,6 +52,11 @@ public class ConstantsInfo {
     public static final String WORKLOAD = "工作量";
     public static final String DISTANCE = "距离";
     public static final String WORKLOAD_DISTANCE = "工作量,距离";
+
+    public static final String UPPER_TUNNEL = "SH";
+    public static final String BELOW_TUNNEL = "XH";
+    public static final String OPEN_OFF_CUT = "QY";
+    public static final String OTHER = "other";
 
     public static final Integer LEVEL = 1;
 
@@ -71,15 +77,20 @@ public class ConstantsInfo {
     public static final String AUDIT_SUCCESS = "1";
     public static final String AUDIT_REJECT = "2";
 
-    public static final String Year_plan = "1"; // 年计划
-    public static final String Month_plan = "2"; // 月计划
-    public static final String TEMPORARY_plan = "3"; // 临时计划
-    public static final String SPECIAL_plan = "4"; // 特殊计划
+    public static final String Year_PLAN = "1"; // 年计划
+    public static final String Month_PLAN = "2"; // 月计划
+    public static final String TEMPORARY_PLAN = "3"; // 临时计划
+    public static final String SPECIAL_PLAN = "4"; // 特殊计划
 
     // 类型 -掘进
     public static final String TUNNELING = "1";
     // 类型 - 回采
     public static final String STOPE = "2";
+
+    public static final String ONE_TYPE = "1";
+    public static final String TWO_TYPE = "2";
+    public static final String THREE_TYPE = "3";
+    public static final String FOUR_TYPE = "4";
 
     // 不明确是否分层
     public static final String UNKNOWN = "0";

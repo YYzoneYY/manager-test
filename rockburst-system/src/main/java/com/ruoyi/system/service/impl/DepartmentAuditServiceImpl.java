@@ -170,7 +170,6 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
-        PageHelper.startPage(pageNum, pageSize);
         List<String> departAuditStates = new ArrayList<>();
         departAuditStates.add(ConstantsInfo.IN_REVIEW_DICT_VALUE);
         departAuditStates.add(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
@@ -181,6 +180,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 .stream()
                 .map(TeamAuditEntity::getProjectId)
                 .collect(Collectors.toList());
+        PageHelper.startPage(pageNum, pageSize);
         Page<ProjectVO> page = departmentAuditMapper.queryByPage(selectDeptAuditDTO, projectIds);
         Page<ProjectVO> projectVOPage = getProjectListFmt(page);
         result.setTotal(projectVOPage.getTotal());

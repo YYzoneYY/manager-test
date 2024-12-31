@@ -20,7 +20,7 @@ import java.util.List;
  * @description:
  */
 
-@Api(tags = "施工文档管理")
+@Api(tags = "文档管理")
 @RestController
 @RequestMapping(value = "/constructDocument")
 public class ConstructDocumentController {
@@ -44,12 +44,13 @@ public class ConstructDocumentController {
     @ApiImplicitParams(value = {
             @ApiImplicitParam(name = "file", value = "文件", required = true, dataType = "file"),
             @ApiImplicitParam(name = "bucketName", value = "桶名称", required = false, dataType = "String"),
+            @ApiImplicitParam(name = "dataId", value = "层级id", required = true, dataType = "Long")
     })
     @PostMapping("/addFile")
-    public R<Object> addFile(@RequestBody(required = false) ConstructFIleDTO constructFIleDTO,
-                             @RequestParam(value = "file") MultipartFile file,
-                             @RequestParam(value = "bucketName", required = false) String bucketName) {
-        return R.ok(this.constructDocumentService.addFile(constructFIleDTO, file, bucketName));
+    public R<Object> addFile(@RequestParam(value = "file") MultipartFile file,
+                             @RequestParam(value = "bucketName", required = false) String bucketName,
+                             @RequestParam(value = "dataId", required = false) Long dataId) {
+        return R.ok(this.constructDocumentService.addFile(file, bucketName, dataId));
     }
 
     @ApiOperation(value = "施工文件修改", notes = "施工文件修改")
@@ -58,10 +59,12 @@ public class ConstructDocumentController {
             @ApiImplicitParam(name = "bucketName", value = "桶名称", required = false, dataType = "String"),
     })
     @PostMapping("/updateFile")
-    public R<Object> updateFile(@RequestBody(required = false) ConstructFIleDTO constructFIleDTO,
-                                @RequestParam(value = "file") MultipartFile file,
-                                @RequestParam(value = "bucketName", required = false) String bucketName) {
-        return R.ok(this.constructDocumentService.updateFile(constructFIleDTO, file, bucketName));
+    public R<Object> updateFile(@RequestParam(value = "file") MultipartFile file,
+                                @RequestParam(value = "bucketName", required = false) String bucketName,
+                                @RequestParam(value = "dataId") Long dataId,
+                                @RequestParam(value = "fileIds") Long[] fileIds,
+                                @RequestParam(value = "documentName", required = false) String documentName) {
+        return R.ok(this.constructDocumentService.updateFile(file, bucketName, dataId, fileIds, documentName));
     }
 
 
@@ -81,7 +84,7 @@ public class ConstructDocumentController {
      * 获取上级区域名称下拉列表
      * @return 返回结果
      */
-    @ApiOperation(value = "获取上级区域名称下拉列表", notes = "获取上级区域名称下拉列表")
+    @ApiOperation(value = "获取上级层级下拉列表", notes = "获取上级层级下拉列表")
     @GetMapping("/DropDownList")
     public R<List<DropDownListDTO>> getDropDownList() {
         return R.ok(this.constructDocumentService.getDropDownList());
@@ -92,5 +95,14 @@ public class ConstructDocumentController {
     @PostMapping(value = "/adjustOrder")
     public R<Object> moveOrder(@RequestBody AdjustOrderDTO adjustOrderDTO) {
         return R.ok(this.constructDocumentService.moveOrder(adjustOrderDTO));
+    }
+
+    @ApiOperation(value = "删除数据", notes = "删除数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "dataId" , value = "数据id" , required = true, dataType = "Long")
+    })
+    @DeleteMapping("/deleteByDataId")
+    public R<Object> deleteByDataId(@RequestParam(value = "dataId") Long dataId) {
+        return R.ok(this.constructDocumentService.deleteByDataId(dataId));
     }
 }

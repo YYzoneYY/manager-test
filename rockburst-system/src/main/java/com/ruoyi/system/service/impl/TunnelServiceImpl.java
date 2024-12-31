@@ -65,6 +65,16 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
         if (selectCount > 0) {
             throw new RuntimeException("巷道名称已存在");
         }
+        if (tunnelDTO.getTunnelType().equals(ConstantsInfo.UPPER_TUNNEL) ||
+                tunnelDTO.getTunnelType().equals(ConstantsInfo.BELOW_TUNNEL) || tunnelDTO.getTunnelType().equals(ConstantsInfo.OPEN_OFF_CUT)) {
+            TunnelEntity tunnel = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                    .eq(TunnelEntity::getWorkFaceId, tunnelDTO.getWorkFaceId())
+                    .eq(TunnelEntity::getTunnelType, tunnelDTO.getTunnelType())
+                    .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNotNull(tunnel)) {
+                throw new RuntimeException("此工作面已存在类型为：" + tunnel.getTunnelType() + "的巷道");
+            }
+        }
         tunnelDTO.setCreateTime(System.currentTimeMillis());
         tunnelDTO.setCreateBy(1L);
         TunnelEntity tunnelEntity = new TunnelEntity();
@@ -95,6 +105,17 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
                 .ne(TunnelEntity::getTunnelId, tunnelDTO.getTunnelId()));
         if (selectCount > 0) {
             throw new RuntimeException("巷道名称已存在");
+        }
+        if (tunnelDTO.getTunnelType().equals(ConstantsInfo.UPPER_TUNNEL) ||
+                tunnelDTO.getTunnelType().equals(ConstantsInfo.BELOW_TUNNEL) || tunnelDTO.getTunnelType().equals(ConstantsInfo.OPEN_OFF_CUT)) {
+            TunnelEntity tunnel = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                    .eq(TunnelEntity::getWorkFaceId, tunnelDTO.getWorkFaceId())
+                    .eq(TunnelEntity::getTunnelType, tunnelDTO.getTunnelType())
+                    .ne(TunnelEntity::getTunnelId, tunnelDTO.getTunnelId())
+                    .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNotNull(tunnel)) {
+                throw new RuntimeException("此工作面已存在类型为：" + tunnel.getTunnelType() + "的巷道");
+            }
         }
         tunnelDTO.setUpdateTime(System.currentTimeMillis());
         tunnelDTO.setUpdateBy(1L);
