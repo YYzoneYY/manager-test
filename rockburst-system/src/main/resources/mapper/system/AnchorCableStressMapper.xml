@@ -11,11 +11,11 @@
         ORDER BY SUBSTRING(measure_num, -4) DESC LIMIT 1;
     </select>
 
-    <select id="selectQueryPage" parameterType="com.ruoyi.system.domain.dto.MiningSelectDTO" resultType="com.ruoyi.system.domain.vo.AnchorCableStressVO">
+    <select id="selectQueryPage" parameterType="com.ruoyi.system.domain.dto.MeasureSelectDTO" resultType="com.ruoyi.system.domain.vo.AnchorCableStressVO">
         SELECT
             acs.anchor_cable_stress_id AS anchorCableStressId,
             acs.measure_num AS measureNum,
-            acs.survey_area_id AS surveyAreaId,
+            acs.survey_area_name AS surveyAreaName,
             acs.workface_id AS workFaceId,
             acs.sensor_type AS sensorType,
             acs.sensor_location AS sensorLocation,
@@ -24,8 +24,8 @@
             acs.status AS status
         FROM anchor_cable_stress acs
         <where>
-            <if test="surveyAreaId != null and surveyAreaId != ''">
-                AND acs.survey_area_id = #{surveyAreaId}
+            <if test="surveyAreaName != null and surveyAreaName != ''">
+                AND acs.survey_area_name like concat('%',#{surveyAreaName},'%')
             </if>
             <if test="workFaceId != null and workFaceId != ''">
                 AND acs.workface_id = #{workFaceId}

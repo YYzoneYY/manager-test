@@ -231,7 +231,6 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
         if (ListUtils.isNotNull(list.getResult())) {
             list.getResult().forEach(anchorCableStressVO -> {
                 anchorCableStressVO.setWorkFaceName(getWorkFaceName(anchorCableStressVO.getWorkFaceId()));
-                anchorCableStressVO.setSurveyAreaName(getSurveyAreaName(anchorCableStressVO.getSurveyAreaId()));
                 anchorCableStressVO.setInstallTimeFmt(DateUtils.getDateStrByTime(anchorCableStressVO.getInstallTime()));
             });
         }
@@ -251,20 +250,5 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
         }
         workFaceName =  bizWorkface.getWorkfaceName();
         return workFaceName;
-    }
-
-    /**
-     * 获取监测区域名称
-     */
-    private String getSurveyAreaName(Long surveyAreaId) {
-        String surveyAreaName = null;
-        SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectOne(new LambdaQueryWrapper<SurveyAreaEntity>()
-                .eq(SurveyAreaEntity::getSurveyAreaId, surveyAreaId)
-                .eq(SurveyAreaEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(surveyAreaEntity)) {
-            return surveyAreaName;
-        }
-        surveyAreaName =  surveyAreaEntity.getSurveyAreaName();
-        return surveyAreaName;
     }
 }

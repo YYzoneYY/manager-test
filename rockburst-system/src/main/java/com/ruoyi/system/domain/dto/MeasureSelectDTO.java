@@ -12,8 +12,8 @@ import lombok.Data;
 @Data
 public class MeasureSelectDTO {
 
-    @ApiModelProperty("所属测区")
-    private Long surveyAreaId;
+    @ApiModelProperty("监测区名称")
+    private String surveyAreaName;
 
     @ApiModelProperty("所属工作面")
     private Long workFaceId;

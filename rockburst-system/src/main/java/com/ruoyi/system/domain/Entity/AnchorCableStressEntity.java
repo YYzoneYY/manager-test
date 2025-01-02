@@ -39,8 +39,8 @@ public class AnchorCableStressEntity extends BusinessBaseEntity implements Seria
     private String measureNum;
 
     @ApiModelProperty("监测区域id")
-    @TableField(value = "survey_area_id")
-    private Long surveyAreaId;
+    @TableField(value = "survey_area_name")
+    private Long surveyAreaName;
 
     @ApiModelProperty("工作面id")
     @TableField(value = "workface_id")

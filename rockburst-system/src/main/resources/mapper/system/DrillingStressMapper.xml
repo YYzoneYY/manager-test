@@ -15,7 +15,7 @@
         SELECT
             ds.drilling_stress_id AS drillingStressId,
             ds.measure_num AS measureNum,
-            ds.survey_area_id AS surveyAreaId,
+            ds.survey_area_name AS surveyAreaName,
             ds.workface_id AS workFaceId,
             ds.sensor_type AS sensorType,
             ds.sensor_location AS sensorLocation,
@@ -25,8 +25,8 @@
             ds.status AS status
         FROM drilling_stress ds
         <where>
-            <if test="surveyAreaId != null and surveyAreaId != ''">
-                AND ds.survey_area_id = #{surveyAreaId}
+            <if test="surveyAreaName != null and surveyAreaName != ''">
+                AND ds.survey_area_name like concat('%',#{surveyAreaName},'%')
             </if>
             <if test="workFaceId != null and workFaceId != ''">
                 AND ds.workface_id = #{workFaceId}
