@@ -224,7 +224,6 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         if (ListUtils.isNotNull(list.getResult())) {
             list.getResult().forEach(drillingStressVO -> {
                 drillingStressVO.setWorkFaceName(getWorkFaceName(drillingStressVO.getWorkFaceId()));
-                drillingStressVO.setSurveyAreaName(getSurveyAreaName(drillingStressVO.getSurveyAreaId()));
                 drillingStressVO.setInstallTimeFmt(DateUtils.getDateStrByTime(drillingStressVO.getInstallTime()));
             });
         }
@@ -244,20 +243,5 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         }
         workFaceName =  bizWorkface.getWorkfaceName();
         return workFaceName;
-    }
-
-    /**
-     * 获取监测区域名称
-     */
-    private String getSurveyAreaName(Long surveyAreaId) {
-        String surveyAreaName = null;
-        SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectOne(new LambdaQueryWrapper<SurveyAreaEntity>()
-                .eq(SurveyAreaEntity::getSurveyAreaId, surveyAreaId)
-                .eq(SurveyAreaEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(surveyAreaEntity)) {
-            return surveyAreaName;
-        }
-        surveyAreaName =  surveyAreaEntity.getSurveyAreaName();
-        return surveyAreaName;
     }
 }

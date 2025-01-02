@@ -238,7 +238,6 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         if (ListUtils.isNotNull(list.getResult())) {
             list.getResult().forEach(supportResistanceVO -> {
                 supportResistanceVO.setWorkFaceName(getWorkFaceName(supportResistanceVO.getWorkFaceId()));
-                supportResistanceVO.setSurveyAreaName(getSurveyAreaName(supportResistanceVO.getSurveyAreaId()));
                 supportResistanceVO.setSensorNum(montageSensorNum(supportResistanceVO.getSubstationNum(), supportResistanceVO.getColumnNum()));
                 supportResistanceVO.setDataTimeFmt(DateUtils.getDateStrByTime(supportResistanceVO.getDataTime()));
             });
@@ -261,20 +260,6 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         return workFaceName;
     }
 
-    /**
-     * 获取监测区域名称
-     */
-    private String getSurveyAreaName(Long surveyAreaId) {
-        String surveyAreaName = null;
-        SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectOne(new LambdaQueryWrapper<SurveyAreaEntity>()
-                .eq(SurveyAreaEntity::getSurveyAreaId, surveyAreaId)
-                .eq(SurveyAreaEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(surveyAreaEntity)) {
-            return surveyAreaName;
-        }
-        surveyAreaName =  surveyAreaEntity.getSurveyAreaName();
-        return surveyAreaName;
-    }
 
     /**
      * 拼接传感器编号

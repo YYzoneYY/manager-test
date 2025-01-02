@@ -38,9 +38,9 @@ public class DrillingStressEntity extends BusinessBaseEntity implements Serializ
     @TableField(value = "measure_num")
     private String measureNum;
 
-    @ApiModelProperty("监测区域id")
-    @TableField(value = "survey_area_id")
-    private Long surveyAreaId;
+    @ApiModelProperty("监测区名称")
+    @TableField(value = "survey_area_name")
+    private Long survey_area_name;
 
     @ApiModelProperty("工作面id")
     @TableField(value = "workface_id")

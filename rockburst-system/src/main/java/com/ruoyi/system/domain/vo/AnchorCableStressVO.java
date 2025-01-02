@@ -16,9 +16,6 @@ public class AnchorCableStressVO extends AnchorCableStressEntity {
     @ApiModelProperty(value = "工作面名称")
     private String workFaceName;
 
-    @ApiModelProperty(value = "监测区域名称")
-    private String surveyAreaName;
-
     @ApiModelProperty(value = "安装时间格式化")
     private String installTimeFmt;
 }
