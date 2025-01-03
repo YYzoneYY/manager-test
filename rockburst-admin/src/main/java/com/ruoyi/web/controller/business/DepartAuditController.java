@@ -5,6 +5,7 @@ import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.dto.DepartAuditDTO;
 import com.ruoyi.system.domain.dto.SelectDeptAuditDTO;
 import com.ruoyi.system.domain.dto.TeamAuditDTO;
+import com.ruoyi.system.domain.dto.project.DepartmentAuditDTO;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.service.DepartmentAuditService;
 import io.swagger.annotations.*;
@@ -29,7 +30,7 @@ public class DepartAuditController {
 
     @ApiOperation(value = "点击审核按钮", notes = "点击审核按钮")
     @GetMapping(value = "/clickAudit")
-    public R<BizProjectRecordDetailVo> audit(@ApiParam(name = "projectId", value = "项目填报id", required = true) @RequestParam Long projectId) {
+    public R<DepartmentAuditDTO> audit(@ApiParam(name = "projectId", value = "项目填报id", required = true) @RequestParam Long projectId) {
         return R.ok(this.departmentAuditService.clickAudit(projectId));
     }
 
