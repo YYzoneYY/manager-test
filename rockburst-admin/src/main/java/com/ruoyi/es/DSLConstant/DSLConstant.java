@@ -32,11 +32,19 @@ public class DSLConstant {
             "               \"type\":\"double\",\n" +
             "               \"copy_to\":\"all\"\n" +
             "           },\n" +
+            "           \"electromagnetismMaxValue\":{\n" +
+            "               \"type\":\"double\",\n" +
+            "               \"copy_to\":\"all\"\n" +
+            "           },\n" +
+            "           \"electromagneticPulse\":{\n" +
+            "               \"type\":\"double\",\n" +
+            "               \"copy_to\":\"all\"\n" +
+            "           },\n" +
             "           \"monitoringStatus\":{\n" +
             "               \"type\":\"keyword\",\n" +
             "               \"copy_to\":\"all\"\n" +
             "           },\n" +
-            "           \"dataUploadTime\":{\n" +
+            "           \"dataTime\":{\n" +
             "               \"type\":\"long\",\n" +
             "               \"copy_to\":\"all\"\n" +
             "           },\n" +

@@ -22,7 +22,7 @@
         bpr.status as status,
         bpr.del_flag as delFlag
         from biz_project_record as bpr
-        inner join team_audit as ta on bpr.project_id = ta.project_id
+        left join team_audit as ta on bpr.project_id = ta.project_id
         <where>
             <if test="selectDeptAuditDTO.type != null and selectDeptAuditDTO.type != ''">
                 and bpr.construct_type = #{selectDeptAuditDTO.constructType}
@@ -45,7 +45,7 @@
                     #{projectId}
                 </foreach>
             </if>
-            and bpr.del_flag = '0' and ta.audit_result = '1'
+            and bpr.del_flag = '0' and ta.audit_result = '1' and ta.depart_audit_state not in(3,4)
         </where>
         order by bpr.construct_time desc
     </select>
@@ -84,7 +84,7 @@
             <if test="startTime != null and endTime != null">
                 and bpr.construct_time between #{startTime} and #{endTime}
             </if>
-            and bpr.status in (3,4) and p.del_flag = '0'
+            and bpr.status in (3,4) and bpr.del_flag = '0'
         </where>
         order by bpr.construct_time desc
     </select>

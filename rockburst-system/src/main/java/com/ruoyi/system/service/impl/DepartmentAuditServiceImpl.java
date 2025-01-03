@@ -293,7 +293,6 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         // 科室审核记录
         DepartmentAuditEntity departmentAuditEntity = departmentAuditMapper.selectOne(new LambdaQueryWrapper<DepartmentAuditEntity>()
                 .eq(DepartmentAuditEntity::getProjectId, projectId)
-                .eq(DepartmentAuditEntity::getAuditResult, ConstantsInfo.REJECTED)
                 .eq(DepartmentAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
                 .orderByDesc(DepartmentAuditEntity::getCreateTime)
                 .last("LIMIT 1"));
