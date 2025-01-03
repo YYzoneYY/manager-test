@@ -327,7 +327,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
                 .eq(TeamAuditEntity::getProjectId, projectId)
                 .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
-                .eq(TeamAuditEntity::getAuditResult, ConstantsInfo.AUDITED_DICT_VALUE)
+                .eq(TeamAuditEntity::getAuditResult, "1")
                 .orderByDesc(TeamAuditEntity::getCreateTime)
                 .last("LIMIT 1"));
         if (ObjectUtil.isNull(teamAuditEntity)) {
