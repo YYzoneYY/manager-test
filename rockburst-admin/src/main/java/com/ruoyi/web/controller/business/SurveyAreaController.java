@@ -88,13 +88,13 @@ public class SurveyAreaController {
         return R.ok(surveyAreaService.deleteSurveyArea(surveyAreaIds), "删除成功");
     }
 
-    @ApiOperation(value = "获取测区下拉框", notes = "获取测区下拉框")
+    @ApiOperation(value = "获取采区下拉框", notes = "获取测区下拉框")
     @GetMapping(value = "/getMiningAreaChoiceList")
     public R<List<MiningAreaChoiceListDTO>> getMiningAreaChoiceList(){
     	return R.ok(surveyAreaService.getMiningAreaChoiceList());
     }
 
-    @ApiOperation(value = "获取测区下拉框", notes = "获取测区下拉框")
+    @ApiOperation(value = "获取工作面下拉框", notes = "获取测区下拉框")
     @GetMapping(value = "/getFaceChoiceList")
     public R<List<FaceChoiceListDTO>> getFaceChoiceList(@ApiParam(name = "miningAreaId", value = "测区id", required = true)
                                                         @RequestParam Long miningAreaId){

@@ -122,12 +122,10 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
         teamAuditEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = teamAuditMapper.insert(teamAuditEntity);
         if (flag > 0) {
-            if (ConstantsInfo.AUDIT_SUCCESS.equals(teamAuditDTO.getAuditResult())) {
-                bizProjectRecord.setStatus(Integer.valueOf(ConstantsInfo.AUDITED_DICT_VALUE));
-            } else {
+            if (ConstantsInfo.AUDIT_REJECT.equals(teamAuditDTO.getAuditResult())) {
                 bizProjectRecord.setStatus(Integer.valueOf(ConstantsInfo.REJECTED));
+                bizProjectRecordMapper.updateById(bizProjectRecord);
             }
-            bizProjectRecordMapper.updateById(bizProjectRecord);
         } else {
             throw new RuntimeException("审核失败,请联系管理员");
         }
