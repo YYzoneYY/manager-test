@@ -75,9 +75,12 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         if (ObjectUtil.isNull(projectId)) {
             throw new DepartmentAuditException("参数错误");
         }
+        List<String> departAuditStates = new ArrayList<>();
+        departAuditStates.add(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
+        departAuditStates.add(ConstantsInfo.IN_REVIEW_DICT_VALUE);
         TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
                 .eq(TeamAuditEntity::getProjectId, projectId)
-                .eq(TeamAuditEntity::getDepartAuditState, ConstantsInfo.AUDIT_STATUS_DICT_VALUE)
+                .in(TeamAuditEntity::getDepartAuditState, departAuditStates)
                 .eq(TeamAuditEntity::getAuditResult, ConstantsInfo.AUDIT_SUCCESS)
                 .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(teamAuditEntity)) {
