@@ -18,6 +18,7 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.DepartAuditDTO;
 import com.ruoyi.system.domain.dto.SelectDeptAuditDTO;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
+import com.ruoyi.system.domain.dto.project.DepartmentAuditDTO;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.ProjectVO;
 import com.ruoyi.system.mapper.*;
@@ -65,13 +66,16 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
     @Resource
     private IBizProjectRecordService bizProjectRecordService;
 
+    @Resource
+    private SysUserMapper sysUserMapper;
+
     /**
      * 点击审核按钮
      * @param projectId 计划id
      * @return 返回结果
      */
     @Override
-    public BizProjectRecordDetailVo clickAudit(Long projectId) {
+    public DepartmentAuditDTO clickAudit(Long projectId) {
         if (ObjectUtil.isNull(projectId)) {
             throw new DepartmentAuditException("参数错误");
         }
@@ -96,7 +100,11 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         }
         BizProjectRecordDetailVo projectRecordDetailVo = bizProjectRecordService.selectById(projectId);
         BeanUtils.copyProperties(projectRecordDetailVo, bizProjectRecordDetailVo);
-        return bizProjectRecordDetailVo;
+        DepartmentAuditDTO departmentAuditDTO = new DepartmentAuditDTO();
+        departmentAuditDTO.setProjectRecordDetailVo(bizProjectRecordDetailVo);
+        String teamAuditPeople = teamAuditPeople(projectId);
+        departmentAuditDTO.setTeamAuditPeople(teamAuditPeople);
+        return departmentAuditDTO;
     }
 
     /**
@@ -313,5 +321,19 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         public DepartmentAuditException(String message) {
             super(message);
         }
+    }
+
+    private String teamAuditPeople(Long projectId) {
+        TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
+                .eq(TeamAuditEntity::getProjectId, projectId)
+                .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .eq(TeamAuditEntity::getAuditResult, ConstantsInfo.AUDITED_DICT_VALUE)
+                .orderByDesc(TeamAuditEntity::getCreateTime)
+                .last("LIMIT 1"));
+        if (ObjectUtil.isNull(teamAuditEntity)) {
+            throw new DepartmentAuditException("未找到此填报审核记录， 填报ID：" + projectId);
+        }
+        Long createBy = teamAuditEntity.getCreateBy();
+        return sysUserMapper.selectNameById(createBy);
     }
 }
