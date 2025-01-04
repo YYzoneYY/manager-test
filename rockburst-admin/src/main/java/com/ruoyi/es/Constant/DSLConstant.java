@@ -1,4 +1,4 @@
-package com.ruoyi.es.DSLConstant;
+package com.ruoyi.es.Constant;
 
 public class DSLConstant {
 
