@@ -1,5 +1,9 @@
 package com.ruoyi.mq.client;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import com.ruoyi.es.util.BulkCreateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -7,6 +11,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,6 +21,9 @@ import java.util.concurrent.Executors;
 public class PushCallback implements MqttCallback {
     @Autowired
     private MqttConfiguration mqttConfiguration;
+
+    @Resource
+    private BulkCreateUtil bulkCreateUtil;
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(6);
 
@@ -53,6 +62,17 @@ public class PushCallback implements MqttCallback {
                 log.info("接收消息主题 : " + topic);
                 log.info("接收消息Qos : " + message.getQos());
                 log.info("接收消息内容 : " + new String(message.getPayload()));
+
+                // 接收消息存储ES
+                JSONObject jsonObject = JSONUtil.parseObj(message.getPayload());
+                if (ObjectUtil.isNotNull(jsonObject)) {
+                    try {
+                        bulkCreateUtil.bulkCreate(jsonObject);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
             }
         });
     }
