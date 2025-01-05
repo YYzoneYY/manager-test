@@ -6,6 +6,8 @@ import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.vo.BizTravePointVo;
 
+import java.util.List;
+
 /**
  * 矿井管理Service接口
  * 
@@ -15,5 +17,10 @@ import com.ruoyi.system.domain.vo.BizTravePointVo;
 public interface IBizTravePointService extends IService<BizTravePoint>
 {
 
-    MPage<BizTravePointVo> geRuleList(Long workfaceId,String constructType,Pagination pagination);
+    MPage<BizTravePointVo> geRuleList(Long locationId,String constructType,Pagination pagination);
+
+
+    List<BizTravePoint>  getQyPoint(Long workfaceId);
+
+    void  doit(BizTravePoint point);
 }

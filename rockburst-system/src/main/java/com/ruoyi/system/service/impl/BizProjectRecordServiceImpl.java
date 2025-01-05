@@ -379,7 +379,42 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         return 1;
     }
 
+    @Override
+    public int saveRecordApp(BizProjectRecordAddDto dto) {
 
+
+        BizProjectRecord entity = new BizProjectRecord();
+        BeanUtil.copyProperties(dto, entity);
+        //掘进回采id
+        if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
+            entity.setWorkfaceId(dto.getLocationId());
+        }else {
+            entity.setTunnelId(dto.getLocationId());
+        }
+        entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0);
+//                .setDeptId(currentUser.getDeptId());
+        this.getBaseMapper().insert(entity);
+
+        if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
+            IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
+                BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
+                BizDrillRecord bizDrillRecord  = new BizDrillRecord();
+                BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
+                bizDrillRecord.setStatus(0).setTravePointId(dto.getTravePointId()).setProjectId(entity.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
+                bizDrillRecordMapper.insert(bizDrillRecord);
+            });
+        }
+
+        if(dto.getVideos() != null && dto.getVideos().size() > 0){
+            dto.getVideos().forEach(bizVideo -> {
+                BizVideo video = new BizVideo();
+                BeanUtil.copyProperties(bizVideo, video);
+                video.setProjectId(entity.getProjectId());
+                bizVideoMapper.insert(video);
+            });
+        }
+
+        return 1;    }
 
     @Override
     public int updateRecord(BizProjectRecordAddDto dto) {
@@ -406,6 +441,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
                 BizDrillRecord bizDrillRecord  = new BizDrillRecord();
                 BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
+                bizDrillRecord.setDrillRecordId(null);
                 bizDrillRecord.setStatus(0).setTravePointId(dto.getTravePointId()).setProjectId(entity.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
                 bizDrillRecordMapper.insert(bizDrillRecord);
             });
@@ -414,6 +450,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             dto.getVideos().forEach(bizVideo -> {
                 BizVideo video = new BizVideo();
                 BeanUtil.copyProperties(bizVideo, video);
+                video.setVideoId(null);
                 video.setProjectId(dto.getProjectId());
                 bizVideoMapper.insert(video);
             });

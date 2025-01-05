@@ -34,6 +34,8 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
 
     int saveRecord(BizProjectRecordAddDto dto);
 
+    int saveRecordApp(BizProjectRecordAddDto dto);
+
 
     int updateRecord(BizProjectRecordAddDto dto);
 

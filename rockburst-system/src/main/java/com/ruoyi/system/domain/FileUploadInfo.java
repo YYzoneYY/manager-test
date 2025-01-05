@@ -33,6 +33,8 @@ public class FileUploadInfo {
     //文件类型
     private String fileType;
 
+    private String imme;
+
 
     public FileUploadInfo() {
     }

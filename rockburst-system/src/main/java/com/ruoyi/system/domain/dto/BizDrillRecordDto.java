@@ -98,6 +98,9 @@ public class BizDrillRecordDto
     @ApiModelProperty(value = "状态")
     private Integer status;
 
+    @ApiModelProperty(value = "备注")
+    private String remark;
+
     /** 状态 */
     @ApiModelProperty(value = "工具",required = true)
     private String borer;
