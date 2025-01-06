@@ -63,11 +63,4 @@ public interface SurveyAreaService extends IService<SurveyAreaEntity> {
      * @return 返回结果
      */
     List<FaceChoiceListDTO> getFaceChoiceList(Long miningAreaId);
-
-    /**
-     * 获取工作面下拉框
-     * @param faceId 工作面id
-     * @return 返回结果
-     */
-    List<TunnelChoiceListDTO> getTunnelChoiceList(Long faceId);
 }

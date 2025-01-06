@@ -93,6 +93,10 @@ public class BizProjectRecordAddDto  {
     @ApiModelProperty(value = "验收员")
     private Long accepter;
 
+    /** 安检员 */
+    @ApiModelProperty(value = "手机唯一标识")
+    private String imem;
+
 
     List<BizDrillRecordDto> drillRecords;
 

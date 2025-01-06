@@ -21,6 +21,9 @@ public interface UploadService {
      */
     ResponseResult<Object> mergeMultipartUpload(FileUploadInfo fileUploadInfo);
 
+
+    ResponseResult<Object> mergeMultipartUploadNoToken(FileUploadInfo fileUploadInfo);
+
     /**
      *  通过 sha256 获取已上传的数据
      * @param sha256 String

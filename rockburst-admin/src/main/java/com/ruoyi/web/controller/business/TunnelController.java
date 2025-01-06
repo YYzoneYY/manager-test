@@ -5,6 +5,7 @@ import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.dto.SelectTunnelDTO;
+import com.ruoyi.system.domain.dto.TunnelChoiceListDTO;
 import com.ruoyi.system.domain.dto.TunnelDTO;
 import com.ruoyi.system.service.TunnelService;
 import io.swagger.annotations.*;
@@ -12,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author: shikai
@@ -63,5 +65,12 @@ public class TunnelController {
     @RequestMapping(value = "/delete")
     public R<Object> deleteTunnel(@ApiParam(name = "tunnelIds", value = "巷道id数组", required = true) @RequestParam Long[] tunnelIds) {
         return R.ok(tunnelService.deleteByIds(tunnelIds));
+    }
+
+    @ApiOperation(value = "获取巷道下拉框", notes = "获取巷道下拉框")
+    @GetMapping(value = "/getTunnelChoiceList")
+    public R<List<TunnelChoiceListDTO>> getTunnelChoiceList(@ApiParam(name = "faceId", value = "面id", required = true)
+                                                            @RequestParam Long faceId){
+        return R.ok(tunnelService.getTunnelChoiceList(faceId));
     }
 }

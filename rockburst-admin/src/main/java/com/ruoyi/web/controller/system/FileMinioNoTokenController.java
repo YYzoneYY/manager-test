@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.system;
 
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.system.domain.FileUploadInfo;
 import com.ruoyi.system.domain.utils.ResponseResult;
 import com.ruoyi.system.service.UploadService;
@@ -26,8 +27,8 @@ import javax.annotation.Resource;
 @Api(tags = "大文件分片上传")
 @Slf4j
 @RestController
-@RequestMapping("/upload")
-public class FileMinioController {
+@RequestMapping("/uploadNoToken")
+public class FileMinioNoTokenController {
 
     @Resource
     private UploadService uploadService;
@@ -41,7 +42,7 @@ public class FileMinioController {
      * @param md5 String
      * @return ResponseResult<Object>
      */
-//    @Anonymous
+    @Anonymous
     @ApiOperation("检查文件是否存在、是否进行断点续传")
     @GetMapping("/multipart/check")
     public ResponseResult checkFileUploadedByMd5(@RequestParam("md5") String md5) {
@@ -55,7 +56,7 @@ public class FileMinioController {
      * @param fileUploadInfo 文件信息
      * @return ResponseResult<Object>
      */
-//    @Anonymous
+    @Anonymous
     @ApiOperation("分片初始化-获取文件分片上传的url")
     @PostMapping("/multipart/init")
     public ResponseResult initMultiPartUpload(@RequestBody FileUploadInfo fileUploadInfo) {
@@ -69,15 +70,15 @@ public class FileMinioController {
      * @param fileUploadInfo  文件信息
      * @return ResponseResult<Object>
      */
-//    @Anonymous
+    @Anonymous
     @ApiOperation("合并")
     @PostMapping("/multipart/merge")
     public ResponseResult completeMultiPartUpload(@RequestBody FileUploadInfo fileUploadInfo) {
         log.info("REST: 通过 <{}> 合并上传任务", fileUploadInfo);
-        return uploadService.mergeMultipartUpload(fileUploadInfo);
+        return uploadService.mergeMultipartUploadNoToken(fileUploadInfo);
     }
 
-//    @Anonymous
+    @Anonymous
     @ApiOperation("fileIsExits")
     @PostMapping("/multipart/fileIsExits")
     public ResponseResult fileIsExits(@RequestBody FileUploadInfo fileUploadInfo) {

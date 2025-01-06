@@ -157,7 +157,44 @@ public class UploadServiceImpl implements UploadService {
     }
 
 
+    @Override
+    public ResponseResult<Object> mergeMultipartUploadNoToken(FileUploadInfo fileUploadInfo) {
 
+        log.info("tip message: 通过 <{}> 开始合并<分片上传>任务", fileUploadInfo);
+        // 获取桶名称
+        String bucketName = fileUploadInfo.getBucketName();
+
+        // 获取合并结果
+        boolean result = fileService.mergeMultipartUpload(fileUploadInfo.getFileName(), fileUploadInfo.getUploadId(), bucketName);
+
+
+        SysFileInfo sysFileInfo = new SysFileInfo();
+        sysFileInfo.setFileOldName(fileUploadInfo.getFileName());
+        String fileName = fileUploadInfo.getFileName();
+        sysFileInfo.setFileNewName(fileName.substring(fileName.lastIndexOf("/") + 1));
+        sysFileInfo.setFilePath(fileName.substring(0, fileName.lastIndexOf("/") + 1));
+        sysFileInfo.setFileSuffix(fileUploadInfo.getFileType());
+        sysFileInfo.setFileSize(fileUploadInfo.getFileSize().longValue());
+        sysFileInfo.setBucketName(fileUploadInfo.getBucketName());
+        Long ts = System.currentTimeMillis();
+        sysFileInfo.setCreateTime(ts);
+        sysFileInfo.setUpdateTime(ts);
+//        sysFileInfo.setCreateBy(fileUploadInfo.getImme());
+//        sysFileInfo.setUpdateBy(fileUploadInfo.getImme());
+        //获取上传文件地址
+        if(result){
+            String filePath = fileService.getFilePath(fileUploadInfo.getBucketName().toLowerCase(), fileUploadInfo.getFileName());
+            sysFileInfo.setFileUrl(filePath);
+            if (sysFileInfoMapper.insert(sysFileInfo) < 1) {
+                throw new RuntimeException("文件信息插入库失败!");
+            }
+            return ResponseResult.success(sysFileInfoMapper.selectById(sysFileInfo.getFileId()));
+//            return ResponseResult.success(filePath);
+        }
+
+        log.error("error message: 文件合并异常");
+
+        return  ResponseResult.error();    }
 
     @Override
     public String getFilePath(String bucketName, String fileName) {

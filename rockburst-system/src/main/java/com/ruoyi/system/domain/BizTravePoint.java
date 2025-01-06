@@ -34,6 +34,11 @@ public class BizTravePoint extends BaseSelfEntity
     @TableField()
     private Long workfaceId;
 
+    /** 矿井的唯一标识符 */
+    @ApiModelProperty(value = "巷道")
+    @TableField()
+    private Long tunnelId;
+
 
     /** 矿井名称 */
     @ApiModelProperty(value = "导线点名称")
@@ -64,6 +69,17 @@ public class BizTravePoint extends BaseSelfEntity
     @TableField()
     private String no;
 
+    @ApiModelProperty(value = "顶点 1 是 0 否")
+    @TableField()
+    private Boolean isVertex;
+
+    @ApiModelProperty(value = "切眼标记点id")
+    @TableField()
+    private Long bestNearPointId;
+
+    @ApiModelProperty(value = "距标记点距离")
+    @TableField()
+    private Double distance;
 
 
 
