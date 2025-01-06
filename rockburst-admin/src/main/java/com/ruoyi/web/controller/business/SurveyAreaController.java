@@ -5,6 +5,7 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.service.SurveyAreaService;
+import com.ruoyi.system.service.TunnelService;
 import io.swagger.annotations.*;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,9 @@ public class SurveyAreaController {
 
     @Resource
     private SurveyAreaService surveyAreaService;
+
+    @Resource
+    private TunnelService tunnelService;
 
     /**
      * 查询详情
@@ -101,10 +105,10 @@ public class SurveyAreaController {
         return R.ok(surveyAreaService.getFaceChoiceList(miningAreaId));
     }
 
-    @ApiOperation(value = "获取巷道下拉框", notes = "获取隧道下拉框")
+    @ApiOperation(value = "获取巷道下拉框", notes = "获取巷道下拉框")
     @GetMapping(value = "/getTunnelChoiceList")
     public R<List<TunnelChoiceListDTO>> getTunnelChoiceList(@ApiParam(name = "faceId", value = "面id", required = true)
                                                             @RequestParam Long faceId){
-        return R.ok(surveyAreaService.getTunnelChoiceList(faceId));
+        return R.ok(tunnelService.getTunnelChoiceList(faceId));
     }
 }

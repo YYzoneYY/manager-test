@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.SelectTunnelDTO;
+import com.ruoyi.system.domain.dto.TunnelChoiceListDTO;
 import com.ruoyi.system.domain.dto.TunnelDTO;
 import org.apache.poi.ss.formula.functions.T;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -50,4 +53,11 @@ public interface TunnelService extends IService<TunnelEntity> {
      * @return 返回结果
      */
     boolean deleteByIds(Long[] tunnelIds);
+
+    /**
+     * 获取巷道下拉框
+     * @param faceId 工作面id
+     * @return 返回结果
+     */
+    List<TunnelChoiceListDTO> getTunnelChoiceList(Long faceId);
 }

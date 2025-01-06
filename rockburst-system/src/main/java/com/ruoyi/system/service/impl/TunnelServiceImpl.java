@@ -15,6 +15,7 @@ import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
 import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.SelectTunnelDTO;
+import com.ruoyi.system.domain.dto.TunnelChoiceListDTO;
 import com.ruoyi.system.domain.dto.TunnelDTO;
 import com.ruoyi.system.domain.vo.TunnelVO;
 import com.ruoyi.system.mapper.*;
@@ -23,8 +24,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author: shikai
@@ -206,6 +209,31 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
         });
         flag = this.removeBatchByIds(tunnelIdList);
         return flag;
+    }
+
+    /**
+     * 获取巷道下拉框
+     * @param faceId 工作面id
+     * @return 返回结果
+     */
+    @Override
+    public List<TunnelChoiceListDTO> getTunnelChoiceList(Long faceId) {
+        List<TunnelChoiceListDTO> tunnelChoiceListDTOS = new ArrayList<>();
+        if (ObjectUtil.isNull(faceId)) {
+            throw new RuntimeException("工作面id不能为空!!");
+        }
+        List<TunnelEntity> tunnelEntities = tunnelMapper.selectList(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getWorkFaceId, faceId)
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ListUtils.isNotNull(tunnelEntities)) {
+            tunnelChoiceListDTOS = tunnelEntities.stream().map(tunnelEntity -> {
+                TunnelChoiceListDTO tunnelChoiceListDTO = new TunnelChoiceListDTO();
+                tunnelChoiceListDTO.setLabel(tunnelEntity.getTunnelName());
+                tunnelChoiceListDTO.setValue(tunnelEntity.getTunnelId());
+                return tunnelChoiceListDTO;
+            }).collect(Collectors.toList());
+        }
+        return tunnelChoiceListDTOS;
     }
 
     /**
