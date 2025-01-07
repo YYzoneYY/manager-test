@@ -13,6 +13,7 @@ import com.github.yulichang.base.MPJBaseServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.annotation.DataScopeSelf;
 import com.ruoyi.common.core.domain.BasePermission;
+import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
@@ -59,6 +60,9 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 {
     @Autowired
     private BizProjectRecordMapper bizProjectRecordMapper;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
 
     @Autowired
@@ -343,11 +347,21 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Override
     public int saveRecord(BizProjectRecordAddDto dto) {
 
+
+
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
 
+        QueryWrapper<SysDept> deptQueryWrapper = new QueryWrapper<>();
+        deptQueryWrapper.lambda().select(SysDept::getConstructionUnitId).eq(SysDept::getDeptId,currentUser.getDeptId());
+        List<SysDept> sysDepts = sysDeptMapper.selectList(deptQueryWrapper);
+
+
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+        if(sysDepts != null && sysDepts.size() > 0){
+            entity.setConstructionUnitId(sysDepts.get(0).getConstructionUnitId());
+        }
         //掘进回采id
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
             entity.setWorkfaceId(dto.getLocationId());
@@ -381,10 +395,17 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public int saveRecordApp(BizProjectRecordAddDto dto) {
+        QueryWrapper<SysDept> deptQueryWrapper = new QueryWrapper<>();
+        deptQueryWrapper.lambda().select(SysDept::getDeptId).eq(SysDept::getConstructionUnitId,dto.getConstructUnitId());
+        List<SysDept> sysDepts = sysDeptMapper.selectList(deptQueryWrapper);
 
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+
+        if(sysDepts != null && sysDepts.size() > 0){
+            entity.setDeptId(sysDepts.get(0).getDeptId());
+        }
         //掘进回采id
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
             entity.setWorkfaceId(dto.getLocationId());

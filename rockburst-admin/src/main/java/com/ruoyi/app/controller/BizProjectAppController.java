@@ -10,7 +10,9 @@ import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
+import com.ruoyi.system.domain.SysProjectType;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
+import com.ruoyi.system.mapper.SysProjectTypeMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -49,6 +51,9 @@ public class BizProjectAppController extends BaseController
 
     @Autowired
     private PlanService planService;
+
+    @Autowired
+    private SysProjectTypeMapper sysProjectTypeMapper;
 
 
 
@@ -109,6 +114,14 @@ public class BizProjectAppController extends BaseController
         return R.ok(bizTravePointService.list(pointQueryWrapper));
     }
 
+    @Anonymous
+    @ApiOperation("获取填报类型")
+    @Log(title = "获取填报类型", businessType = BusinessType.INSERT)
+    @PostMapping("/types")
+    public R<?> gettypes()
+    {
+        return R.ok(sysProjectTypeMapper.selectList(new QueryWrapper<SysProjectType>().lambda().orderBy(true,true,SysProjectType::getSort)));
+    }
 
 
 

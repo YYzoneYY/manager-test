@@ -144,6 +144,8 @@ public class BizProjectRecord extends BaseSelfEntity
     private Long deptId;
 
 
+    @ApiModelProperty(value = "施工单位")
+    private Long constructionUnitId;
 //    @ApiModelProperty(value = "工作面id")
 //    private Long workfaceId;
 

@@ -97,6 +97,9 @@ public class BizProjectRecordAddDto  {
     @ApiModelProperty(value = "手机唯一标识")
     private String imem;
 
+    @ApiModelProperty(value = "施工单位")
+    private Long constructionUnitId;
+
 
     List<BizDrillRecordDto> drillRecords;
 

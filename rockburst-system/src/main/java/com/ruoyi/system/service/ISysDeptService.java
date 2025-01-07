@@ -1,8 +1,9 @@
 package com.ruoyi.system.service;
 
-import java.util.List;
 import com.ruoyi.common.core.domain.TreeSelect;
 import com.ruoyi.common.core.domain.entity.SysDept;
+
+import java.util.List;
 
 /**
  * 部门管理 服务层
@@ -90,6 +91,14 @@ public interface ISysDeptService
      * @return 结果
      */
     public boolean checkDeptNameUnique(SysDept dept);
+
+    /**
+     * 校验部门名称是否唯一
+     *
+     * @param dept 部门信息
+     * @return 结果
+     */
+    public boolean checkConstructionUnit(SysDept dept);
 
     /**
      * 校验部门是否有数据权限
