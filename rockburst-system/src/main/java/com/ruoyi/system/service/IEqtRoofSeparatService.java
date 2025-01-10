@@ -47,6 +47,9 @@ public interface IEqtRoofSeparatService extends IService<EqtRoofSeparat>
      */
     public int updateMById(EqtRoofSeparatDto dto);
 
+
+    boolean checkMeasureNum(String measureNum,Long id);
+
     /**
      * 批量删除矿井管理
      *

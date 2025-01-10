@@ -47,6 +47,9 @@ public interface IEqtEmeService extends IService<EqtEme>
      */
     public int updateMById(EqtEmeDto dto);
 
+
+    boolean checkMeasureNum(String measureNum,Long id);
+
     /**
      * 批量删除矿井管理
      *

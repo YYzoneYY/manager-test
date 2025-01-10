@@ -30,20 +30,20 @@ public class EqtDisplacement extends BaseSelfEntity {
     private String measureNum;
 
     @ApiModelProperty("监测区域id")
-    @TableField(value = "survey_area_id")
-    private Long surveyAreaId;
+    @TableField(value = "survey_area")
+    private String surveyArea;
 
     @ApiModelProperty("工作面id")
     @TableField(value = "workface_id")
     private Long workFaceId;
 
     @ApiModelProperty("工作面id")
-    @TableField(value = "workface_id")
+    @TableField(value = "tunnel_id")
     private Long tunnelId;
 
     @ApiModelProperty("传感器类型")
-    @TableField(value = "sensor_type")
-    private String sensorType;
+    @TableField(value = "scene_type")
+    private String sceneType;
 
     @ApiModelProperty("传感器安装位置")
     @TableField(value = "sensor_location")

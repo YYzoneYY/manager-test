@@ -8,8 +8,8 @@ import lombok.Setter;
 @Setter
 public class EqtSearchDto {
 
-    @ApiModelProperty(value = "测区id")
-    private Long surveyAreaId;
+    @ApiModelProperty(value = "测区")
+    private String surveyArea;
 
     @ApiModelProperty(value = "工作面id")
     private Long workfaceId;

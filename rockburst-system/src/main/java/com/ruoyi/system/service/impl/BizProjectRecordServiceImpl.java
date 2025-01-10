@@ -395,6 +395,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public int saveRecordApp(BizProjectRecordAddDto dto) {
+
+        dto.setConstructUnitId(dto.getConstructionUnitId());
         QueryWrapper<SysDept> deptQueryWrapper = new QueryWrapper<>();
         deptQueryWrapper.lambda().select(SysDept::getDeptId).eq(SysDept::getConstructionUnitId,dto.getConstructUnitId());
         List<SysDept> sysDepts = sysDeptMapper.selectList(deptQueryWrapper);
@@ -408,9 +410,11 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         }
         //掘进回采id
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
-            entity.setWorkfaceId(dto.getLocationId());
+//            entity.setWorkfaceId(dto.getLocationId());
+            dto.setLocationId(dto.getWorkfaceId());
         }else {
-            entity.setTunnelId(dto.getLocationId());
+//            entity.setTunnelId(dto.getLocationId());
+            dto.setLocationId(dto.getTunnelId());
         }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0);
 //                .setDeptId(currentUser.getDeptId());
