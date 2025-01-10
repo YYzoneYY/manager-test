@@ -13,6 +13,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author: 吴大林
@@ -32,21 +34,21 @@ public class EqtRoofSeparatDto extends BaseSelfEntity {
     @TableField(value = "measure_num")
     private String measureNum;
 
-    @ApiModelProperty("监测区域id")
-    @TableField(value = "survey_area_id")
-    private Long surveyAreaId;
+    @ApiModelProperty("监测区域")
+    @TableField(value = "survey_area")
+    private String surveyArea;
 
     @ApiModelProperty("工作面id")
     @TableField(value = "workface_id")
     private Long workFaceId;
 
     @ApiModelProperty("工作面id")
-    @TableField(value = "workface_id")
+    @TableField(value = "tunnel_id")
     private Long tunnelId;
 
     @ApiModelProperty("传感器类型")
-    @TableField(value = "sensor_type")
-    private String sensorType;
+    @TableField(value = "scene_type")
+    private String sceneType;
 
     @ApiModelProperty("传感器安装位置")
     @TableField(value = "sensor_location")
@@ -91,4 +93,21 @@ public class EqtRoofSeparatDto extends BaseSelfEntity {
     @ApiModelProperty("标识(1-手动新增，2-数采自动接入)")
     @TableField(value = "tag")
     private String tag;
+
+
+    @ApiModelProperty(value = "预警方案id")
+    @TableField(exist = false)
+    private Long warnSchemeId;
+
+    @ApiModelProperty("预警阈值配置")
+    @TableField(exist = false)
+    private List<Map<String, Object>> thresholdConfigDTOS;
+
+    @ApiModelProperty("预警增量配置")
+    @TableField(exist = false)
+    private List<Map<String, Object>> incrementConfigDTOS;
+
+    @ApiModelProperty("预警增速配置")
+    @TableField(exist = false)
+    private List<Map<String, Object>> growthRateConfigDTOS;
 }

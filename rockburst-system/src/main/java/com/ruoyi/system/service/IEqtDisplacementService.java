@@ -62,4 +62,7 @@ public interface IEqtDisplacementService extends IService<EqtDisplacement>
      * @return 结果
      */
     public int deleteMById(Long displacementId);
+
+
+    boolean checkMeasureNum(String measureNum,Long id);
 }

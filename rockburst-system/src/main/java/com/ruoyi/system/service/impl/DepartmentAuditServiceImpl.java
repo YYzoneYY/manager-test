@@ -16,6 +16,7 @@ import com.ruoyi.system.domain.Entity.DepartmentAuditEntity;
 import com.ruoyi.system.domain.Entity.TeamAuditEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.DepartAuditDTO;
+import com.ruoyi.system.domain.dto.DepartAuditHistoryDTO;
 import com.ruoyi.system.domain.dto.SelectDeptAuditDTO;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
 import com.ruoyi.system.domain.dto.project.DepartmentAuditDTO;
@@ -150,8 +151,10 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 teamAuditEntity.setDepartAuditState(ConstantsInfo.AUDITED_DICT_VALUE);
                 bizProjectRecord.setStatus(Integer.valueOf(ConstantsInfo.AUDITED_DICT_VALUE));
             }
-            teamAuditEntity.setDepartAuditState(ConstantsInfo.REJECTED);
-            bizProjectRecord.setStatus(Integer.valueOf(ConstantsInfo.REJECTED));
+            if (ConstantsInfo.AUDIT_REJECT.equals(departAuditDTO.getAuditResult())) {
+                teamAuditEntity.setDepartAuditState(ConstantsInfo.REJECTED);
+                bizProjectRecord.setStatus(Integer.valueOf(ConstantsInfo.REJECTED));
+            }
             TeamAuditEntity teamAudit = new TeamAuditEntity();
             BeanUtils.copyProperties(teamAuditEntity, teamAudit);
             BizProjectRecord projectRecord = new BizProjectRecord();
@@ -210,10 +213,62 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         }
         PageHelper.startPage(pageNum, pageSize);
         Page<ProjectVO> page = departmentAuditMapper.auditHistoryPage(selectProjectDTO);
-        Page<ProjectVO> planVOPage = getProjectListFmt(page);
+        Page<ProjectVO> planVOPage = getProjectListFmtTWO(page);
         result.setTotal(planVOPage.getTotal());
         result.setRows(planVOPage.getResult());
         return result;
+    }
+
+    /**
+     * 历史查询详情
+     * @param projectId 工程填报id
+     * @return 返回结果
+     */
+    @Override
+    public DepartAuditHistoryDTO detail(Long projectId) {
+        DepartAuditHistoryDTO departAuditHistoryDTO = new DepartAuditHistoryDTO();
+        String auditResult = "";
+        String rejectionReason = "";
+        Long reviewerId = null;
+        BizProjectRecordDetailVo projectRecordDetailVo = bizProjectRecordService.selectById(projectId);
+        departAuditHistoryDTO.setBizProjectRecordDetailVo(projectRecordDetailVo);
+
+        // 区队审核记录
+        TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
+                .eq(TeamAuditEntity::getProjectId, projectId)
+                .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .orderByDesc(TeamAuditEntity::getCreateTime)
+                .last("LIMIT 1"));
+        if (ObjectUtil.isNotNull(teamAuditEntity)) {
+            if (ConstantsInfo.AUDIT_SUCCESS.equals(teamAuditEntity.getAuditResult())) {
+                // 科室审核记录
+                DepartmentAuditEntity departmentAuditEntity = departmentAuditMapper.selectOne(new LambdaQueryWrapper<DepartmentAuditEntity>()
+                        .eq(DepartmentAuditEntity::getProjectId, projectId)
+                        .eq(DepartmentAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                        .orderByDesc(DepartmentAuditEntity::getCreateTime)
+                        .last("LIMIT 1"));
+                if (ObjectUtil.isNotNull(departmentAuditEntity)) {
+                    auditResult = departmentAuditEntity.getAuditResult();
+                    if (ConstantsInfo.AUDIT_REJECT.equals(auditResult)) {
+                        rejectionReason = departmentAuditEntity.getRejectionReason();
+                    }
+                    reviewerId = departmentAuditEntity.getCreateBy();
+                } else {
+                    throw new DepartmentAuditException("工程填报id错误，无法查询到审核记录");
+                }
+            } else if (ConstantsInfo.AUDIT_REJECT.equals(teamAuditEntity.getAuditResult())) {
+                auditResult = teamAuditEntity.getAuditResult();
+                rejectionReason = teamAuditEntity.getRejectionReason();
+                reviewerId = teamAuditEntity.getCreateBy();
+            }
+
+        } else {
+            throw new DepartmentAuditException("工程填报id错误，无法查询到审核记录");
+        }
+        departAuditHistoryDTO.setAuditResult(auditResult);
+        departAuditHistoryDTO.setRejectionReason(rejectionReason);
+        departAuditHistoryDTO.setReviewer(sysUserMapper.selectNameById(reviewerId));
+        return departAuditHistoryDTO;
     }
 
     private TeamAuditEntity checkTeamAudit(Long projectId) {
@@ -233,6 +288,43 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
      * VO格式化
      */
     private Page<ProjectVO> getProjectListFmt(Page<ProjectVO> list) {
+        if (ListUtils.isNotNull(list.getResult())) {
+            list.getResult().forEach(projectVO -> {
+                String auditStatusFmt = "";
+                projectVO.setConstructionUnitName(getConstructionUnitName(projectVO.getConstructUnitId()));
+                projectVO.setConstructSiteFmt(getConstructSite(projectVO.getConstructSiteId(), projectVO.getConstructType()));
+
+                // 当区队审核通过之后，提交给科室审核，若没有点击’审核按钮‘此时科室审核状态为"待审核"
+                TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
+                        .eq(TeamAuditEntity::getProjectId, projectVO.getProjectId())
+                        .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                        .eq(TeamAuditEntity::getAuditResult, "1")
+                        .orderByDesc(TeamAuditEntity::getCreateTime)
+                        .last("LIMIT 1"));
+                if (ObjectUtil.isNull(teamAuditEntity)) {
+                    throw new DepartmentAuditException("未找到此填报审核记录， 填报ID：" + projectVO.getProjectId());
+                }
+                String departAuditState = teamAuditEntity.getDepartAuditState();
+                if (departAuditState.equals(ConstantsInfo.AUDIT_STATUS_DICT_VALUE)) {
+                    auditStatusFmt = sysDictDataMapper.selectDictLabel(ConstantsInfo.AUDIT_STATUS_DICT_TYPE, projectVO.getStatus());
+                    projectVO.setStatus(departAuditState);
+                }
+                auditStatusFmt = sysDictDataMapper.selectDictLabel(ConstantsInfo.AUDIT_STATUS_DICT_TYPE, projectVO.getStatus());
+                projectVO.setStatusFmt(auditStatusFmt);
+                if (projectVO.getStatus().equals(ConstantsInfo.REJECTED)) {
+                    // 获取驳回原因
+                    String rejectReason = getRejectReason(projectVO.getProjectId());
+                    projectVO.setRejectReason(rejectReason);
+                }
+            });
+        }
+        return list;
+    }
+
+    /**
+     * VO格式化
+     */
+    private Page<ProjectVO> getProjectListFmtTWO(Page<ProjectVO> list) {
         if (ListUtils.isNotNull(list.getResult())) {
             list.getResult().forEach(projectVO -> {
                 projectVO.setConstructionUnitName(getConstructionUnitName(projectVO.getConstructUnitId()));

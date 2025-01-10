@@ -36,6 +36,10 @@ public class BizProjectRecordAddDto  {
     @ApiModelProperty(value = "施工单位")
     private Long constructUnitId;
 
+
+    @ApiModelProperty(value = "施工单位")
+    private Long constructionUnitId;
+
     /** 施工班次 */
     @ApiModelProperty(value = "施工班次")
     private Long constructShiftId;
@@ -43,6 +47,12 @@ public class BizProjectRecordAddDto  {
     /** 位置 */
     @ApiModelProperty(value = "施工地点",required = true)
     private Long locationId;
+
+    @ApiModelProperty(value = "工作面id",required = true)
+    private Long workfaceId;
+
+    @ApiModelProperty(value = "巷道id",required = true)
+    private Long tunnelId;
 
     /** 距离 */
     @ApiModelProperty(value = "距离",required = true)
@@ -96,6 +106,7 @@ public class BizProjectRecordAddDto  {
     /** 安检员 */
     @ApiModelProperty(value = "手机唯一标识")
     private String imem;
+
 
 
     List<BizDrillRecordDto> drillRecords;

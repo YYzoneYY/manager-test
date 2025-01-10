@@ -77,7 +77,7 @@ public class EqtEmeController extends BaseController
     @GetMapping(value = "/{emeId}")
     public R<EqtEme> getInfo(@PathVariable("emeId") Long emeId)
     {
-        return R.ok(eqtEmeService.getById(emeId));
+        return R.ok(eqtEmeService.selectDeepById(emeId));
     }
 
     /**

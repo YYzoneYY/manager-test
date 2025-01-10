@@ -11,27 +11,27 @@
     <select id="queryByPage" parameterType="com.ruoyi.system.domain.dto.SelectProjectDTO"
             resultType="com.ruoyi.system.domain.vo.ProjectVO">
         select
-            bpr.project_id as projectId,
-            bpr.construct_type as constructType,
-            bpr.drill_type as drillType,
-            bpr.construct_unit_id as constructUnitId,
-            bpr.construct_time as constructTime,
-            bpr.drill_num as drillNum,
-            bpr.location_id as constructSiteId,
-            bpr.status as status,
-            bpr.create_time as createTime,
-            bpr.del_flag as delFlag
+        bpr.project_id as projectId,
+        bpr.construct_type as constructType,
+        bpr.drill_type as drillType,
+        bpr.construct_unit_id as constructUnitId,
+        bpr.construct_time as constructTime,
+        bpr.drill_num as drillNum,
+        bpr.location_id as constructSiteId,
+        bpr.status as status,
+        bpr.create_time as createTime,
+        bpr.del_flag as delFlag
         from biz_project_record as bpr
         left join team_audit as ta on bpr.project_id = ta.project_id
         <where>
             <if test="type != null and type != ''">
-                and bpr.construct_type = #{constructType}
+                and bpr.construct_type = #{type}
             </if>
             <if test="constructSite != null and constructSite != ''">
                 and bpr.location_id = #{constructSite}
             </if>
             <if test="constructionUnitId != null and constructionUnitId != ''">
-                and bpr.construct_unit_id = #{constructUnitId}
+                and bpr.construct_unit_id = #{constructionUnitId}
             </if>
             <if test="fillingType != null and fillingType != ''">
                 and bpr.drill_type = #{fillingType}

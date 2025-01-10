@@ -25,13 +25,13 @@
         left join team_audit as ta on bpr.project_id = ta.project_id
         <where>
             <if test="selectDeptAuditDTO.type != null and selectDeptAuditDTO.type != ''">
-                and bpr.construct_type = #{selectDeptAuditDTO.constructType}
+                and bpr.construct_type = #{selectDeptAuditDTO.type}
             </if>
             <if test="selectDeptAuditDTO.constructSite != null and selectDeptAuditDTO.constructSite != ''">
                 and bpr.location_id = #{selectDeptAuditDTO.constructSite}
             </if>
             <if test="selectDeptAuditDTO.constructionUnitId != null and selectDeptAuditDTO.constructionUnitId != ''">
-                and bpr.construct_unit_id = #{selectDeptAuditDTO.constructUnitId}
+                and bpr.construct_unit_id = #{selectDeptAuditDTO.constructionUnitId}
             </if>
             <if test="selectDeptAuditDTO.fillingType != null and selectDeptAuditDTO.fillingType != ''">
                 and bpr.drill_type = #{selectDeptAuditDTO.fillingType}
@@ -67,13 +67,13 @@
         from biz_project_record as bpr
         <where>
             <if test="type != null and type != ''">
-                and bpr.construct_type = #{constructType}
+                and bpr.construct_type = #{type}
             </if>
             <if test="constructSite != null and constructSite != ''">
                 and bpr.location_id = #{constructSite}
             </if>
             <if test="constructionUnitId != null and constructionUnitId != ''">
-                and bpr.construct_unit_id = #{constructUnitId}
+                and bpr.construct_unit_id = #{constructionUnitId}
             </if>
             <if test="fillingType != null and fillingType != ''">
                 and bpr.drill_type = #{fillingType}

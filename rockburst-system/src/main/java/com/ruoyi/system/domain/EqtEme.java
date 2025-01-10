@@ -42,8 +42,8 @@ public class EqtEme extends BaseToLongEntity {
 //    private Long tunnelId;
 
     @ApiModelProperty("传感器类型")
-    @TableField(value = "sensor_type")
-    private String sensorType;
+    @TableField(value = "scene_type")
+    private String sceneType;
 
     @ApiModelProperty("传感器安装位置")
     @TableField(value = "sensor_location")

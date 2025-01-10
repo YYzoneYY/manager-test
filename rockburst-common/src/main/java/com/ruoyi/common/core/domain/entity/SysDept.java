@@ -1,17 +1,16 @@
 package com.ruoyi.common.core.domain.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.ruoyi.common.core.domain.BaseEntity;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import com.ruoyi.common.core.domain.BaseEntity;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 部门表 sys_dept
@@ -55,9 +54,21 @@ public class SysDept extends BaseEntity
 
     /** 父部门名称 */
     private String parentName;
+
+    /** 施工单位 */
+    private Long constructionUnitId;
     
     /** 子部门 */
     private List<SysDept> children = new ArrayList<SysDept>();
+
+
+    public Long getConstructionUnitId() {
+        return constructionUnitId;
+    }
+
+    public void setConstructionUnitId(Long constructionUnitId) {
+        this.constructionUnitId = constructionUnitId;
+    }
 
     public Long getDeptId()
     {

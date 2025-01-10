@@ -74,7 +74,7 @@ public class EqtRoofSeparatController extends BaseController
     @GetMapping(value = "/{roofSeparatId}")
     public R<EqtRoofSeparat> getInfo(@PathVariable("roofSeparatId") Long roofSeparatId)
     {
-        return R.ok(eqtRoofSeparatService.getById(roofSeparatId));
+        return R.ok(eqtRoofSeparatService.selectDeepById(roofSeparatId));
     }
 
     /**

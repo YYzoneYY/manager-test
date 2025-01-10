@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.DepartmentAuditEntity;
 import com.ruoyi.system.domain.dto.DepartAuditDTO;
+import com.ruoyi.system.domain.dto.DepartAuditHistoryDTO;
 import com.ruoyi.system.domain.dto.SelectDeptAuditDTO;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
 import com.ruoyi.system.domain.dto.project.DepartmentAuditDTO;
@@ -47,4 +48,11 @@ public interface DepartmentAuditService extends IService<DepartmentAuditEntity> 
      * @return 返回结果
      */
     TableData auditHistoryPage(SelectProjectDTO selectProjectDTO, Integer pageNum, Integer pageSize);
+
+    /**
+     * 历史查询详情
+     * @param projectId 工程填报id
+     * @return 返回结果
+     */
+    DepartAuditHistoryDTO detail(Long projectId);
 }
