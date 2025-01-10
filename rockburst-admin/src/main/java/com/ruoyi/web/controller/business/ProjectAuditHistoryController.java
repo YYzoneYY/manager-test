@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.system.domain.dto.DepartAuditHistoryDTO;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
 import com.ruoyi.system.service.DepartmentAuditService;
@@ -33,6 +34,12 @@ public class ProjectAuditHistoryController {
                                       @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                       @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
         return R.ok(this.departmentAuditService.auditHistoryPage(selectProjectDTO, pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "详情", notes = "详情")
+    @GetMapping(value = "/detail")
+    public R<DepartAuditHistoryDTO> detail(@ApiParam(name = "projectId", value = "工程填报id", required = true) @RequestParam Long projectId) {
+        return R.ok(this.departmentAuditService.detail(projectId));
     }
 
 }
