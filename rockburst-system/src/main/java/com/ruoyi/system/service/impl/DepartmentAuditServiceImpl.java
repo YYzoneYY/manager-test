@@ -298,7 +298,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
                         .eq(TeamAuditEntity::getProjectId, projectVO.getProjectId())
                         .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
-                        .eq(TeamAuditEntity::getAuditResult, "1")
+                        .eq(TeamAuditEntity::getAuditResult, ConstantsInfo.AUDIT_SUCCESS)
                         .orderByDesc(TeamAuditEntity::getCreateTime)
                         .last("LIMIT 1"));
                 if (ObjectUtil.isNull(teamAuditEntity)) {
@@ -390,7 +390,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
                 .eq(TeamAuditEntity::getProjectId, projectId)
                 .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
-                .eq(TeamAuditEntity::getAuditResult, ConstantsInfo.REJECTED)
+                .eq(TeamAuditEntity::getAuditResult, ConstantsInfo.AUDIT_REJECT)
                 .orderByDesc(TeamAuditEntity::getCreateTime)
                 .last("LIMIT 1"));
         // 科室审核记录
