@@ -8,7 +8,7 @@
         p.plan_id as planId,
         p.plan_name as planName,
         p.plan_type as planType,
-        p.total_drill_number as totalDrillNum,
+        p.total_drill_number as totalDrillNumber,
         p.total_hole_depth as totalHoleDepth,
         p.drill_type as drillType,
         p.start_time as startTime,
