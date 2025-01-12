@@ -40,6 +40,7 @@ import com.ruoyi.system.service.IBizProjectRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletResponse;
@@ -55,6 +56,7 @@ import java.util.stream.IntStream;
  * @author ruoyi
  * @date 2024-11-09
  */
+@Transactional
 @Service
 public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRecordMapper, BizProjectRecord> implements IBizProjectRecordService
 {

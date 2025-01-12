@@ -87,7 +87,7 @@ public class BizDrillRecordDto
 
     /** 实际深度 */
     @ApiModelProperty(value = "爆破时间")
-    private String  detonationTime;
+    private Date  detonationTime;
 
     /** 实际深度 */
     @ApiModelProperty(value = "方位角")
