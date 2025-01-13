@@ -13,6 +13,7 @@ import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.Point;
+import com.ruoyi.system.domain.dto.BizTravePointDto;
 import com.ruoyi.system.domain.vo.BizTravePointVo;
 import com.ruoyi.system.mapper.BizTravePointMapper;
 import com.ruoyi.system.mapper.TunnelMapper;
@@ -21,7 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 矿井管理Service业务层处理
@@ -53,6 +56,28 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         return new MPage<>(list);
     }
 
+    @Override
+    public BizTravePoint getPrePointDistance(BizTravePointDto dto) {
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizTravePoint::getTunnelId, dto.getTunnelId());
+        List<BizTravePoint> list = this.getBaseMapper().selectList(queryWrapper);
+        BizTravePoint  maxNoEntity = new BizTravePoint();
+        if (list != null && list.size() > 0) {
+            Optional<BizTravePoint> maxPoint = list.stream().max(Comparator.comparing(BizTravePoint::getNo));
+            if (maxPoint.isPresent()) {
+                maxNoEntity = maxPoint.get();
+            }
+        }else {
+            maxNoEntity = new BizTravePoint();
+            maxNoEntity.setNo(1l);
+            return maxNoEntity;
+        }
+        if (maxNoEntity != null) {
+            maxNoEntity.setPointId(null).setNo(maxNoEntity.getNo()+1);
+            return maxNoEntity;
+        }
+        return maxNoEntity;
+    }
 
     @Override
     public List<BizTravePoint> getQyPoint(Long workfaceId) {
@@ -71,24 +96,35 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         return bizTravePointMapper.selectList(pointQueryWrapper);
     }
 
+    @Override
+    public Long getVertexCount(Long pointId, Long tunnelId, Boolean vertex) {
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .notIn(pointId != null, BizTravePoint::getPointId,pointId)
+                .eq(BizTravePoint::getTunnelId, tunnelId)
+                .eq(BizTravePoint::getIsVertex,vertex);
+        return bizTravePointMapper.selectCount(queryWrapper);
+    }
 
     @Override
     public void doit(BizTravePoint point) {
-        List<BizTravePoint> qyList =  this.getQyPoint(point.getWorkfaceId());
+//        List<BizTravePoint> qyList =  this.getQyPoint(point.getWorkfaceId());
         MPJLambdaWrapper<BizTravePoint> queryWrapper = new MPJLambdaWrapper<BizTravePoint>();
         queryWrapper
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizTravePoint::getTunnelId)
                 .eq(BizTravePoint::getWorkfaceId,point.getWorkfaceId())
 //                .eq(BizTravePoint::getIsVertex,true)
-                .in(TunnelEntity::getTunnelType,"SH");
+                .in(TunnelEntity::getTunnelType,BizBaseConstant.TUNNEL_SH);
         List<BizTravePoint> shpointList = this.getBaseMapper().selectJoinList(queryWrapper);
+
         queryWrapper.clear();
         queryWrapper
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizTravePoint::getTunnelId)
                 .eq(BizTravePoint::getWorkfaceId,point.getWorkfaceId())
 //                .eq(BizTravePoint::getIsVertex,true)
-                .in(TunnelEntity::getTunnelType,"XH");
+                .in(TunnelEntity::getTunnelType,BizBaseConstant.TUNNEL_XH);
         List<BizTravePoint> xhpointList = this.getBaseMapper().selectJoinList(queryWrapper);
+
         Double q = new Double("0");
         Long shId = null;
         for (int i = 0; i < shpointList.size(); i++) {

@@ -5,9 +5,20 @@ public class BizBaseConstant {
     public static final String DELFLAG_N = "0";
     public static final String DELFLAG_Y = "2";
 
-
+    /*
+    回采 掘进类型
+     */
     public static final String CONSTRUCT_TYPE_H = "2";
     public static final String CONSTRUCT_TYPE_J = "1";
+
+
+    /*
+    巷道分类
+     */
+    public static final String TUNNEL_SH = "SH";
+    public static final String TUNNEL_XH = "XH";
+    public static final String TUNNEL_QY = "QY";
+
 
     // 矿井 营运状态
     public static final Integer MINE_STATUS_ON = 1;
