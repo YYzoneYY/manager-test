@@ -73,7 +73,7 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
             return maxNoEntity;
         }
         if (maxNoEntity != null) {
-            maxNoEntity.setPointId(null).setNo(maxNoEntity.getNo()+1);
+            maxNoEntity.setNo(maxNoEntity.getNo()+1);
             return maxNoEntity;
         }
         return maxNoEntity;

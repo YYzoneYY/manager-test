@@ -120,7 +120,7 @@ public class BizProjectRecordController extends BaseController
         QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(BizProjectRecord::getConstructType,constructType).eq(BizProjectRecord::getTravePointId, pointId);
         long i = bizProjectRecordService.count(queryWrapper);
-        return R.ok(i <= 0);
+        return R.ok(i > 0);
     }
 
     /**

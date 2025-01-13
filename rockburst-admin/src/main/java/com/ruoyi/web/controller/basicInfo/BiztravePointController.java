@@ -249,9 +249,8 @@ public class BiztravePointController extends BaseController
             if(dto.getIsVertex()){
                 long counted = bizTravePointService.getVertexCount(dto.getPointId(),dto.getTunnelId(),true);
                 Assert.isTrue(counted <= 2 , "最多有两个顶点");
-                bizTravePointService.updateById(entity);
                 bizTravePointService.doit(entity);
-                return R.ok(1);
+                return R.ok(bizTravePointService.getBaseMapper().insert(entity));
             }
         }
 
