@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,6 +81,27 @@ public class EqtEmeServiceImpl extends ServiceImpl<EqtEmeMapper, EqtEme> impleme
 
         EqtEme entity = new EqtEme();
         BeanUtil.copyProperties(dto, entity);
+        String maxMeasureNum = "";
+        QueryWrapper<EqtEme> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .select(EqtEme::getMeasureNum)
+                .eq(EqtEme::getTag,1)
+                .eq(EqtEme::getSceneType,dto.getSceneType())
+                .eq(EqtEme::getDelFlag, BizBaseConstant.DELFLAG_N);
+        List<EqtEme> eqtEmeList = eqtEmeMapper.selectList(queryWrapper);
+        List<Integer> measureNums = new ArrayList<>();
+        if(eqtEmeList != null && eqtEmeList.size() > 0){
+            for (EqtEme eqtEme : eqtEmeList) {
+                String measureStr = eqtEme.getMeasureNum().substring(eqtEme.getMeasureNum().length(),-4);
+                Integer measureNum = Integer.parseInt(measureStr);
+                measureNums.add(measureNum);
+            }
+            int maxValue = Collections.max(measureNums);
+            maxMeasureNum =BizBaseConstant.getMeasurePre(dto.getSceneType(),maxValue);
+        }else {
+            maxMeasureNum =BizBaseConstant.getMeasurePre(dto.getSceneType(),1);
+        }
+        entity.setMeasureNum(maxMeasureNum);
         int i = eqtEmeMapper.insert(entity);
         WarnSchemeSeparateEntity warnEntity = new WarnSchemeSeparateEntity();
         BeanUtil.copyProperties(dto, warnEntity);

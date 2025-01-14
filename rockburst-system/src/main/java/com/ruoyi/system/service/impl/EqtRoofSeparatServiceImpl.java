@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,6 +86,27 @@ public class EqtRoofSeparatServiceImpl extends ServiceImpl<EqtRoofSeparatMapper,
 
         EqtRoofSeparat entity = new EqtRoofSeparat();
         BeanUtil.copyProperties(dto, entity);
+
+        String maxMeasureNum = "";
+        QueryWrapper<EqtRoofSeparat> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .select(EqtRoofSeparat::getMeasureNum)
+                .eq(EqtRoofSeparat::getTag,1)
+                .eq(EqtRoofSeparat::getDelFlag, BizBaseConstant.DELFLAG_N);
+        List<EqtRoofSeparat> eqtRoofSeparats = eqtRoofSeparatMapper.selectList(queryWrapper);
+        List<Integer> measureNums = new ArrayList<>();
+        if(eqtRoofSeparats != null && eqtRoofSeparats.size() > 0){
+            for (EqtRoofSeparat eqtRoofSeparat : eqtRoofSeparats) {
+                String measureStr = eqtRoofSeparat.getMeasureNum().substring(eqtRoofSeparat.getMeasureNum().length(),-4);
+                Integer measureNum = Integer.parseInt(measureStr);
+                measureNums.add(measureNum);
+            }
+            int maxValue = Collections.max(measureNums);
+            maxMeasureNum =BizBaseConstant.getMeasurePre(dto.getSceneType(),maxValue);
+        }else {
+            maxMeasureNum =BizBaseConstant.getMeasurePre(dto.getSceneType(),1);
+        }
+        entity.setMeasureNum(maxMeasureNum);
 
         int i= eqtRoofSeparatMapper.insert(entity);
         WarnSchemeSeparateEntity warnEntity = new WarnSchemeSeparateEntity();
