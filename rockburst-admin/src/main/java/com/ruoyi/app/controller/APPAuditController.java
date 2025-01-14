@@ -55,8 +55,8 @@ public class APPAuditController {
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
     @GetMapping(value = "/pendingApprovalForTeam")
-    public R<Object> teamAuditByPage(@ApiParam(name = "fillingType", value = "填报类型", required = true) @RequestParam(required = false) String fillingType,
-                               @ApiParam(name = "constructionUnitId", value = "施工单位id", required = true)  @RequestParam(required = false) Long constructionUnitId,
+    public R<Object> teamAuditByPage(@ApiParam(name = "fillingType", value = "填报类型") @RequestParam(required = false) String fillingType,
+                               @ApiParam(name = "constructionUnitId", value = "施工单位id")  @RequestParam(required = false) Long constructionUnitId,
                                @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
         SelectDTO selectDTO = new SelectDTO(fillingType, constructionUnitId);
@@ -70,8 +70,8 @@ public class APPAuditController {
     })
     @GetMapping(value = "/approvedForTeam")
     public R<Object> teamApprovedByPage(@ApiParam(name = "userId", value = "用户id", required = true) @RequestParam Long userId,
-                               @ApiParam(name = "fillingType", value = "填报类型", required = true) @RequestParam(required = false) String fillingType,
-                               @ApiParam(name = "constructionUnitId", value = "施工单位id", required = true)  @RequestParam(required = false) Long constructionUnitId,
+                               @ApiParam(name = "fillingType", value = "填报类型") @RequestParam(required = false) String fillingType,
+                               @ApiParam(name = "constructionUnitId", value = "施工单位id")  @RequestParam(required = false) Long constructionUnitId,
                                @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
         SelectDTO selectDTO = new SelectDTO(fillingType, constructionUnitId);
@@ -96,8 +96,8 @@ public class APPAuditController {
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
     @GetMapping(value = "/pendingApprovalForDepart")
-    public R<Object> departAuditByPage(@ApiParam(name = "fillingType", value = "填报类型", required = true) @RequestParam(required = false) String fillingType,
-                                     @ApiParam(name = "constructionUnitId", value = "施工单位id", required = true)  @RequestParam(required = false) Long constructionUnitId,
+    public R<Object> departAuditByPage(@ApiParam(name = "fillingType", value = "填报类型") @RequestParam(required = false) String fillingType,
+                                     @ApiParam(name = "constructionUnitId", value = "施工单位id")  @RequestParam(required = false) Long constructionUnitId,
                                      @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                      @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
         SelectDTO selectDTO = new SelectDTO(fillingType, constructionUnitId);
@@ -111,8 +111,8 @@ public class APPAuditController {
     })
     @GetMapping(value = "/approvedForDepart")
     public R<Object> departApprovedByPage(@ApiParam(name = "userId", value = "用户id", required = true) @RequestParam Long userId,
-                                        @ApiParam(name = "fillingType", value = "填报类型", required = true) @RequestParam(required = false) String fillingType,
-                                        @ApiParam(name = "constructionUnitId", value = "施工单位id", required = true)  @RequestParam(required = false) Long constructionUnitId,
+                                        @ApiParam(name = "fillingType", value = "填报类型") @RequestParam(required = false) String fillingType,
+                                        @ApiParam(name = "constructionUnitId", value = "施工单位id")  @RequestParam(required = false) Long constructionUnitId,
                                         @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                         @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
         SelectDTO selectDTO = new SelectDTO(fillingType, constructionUnitId);
