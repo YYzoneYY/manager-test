@@ -26,4 +26,18 @@ public interface DepartmentAuditMapper extends BaseMapper<DepartmentAuditEntity>
                                 @Param("projectIds") List<Long> projectIds);
 
     Page<ProjectVO> auditHistoryPage(SelectProjectDTO selectProjectDTO);
+
+    /**
+     * 适用于APP的科室审核分页查询(待审核)
+     */
+    Page<ProjectVO> queryByPageForApp(@Param("fillingType") String fillingType,
+                                      @Param("constructionUnitId") Long constructionUnitId,
+                                      @Param("projectIds") List<Long> projectIds);
+
+    /**
+     * 适用于APP的科室审核分页查询(已审核)
+     */
+    Page<ProjectVO> approvedQueryByPageForApp(@Param("projectIds") List<Long> projectIds,
+                                              @Param("fillingType") String fillingType,
+                                              @Param("constructionUnitId") Long constructionUnitId);
 }

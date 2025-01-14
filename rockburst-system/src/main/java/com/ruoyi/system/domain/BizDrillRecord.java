@@ -93,7 +93,7 @@ public class BizDrillRecord extends BaseSelfEntity
 
     /** 实际深度 */
     @ApiModelProperty(name = "爆破时间")
-    private String  detonationTime;
+    private Date  detonationTime;
 
     /** 实际深度 */
     @ApiModelProperty(name = "方位角")

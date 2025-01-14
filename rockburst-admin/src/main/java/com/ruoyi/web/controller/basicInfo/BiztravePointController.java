@@ -204,6 +204,15 @@ public class BiztravePointController extends BaseController
     /**
      * 获取矿井管理详细信息
      */
+    @ApiOperation("获取前导线点管理详细信息")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+    @GetMapping(value = "/prePoint")
+    public R<BizTravePoint> getPrePointDistance(BizTravePointDto dto) {
+        Assert.isTrue(dto.getTunnelId() != null,"请填写巷道");
+        Assert.isTrue(StrUtil.isNotEmpty(dto.getAxisx()) && StrUtil.isNotEmpty(dto.getAxisy()) && StrUtil.isNotEmpty(dto.getAxisz()),"请填写巷道");
+        return R.ok(bizTravePointService.getPrePointDistance(dto));
+    }
+
     @ApiOperation("获取导线点管理详细信息")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
     @GetMapping(value = "/{pointId}")
@@ -213,7 +222,7 @@ public class BiztravePointController extends BaseController
     }
 
     /**
-     * 新增矿井管理
+     * 新增矿井管理 先维护上下巷道,再维护切眼
      */
     @ApiOperation("新增导线点管理")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:add')")
@@ -227,32 +236,21 @@ public class BiztravePointController extends BaseController
         queryWrapper.lambda().eq(BizTravePoint::getPointName,dto.getPointName())
                 .eq(BizTravePoint::getTunnelId, dto.getTunnelId());
         long i = bizTravePointService.count(queryWrapper);
-        Assert.isTrue(i <= 0 , "编号重复");
+        Assert.isTrue(i <= 0 , "名称重复");
 
         TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
-        if("SH".equals(tunnelEntity.getTunnelType()) || "XH".equals(tunnelEntity.getTunnelType())){
+        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
             List<BizTravePoint> qypoints = bizTravePointService.getQyPoint(dto.getWorkfaceId());
             if(qypoints != null && qypoints.size() == 2){
-                Double q1 = getMath(zhuanhuan(entity),zhuanhuan(qypoints.get(0)));
-                Double q2 = getMath(zhuanhuan(entity),zhuanhuan(qypoints.get(1)));
-                if(q1 != null && q2 != null && q1 < q2){
-                    entity.setBestNearPointId(qypoints.get(0).getTunnelId()).setDistance(q1);
-                }else {
-                    entity.setBestNearPointId(qypoints.get(1).getTunnelId()).setDistance(q2);
-                }
+                BizTravePoint point = MathUtil.getMinDistance(entity,qypoints.get(0),qypoints.get(1));
+                entity.setBestNearPointId(point.getPointId()).setDistance(point.getDistance());
             }
-        } else if ("QY".equals(tunnelEntity.getTunnelType())  ) {
+        } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType()) ) {
             if(dto.getIsVertex()){
-                queryWrapper.clear();
-                queryWrapper.lambda()
-                        .notIn(dto.getPointId() != null, BizTravePoint::getPointId,dto.getPointId())
-                        .eq(BizTravePoint::getTunnelId, dto.getTunnelId())
-                        .eq(BizTravePoint::getIsVertex,true);
-                long counted = bizTravePointService.count(queryWrapper);
+                long counted = bizTravePointService.getVertexCount(dto.getPointId(),dto.getTunnelId(),true);
                 Assert.isTrue(counted <= 2 , "最多有两个顶点");
-                bizTravePointService.updateById(entity);
                 bizTravePointService.doit(entity);
-                return R.ok(1);
+                return R.ok(bizTravePointService.getBaseMapper().insert(entity));
             }
         }
 
@@ -275,28 +273,18 @@ public class BiztravePointController extends BaseController
                 .ne(BizTravePoint::getPointId,dto.getPointId())
                 .eq(BizTravePoint::getTunnelId, dto.getTunnelId());
         long i = bizTravePointService.count(queryWrapper);
-        Assert.isTrue(i <= 0 , "编号重复");
+        Assert.isTrue(i <= 0 , "名称重复");
 
         TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
-        if("SH".equals(tunnelEntity.getTunnelType()) || "XH".equals(tunnelEntity.getTunnelType())){
+        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
             List<BizTravePoint> qypoints = bizTravePointService.getQyPoint(dto.getWorkfaceId());
             if(qypoints != null && qypoints.size() == 2){
-                Double q1 = getMath(zhuanhuan(entity),zhuanhuan(qypoints.get(0)));
-                Double q2 = getMath(zhuanhuan(entity),zhuanhuan(qypoints.get(1)));
-                if(q1 != null && q2 != null && q1 < q2){
-                    entity.setBestNearPointId(qypoints.get(0).getTunnelId()).setDistance(q1);
-                }else {
-                    entity.setBestNearPointId(qypoints.get(1).getTunnelId()).setDistance(q2);
-                }
+                BizTravePoint point = MathUtil.getMinDistance(entity,qypoints.get(0),qypoints.get(1));
+                entity.setBestNearPointId(point.getPointId()).setDistance(point.getDistance());
             }
-        } else if ("QY".equals(tunnelEntity.getTunnelType())  ) {
+        } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType())  ) {
             if(dto.getIsVertex()){
-                queryWrapper.clear();
-                queryWrapper.lambda()
-                        .notIn(dto.getPointId() != null, BizTravePoint::getPointId,dto.getPointId())
-                        .eq(BizTravePoint::getTunnelId, dto.getTunnelId())
-                        .eq(BizTravePoint::getIsVertex,true);
-                long counted = bizTravePointService.count(queryWrapper);
+                long counted = bizTravePointService.getVertexCount(dto.getPointId(),dto.getTunnelId(),true);
                 Assert.isTrue(counted <= 2 , "最多有两个顶点");
                 bizTravePointService.updateById(entity);
                 bizTravePointService.doit(entity);

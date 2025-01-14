@@ -92,6 +92,10 @@ public class ConstantsInfo {
     public static final String THREE_TYPE = "3";
     public static final String FOUR_TYPE = "4";
 
+    // 审核类型
+    public static final String TEAM_AUDIT = "1"; // 区队审核
+    public static final String DEPART_AUDIT = "2"; // 科室审核
+
     // 不明确是否分层
     public static final String UNKNOWN = "0";
 

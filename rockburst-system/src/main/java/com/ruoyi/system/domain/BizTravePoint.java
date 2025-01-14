@@ -67,7 +67,15 @@ public class BizTravePoint extends BaseSelfEntity
 
     @ApiModelProperty(value = "编号")
     @TableField()
-    private String no;
+    private Long no;
+
+    @ApiModelProperty(value = "前导线点id")
+    @TableField()
+    private Long prePointId;
+
+    @ApiModelProperty(value = "距前导线点距离")
+    @TableField()
+    private Double prePointDistance;
 
     @ApiModelProperty(value = "顶点 1 是 0 否")
     @TableField()

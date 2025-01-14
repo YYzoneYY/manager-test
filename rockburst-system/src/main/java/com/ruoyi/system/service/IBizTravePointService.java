@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizTravePoint;
+import com.ruoyi.system.domain.dto.BizTravePointDto;
 import com.ruoyi.system.domain.vo.BizTravePointVo;
 
 import java.util.List;
@@ -19,8 +20,11 @@ public interface IBizTravePointService extends IService<BizTravePoint>
 
     MPage<BizTravePointVo> geRuleList(Long locationId,String constructType,Pagination pagination);
 
+    BizTravePoint getPrePointDistance(BizTravePointDto dto);
 
     List<BizTravePoint>  getQyPoint(Long workfaceId);
+
+    Long getVertexCount(Long pointId, Long tunnelId, Boolean vertex);
 
     void  doit(BizTravePoint point);
 }

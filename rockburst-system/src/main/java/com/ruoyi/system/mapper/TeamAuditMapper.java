@@ -6,6 +6,9 @@ import com.ruoyi.system.domain.Entity.TeamAuditEntity;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
 import com.ruoyi.system.domain.vo.ProjectVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -19,4 +22,10 @@ public interface TeamAuditMapper extends BaseMapper<TeamAuditEntity> {
     Integer selectMaxNumber(Long projectId);
 
     Page<ProjectVO> queryByPage(SelectProjectDTO selectProjectDTO);
+
+    Page<ProjectVO> queryByPageForApp(@Param("fillingType") String fillingType, @Param("constructionUnitId") Long constructionUnitId);
+
+    Page<ProjectVO> approvedQueryByPageForApp(@Param("projectIds") List<Long> projectIds,
+                                              @Param("fillingType") String fillingType,
+                                              @Param("constructionUnitId") Long constructionUnitId);
 }

@@ -40,6 +40,7 @@ import com.ruoyi.system.service.IBizProjectRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletResponse;
@@ -55,6 +56,7 @@ import java.util.stream.IntStream;
  * @author ruoyi
  * @date 2024-11-09
  */
+@Transactional
 @Service
 public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRecordMapper, BizProjectRecord> implements IBizProjectRecordService
 {
@@ -347,8 +349,6 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Override
     public int saveRecord(BizProjectRecordAddDto dto) {
 
-
-
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
 
@@ -359,6 +359,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+//        entity.setStatus(ConstantsInfo.AUDIT_STATUS_DICT_VALUE)
         if(sysDepts != null && sysDepts.size() > 0){
             entity.setConstructionUnitId(sysDepts.get(0).getConstructionUnitId());
         }
@@ -404,7 +405,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
-
+        entity.setStatus(Integer.valueOf(ConstantsInfo.AUDIT_STATUS_DICT_VALUE));
         if(sysDepts != null && sysDepts.size() > 0){
             entity.setDeptId(sysDepts.get(0).getDeptId());
         }
