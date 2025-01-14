@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,9 +82,28 @@ public class EqtDisplacementServiceImpl extends ServiceImpl<EqtDisplacementMappe
     public int insertEntity(EqtDisplacementDto dto) {
         Assert.isTrue(checkMeasureNum(dto.getMeasureNum(),null), "测点编码重复");
         EqtDisplacement entity = new EqtDisplacement();
+        String maxMeasureNum = "";
         BeanUtil.copyProperties(dto, entity);
+        QueryWrapper<EqtDisplacement> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .select(EqtDisplacement::getMeasureNum)
+                .eq(EqtDisplacement::getTag,1)
+                .eq(EqtDisplacement::getDelFlag, BizBaseConstant.DELFLAG_N);
+        List<EqtDisplacement> eqtDisplacementList = eqtDisplacementMapper.selectList(queryWrapper);
+        List<Integer> measureNums = new ArrayList<>();
+        if(eqtDisplacementList != null && eqtDisplacementList.size() > 0){
+            for (EqtDisplacement eqtDisplacement : eqtDisplacementList) {
+                String measureStr = eqtDisplacement.getMeasureNum().substring(eqtDisplacement.getMeasureNum().length(),-4);
+                Integer measureNum = Integer.parseInt(measureStr);
+                measureNums.add(measureNum);
+            }
+            int maxValue = Collections.max(measureNums);
+            maxMeasureNum =BizBaseConstant.getMeasurePre(BizBaseConstant.HDWY,maxValue);
+        }else {
+            maxMeasureNum =BizBaseConstant.getMeasurePre(BizBaseConstant.HDWY,1);
+        }
+        entity.setMeasureNum(maxMeasureNum);
         int i= eqtDisplacementMapper.insert(entity);
-
         WarnSchemeSeparateEntity warnEntity = new WarnSchemeSeparateEntity();
         BeanUtil.copyProperties(dto, warnEntity);
 

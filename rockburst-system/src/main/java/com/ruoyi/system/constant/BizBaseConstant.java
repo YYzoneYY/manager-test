@@ -20,6 +20,39 @@ public class BizBaseConstant {
     public static final String TUNNEL_QY = "QY";
 
 
+    /*
+      传感器类型:
+        1101-工作面支架阻力
+        1201-钻孔应力
+        1202-围岩应力
+        1301-锚杆应力
+        1302-锚索应力
+        1401-顶板离层位移
+        1501-巷道位移
+        1801-电磁强度
+        1802-电磁脉冲
+    */
+    public static final String ZJZL = "1101";
+    public static final String ZKYL = "1201";
+    public static final String WYYL = "1202";
+    public static final String MGYL = "1301";
+    public static final String MSYL = "1302";
+    public static final String DBLCWY = "1401";
+    public static final String HDWY = "1501";
+    public static final String DCQD = "1801";
+    public static final String DCMC = "1802";
+
+    public static final String getMeasurePre(String preStr,Integer num){
+
+        String numStr = String.format("%04d", num);
+        return String.join("1100", "MN", "preStr",numStr );
+
+    }
+
+
+
+
+
     // 矿井 营运状态
     public static final Integer MINE_STATUS_ON = 1;
     // 矿井 停止营运状态
