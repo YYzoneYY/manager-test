@@ -107,6 +107,29 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
     }
 
     @Override
+    public BizTravePoint getNearPoint(BizTravePoint point, String direction) {
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        if(point.getNo() != null && point.getNo() == 1){
+            queryWrapper.lambda().eq(BizTravePoint::getTunnelId,point.getTunnelId()).eq(BizTravePoint::getNo,point.getNo()+1);
+        }else {
+            queryWrapper.lambda().eq(BizTravePoint::getTunnelId,point.getTunnelId()).eq(BizTravePoint::getNo,point.getNo()-1);
+        }
+        return bizTravePointMapper.selectOne(queryWrapper);
+    }
+
+//    @Override
+//    public BizTravePoint getPoint(BizTravePoint a, BizTravePoint b, String direction, Double distance ) {
+////        if(){
+////
+////        }
+//        double[] s = MathUtil.getPointAtDistance(Double.parseDouble(a.getAxisx()),Double.parseDouble(a.getAxisy()),Double.parseDouble(a.getAxisz())
+//        ,Double.parseDouble(b.getAxisx()),Double.parseDouble(b.getAxisy()),Double.parseDouble(b.getAxisz()),distance);
+//        return null;
+//    }
+
+
+
+    @Override
     public void doit(BizTravePoint point) {
 //        List<BizTravePoint> qyList =  this.getQyPoint(point.getWorkfaceId());
         MPJLambdaWrapper<BizTravePoint> queryWrapper = new MPJLambdaWrapper<BizTravePoint>();

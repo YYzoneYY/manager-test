@@ -1,5 +1,6 @@
 package com.ruoyi.app.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
@@ -12,6 +13,7 @@ import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.SysProjectType;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
+import com.ruoyi.system.domain.vo.BizTunnelVo;
 import com.ruoyi.system.mapper.SysProjectTypeMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
@@ -19,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -98,9 +101,23 @@ public class BizProjectAppController extends BaseController
     @PostMapping("/tunnels")
     public R<?> getTunnelList(@RequestParam(value = "工作面集合", required = false) Long[] workfaceIds)
     {
-        QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().in(workfaceIds != null && workfaceIds.length > 0,TunnelEntity::getWorkFaceId,workfaceIds);
-        return R.ok(tunnelService.list(queryWrapper));
+        QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<TunnelEntity>();
+        queryWrapper.lambda()
+                .in(workfaceIds != null && workfaceIds.length > 0,TunnelEntity::getWorkFaceId,workfaceIds);
+        List<TunnelEntity> list = tunnelService.list(queryWrapper);
+        List<BizTunnelVo> bizTunnelVoList = new ArrayList<>();
+        for (TunnelEntity tunnelEntity : list) {
+            BizTunnelVo vo = new BizTunnelVo();
+            BeanUtil.copyProperties(tunnelEntity,vo);
+            QueryWrapper<BizTravePoint> pointQueryWrapper = new QueryWrapper<>();
+            pointQueryWrapper.lambda()
+                    .eq(BizTravePoint::getTunnelId,tunnelEntity.getTunnelId())
+                    .orderByAsc(BizTravePoint::getNo);
+            List<BizTravePoint> points = bizTravePointService.list(pointQueryWrapper);
+            vo.setBizTravePoints(points);
+            bizTunnelVoList.add(vo);
+        }
+        return R.ok(bizTunnelVoList);
     }
 
     @Anonymous
@@ -110,7 +127,7 @@ public class BizProjectAppController extends BaseController
     public R<?> getPointList(@RequestParam(value = "巷道id", required = false) Long tunnelId)
     {
         QueryWrapper<BizTravePoint> pointQueryWrapper = new QueryWrapper<>();
-        pointQueryWrapper.lambda().eq(BizTravePoint::getTunnelId, tunnelId);
+        pointQueryWrapper.lambda().eq(tunnelId != null, BizTravePoint::getTunnelId, tunnelId);
         return R.ok(bizTravePointService.list(pointQueryWrapper));
     }
 

@@ -11,6 +11,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.MathUtil;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
@@ -215,11 +216,32 @@ public class BiztravePointController extends BaseController
 
     @ApiOperation("获取导线点管理详细信息")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
-    @GetMapping(value = "/{pointId}")
+    @GetMapping(value = "/llllls/{pointId}")
     public R<BizTravePoint> getInfo(@PathVariable("pointId") Long pointId)
     {
         return R.ok(bizTravePointService.getBaseMapper().selectById(pointId));
     }
+
+
+    @ApiOperation("获取钻孔经纬度")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+    @GetMapping(value = "/lll/{pointId}")
+    public R<BizTravePoint> getDillLatLon(@PathVariable("pointId") Long pointId,@PathVariable("pointId") String distance)
+    {
+        return R.ok(bizTravePointService.getBaseMapper().selectById(pointId));
+    }
+
+    @ApiOperation("获取钻孔坐标")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+    @GetMapping(value = "/{pointId}")
+    public R<BizTravePoint> getDillAxis(@PathVariable("pointId") Long pointId,@PathVariable("distance") String distance)
+    {
+        BizTravePoint point =  bizTravePointService.getById(pointId);
+        String direction = distance.substring(0, 1);
+
+        return R.ok(bizTravePointService.getBaseMapper().selectById(pointId));
+    }
+
 
     /**
      * 新增矿井管理 先维护上下巷道,再维护切眼
@@ -242,8 +264,18 @@ public class BiztravePointController extends BaseController
         if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
             List<BizTravePoint> qypoints = bizTravePointService.getQyPoint(dto.getWorkfaceId());
             if(qypoints != null && qypoints.size() == 2){
-                BizTravePoint point = MathUtil.getMinDistance(entity,qypoints.get(0),qypoints.get(1));
-                entity.setBestNearPointId(point.getPointId()).setDistance(point.getDistance());
+                Double q0 = MathUtil.getMinDistance(
+                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
+                        qypoints.get(0).getAxisx(),qypoints.get(0).getAxisy(),qypoints.get(0).getAxisz());
+
+                Double q1 = MathUtil.getMinDistance(
+                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
+                        qypoints.get(1).getAxisx(),qypoints.get(1).getAxisy(),qypoints.get(1).getAxisz());
+                if(q0 != null && q1 != null && q0 < q1){
+                    entity.setBestNearPointId(qypoints.get(0).getPointId()).setDistance(q0);
+                }else {
+                    entity.setBestNearPointId(qypoints.get(1).getPointId()).setDistance(q1);
+                }
             }
         } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType()) ) {
             if(dto.getIsVertex()){
@@ -279,8 +311,18 @@ public class BiztravePointController extends BaseController
         if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
             List<BizTravePoint> qypoints = bizTravePointService.getQyPoint(dto.getWorkfaceId());
             if(qypoints != null && qypoints.size() == 2){
-                BizTravePoint point = MathUtil.getMinDistance(entity,qypoints.get(0),qypoints.get(1));
-                entity.setBestNearPointId(point.getPointId()).setDistance(point.getDistance());
+                Double q0 = MathUtil.getMinDistance(
+                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
+                        qypoints.get(0).getAxisx(),qypoints.get(0).getAxisy(),qypoints.get(0).getAxisz());
+
+                Double q1 = MathUtil.getMinDistance(
+                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
+                        qypoints.get(1).getAxisx(),qypoints.get(1).getAxisy(),qypoints.get(1).getAxisz());
+                if(q0 != null && q1 != null && q0 < q1){
+                    entity.setBestNearPointId(qypoints.get(0).getPointId()).setDistance(q0);
+                }else {
+                    entity.setBestNearPointId(qypoints.get(1).getPointId()).setDistance(q1);
+                }
             }
         } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType())  ) {
             if(dto.getIsVertex()){
@@ -322,4 +364,7 @@ public class BiztravePointController extends BaseController
         entity.setPointId(pointId).setDelFlag(BizBaseConstant.DELFLAG_Y);
         return R.ok(bizTravePointService.updateById(entity));
     }
+
+
+
 }
