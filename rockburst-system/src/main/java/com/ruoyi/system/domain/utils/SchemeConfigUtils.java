@@ -58,7 +58,8 @@ public class SchemeConfigUtils {
         WarnSchemeSeparateEntity warnSchemeSeparateEntity = warnSchemeSeparateMapper.selectOne(new LambdaQueryWrapper<WarnSchemeSeparateEntity>()
                 .eq(WarnSchemeSeparateEntity::getMeasureNum, measureNum)
                 .eq(WarnSchemeSeparateEntity::getWorkFaceId, workFaceId)
-                .eq(WarnSchemeSeparateEntity::getSceneType, sensorType));
+                .eq(WarnSchemeSeparateEntity::getSceneType, sensorType)
+                .eq(WarnSchemeSeparateEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
 
         if (Objects.isNull(warnSchemeSeparateEntity)) {
             WarnSchemeEntity warnSchemeEntity = warnSchemeMapper.selectOne(new LambdaQueryWrapper<WarnSchemeEntity>()

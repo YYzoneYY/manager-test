@@ -59,4 +59,9 @@ public class WarnSchemeSeparateEntity implements Serializable {
     @ApiModelProperty("预警增速配置")
     @TableField(value = "growth_rate_config", typeHandler = JsonListTypeHandler.class)
     private List<Map<String, Object>> growthRateConfig;
+
+    @ApiModelProperty("删除标志(0存在2删除)")
+    @TableField("del_flag")
+    @TableLogic(value = "0", delval = "2")
+    private String delFlag;
 }

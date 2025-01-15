@@ -14,9 +14,9 @@ import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.DrillingStressEntity;
 import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
-import com.ruoyi.system.domain.dto.DrillingStressDTO;
-import com.ruoyi.system.domain.dto.MeasureSelectDTO;
-import com.ruoyi.system.domain.dto.WarnSchemeDTO;
+import com.ruoyi.system.domain.Entity.WarnSchemeSeparateEntity;
+import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.utils.ConvertUtils;
 import com.ruoyi.system.domain.utils.NumberGeneratorUtils;
 import com.ruoyi.system.domain.utils.ObtainWarnSchemeUtils;
 import com.ruoyi.system.domain.vo.DrillingStressVO;
@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: shikai
@@ -109,7 +110,14 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         drillingStressEntity.setUpdateTime(System.currentTimeMillis());
         drillingStressEntity.setUpdateBy(1L);
         flag = drillingStressMapper.updateById(drillingStressEntity);
-        if (flag <= 0) {
+        if (flag > 0) {
+            if (ObjectUtil.isNotNull(drillingStressDTO.getWarnSchemeDTO())) {
+                int update = updateAloneWarnScheme(drillingStressDTO.getMeasureNum(), drillingStressDTO.getWarnSchemeDTO());
+                if (update <= 0) {
+                    throw new RuntimeException("预警方案修改失败,请联系管理员");
+                }
+            }
+        } else {
             throw new RuntimeException("测点编辑失败,请联系管理员");
         }
         return flag;
@@ -243,5 +251,30 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         }
         workFaceName =  bizWorkface.getWorkfaceName();
         return workFaceName;
+    }
+
+    private int updateAloneWarnScheme(String measureNum, WarnSchemeDTO warnSchemeDTO) {
+        WarnSchemeSeparateEntity warnSchemeSeparateEntity = new WarnSchemeSeparateEntity();
+        List<ThresholdConfigDTO> thresholdConfigDTOS = warnSchemeDTO.getThresholdConfigDTOS();
+        List<IncrementConfigDTO> incrementConfigDTOS = warnSchemeDTO.getIncrementConfigDTOS();
+        List<GrowthRateConfigDTO> growthRateConfigDTOS = warnSchemeDTO.getGrowthRateConfigDTOS();
+        if (ObjectUtil.isNotNull(thresholdConfigDTOS) && !thresholdConfigDTOS.isEmpty()) {
+            List<Map<String, Object>> thresholdMap = ConvertUtils.convertThresholdMap(thresholdConfigDTOS);
+            warnSchemeSeparateEntity.setThresholdConfig(thresholdMap);
+        }
+        if (ObjectUtil.isNotNull(incrementConfigDTOS) && !incrementConfigDTOS.isEmpty()) {
+            List<Map<String, Object>> incrementMap = ConvertUtils.convertIncrementMap(incrementConfigDTOS);
+            warnSchemeSeparateEntity.setIncrementConfig(incrementMap);
+        }
+        if (ObjectUtil.isNotNull(growthRateConfigDTOS) && !growthRateConfigDTOS.isEmpty()) {
+            List<Map<String, Object>> growthRateMap = ConvertUtils.convertGrowthRateMap(growthRateConfigDTOS);
+            warnSchemeSeparateEntity.setGrowthRateConfig(growthRateMap);
+        }
+        warnSchemeSeparateEntity.setWarnSchemeId(warnSchemeDTO.getWarnSchemeId());
+        warnSchemeSeparateEntity.setWorkFaceId(warnSchemeDTO.getWorkFaceId());
+        warnSchemeSeparateEntity.setSceneType(warnSchemeDTO.getSceneType());
+        warnSchemeSeparateEntity.setMeasureNum(measureNum);
+        warnSchemeSeparateEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
+        return warnSchemeSeparateMapper.insert(warnSchemeSeparateEntity);
     }
 }

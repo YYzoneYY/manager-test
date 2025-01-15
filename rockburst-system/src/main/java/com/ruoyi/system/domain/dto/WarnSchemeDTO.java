@@ -1,5 +1,6 @@
 package com.ruoyi.system.domain.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -15,8 +16,20 @@ import java.util.Map;
 @Data
 public class WarnSchemeDTO {
 
-    @ApiModelProperty(value = "预警方案基础信息")
-    private Map<String, Object> warnSchemeBasicInfoMap;
+    @ApiModelProperty("预警方案id")
+    private Long warnSchemeId;
+
+    @ApiModelProperty("预警方案名称")
+    private String warnSchemeName;
+
+    @ApiModelProperty("场景类型")
+    private String sceneType;
+
+    @ApiModelProperty("工作面id")
+    private Long workFaceId;
+
+    @ApiModelProperty("静默时间")
+    private String quietHour;
 
     @ApiModelProperty(value = "预警阈值配置")
     private List<ThresholdConfigDTO> thresholdConfigDTOS;
