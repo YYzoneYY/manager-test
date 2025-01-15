@@ -40,7 +40,7 @@ public class SupportResistanceEntity extends BusinessBaseEntity implements Seria
 
     @ApiModelProperty("监测区名称")
     @TableField(value = "survey_area_name")
-    private Long surveyAreaName;
+    private String surveyAreaName;
 
     @ApiModelProperty("工作面id")
     @TableField(value = "workface_id")
