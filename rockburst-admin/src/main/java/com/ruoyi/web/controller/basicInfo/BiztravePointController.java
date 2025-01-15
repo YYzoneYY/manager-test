@@ -216,7 +216,7 @@ public class BiztravePointController extends BaseController
 
     @ApiOperation("获取导线点管理详细信息")
     @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
-    @GetMapping(value = "/llllls/{pointId}")
+    @GetMapping(value = "/{pointId}")
     public R<BizTravePoint> getInfo(@PathVariable("pointId") Long pointId)
     {
         return R.ok(bizTravePointService.getBaseMapper().selectById(pointId));
@@ -224,22 +224,48 @@ public class BiztravePointController extends BaseController
 
 
     @ApiOperation("获取钻孔经纬度")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
-    @GetMapping(value = "/lll/{pointId}")
-    public R<BizTravePoint> getDillLatLon(@PathVariable("pointId") Long pointId,@PathVariable("pointId") String distance)
+//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+    @GetMapping(value = "/getlatlon")
+    public R getDillLatLon(@RequestParam Long pointId,@RequestParam String distance)
     {
-        return R.ok(bizTravePointService.getBaseMapper().selectById(pointId));
+
+        BizTravePoint point =  bizTravePointService.getById(pointId);
+        Double.parseDouble(distance.substring(1));
+        BizTravePoint nearPoint = bizTravePointService.getNearPoint(point);
+        String direction = distance.substring(0, 1);
+        Double directionnum = null;
+        if(direction.equals("-")){
+            directionnum = Double.parseDouble(distance);
+        }else if(direction.equals("+")){
+            String s = distance.substring(1);
+            directionnum = Double.parseDouble(s);
+        }
+        BizTravePoint npoint = bizTravePointService.getPoint(point,nearPoint,directionnum);
+
+        double[] s = MathUtil.mapCartesianToGeodetic(7796.1399,194.9874,0,36.1977,117.206,
+                113.5023,7222.6087,0, 36.2486,117.137 ,
+                Double.parseDouble(npoint.getAxisx()),Double.parseDouble(npoint.getAxisy()),Double.parseDouble(npoint.getAxisz()));
+
+        return R.ok(s);
     }
 
     @ApiOperation("获取钻孔坐标")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
-    @GetMapping(value = "/{pointId}")
-    public R<BizTravePoint> getDillAxis(@PathVariable("pointId") Long pointId,@PathVariable("distance") String distance)
+//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+    @GetMapping(value = "/getAxis")
+    public R<BizTravePoint> getDillAxis(@RequestParam Long pointId,@RequestParam String distance)
     {
         BizTravePoint point =  bizTravePointService.getById(pointId);
         String direction = distance.substring(0, 1);
+        Double directionnum = null;
+        if(direction.equals("-")){
+            directionnum = Double.parseDouble(distance);
+        }else if(direction.equals("+")){
+            String s = distance.substring(1);
+            directionnum = Double.parseDouble(s);
+        }
+        BizTravePoint nearPoint = bizTravePointService.getNearPoint(point);
 
-        return R.ok(bizTravePointService.getBaseMapper().selectById(pointId));
+        return R.ok(bizTravePointService.getPoint(point,nearPoint,directionnum));
     }
 
 

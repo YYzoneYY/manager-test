@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.common.utils.MathUtil;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizTravePoint;
@@ -107,7 +108,7 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
     }
 
     @Override
-    public BizTravePoint getNearPoint(BizTravePoint point, String direction) {
+    public BizTravePoint getNearPoint(BizTravePoint point) {
         QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
         if(point.getNo() != null && point.getNo() == 1){
             queryWrapper.lambda().eq(BizTravePoint::getTunnelId,point.getTunnelId()).eq(BizTravePoint::getNo,point.getNo()+1);
@@ -117,15 +118,22 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         return bizTravePointMapper.selectOne(queryWrapper);
     }
 
-//    @Override
-//    public BizTravePoint getPoint(BizTravePoint a, BizTravePoint b, String direction, Double distance ) {
-////        if(){
-////
-////        }
-//        double[] s = MathUtil.getPointAtDistance(Double.parseDouble(a.getAxisx()),Double.parseDouble(a.getAxisy()),Double.parseDouble(a.getAxisz())
-//        ,Double.parseDouble(b.getAxisx()),Double.parseDouble(b.getAxisy()),Double.parseDouble(b.getAxisz()),distance);
-//        return null;
-//    }
+    @Override
+    public BizTravePoint getPoint(BizTravePoint a, BizTravePoint b, Double distance ) {
+        double[] s = null;
+        if(a.getNo() < b.getNo()){
+            s = MathUtil.getPointAtDistance(Double.parseDouble(a.getAxisx()),Double.parseDouble(a.getAxisy()),Double.parseDouble(a.getAxisz())
+                    ,Double.parseDouble(b.getAxisx()),Double.parseDouble(b.getAxisy()),Double.parseDouble(b.getAxisz()),-distance);
+        }else {
+            s = MathUtil.getPointAtDistance(Double.parseDouble(a.getAxisx()),Double.parseDouble(a.getAxisy()),Double.parseDouble(a.getAxisz())
+                    ,Double.parseDouble(b.getAxisx()),Double.parseDouble(b.getAxisy()),Double.parseDouble(b.getAxisz()),distance);
+        }
+        BizTravePoint point = new BizTravePoint();
+        point.setAxisx(String.valueOf(s[0]));
+        point.setAxisy(String.valueOf(s[1]));
+        point.setAxisz(String.valueOf(s[2]));
+        return point;
+    }
 
 
 
