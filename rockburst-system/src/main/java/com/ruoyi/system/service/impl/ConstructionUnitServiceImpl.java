@@ -25,9 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -192,45 +191,71 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
 
     @Override
     public List<UnitDataDTO> getUnitDataListForApp() {
-        ArrayList<UnitDataDTO> unitDataDTOS = new ArrayList<>();
-        List<String> profession = sysDictTypeService.selectDictDataByType(ConstantsInfo.PROFESSION_DICT_TYPE)
-                .stream()
-                .map(SysDictData::getDictValue)
-                .collect(Collectors.toList());
-        List<ConstructionUnitEntity> constructionUnitEntities = constructionUnitMapper.selectList(new LambdaQueryWrapper<ConstructionUnitEntity>()
-                .eq(ConstructionUnitEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ListUtils.isNotNull(constructionUnitEntities) && !constructionUnitEntities.isEmpty()) {
-            constructionUnitEntities.forEach(constructionUnitEntity -> {
+        try {
+            // 获取工种列表
+            List<String> profession = sysDictTypeService.selectDictDataByType(ConstantsInfo.PROFESSION_DICT_TYPE)
+                    .stream()
+                    .map(SysDictData::getDictValue)
+                    .collect(Collectors.toList());
+
+            if (profession.isEmpty()) {
+                return Collections.emptyList();
+            }
+            // 获取未删除的施工单位列表
+            List<ConstructionUnitEntity> constructionUnitEntities = constructionUnitMapper.selectList(
+                    new LambdaQueryWrapper<ConstructionUnitEntity>()
+                            .eq(ConstructionUnitEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+            if (ObjectUtil.isEmpty(constructionUnitEntities)) {
+                return Collections.emptyList();
+            }
+            // 构建单位数据DTO列表
+            List<UnitDataDTO> unitDataDTOS = new ArrayList<>();
+            Map<String, String> professionMap = profession.stream()
+                    .collect(Collectors.toMap(
+                            Function.identity(),
+                            professionStr -> sysDictDataService.selectDictLabel(ConstantsInfo.PROFESSION_DICT_TYPE, professionStr)));
+            for (ConstructionUnitEntity constructionUnitEntity : constructionUnitEntities) {
                 UnitDataDTO unitDataDTO = new UnitDataDTO();
                 unitDataDTO.setKey(constructionUnitEntity.getConstructionUnitName());
                 unitDataDTO.setValue(constructionUnitEntity.getConstructionUnitId());
                 List<ProfessionDTO> professionDTOS = new ArrayList<>();
-                profession.forEach(professionStr -> {
+                for (String professionStr : profession) {
                     ProfessionDTO professionDTO = new ProfessionDTO();
-                    String dictLabel = sysDictDataService.selectDictLabel(ConstantsInfo.PROFESSION_DICT_TYPE, professionStr);
-                    professionDTO.setProfessionName(dictLabel);
+                    professionDTO.setProfessionName(professionMap.get(professionStr));
                     professionDTO.setProfessionValue(professionStr);
-                    List<StaffDTO> staffDTOS = new ArrayList<>();
-                    List<ConstructionPersonnelEntity> constructionPersonnelEntities = constructionPersonnelMapper.selectList(new LambdaQueryWrapper<ConstructionPersonnelEntity>()
-                            .eq(ConstructionPersonnelEntity::getConstructionUnitId, constructionUnitEntity.getConstructionUnitId())
-                            .eq(ConstructionPersonnelEntity::getProfession, professionStr)
-                            .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-                    if (ListUtils.isNotNull(constructionPersonnelEntities)) {
-                        constructionPersonnelEntities.forEach(constructionPersonnelEntity -> {
-                            StaffDTO staffDTO = new StaffDTO();
-                            staffDTO.setStaffName(constructionPersonnelEntity.getName());
-                            staffDTO.setStaffId(constructionPersonnelEntity.getConstructionPersonnelId());
-                            staffDTOS.add(staffDTO);
-                        });
-                        professionDTO.setStaffDTOS(staffDTOS);
-                   }
+                    List<StaffDTO> staffDTOS = getStaffDTOs(constructionUnitEntity.getConstructionUnitId(), professionStr);
+                    professionDTO.setStaffDTOS(staffDTOS);
                     professionDTOS.add(professionDTO);
-                });
+                }
                 unitDataDTO.setProfessionDTOS(professionDTOS);
                 unitDataDTOS.add(unitDataDTO);
-            });
+            }
             return unitDataDTOS;
+        } catch (Exception e) {
+            // 记录日志并返回空列表
+            log.error("Error occurred while fetching unit data list for app", e);
+            return Collections.emptyList();
         }
-        return unitDataDTOS;
+    }
+
+    private List<StaffDTO> getStaffDTOs(Long constructionUnitId, String professionStr) {
+        List<ConstructionPersonnelEntity> constructionPersonnelEntities = constructionPersonnelMapper.selectList(
+                new LambdaQueryWrapper<ConstructionPersonnelEntity>()
+                        .eq(ConstructionPersonnelEntity::getConstructionUnitId, constructionUnitId)
+                        .eq(ConstructionPersonnelEntity::getProfession, professionStr)
+                        .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+        if (ObjectUtil.isEmpty(constructionPersonnelEntities)) {
+            return Collections.emptyList();
+        }
+        List<StaffDTO> staffDTOS = new ArrayList<>();
+        for (ConstructionPersonnelEntity constructionPersonnelEntity : constructionPersonnelEntities) {
+            StaffDTO staffDTO = new StaffDTO();
+            staffDTO.setStaffName(constructionPersonnelEntity.getName());
+            staffDTO.setStaffId(constructionPersonnelEntity.getConstructionPersonnelId());
+            staffDTOS.add(staffDTO);
+        }
+        return staffDTOS;
     }
 }
