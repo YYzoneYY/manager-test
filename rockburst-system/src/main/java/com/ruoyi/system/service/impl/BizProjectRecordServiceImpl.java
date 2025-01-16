@@ -405,6 +405,9 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+
+        entity.setConstructRange(dto.getAround()+dto.getRange());
+
         entity.setStatus(Integer.valueOf(ConstantsInfo.AUDIT_STATUS_DICT_VALUE));
         if(sysDepts != null && sysDepts.size() > 0){
             entity.setDeptId(sysDepts.get(0).getDeptId());

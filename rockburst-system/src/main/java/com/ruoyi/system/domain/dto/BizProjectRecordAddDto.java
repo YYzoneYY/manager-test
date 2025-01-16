@@ -27,6 +27,12 @@ public class BizProjectRecordAddDto  {
     @ApiModelProperty(value = "施工类型 回踩 掘进",required = true)
     private String constructType;
 
+    @ApiModelProperty(value = "前后",required = true)
+    private String around;
+
+    @ApiModelProperty(value = "距离",required = true)
+    private String range;
+
     /** 施工时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "施工时间",required = true)

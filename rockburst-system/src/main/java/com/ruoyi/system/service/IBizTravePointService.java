@@ -26,9 +26,9 @@ public interface IBizTravePointService extends IService<BizTravePoint>
 
     Long getVertexCount(Long pointId, Long tunnelId, Boolean vertex);
 
-    BizTravePoint getNearPoint(BizTravePoint point, String direction);
+    BizTravePoint getNearPoint(BizTravePoint point);
 
-//    BizTravePoint getPoint(BizTravePoint a, BizTravePoint b, String direction );
+    BizTravePoint getPoint(BizTravePoint a, BizTravePoint b, Double direction );
 
     void  doit(BizTravePoint point);
 }
