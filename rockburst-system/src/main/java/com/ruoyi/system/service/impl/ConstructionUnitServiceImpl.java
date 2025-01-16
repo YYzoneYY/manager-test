@@ -5,19 +5,22 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
-import com.ruoyi.system.domain.dto.ConstructUnitSelectDTO;
-import com.ruoyi.system.domain.dto.ConstructionUnitDTO;
-import com.ruoyi.system.domain.dto.UnitChoiceListDTO;
+import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.vo.ConstructionUnitVO;
+import com.ruoyi.system.mapper.ConstructionPersonnelMapper;
 import com.ruoyi.system.mapper.ConstructionUnitMapper;
 import com.ruoyi.system.service.ConstructionUnitService;
+import com.ruoyi.system.service.ISysDictDataService;
+import com.ruoyi.system.service.ISysDictTypeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author: shikai
@@ -37,6 +41,15 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
 
     @Resource
     private ConstructionUnitMapper constructionUnitMapper;
+
+    @Resource
+    private ISysDictTypeService sysDictTypeService;
+
+    @Resource
+    private ISysDictDataService sysDictDataService;
+
+    @Resource
+    private ConstructionPersonnelMapper constructionPersonnelMapper;
 
     /**
      * 新增施工单位
@@ -175,5 +188,49 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
             });
         }
         return unitChoiceListDTOS;
+    }
+
+    @Override
+    public List<UnitDataDTO> getUnitDataListForApp() {
+        ArrayList<UnitDataDTO> unitDataDTOS = new ArrayList<>();
+        List<String> profession = sysDictTypeService.selectDictDataByType(ConstantsInfo.PROFESSION_DICT_TYPE)
+                .stream()
+                .map(SysDictData::getDictValue)
+                .collect(Collectors.toList());
+        List<ConstructionUnitEntity> constructionUnitEntities = constructionUnitMapper.selectList(new LambdaQueryWrapper<ConstructionUnitEntity>()
+                .eq(ConstructionUnitEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ListUtils.isNotNull(constructionUnitEntities) && !constructionUnitEntities.isEmpty()) {
+            constructionUnitEntities.forEach(constructionUnitEntity -> {
+                UnitDataDTO unitDataDTO = new UnitDataDTO();
+                unitDataDTO.setKey(constructionUnitEntity.getConstructionUnitName());
+                unitDataDTO.setValue(constructionUnitEntity.getConstructionUnitId());
+                List<ProfessionDTO> professionDTOS = new ArrayList<>();
+                profession.forEach(professionStr -> {
+                    ProfessionDTO professionDTO = new ProfessionDTO();
+                    String dictLabel = sysDictDataService.selectDictLabel(ConstantsInfo.PROFESSION_DICT_TYPE, professionStr);
+                    professionDTO.setProfessionName(dictLabel);
+                    professionDTO.setProfessionValue(professionStr);
+                    List<StaffDTO> staffDTOS = new ArrayList<>();
+                    List<ConstructionPersonnelEntity> constructionPersonnelEntities = constructionPersonnelMapper.selectList(new LambdaQueryWrapper<ConstructionPersonnelEntity>()
+                            .eq(ConstructionPersonnelEntity::getConstructionUnitId, constructionUnitEntity.getConstructionUnitId())
+                            .eq(ConstructionPersonnelEntity::getProfession, professionStr)
+                            .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                    if (ListUtils.isNotNull(constructionPersonnelEntities)) {
+                        constructionPersonnelEntities.forEach(constructionPersonnelEntity -> {
+                            StaffDTO staffDTO = new StaffDTO();
+                            staffDTO.setStaffName(constructionPersonnelEntity.getName());
+                            staffDTO.setStaffId(constructionPersonnelEntity.getConstructionPersonnelId());
+                            staffDTOS.add(staffDTO);
+                        });
+                        professionDTO.setStaffDTOS(staffDTOS);
+                   }
+                    professionDTOS.add(professionDTO);
+                });
+                unitDataDTO.setProfessionDTOS(professionDTOS);
+                unitDataDTOS.add(unitDataDTO);
+            });
+            return unitDataDTOS;
+        }
+        return unitDataDTOS;
     }
 }

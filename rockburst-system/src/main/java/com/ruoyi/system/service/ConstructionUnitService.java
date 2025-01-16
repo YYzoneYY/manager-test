@@ -6,6 +6,7 @@ import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.dto.ConstructUnitSelectDTO;
 import com.ruoyi.system.domain.dto.ConstructionUnitDTO;
 import com.ruoyi.system.domain.dto.UnitChoiceListDTO;
+import com.ruoyi.system.domain.dto.UnitDataDTO;
 
 import java.util.List;
 
@@ -58,4 +59,6 @@ public interface ConstructionUnitService extends IService<ConstructionUnitEntity
      * @return 返回结果
      */
     List<UnitChoiceListDTO> getUnitChoiceList();
+
+    List<UnitDataDTO> getUnitDataListForApp();
 }

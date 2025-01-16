@@ -5,6 +5,7 @@ import com.ruoyi.common.enums.ProfessionEnums;
 import com.ruoyi.system.domain.dto.PersonnelChoiceListDTO;
 import com.ruoyi.system.domain.dto.TunnelChoiceListDTO;
 import com.ruoyi.system.domain.dto.UnitChoiceListDTO;
+import com.ruoyi.system.domain.dto.UnitDataDTO;
 import com.ruoyi.system.service.ConstructionPersonnelService;
 import com.ruoyi.system.service.ConstructionUnitService;
 import com.ruoyi.system.service.TunnelService;
@@ -73,6 +74,12 @@ public class AppDropDownController {
     @GetMapping(value = "/tunnelChoiceList")
     public R<List<TunnelChoiceListDTO>> getTunnelChoiceList(@ApiParam(name = "faceId", value = "面id", required = true) @RequestParam Long faceId){
         return R.ok(tunnelService.getTunnelChoiceList(faceId));
+    }
+
+    @ApiOperation(value = "获取组合数据列表", notes = "获取组合数据列表")
+    @GetMapping(value = "/unitDataListForApp")
+    public R<List<UnitDataDTO>> getUnitDataListForApp() {
+        return R.ok(constructionUnitService.getUnitDataListForApp());
     }
 
 }

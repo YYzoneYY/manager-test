@@ -47,6 +47,7 @@ public class ConstantsInfo {
     public static final String SECTION_SHAPE_DICT_TYPE = "section_shape";
     public static final String SUPPORT_FORM_DICT_TYPE = "support_form";
     public static final String AUDIT_STATUS_DICT_TYPE = "audit_status";
+    public static final String PROFESSION_DICT_TYPE = "profession";
 
 
     public static final String WORKLOAD = "工作量";
