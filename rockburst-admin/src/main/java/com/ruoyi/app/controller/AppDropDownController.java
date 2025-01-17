@@ -2,10 +2,8 @@ package com.ruoyi.app.controller;
 
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.enums.ProfessionEnums;
-import com.ruoyi.system.domain.dto.PersonnelChoiceListDTO;
-import com.ruoyi.system.domain.dto.TunnelChoiceListDTO;
-import com.ruoyi.system.domain.dto.UnitChoiceListDTO;
-import com.ruoyi.system.domain.dto.UnitDataDTO;
+import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.service.ClassesService;
 import com.ruoyi.system.service.ConstructionPersonnelService;
 import com.ruoyi.system.service.ConstructionUnitService;
 import com.ruoyi.system.service.TunnelService;
@@ -42,6 +40,10 @@ public class AppDropDownController {
 
     @Resource
     private TunnelService tunnelService;
+
+    @Resource
+    private ClassesService classesService;
+
 
     @ApiOperation(value = "获取施工单位下拉列表", notes = "获取施工单位下拉列表")
     @GetMapping(value = "/unitChoiceList")
@@ -80,6 +82,12 @@ public class AppDropDownController {
     @GetMapping(value = "/unitDataListForApp")
     public R<List<UnitDataDTO>> getUnitDataListForApp() {
         return R.ok(constructionUnitService.getUnitDataListForApp());
+    }
+
+    @ApiOperation(value = "获取班次下拉列表", notes = "获取班次下拉列表")
+    @GetMapping(value = "/getClassesChoiceList")
+    public R<List<ClassesChoiceListDTO>> getClassesChoiceList(){
+        return R.ok(classesService.getClassesChoiceList());
     }
 
 }
