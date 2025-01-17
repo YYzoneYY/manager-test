@@ -14,6 +14,7 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.SysProjectType;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.vo.BizTunnelVo;
+import com.ruoyi.system.domain.vo.BizWorkfaceVo;
 import com.ruoyi.system.mapper.SysProjectTypeMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
@@ -73,6 +74,15 @@ public class BizProjectAppController extends BaseController
         return R.ok(bizProjectRecordService.saveRecordApp(dto));
     }
 
+    @Anonymous
+    @ApiOperation("获取工作面all")
+    @Log(title = "获取工作面all", businessType = BusinessType.INSERT)
+    @PostMapping("/workfaceAll")
+    public R<?> getWorkfaceListAll()
+    {
+        List<BizWorkfaceVo> cos = bizWorkfaceService.selectWorkfaceVoList();
+        return R.ok(cos);
+    }
     /**
      * 新增工程填报记录(无登录验证)
      */

@@ -7,6 +7,9 @@ import com.ruoyi.common.core.domain.BaseSelfEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 岗位表 sys_post
  * 
@@ -36,5 +39,15 @@ public class SysProjectType extends BaseSelfEntity
 
     @TableField
     private Integer sort;
+
+    @TableField
+    private String must;
+
+    @TableField
+    private String noMust;
+
+    @TableField(exist = false)
+    private Map<String, List<String>> keySet;
+
 
 }
