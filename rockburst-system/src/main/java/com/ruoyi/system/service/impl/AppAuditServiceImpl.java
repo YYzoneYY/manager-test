@@ -125,7 +125,14 @@ public class AppAuditServiceImpl implements AppAuditService {
                         .last("LIMIT 1"));
                 if (ObjectUtil.isNotNull(teamAuditEntity)) {
                     if (teamAuditEntity.getAuditResult().equals(ConstantsInfo.AUDIT_SUCCESS)) {
-                        projectVO.setStatusFmt("已通过");
+                        if (teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.AUDITED_DICT_VALUE)) { //科室审批通过则通过
+                            projectVO.setStatusFmt("已通过");
+                        } else if (teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.REJECTED)) { //科室审批驳回则驳回
+                            projectVO.setStatusFmt("已驳回");
+                        } else if (teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.AUDIT_STATUS_DICT_VALUE) ||
+                                teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.IN_REVIEW_DICT_VALUE)) { //科室审批为待审核/审核中时则为已提交
+                            projectVO.setStatusFmt("已提交");
+                        }
                     }
                     if (teamAuditEntity.getAuditResult().equals(ConstantsInfo.AUDIT_REJECT)) {
                         projectVO.setStatusFmt("已驳回");

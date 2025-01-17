@@ -1,6 +1,7 @@
 package com.ruoyi.app.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
@@ -14,6 +15,7 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.SysProjectType;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.vo.BizTunnelVo;
+import com.ruoyi.system.domain.vo.BizWorkfaceVo;
 import com.ruoyi.system.mapper.SysProjectTypeMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
@@ -22,7 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 工程填报记录Controller
@@ -73,6 +77,15 @@ public class BizProjectAppController extends BaseController
         return R.ok(bizProjectRecordService.saveRecordApp(dto));
     }
 
+    @Anonymous
+    @ApiOperation("获取工作面all")
+    @Log(title = "获取工作面all", businessType = BusinessType.INSERT)
+    @PostMapping("/workfaceAll")
+    public R<?> getWorkfaceListAll()
+    {
+        List<BizWorkfaceVo> cos = bizWorkfaceService.selectWorkfaceVoList();
+        return R.ok(cos);
+    }
     /**
      * 新增工程填报记录(无登录验证)
      */
@@ -137,8 +150,16 @@ public class BizProjectAppController extends BaseController
     @PostMapping("/types")
     public R<?> gettypes()
     {
-        return R.ok(sysProjectTypeMapper.selectList(new QueryWrapper<SysProjectType>().lambda().orderBy(true,true,SysProjectType::getSort)));
-    }
+        QueryWrapper<SysProjectType> sysProjectTypeQueryWrapper = new QueryWrapper<>();
+        sysProjectTypeQueryWrapper.lambda().orderBy(true,true,SysProjectType::getSort);
+        List<SysProjectType> types =  sysProjectTypeMapper.selectList(sysProjectTypeQueryWrapper);
+        for (SysProjectType type : types) {
+            Map<String,List<String>> map = new HashMap<>();
+            map.put("must", JSONUtil.toList(type.getMust(), String.class));
+            map.put("noMust", JSONUtil.toList(type.getNoMust(), String.class));
+            type.setKeySet(map);
+        }
+        return R.ok(types);    }
 
 
 
