@@ -2,7 +2,7 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.github.yulichang.base.MPJBaseServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
@@ -10,21 +10,13 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.BizMine;
 import com.ruoyi.system.domain.BizMiningArea;
-import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizWorkface;
-import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
-import com.ruoyi.system.domain.vo.BizTunnelVo;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
 import com.ruoyi.system.mapper.BizWorkfaceMapper;
-import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.IBizWorkfaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 工作面管理Service业务层处理
@@ -33,13 +25,10 @@ import java.util.stream.Collectors;
  * @date 2024-11-11
  */
 @Service
-public class BizWorkfaceServiceImpl  extends MPJBaseServiceImpl<BizWorkfaceMapper, BizWorkface> implements IBizWorkfaceService
+public class BizWorkfaceServiceImpl  extends ServiceImpl<BizWorkfaceMapper, BizWorkface> implements IBizWorkfaceService
 {
     @Autowired
     private BizWorkfaceMapper bizWorkfaceMapper;
-
-    @Autowired
-    private TunnelMapper tunnelMapper;
 
     /**
      * 查询工作面管理
@@ -60,26 +49,6 @@ public class BizWorkfaceServiceImpl  extends MPJBaseServiceImpl<BizWorkfaceMappe
                 .eq(BizWorkface::getWorkfaceId,workfaceId)
                 .eq(BizWorkface::getDelFlag, BizBaseConstant.DELFLAG_N);
         return bizWorkfaceMapper.selectJoinOne(BizWorkfaceVo.class,queryWrapper);
-    }
-
-
-    @Override
-    public List<BizWorkfaceVo> selectWorkfaceVoList() {
-
-        MPJLambdaWrapper<TunnelEntity> queryWrapper = new MPJLambdaWrapper<TunnelEntity>();
-        queryWrapper.selectAll(TunnelEntity.class)
-                .selectCollection(BizTravePoint.class, BizTunnelVo::getBizTravePoints)
-                .leftJoin(BizTravePoint.class,BizTravePoint::getTunnelId,TunnelEntity::getTunnelId);
-        List<BizTunnelVo> tunnelVos =  tunnelMapper.selectJoinList(BizTunnelVo.class,queryWrapper);
-        Map<Long, List<BizTunnelVo>> groupedByFaceId = tunnelVos.stream()
-                .collect(Collectors.groupingBy(BizTunnelVo::getWorkFaceId));
-
-        List<BizWorkfaceVo> vos =  this.selectJoinList(BizWorkfaceVo.class,new MPJLambdaWrapper<BizWorkface>());
-        for (BizWorkfaceVo vo : vos) {
-            List<BizTunnelVo> tvos = groupedByFaceId.get(vo.getWorkfaceId());
-            vo.setTunnels(tvos);
-        }
-        return vos;
     }
 
     /**

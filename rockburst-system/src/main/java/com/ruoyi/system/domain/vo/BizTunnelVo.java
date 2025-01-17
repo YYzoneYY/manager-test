@@ -15,7 +15,5 @@ import java.util.List;
 @Accessors(chain = true)
 @ApiModel("巷道")
 public class BizTunnelVo extends TunnelEntity {
-
-
     List<BizTravePoint> bizTravePoints;
 }
