@@ -1,13 +1,13 @@
 package com.ruoyi.system.service;
 
-import java.util.List;
-
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.github.yulichang.extension.mapping.base.MPJDeepService;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
+
+import java.util.List;
 
 /**
  * 工作面管理Service接口
@@ -15,7 +15,7 @@ import com.ruoyi.system.domain.vo.BizWorkfaceVo;
  * @author ruoyi
  * @date 2024-11-11
  */
-public interface IBizWorkfaceService  extends IService<BizWorkface>
+public interface IBizWorkfaceService  extends MPJDeepService<BizWorkface>
 {
     /**
      * 查询工作面管理
@@ -24,6 +24,11 @@ public interface IBizWorkfaceService  extends IService<BizWorkface>
      * @return 工作面管理
      */
     public BizWorkfaceVo selectBizWorkfaceByWorkfaceId(Long workfaceId);
+
+
+    public List<BizWorkfaceVo> selectWorkfaceVoList();
+
+
 
     /**
      * 查询工作面管理列表

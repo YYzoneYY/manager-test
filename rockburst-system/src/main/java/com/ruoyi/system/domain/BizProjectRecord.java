@@ -127,6 +127,9 @@ public class BizProjectRecord extends BaseSelfEntity
     @ApiModelProperty(value = "验收员")
     private Long accepter;
 
+    @ApiModelProperty(value = "技术员")
+    private Long techser;
+
     /** 验收视频源文件 */
     @ApiModelProperty(value = "验收视频源文件")
     private String originalFile;

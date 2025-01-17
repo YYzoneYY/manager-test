@@ -1,18 +1,13 @@
 package com.ruoyi.system.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseSelfEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.github.yulichang.annotation.EntityMapping;
 import com.ruoyi.system.domain.BizWorkface;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.util.List;
 
 /**
  * 工作面管理对象 biz_workface
@@ -24,9 +19,16 @@ import java.util.Date;
 @Setter
 public class BizWorkfaceVo extends BizWorkface
 {
+    @TableField(exist = false)
     private String mineName;
 
+    @TableField(exist = false)
     private String miningAreaName;
+
+    @ApiModelProperty(value = "巷道")
+    @TableField(exist = false)
+    @EntityMapping(tag = BizTunnelVo.class ,thisField = "workfaceId" , joinField = "workFaceId" )
+    private List<BizTunnelVo> tunnels;
 
 
 

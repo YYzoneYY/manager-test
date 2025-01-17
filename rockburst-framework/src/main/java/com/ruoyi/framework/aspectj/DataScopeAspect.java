@@ -2,9 +2,12 @@ package com.ruoyi.framework.aspectj;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.ruoyi.system.mapper.SysRoleDeptMapper;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.ruoyi.common.annotation.DataScope;
 import com.ruoyi.common.constant.UserConstants;
@@ -56,6 +59,8 @@ public class DataScopeAspect
      */
     public static final String DATA_SCOPE = "dataScope";
 
+
+
     @Before("@annotation(controllerDataScope)")
     public void doBefore(JoinPoint point, DataScope controllerDataScope) throws Throwable
     {
@@ -73,7 +78,8 @@ public class DataScopeAspect
             // 如果是超级管理员，则不过滤数据
             if (StringUtils.isNotNull(currentUser) && !currentUser.isAdmin())
             {
-                String permission = StringUtils.defaultIfEmpty(controllerDataScope.permission(), PermissionContextHolder.getContext());
+//                String permission = StringUtils.defaultIfEmpty(controllerDataScope.permission(), PermissionContextHolder.getContext());
+                String permission = StringUtils.defaultIfEmpty(controllerDataScope.permission(), "system:user:list");
                 dataScopeFilter(joinPoint, currentUser, controllerDataScope.deptAlias(), controllerDataScope.userAlias(), permission);
             }
         }
@@ -90,6 +96,7 @@ public class DataScopeAspect
      */
     public static void dataScopeFilter(JoinPoint joinPoint, SysUser user, String deptAlias, String userAlias, String permission)
     {
+        List<Long> deptIds = new ArrayList<>();
         StringBuilder sqlString = new StringBuilder();
         List<String> conditions = new ArrayList<String>();
         List<String> scopeCustomIds = new ArrayList<String>();
@@ -165,6 +172,7 @@ public class DataScopeAspect
             {
                 BaseEntity baseEntity = (BaseEntity) params;
                 baseEntity.getParams().put(DATA_SCOPE, " AND (" + sqlString.substring(4) + ")");
+//                baseEntity.getParams().put(DATA_SCOPE, "  (" + sqlString.substring(4) + ")");
             }
         }
     }

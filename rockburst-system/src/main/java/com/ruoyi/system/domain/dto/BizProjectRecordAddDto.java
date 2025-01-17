@@ -43,15 +43,15 @@ public class BizProjectRecordAddDto  {
     private Long constructUnitId;
 
 
-    @ApiModelProperty(value = "施工单位")
-    private Long constructionUnitId;
+//    @ApiModelProperty(value = "施工单位")
+//    private Long constructionUnitId;
 
     /** 施工班次 */
     @ApiModelProperty(value = "施工班次")
     private Long constructShiftId;
 
     /** 位置 */
-    @ApiModelProperty(value = "施工地点",required = true)
+    @ApiModelProperty(value = "施工地点")
     private Long locationId;
 
     @ApiModelProperty(value = "工作面id",required = true)
@@ -100,6 +100,10 @@ public class BizProjectRecordAddDto  {
     /** 安检员 */
     @ApiModelProperty(value = "爆破员")
     private Long bigbanger;
+
+    /** 安检员 */
+    @ApiModelProperty(value = "技术员")
+    private Long techser;
 
     /** 安检员 */
     @ApiModelProperty(value = "安检员")
