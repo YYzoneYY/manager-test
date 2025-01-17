@@ -397,7 +397,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Override
     public int saveRecordApp(BizProjectRecordAddDto dto) {
 
-        dto.setConstructUnitId(dto.getConstructionUnitId());
+//        dto.setConstructUnitId(dto.getConstructionUnitId());
         QueryWrapper<SysDept> deptQueryWrapper = new QueryWrapper<>();
         deptQueryWrapper.lambda().select(SysDept::getDeptId).eq(SysDept::getConstructionUnitId,dto.getConstructUnitId());
         List<SysDept> sysDepts = sysDeptMapper.selectList(deptQueryWrapper);

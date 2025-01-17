@@ -115,6 +115,8 @@ public class BizProjectRecord extends BaseSelfEntity
     @ApiModelProperty(value = "施工员")
     private Long worker;
 
+    @ApiModelProperty(value = "技术员")
+    private Long techser;
     /** 安检员 */
     @ApiModelProperty(value = "爆破员")
     private Long bigbanger;
