@@ -15,16 +15,12 @@ public class PermissionContextHolder
 
     public static void setContext(String permission)
     {
-        System.out.println("permission = " + permission);
         RequestContextHolder.currentRequestAttributes().setAttribute(PERMISSION_CONTEXT_ATTRIBUTES, permission,
                 RequestAttributes.SCOPE_REQUEST);
     }
 
     public static String getContext()
     {
-        RequestAttributes i = RequestContextHolder.currentRequestAttributes();
-        System.out.println("i.getAttribute(PERMISSION_CONTEXT_ATTRIBUTES,\n                RequestAttributes.SCOPE_REQUEST) = " + i.getAttribute(PERMISSION_CONTEXT_ATTRIBUTES,
-                RequestAttributes.SCOPE_REQUEST));
         return Convert.toStr(RequestContextHolder.currentRequestAttributes().getAttribute(PERMISSION_CONTEXT_ATTRIBUTES,
                 RequestAttributes.SCOPE_REQUEST));
     }

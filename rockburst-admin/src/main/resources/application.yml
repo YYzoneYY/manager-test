@@ -44,14 +44,14 @@ minio:
   defaultBucketName: ${miniobname:bust-dev} #存储桶名称
 
 #MQTT配置信息
-#mqtt:
-#  host: tcp://47.104.160.255:1883
-#  clientid: mqttjs_cloud
-#  username: dingyue
-#  password: 123456
-#  timeout: 1000
-#  keepalive: 10
-#  topic: /iot/data
+mqtt:
+  host: tcp://47.104.160.255:1883
+  clientid: mqttjs_cloud
+  username: dingyue
+  password: 123456
+  timeout: 1000
+  keepalive: 10
+  topic: /iot/data
 
 
 
@@ -115,7 +115,6 @@ spring:
   elasticsearch:
     rest:
       uris: localhost:9200
-
 
 # token配置
 token:
