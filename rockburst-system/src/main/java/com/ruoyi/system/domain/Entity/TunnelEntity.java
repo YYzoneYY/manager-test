@@ -51,36 +51,35 @@ public class TunnelEntity extends BusinessBaseEntity implements Serializable {
     private String tunnelType;
 
     @ApiModelProperty(value = "断面形状")
-    @NotBlank(groups = {ParameterValidationOther.class}, message = "断面形状不能为空")
     @TableField("section_shape")
     private String sectionShape;
 
     @ApiModelProperty(value = "支护形式")
-    @NotBlank(groups = {ParameterValidationOther.class}, message = "支护形式不能为空")
     @TableField("support_form")
     private String supportForm;
 
-    @ApiModelProperty(value = "巷道宽度")
+    @ApiModelProperty(value = "巷道净宽")
     @JsonSerialize(using = ToStringSerializer.class)
     @TableField(value = "tunnel_width", updateStrategy = FieldStrategy.IGNORED)
     private BigDecimal tunnelWidth;
 
-    @ApiModelProperty(value = "巷道高度")
+    @ApiModelProperty(value = "巷道净高")
     @JsonSerialize(using = ToStringSerializer.class)
     @TableField(value = "tunnel_height", updateStrategy = FieldStrategy.IGNORED)
     private BigDecimal tunnelHeight;
 
-    @ApiModelProperty(value = "巷道长度")
+    @ApiModelProperty(value = "巷道长度(设计长度)")
     @JsonSerialize(using = ToStringSerializer.class)
     @TableField(value = "tunnel_length", updateStrategy = FieldStrategy.IGNORED)
     private BigDecimal tunnelLength;
 
-    @ApiModelProperty(value = "巷道断面积")
+    @ApiModelProperty(value = "巷道净断面积")
     @JsonSerialize(using = ToStringSerializer.class)
     @TableField(value = "extent", updateStrategy = FieldStrategy.IGNORED)
     private BigDecimal extent;
 
     @ApiModelProperty(value = "巷道状态")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "巷道状态不能为空")
     @TableField("tunnel_status")
     private String tunnelStatus;
 
