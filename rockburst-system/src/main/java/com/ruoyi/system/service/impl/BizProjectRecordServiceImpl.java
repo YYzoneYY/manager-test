@@ -405,7 +405,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
-
+        entity.setPositionType("position_point");
         entity.setConstructRange(dto.getAround()+dto.getRange());
 
         entity.setStatus(Integer.valueOf(ConstantsInfo.AUDIT_STATUS_DICT_VALUE));
