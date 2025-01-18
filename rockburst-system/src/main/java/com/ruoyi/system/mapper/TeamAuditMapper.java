@@ -21,7 +21,10 @@ public interface TeamAuditMapper extends BaseMapper<TeamAuditEntity> {
 
     Integer selectMaxNumber(Long projectId);
 
-    Page<ProjectVO> queryByPage(SelectProjectDTO selectProjectDTO);
+    Page<ProjectVO> queryByPage(@Param("selectProjectDTO") SelectProjectDTO selectProjectDTO,
+                                @Param("deptIds") List<Long> deptIds,
+                                @Param("dateScopeSelf") Integer dateScopeSelf,
+                                @Param("userName") String userName);
 
     Page<ProjectVO> queryByPageForApp(@Param("fillingType") String fillingType, @Param("constructionUnitId") Long constructionUnitId);
 

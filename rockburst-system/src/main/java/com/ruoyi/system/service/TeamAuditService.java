@@ -1,6 +1,7 @@
 package com.ruoyi.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.TeamAuditEntity;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
@@ -35,5 +36,5 @@ public interface TeamAuditService extends IService<TeamAuditEntity> {
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData queryByPage(SelectProjectDTO selectProjectDTO, Integer pageNum, Integer pageSize);
+    TableData queryByPage(BasePermission permission, SelectProjectDTO selectProjectDTO, Integer pageNum, Integer pageSize);
 }
