@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.ruoyi.common.annotation.DataScopeSelf;
 import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
@@ -143,6 +144,7 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
      * @param pageSize 条数
      * @return 返回结果
      */
+    @DataScopeSelf
     @Override
     public TableData queryByPage(BasePermission permission, SelectProjectDTO selectProjectDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();

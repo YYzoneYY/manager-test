@@ -10,6 +10,7 @@ import com.ruoyi.common.enums.ProfessionEnums;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
@@ -62,10 +63,7 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
         BeanUtils.copyProperties(constructPersonnelDTO,constructionPersonnelEntity);
         long ts = System.currentTimeMillis();
         constructionPersonnelEntity.setCreateTime(ts);
-        constructionPersonnelEntity.setUpdateTime(ts);
-        // TODO: 2024/11/11 系统暂时去掉token,最后统一做鉴权；userId会从token取
-        constructionPersonnelEntity.setCreateBy(1L);
-        constructionPersonnelEntity.setUpdateBy(1L);
+        constructionPersonnelEntity.setCreateBy(SecurityUtils.getUserId());
         constructionPersonnelEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         constructionPersonnelMapper.insert(constructionPersonnelEntity);
         BeanUtils.copyProperties(constructionPersonnelEntity,constructPersonnelDTO);

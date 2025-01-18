@@ -5,9 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.ruoyi.common.annotation.DataScopeSelf;
+import com.ruoyi.common.core.domain.BasePermission;
+import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
@@ -140,7 +145,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         departmentAuditEntity.setAuditResult(departAuditDTO.getAuditResult());
         departmentAuditEntity.setRejectionReason(departAuditDTO.getRejectionReason());
         departmentAuditEntity.setTeamAuditId(teamAuditEntity.getTeamAuditId());
-        departmentAuditEntity.setCreateBy(1L);
+        departmentAuditEntity.setCreateBy(SecurityUtils.getUserId());
         departmentAuditEntity.setCreateTime(System.currentTimeMillis());
         departmentAuditEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = departmentAuditMapper.insert(departmentAuditEntity);
@@ -175,8 +180,9 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
      * @param pageSize 条数
      * @return 返回结果
      */
+    @DataScopeSelf
     @Override
-    public TableData queryByPage(SelectDeptAuditDTO selectDeptAuditDTO, Integer pageNum, Integer pageSize) {
+    public TableData queryByPage(BasePermission permission, SelectDeptAuditDTO selectDeptAuditDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -194,8 +200,10 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 .stream()
                 .map(TeamAuditEntity::getProjectId)
                 .collect(Collectors.toList());
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-        Page<ProjectVO> page = departmentAuditMapper.queryByPage(selectDeptAuditDTO, projectIds);
+        Page<ProjectVO> page = departmentAuditMapper.queryByPage(selectDeptAuditDTO, projectIds, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
         Page<ProjectVO> projectVOPage = getProjectListFmt(page);
         result.setTotal(projectVOPage.getTotal());
         result.setRows(projectVOPage.getResult());

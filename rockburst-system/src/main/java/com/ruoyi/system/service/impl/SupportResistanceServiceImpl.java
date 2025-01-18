@@ -7,10 +7,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableData;
-import com.ruoyi.common.utils.ConstantsInfo;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.ListUtils;
-import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.*;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.SupportResistanceEntity;
@@ -83,7 +80,7 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
         supportResistanceEntity.setMeasureNum(nextValue);
         supportResistanceEntity.setCreateTime(System.currentTimeMillis());
-        supportResistanceEntity.setCreateBy(1L);
+        supportResistanceEntity.setCreateBy(SecurityUtils.getUserId());
         supportResistanceEntity.setTag(ConstantsInfo.MANUALLY_ADD);
         flag = supportResistanceMapper.insert(supportResistanceEntity);
         if (flag <= 0) {
@@ -121,7 +118,7 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         }
         supportResistanceEntity.setSupportResistanceId(supportResistanceId);
         supportResistanceEntity.setUpdateTime(System.currentTimeMillis());
-        supportResistanceEntity.setUpdateBy(1L);
+        supportResistanceEntity.setUpdateBy(SecurityUtils.getUserId());
         flag = supportResistanceMapper.updateById(supportResistanceEntity);
         if (flag > 0) {
             if (ObjectUtil.isNotNull(supportResistanceDTO.getWarnSchemeDTO())) {

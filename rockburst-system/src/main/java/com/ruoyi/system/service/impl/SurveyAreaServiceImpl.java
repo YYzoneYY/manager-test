@@ -10,6 +10,7 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizMiningArea;
 import com.ruoyi.system.domain.BizWorkface;
@@ -71,8 +72,8 @@ public class SurveyAreaServiceImpl extends ServiceImpl<SurveyAreaMapper, SurveyA
         surveyAreaEntity.setCreateTime(ts);
         surveyAreaEntity.setUpdateTime(ts);
         // TODO: 2024/11/11 系统暂时去掉token,最后统一做鉴权；userId会从token取
-        surveyAreaEntity.setCreateBy(1L);
-        surveyAreaEntity.setUpdateBy(1L);
+        surveyAreaEntity.setCreateBy(SecurityUtils.getUserId());
+        surveyAreaEntity.setUpdateBy(SecurityUtils.getUserId());
         surveyAreaMapper.insert(surveyAreaEntity);
         BeanUtils.copyProperties(surveyAreaEntity,surveyAreaDTO);
         return surveyAreaDTO;
@@ -105,7 +106,7 @@ public class SurveyAreaServiceImpl extends ServiceImpl<SurveyAreaMapper, SurveyA
         BeanUtils.copyProperties(surveyAreaDTO,surveyAreaEntity);
         surveyAreaEntity.setSurveyAreaId(surveyAreaId);
         surveyAreaEntity.setUpdateTime(System.currentTimeMillis());
-        surveyAreaEntity.setUpdateBy(1L);
+        surveyAreaEntity.setUpdateBy(SecurityUtils.getUserId());
         surveyAreaMapper.updateById(surveyAreaEntity);
         BeanUtils.copyProperties(surveyAreaEntity,surveyAreaDTO);
         return surveyAreaDTO;

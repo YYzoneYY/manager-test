@@ -11,6 +11,7 @@ import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.PlanEntity;
@@ -79,7 +80,7 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
             throw new RuntimeException(e);
         }
         projectWarnSchemeEntity.setCreateTime(System.currentTimeMillis());
-        projectWarnSchemeEntity.setCreateBy(1L);
+        projectWarnSchemeEntity.setCreateBy(SecurityUtils.getUserId());
         projectWarnSchemeEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = projectWarnSchemeMapper.insert(projectWarnSchemeEntity);
         if (flag <= 0) {
@@ -143,7 +144,7 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
             throw new RuntimeException(e);
         }
         projectWarnSchemeEntity.setUpdateTime(System.currentTimeMillis());
-        projectWarnSchemeEntity.setUpdateBy(1L);
+        projectWarnSchemeEntity.setUpdateBy(SecurityUtils.getUserId());
         flag = projectWarnSchemeMapper.updateById(projectWarnSchemeEntity);
         if (flag <= 0) {
             throw new RuntimeException("工程预警方案修改失败");

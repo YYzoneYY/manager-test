@@ -23,7 +23,10 @@ public interface DepartmentAuditMapper extends BaseMapper<DepartmentAuditEntity>
     Integer selectMaxNumber(Long projectId);
 
     Page<ProjectVO> queryByPage(@Param("selectDeptAuditDTO") SelectDeptAuditDTO selectDeptAuditDTO,
-                                @Param("projectIds") List<Long> projectIds);
+                                @Param("projectIds") List<Long> projectIds,
+                                @Param("deptIds") List<Long> deptIds,
+                                @Param("dateScopeSelf") Integer dateScopeSelf,
+                                @Param("userName") String userName);
 
     Page<ProjectVO> auditHistoryPage(SelectProjectDTO selectProjectDTO);
 
