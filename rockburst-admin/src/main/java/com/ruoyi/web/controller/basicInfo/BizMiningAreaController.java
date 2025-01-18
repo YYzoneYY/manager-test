@@ -50,7 +50,7 @@ public class BizMiningAreaController extends BaseController
      * 查询采区管理列表
      */
     @ApiOperation("查询采区管理列表")
-    @PreAuthorize("@ss.hasPermi('system:area:list')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:area:list')")
     @GetMapping("/list")
     public R<MPage<BizMiningAreaVo>> list(@ParameterObject BizMiningAreaDto dto , Pagination pagination )
     {
@@ -59,7 +59,7 @@ public class BizMiningAreaController extends BaseController
     }
 
     @ApiOperation("下拉全部列表")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:area:list')")
     @GetMapping("/checkList")
     public R<List<BizMiningArea>> checkList(  @RequestParam(value = "状态合集", required = false) Long[] statuss,
                                               @RequestParam(value = "矿井id集合", required = false) Long[] mineIds)
@@ -79,7 +79,7 @@ public class BizMiningAreaController extends BaseController
      * 获取采区管理详细信息
      */
     @ApiOperation("获取采区管理详细信息")
-    @PreAuthorize("@ss.hasPermi('system:area:query')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:area:query')")
     @GetMapping(value = "/{miningAreaId}")
     public R<BizMiningAreaVo> getInfo(@PathVariable("miningAreaId") Long miningAreaId)
     {
@@ -90,7 +90,7 @@ public class BizMiningAreaController extends BaseController
      * 新增采区管理
      */
     @ApiOperation("新增采区管理")
-    @PreAuthorize("@ss.hasPermi('system:area:add')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:area:add')")
     @Log(title = "采区管理", businessType = BusinessType.INSERT)
     @PostMapping
     public R add(@RequestBody @Validated(value = {GroupAdd.class}) BizMiningAreaDto dto)
@@ -104,7 +104,7 @@ public class BizMiningAreaController extends BaseController
      * 修改采区管理
      */
     @ApiOperation("修改采区管理")
-    @PreAuthorize("@ss.hasPermi('system:area:edit')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:area:edit')")
     @Log(title = "采区管理", businessType = BusinessType.UPDATE)
     @PutMapping
     public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizMiningAreaDto dto)
@@ -119,7 +119,7 @@ public class BizMiningAreaController extends BaseController
      */
 //    @Anonymous
     @ApiOperation("删除采区管理")
-    @PreAuthorize("@ss.hasPermi('system:area:remove')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:area:remove')")
     @Log(title = "采区管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/one/{miningAreaId}")
     public R remove(@PathVariable Long miningAreaId)
@@ -136,7 +136,7 @@ public class BizMiningAreaController extends BaseController
      * 删除采区管理
      */
     @ApiOperation("删除采区管理")
-    @PreAuthorize("@ss.hasPermi('system:area:remove')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:area:remove')")
     @Log(title = "采区管理", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{miningAreaIds}")
     public R remove(@PathVariable Long[] miningAreaIds)

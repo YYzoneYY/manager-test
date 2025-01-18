@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.business;
 
+import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
@@ -7,6 +8,7 @@ import com.ruoyi.system.domain.dto.TeamAuditDTO;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.service.TeamAuditService;
 import io.swagger.annotations.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,10 +45,11 @@ public class TeamAuditController {
             @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
+    @PreAuthorize("@ss.hasPermi('teamAudit:queryPage')")
     @PostMapping(value = "/queryPage")
     public R<Object> queryPage(@RequestBody SelectProjectDTO selectProjectDTO,
                                @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
-        return R.ok(this.teamAuditService.queryByPage(selectProjectDTO, pageNum, pageSize));
+        return R.ok(this.teamAuditService.queryByPage(new BasePermission(), selectProjectDTO, pageNum, pageSize));
     }
 }

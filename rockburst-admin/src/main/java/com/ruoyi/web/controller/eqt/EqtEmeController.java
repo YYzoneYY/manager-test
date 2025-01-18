@@ -44,7 +44,7 @@ public class EqtEmeController extends BaseController
      * 查询矿井管理列表
      */
     @ApiOperation("查询电磁辐射列表")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+    @PreAuthorize("@ss.hasPermi('eqt:eme:list')")
     @GetMapping("/list")
     public R<MPage<EqtEme>> list(@ParameterObject EqtSearchDto dto, @ParameterObject Pagination pagination)
     {
@@ -53,7 +53,7 @@ public class EqtEmeController extends BaseController
 
 
     @ApiOperation("下拉全部电磁辐射列表")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:eme:list')")
     @GetMapping("/checkList")
     public R<List<EqtEme>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss)
     {
@@ -73,7 +73,7 @@ public class EqtEmeController extends BaseController
      * 获取矿井管理详细信息
      */
     @ApiOperation("获取电磁辐射详细信息")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+    @PreAuthorize("@ss.hasPermi('eqt:eme:query')")
     @GetMapping(value = "/{emeId}")
     public R<EqtEme> getInfo(@PathVariable("emeId") Long emeId)
     {
@@ -84,7 +84,7 @@ public class EqtEmeController extends BaseController
      * 新增矿井管理
      */
     @ApiOperation("新增电磁辐射管理")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:add')")
+    @PreAuthorize("@ss.hasPermi('eqt:eme:add')")
     @Log(title = "电磁辐射", businessType = BusinessType.INSERT)
     @PostMapping
     public R add(@RequestBody EqtEmeDto dto)
@@ -96,7 +96,7 @@ public class EqtEmeController extends BaseController
      * 修改矿井管理
      */
     @ApiOperation("修改电磁辐射管理")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:edit')")
+    @PreAuthorize("@ss.hasPermi('eqt:eme:edit')")
     @Log(title = "电磁辐射", businessType = BusinessType.UPDATE)
     @PutMapping
     public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) EqtEmeDto dto)
@@ -108,7 +108,7 @@ public class EqtEmeController extends BaseController
      * 删除矿井管理
      */
     @ApiOperation("删除电磁辐射管理")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
+    @PreAuthorize("@ss.hasPermi('eqt:eme:remove')")
     @Log(title = "电磁辐射", businessType = BusinessType.DELETE)
     @DeleteMapping("/{emeIds}")
     public R remove(@PathVariable Long[] emeIds)
@@ -121,7 +121,7 @@ public class EqtEmeController extends BaseController
      * 删除矿井管理
      */
     @ApiOperation("删除电磁辐射")
-//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
+    @PreAuthorize("@ss.hasPermi('eqt:eme:remove')")
     @Log(title = "电磁辐射", businessType = BusinessType.DELETE)
     @DeleteMapping("/one/{emeId}")
     public R remove(@PathVariable("emeId") Long emeId)

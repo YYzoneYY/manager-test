@@ -5,9 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.ruoyi.common.core.domain.BasePermission;
+import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
@@ -117,7 +121,7 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
         if (teamAuditDTO.getAuditResult().equals(ConstantsInfo.AUDIT_SUCCESS)) {
             teamAuditEntity.setDepartAuditState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
         }
-        teamAuditEntity.setCreateBy(1L);
+        teamAuditEntity.setCreateBy(SecurityUtils.getUserId());
         teamAuditEntity.setCreateTime(System.currentTimeMillis());
         teamAuditEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = teamAuditMapper.insert(teamAuditEntity);
@@ -140,7 +144,7 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
      * @return 返回结果
      */
     @Override
-    public TableData queryByPage(SelectProjectDTO selectProjectDTO, Integer pageNum, Integer pageSize) {
+    public TableData queryByPage(BasePermission permission, SelectProjectDTO selectProjectDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -148,8 +152,10 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-        Page<ProjectVO> page = teamAuditMapper.queryByPage(selectProjectDTO);
+        Page<ProjectVO> page = teamAuditMapper.queryByPage(selectProjectDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
         Page<ProjectVO> projectVOPage = getProjectListFmt(page);
         result.setTotal(projectVOPage.getTotal());
         result.setRows(projectVOPage.getResult());

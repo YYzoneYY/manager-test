@@ -41,7 +41,7 @@ public class EqtDisplacementController extends BaseController
      * 查询矿井管理列表
      */
     @ApiOperation("查询巷道表面位移列表")
-//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+    @PreAuthorize("@ss.hasPermi('eqt:displacement:list')")
     @GetMapping("/list")
     public R<MPage<EqtDisplacement>> list(@ParameterObject EqtSearchDto dto, @ParameterObject Pagination pagination)
     {
@@ -51,7 +51,7 @@ public class EqtDisplacementController extends BaseController
 
 
     @ApiOperation("下拉全部巷道表面位移列表")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/checkList")
     public R<List<EqtDisplacement>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss)
     {
@@ -71,7 +71,7 @@ public class EqtDisplacementController extends BaseController
      * 获取矿井管理详细信息
      */
     @ApiOperation("获取巷道表面位移详细信息")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+    @PreAuthorize("@ss.hasPermi('eqt:displacement:query')")
     @GetMapping(value = "/{displacement}")
     public R<EqtDisplacement> getInfo(@PathVariable("displacement") Long displacement)
     {
@@ -82,7 +82,7 @@ public class EqtDisplacementController extends BaseController
      * 新增矿井管理
      */
     @ApiOperation("新增巷道表面位移")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:add')")
+    @PreAuthorize("@ss.hasPermi('eqt:displacement:add')")
     @Log(title = "巷道表面位移", businessType = BusinessType.INSERT)
     @PostMapping
     public R add(@RequestBody EqtDisplacementDto dto)
@@ -94,7 +94,7 @@ public class EqtDisplacementController extends BaseController
      * 修改矿井管理
      */
     @ApiOperation("修改巷道表面位移")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:edit')")
+    @PreAuthorize("@ss.hasPermi('eqt:displacement:edit')")
     @Log(title = "巷道表面位移", businessType = BusinessType.UPDATE)
     @PutMapping
     public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) EqtDisplacementDto dto)
@@ -106,7 +106,7 @@ public class EqtDisplacementController extends BaseController
      * 删除矿井管理
      */
     @ApiOperation("删除巷道表面位移")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
+    @PreAuthorize("@ss.hasPermi('eqt:displacement:remove')")
     @Log(title = "巷道表面位移", businessType = BusinessType.DELETE)
     @DeleteMapping("/{displacements}")
     public R remove(@PathVariable Long[] displacements)
@@ -124,7 +124,7 @@ public class EqtDisplacementController extends BaseController
      * 删除矿井管理
      */
     @ApiOperation("删除巷道表面位移")
-//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
+    @PreAuthorize("@ss.hasPermi('eqt:displacement:remove')")
     @Log(title = "巷道表面位移", businessType = BusinessType.DELETE)
     @DeleteMapping("/one/{displacement}")
     public R remove(@PathVariable("displacement") Long displacement)

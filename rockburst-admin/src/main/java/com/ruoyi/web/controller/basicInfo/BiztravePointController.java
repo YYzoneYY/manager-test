@@ -65,7 +65,7 @@ public class BiztravePointController extends BaseController
      * 查询矿井管理列表
      */
     @ApiOperation("查询导线点管理列表")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
     @GetMapping("/list")
     public R<MPage<BizTravePoint>> list(@ParameterObject BizTravePointDto dto, @ParameterObject Pagination pagination)
     {
@@ -85,7 +85,7 @@ public class BiztravePointController extends BaseController
 
 
     @ApiOperation("下拉导线点列表-根据状态,工作面 查询导线点")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
     @GetMapping("/checkList")
     public R<List<BizTravePoint>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,
                                             @RequestParam(value = "工作面合集", required = false) Long[] workfaceIds,
@@ -102,7 +102,7 @@ public class BiztravePointController extends BaseController
     }
 
     @ApiOperation("下拉导线点列表-根据状态,工作面 查询导线点")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
     @GetMapping("/checkList1")
     public R checkList1(
                                             @RequestParam(value = "工作面", required = false) Long workfaceId)
@@ -189,7 +189,7 @@ public class BiztravePointController extends BaseController
 
 
     @ApiOperation("尺子")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
     @GetMapping("/rule")
     public R<MPage<BizTravePointVo>> rule(@RequestParam Long locationId,@RequestParam String constructType,@ParameterObject Pagination pagination)
     {
@@ -206,7 +206,7 @@ public class BiztravePointController extends BaseController
      * 获取矿井管理详细信息
      */
     @ApiOperation("获取前导线点管理详细信息")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:point:query')")
     @GetMapping(value = "/prePoint")
     public R<BizTravePoint> getPrePointDistance(BizTravePointDto dto) {
         Assert.isTrue(dto.getTunnelId() != null,"请填写巷道");
@@ -215,7 +215,7 @@ public class BiztravePointController extends BaseController
     }
 
     @ApiOperation("获取导线点管理详细信息")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:point:query')")
     @GetMapping(value = "/{pointId}")
     public R<BizTravePoint> getInfo(@PathVariable("pointId") Long pointId)
     {
@@ -273,7 +273,7 @@ public class BiztravePointController extends BaseController
      * 新增矿井管理 先维护上下巷道,再维护切眼
      */
     @ApiOperation("新增导线点管理")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:add')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:point:add')")
     @Log(title = "新增导线点管理", businessType = BusinessType.INSERT)
     @PostMapping
     public R add(@RequestBody @Validated(value = {GroupAdd.class}) BizTravePointDto dto)
@@ -319,7 +319,7 @@ public class BiztravePointController extends BaseController
      * 修改矿井管理
      */
     @ApiOperation("修改导线点管理")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:edit')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:point:edit')")
     @Log(title = "修改导线点管理", businessType = BusinessType.UPDATE)
     @PutMapping
     public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizTravePointDto dto)
@@ -366,7 +366,7 @@ public class BiztravePointController extends BaseController
      * 删除矿井管理
      */
     @ApiOperation("删除导线点管理批量")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:point:remove')")
     @Log(title = "删除导线点管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/{pointIds}")
     public R remove(@PathVariable Long[] pointIds)
@@ -381,7 +381,7 @@ public class BiztravePointController extends BaseController
      * 删除矿井管理
      */
     @ApiOperation("删除导线点管理")
-//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:point:remove')")
     @Log(title = "删除导线点管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/one/{pointId}")
     public R remove(@PathVariable("pointId") Long pointId)

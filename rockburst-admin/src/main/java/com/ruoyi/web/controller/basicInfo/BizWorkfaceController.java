@@ -60,7 +60,7 @@ public class BizWorkfaceController extends BaseController
      * 查询工作面管理列表
      */
     @ApiOperation("查询工作面管理列表")
-    @PreAuthorize("@ss.hasPermi('system:workface:list')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:list')")
     @GetMapping("/list")
     public R<MPage<BizWorkfaceVo>> list(@ParameterObject BizWorkfaceDto dto, @ParameterObject Pagination pagination)
     {
@@ -69,7 +69,7 @@ public class BizWorkfaceController extends BaseController
     }
 
     @ApiOperation("下拉工作面列表")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/checkList")
     public R<List<BizWorkface>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,
                                           @RequestParam(value = "矿区集合", required = false) Long[] mineIds,
@@ -90,7 +90,7 @@ public class BizWorkfaceController extends BaseController
      * 获取工作面管理详细信息
      */
     @ApiOperation("获取工作面管理详细信息")
-    @PreAuthorize("@ss.hasPermi('system:workface:query')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:query')")
     @GetMapping(value = "/{workfaceId}")
     public R getInfo(@PathVariable("workfaceId") Long workfaceId)
     {
@@ -101,7 +101,7 @@ public class BizWorkfaceController extends BaseController
      * 新增工作面管理
      */
     @ApiOperation("新增工作面管理")
-    @PreAuthorize("@ss.hasPermi('system:workface:add')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:add')")
     @Log(title = "工作面管理", businessType = BusinessType.INSERT)
     @PostMapping
     public R add(@RequestBody @Validated(value = {GroupAdd.class}) BizWorkfaceDto dto)
@@ -119,7 +119,7 @@ public class BizWorkfaceController extends BaseController
      * 修改工作面管理
      */
     @ApiOperation("修改工作面管理")
-    @PreAuthorize("@ss.hasPermi('system:workface:edit')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:edit')")
     @Log(title = "工作面管理", businessType = BusinessType.UPDATE)
     @PutMapping
     public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizWorkface dto)
@@ -137,7 +137,7 @@ public class BizWorkfaceController extends BaseController
      * 删除工作面管理
      */
     @ApiOperation("删除工作面管理")
-    @PreAuthorize("@ss.hasPermi('system:workface:remove')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:remove')")
     @Log(title = "工作面管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/one/{workfaceId}")
     public R removeOne(@PathVariable Long workfaceId)
@@ -162,7 +162,7 @@ public class BizWorkfaceController extends BaseController
      * 删除工作面管理
      */
     @ApiOperation("删除工作面管理")
-    @PreAuthorize("@ss.hasPermi('system:workface:remove')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:remove')")
     @Log(title = "工作面管理", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{workfaceIds}")
     public R remove(@PathVariable Long[] workfaceIds)

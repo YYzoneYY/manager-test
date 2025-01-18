@@ -59,7 +59,7 @@ public class BizMineController extends BaseController
 
 
     @ApiOperation("下拉全部矿列表")
-    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/checkList")
     public R<List<BizMine>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss)
     {
@@ -148,7 +148,7 @@ public class BizMineController extends BaseController
      * 删除矿井管理
      */
     @ApiOperation("删除矿井管理")
-//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:remove')")
     @Log(title = "矿井管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/one/{mineId}")
     public R remove(@PathVariable("mineId") Long mineId)
