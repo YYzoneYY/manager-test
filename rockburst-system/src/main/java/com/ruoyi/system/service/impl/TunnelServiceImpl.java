@@ -9,6 +9,7 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
@@ -79,7 +80,7 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
             }
         }
         tunnelDTO.setCreateTime(System.currentTimeMillis());
-        tunnelDTO.setCreateBy(1L);
+        tunnelDTO.setCreateBy(SecurityUtils.getUserId());
         TunnelEntity tunnelEntity = new TunnelEntity();
         BeanUtils.copyProperties(tunnelDTO, tunnelEntity);
         flag = tunnelMapper.insert(tunnelEntity);
@@ -121,7 +122,7 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
             }
         }
         tunnelDTO.setUpdateTime(System.currentTimeMillis());
-        tunnelDTO.setUpdateBy(1L);
+        tunnelDTO.setUpdateBy(SecurityUtils.getUserId());
         BeanUtils.copyProperties(tunnelDTO, tunnelEntity);
         flag = tunnelMapper.updateById(tunnelEntity);
         if (flag <= 0) {

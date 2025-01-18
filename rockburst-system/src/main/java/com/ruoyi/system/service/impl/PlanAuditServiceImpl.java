@@ -9,6 +9,7 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.PlanContentsMappingEntity;
 import com.ruoyi.system.domain.Entity.PlanEntity;
@@ -123,7 +124,7 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         planAuditEntity.setPlanId(planAuditDTO.getPlanId());
         planAuditEntity.setAuditResult(planAuditDTO.getAuditResult());
         planAuditEntity.setRejectionReason(planAuditDTO.getRejectionReason());
-        planAuditEntity.setCreateBy(1L);
+        planAuditEntity.setCreateBy(SecurityUtils.getUserId());
         planAuditEntity.setCreateTime(System.currentTimeMillis());
         planAuditEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = planAuditMapper.insert(planAuditEntity);

@@ -20,6 +20,8 @@
         bpr.drill_num as drillNum,
         bpr.create_time as createTime,
         bpr.status as status,
+        bpr.dept_id as deptId,
+        bpr.create_by as createBy,
         bpr.del_flag as delFlag
         from biz_project_record as bpr
         left join team_audit as ta on bpr.project_id = ta.project_id
@@ -44,6 +46,24 @@
                 <foreach collection="projectIds" item="projectId" index="index" open="(" close=")" separator="," >
                     #{projectId}
                 </foreach>
+            </if>
+            <if test="deptIds != null and !deptIds.isEmpty() or dateScopeSelf == 5">
+                <choose>
+                    <when test="deptIds != null and deptIds.size() > 0">
+                        <trim prefix="and (" suffix=")">
+                            bpr.dept_id in
+                            <foreach collection="deptIds" item="deptId" index="index" open="(" close=")" separator=",">
+                                #{deptId}
+                            </foreach>
+                            <if test="dateScopeSelf == 5">
+                                or bpr.create_by = #{userName}
+                            </if>
+                        </trim>
+                    </when>
+                    <when test="dateScopeSelf == 5">
+                        bpr.create_by = #{userName}
+                    </when>
+                </choose>
             </if>
             and bpr.del_flag = '0' and ta.audit_result = '1' and ta.depart_audit_state not in(3,4)
         </where>

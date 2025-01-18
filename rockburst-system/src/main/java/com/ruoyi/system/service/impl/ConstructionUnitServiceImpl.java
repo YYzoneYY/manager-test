@@ -11,6 +11,7 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
@@ -67,10 +68,7 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
         BeanUtils.copyProperties(constructionUnitDTO,constructionUnitEntity);
         long ts = System.currentTimeMillis();
         constructionUnitEntity.setCreateTime(ts);
-        constructionUnitEntity.setUpdateTime(ts);
-        // TODO: 2024/11/11 系统暂时去掉token,最后统一做鉴权；userId会从token取
-        constructionUnitEntity.setCreateBy(1L);
-        constructionUnitEntity.setUpdateBy(1L);
+        constructionUnitEntity.setCreateBy(SecurityUtils.getUserId());
         constructionUnitMapper.insert(constructionUnitEntity);
         BeanUtils.copyProperties(constructionUnitEntity,constructionUnitDTO);
         return constructionUnitDTO;
@@ -101,7 +99,7 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
         BeanUtils.copyProperties(constructionUnitDTO,constructionUnitEntity);
         constructionUnitEntity.setConstructionUnitId(constructionUnitId);
         constructionUnitEntity.setUpdateTime(System.currentTimeMillis());
-        constructionUnitEntity.setUpdateBy(1L);
+        constructionUnitEntity.setUpdateBy(SecurityUtils.getUserId());
         constructionUnitMapper.updateById(constructionUnitEntity);
         BeanUtils.copyProperties(constructionUnitEntity,constructionUnitDTO);
         return constructionUnitDTO;

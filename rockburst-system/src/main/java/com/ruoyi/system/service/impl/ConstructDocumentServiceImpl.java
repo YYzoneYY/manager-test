@@ -76,10 +76,8 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
                 constructDocumentEntity.setSuperId(documentEntity.getDataId());
             }
         }
-        constructDocumentEntity.setCreateBy(1L);
+        constructDocumentEntity.setCreateBy(SecurityUtils.getUserId());
         constructDocumentEntity.setCreateTime(ts);
-        constructDocumentEntity.setUpdateBy(1L);
-        constructDocumentEntity.setUpdateTime(ts);
         constructDocumentEntity.setTag(ConstantsInfo.THREE_TAG);
         constructDocumentEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         return constructDocumentMapper.insert(constructDocumentEntity);

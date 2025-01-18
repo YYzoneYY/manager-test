@@ -31,6 +31,7 @@ public interface TeamAuditService extends IService<TeamAuditEntity> {
 
     /**
      * 分页查询
+     * @param permission 权限
      * @param selectProjectDTO 查询参数DTO
      * @param pageNum 当前页码
      * @param pageSize 条数

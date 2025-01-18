@@ -10,6 +10,7 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.enums.MiningFootageEnum;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.ExcavationFootageEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
@@ -72,7 +73,7 @@ public class ExcavationFootageServiceImpl extends ServiceImpl<ExcavationFootageM
         }
         long ts = System.currentTimeMillis();
         excavationFootageDTO.setCreateTime(ts);
-        excavationFootageDTO.setCreateBy(1L);
+        excavationFootageDTO.setCreateBy(SecurityUtils.getUserId());
         excavationFootageDTO.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         ExcavationFootageEntity excavationFootageEntity = new ExcavationFootageEntity();
         BeanUtils.copyProperties(excavationFootageDTO,excavationFootageEntity);
@@ -110,7 +111,7 @@ public class ExcavationFootageServiceImpl extends ServiceImpl<ExcavationFootageM
         excavationFootageEntity.setFlag(MiningFootageEnum.REVISE.getIndex());
         excavationFootageEntity.setUpdateTime(System.currentTimeMillis());
         // TODO 后续需要修改
-        excavationFootageEntity.setUpdateBy(1L);
+        excavationFootageEntity.setUpdateBy(SecurityUtils.getUserId());
         excavationFootageMapper.updateById(excavationFootageEntity);
         boolean b = this.updateById(excavationFootageEntity);
         if (b) {

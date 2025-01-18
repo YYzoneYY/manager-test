@@ -10,6 +10,7 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
@@ -91,7 +92,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         }
         PlanEntity planEntity = new PlanEntity();
         BeanUtils.copyProperties(planDTO, planEntity);
-        planEntity.setCreateBy(1L);
+        planEntity.setCreateBy(SecurityUtils.getUserId());
         planEntity.setCreateTime(System.currentTimeMillis());
         planEntity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
@@ -149,7 +150,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         planEntity.setPlanId(planId);
         planEntity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
         planEntity.setUpdateTime(System.currentTimeMillis());
-        planEntity.setUpdateBy(1L);
+        planEntity.setUpdateBy(SecurityUtils.getUserId());
         flag = planMapper.updateById(planEntity);
         if (flag > 0) {
             // 关联信息修改

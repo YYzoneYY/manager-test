@@ -6,10 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.page.TableData;
-import com.ruoyi.common.utils.ConstantsInfo;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.ListUtils;
-import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.*;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.AnchorCableStressEntity;
@@ -82,7 +79,7 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
         String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
         anchorCableStressEntity.setMeasureNum(nextValue);
         anchorCableStressEntity.setCreateTime(System.currentTimeMillis());
-        anchorCableStressEntity.setCreateBy(1L);
+        anchorCableStressEntity.setCreateBy(SecurityUtils.getUserId());
         anchorCableStressEntity.setTag(ConstantsInfo.MANUALLY_ADD);
         flag = anchorCableStressMapper.insert(anchorCableStressEntity);
         if (flag <= 0) {
@@ -115,7 +112,7 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
         }
         anchorCableStressEntity.setAnchorCableStressId(anchorCableStressId);
         anchorCableStressEntity.setUpdateTime(System.currentTimeMillis());
-        anchorCableStressEntity.setUpdateBy(1L);
+        anchorCableStressEntity.setUpdateBy(SecurityUtils.getUserId());
         flag = anchorCableStressMapper.updateById(anchorCableStressEntity);
         if (flag > 0) {
             if (ObjectUtil.isNotNull(anchorCableStressDTO.getWarnSchemeDTO())) {

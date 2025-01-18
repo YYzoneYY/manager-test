@@ -10,6 +10,7 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.domain.Entity.ClassesEntity;
 import com.ruoyi.system.domain.dto.ClassesChoiceListDTO;
 import com.ruoyi.system.domain.dto.ClassesSelectDTO;
@@ -52,9 +53,7 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
         }
         long ts = System.currentTimeMillis();
         classesEntity.setCreateTime(ts);
-        classesEntity.setUpdateTime(ts);
-        classesEntity.setCreateBy(1L);
-        classesEntity.setUpdateBy(1L);
+        classesEntity.setCreateBy(SecurityUtils.getUserId());
         classesEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         return classesMapper.insert(classesEntity);
     }
@@ -84,7 +83,7 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
         Long classesId = classesEntity.getClassesId();
         classesEntity.setClassesId(classesId);
         classesEntity.setUpdateTime(System.currentTimeMillis());
-        classesEntity.setUpdateBy(1L);
+        classesEntity.setUpdateBy(SecurityUtils.getUserId());
         return classesMapper.updateById(classesEntity);
     }
 

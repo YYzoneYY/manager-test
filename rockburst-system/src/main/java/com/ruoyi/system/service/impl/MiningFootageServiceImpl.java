@@ -11,6 +11,7 @@ import com.ruoyi.common.enums.MiningFootageEnum;
 import com.ruoyi.common.enums.WorkFaceType;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.MiningFootageEntity;
@@ -69,8 +70,8 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
         long ts = System.currentTimeMillis();
         miningFootageDTO.setCreateTime(ts);
         miningFootageDTO.setUpdateTime(ts);
-        miningFootageDTO.setCreateBy(1L);
-        miningFootageDTO.setUpdateBy(1L);
+        miningFootageDTO.setCreateBy(SecurityUtils.getUserId());
+        miningFootageDTO.setUpdateBy(SecurityUtils.getUserId());
         miningFootageDTO.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         MiningFootageEntity miningFootageEntity = new MiningFootageEntity();
         BeanUtils.copyProperties(miningFootageDTO,miningFootageEntity);
@@ -116,8 +117,8 @@ public class MiningFootageServiceImpl extends ServiceImpl<MiningFootageMapper, M
             Long ts = System.currentTimeMillis();
             miningFootageDTO.setCreateTime(ts);
             miningFootageDTO.setUpdateTime(ts);
-            miningFootageDTO.setCreateBy(1L);
-            miningFootageDTO.setUpdateBy(1L);
+            miningFootageDTO.setCreateBy(SecurityUtils.getUserId());
+            miningFootageDTO.setUpdateBy(SecurityUtils.getUserId());
             miningRecordService.insertMiningRecord(miningFootageDTO);
         }
         return miningFootageDTO;

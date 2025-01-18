@@ -6,10 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.page.TableData;
-import com.ruoyi.common.utils.ConstantsInfo;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.ListUtils;
-import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.*;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.DrillingStressEntity;
@@ -75,7 +72,7 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
         drillingStressEntity.setMeasureNum(nextValue);
         drillingStressEntity.setCreateTime(System.currentTimeMillis());
-        drillingStressEntity.setCreateBy(1L);
+        drillingStressEntity.setCreateBy(SecurityUtils.getUserId());
         drillingStressEntity.setTag(ConstantsInfo.MANUALLY_ADD);
         flag = drillingStressMapper.insert(drillingStressEntity);
         if (flag <= 0) {

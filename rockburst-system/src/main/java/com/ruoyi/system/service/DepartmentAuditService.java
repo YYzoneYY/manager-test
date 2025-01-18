@@ -1,6 +1,7 @@
 package com.ruoyi.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.DepartmentAuditEntity;
 import com.ruoyi.system.domain.dto.DepartAuditDTO;
@@ -33,12 +34,13 @@ public interface DepartmentAuditService extends IService<DepartmentAuditEntity> 
 
     /**
      * 分页查询
+     * @param permission 权限
      * @param selectDeptAuditDTO 查询参数DTO
      * @param pageNum 当前页码
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData queryByPage(SelectDeptAuditDTO selectDeptAuditDTO, Integer pageNum, Integer pageSize);
+    TableData queryByPage(BasePermission permission, SelectDeptAuditDTO selectDeptAuditDTO, Integer pageNum, Integer pageSize);
 
     /**
      * 分页查询
