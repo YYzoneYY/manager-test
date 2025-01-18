@@ -58,7 +58,7 @@ public class BizProjectRecordController extends BaseController
      * 查询工程填报记录列表
      */
     @ApiOperation("查询工程填报记录列表")
-//    @PreAuthorize("@ss.hasPermi('project:record:list')")
+    @PreAuthorize("@ss.hasPermi('project:record:list')")
     @GetMapping("/list")
     public R<MPage<BizProjectRecordListVo>> list(@ParameterObject BizProjectRecordDto dto, Pagination pagination)
     {
@@ -102,7 +102,7 @@ public class BizProjectRecordController extends BaseController
      */
     @Anonymous
     @ApiOperation("获取工程填报记录详细信息")
-//    @PreAuthorize("@ss.hasPermi('project:record:query')")
+    @PreAuthorize("@ss.hasPermi('project:record:query')")
     @GetMapping(value = "/{projectId}")
     public R<BizProjectRecordDetailVo> getInfo(@PathVariable("projectId") Long projectId)
     {
@@ -185,12 +185,14 @@ public class BizProjectRecordController extends BaseController
     }
 
     @ApiOperation(value = "提交审核", notes = "提交审核")
+    @PreAuthorize("@ss.hasPermi('project:record:submit')")
     @GetMapping("/submitForReview")
     public R<Object> submitForReview(@ApiParam(name = "projectId", value = "工程id", required = true) @RequestParam Long projectId) {
         return R.ok(bizProjectRecordService.submitForReview(projectId));
     }
 
     @ApiOperation(value = "撤回", notes = "撤回")
+    @PreAuthorize("@ss.hasPermi('project:record:withdraw')")
     @GetMapping(value = "/withdraw")
     public R<Object> withdraw(@ApiParam(name = "projectId", value = "计划id", required = true) @RequestParam Long projectId){
         return R.ok(bizProjectRecordService.withdraw(projectId));
