@@ -752,6 +752,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         BizProjectRecord bizProject = new BizProjectRecord();
         BeanUtils.copyProperties(bizProjectRecord, bizProject);
         bizProject.setStatus(Integer.valueOf(ConstantsInfo.TO_BE_SUBMITTED));
+        bizProject.setTag(ConstantsInfo.INITIAL_TAG);
         flag = bizProjectRecordMapper.updateById(bizProject) > 0 ? "撤回成功" : "撤回失败,请联系管理员";
         return flag;
     }
