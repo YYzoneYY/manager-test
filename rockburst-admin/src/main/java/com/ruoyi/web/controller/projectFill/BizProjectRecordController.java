@@ -115,7 +115,7 @@ public class BizProjectRecordController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('project:record:query')")
     @GetMapping(value = "/point")
     public R<Boolean> getPointInfo(@RequestParam("pointId") Long pointId,
-                                   @RequestParam("projectId") Long projectId,
+                                   @RequestParam(value = "projectId",required = false) Long projectId,
                                    @RequestParam("constructType") String constructType)
     {
         if(projectId == null){
