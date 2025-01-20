@@ -359,6 +359,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+        entity.setTag(ConstantsInfo.INITIAL_TAG);
 //        entity.setStatus(ConstantsInfo.AUDIT_STATUS_DICT_VALUE)
         if(sysDepts != null && sysDepts.size() > 0){
             entity.setConstructionUnitId(sysDepts.get(0).getConstructionUnitId());
@@ -406,6 +407,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
         entity.setPositionType("position_point");
+        entity.setTag(ConstantsInfo.TEAM_TAG);
         entity.setConstructRange(dto.getAround()+dto.getRange());
 
         entity.setStatus(Integer.valueOf(ConstantsInfo.AUDIT_STATUS_DICT_VALUE));
@@ -729,6 +731,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         BizProjectRecord bizProject = new BizProjectRecord();
         BeanUtils.copyProperties(bizProjectRecord, bizProject);
         bizProject.setStatus(Integer.valueOf(ConstantsInfo.AUDIT_STATUS_DICT_VALUE));
+        bizProject.setTag(ConstantsInfo.TEAM_TAG);
         flag = bizProjectRecordMapper.updateById(bizProject) > 0 ? "提交审核成功" : "提交审核失败,请联系管理员";
         return flag;
     }

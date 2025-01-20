@@ -115,12 +115,21 @@ public class BizProjectRecordController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('project:record:query')")
     @GetMapping(value = "/point")
     public R<Boolean> getPointInfo(@RequestParam("pointId") Long pointId,
+                                   @RequestParam(value = "projectId",required = false) Long projectId,
                                    @RequestParam("constructType") String constructType)
     {
+        if(projectId == null){
+            QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizProjectRecord::getConstructType,constructType).eq(BizProjectRecord::getTravePointId, pointId);
+            long i = bizProjectRecordService.count(queryWrapper);
+            return R.ok(i > 0);
+        }
         QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(BizProjectRecord::getConstructType,constructType).eq(BizProjectRecord::getTravePointId, pointId);
+        queryWrapper.lambda().ne(projectId != null , BizProjectRecord::getProjectId,projectId).eq(BizProjectRecord::getConstructType,constructType).eq(BizProjectRecord::getTravePointId, pointId);
         long i = bizProjectRecordService.count(queryWrapper);
         return R.ok(i > 0);
+
+
     }
 
     /**

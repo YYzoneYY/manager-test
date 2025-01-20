@@ -2,9 +2,7 @@ package com.ruoyi.framework.aspectj;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.annotation.DataScopeSelf;
-import com.ruoyi.common.annotation.DataScopeSelf;
 import com.ruoyi.common.constant.UserConstants;
-import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.core.domain.entity.SysRole;
@@ -13,6 +11,7 @@ import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.framework.security.context.PermissionContextHolder;
 import com.ruoyi.system.domain.SysRoleDept;
 import com.ruoyi.system.mapper.SysDeptMapper;
 import com.ruoyi.system.mapper.SysRoleDeptMapper;
@@ -89,8 +88,8 @@ public class DataScopeAspectSelf
             // 如果是超级管理员，则不过滤数据
             if (StringUtils.isNotNull(currentUser) && !currentUser.isAdmin())
             {
-//                String permission = StringUtils.defaultIfEmpty(controllerDataScope.permission(), PermissionContextHolder.getContext());
-                String permission = StringUtils.defaultIfEmpty(controllerDataScope.permission(), "system:user:list");
+                String permission = StringUtils.defaultIfEmpty(controllerDataScope.permission(), PermissionContextHolder.getContext());
+//                String permission = StringUtils.defaultIfEmpty(controllerDataScope.permission(), "system:user:list");
                 dataScopeFilter(joinPoint, currentUser, controllerDataScope.deptAlias(), controllerDataScope.userAlias(), permission,sysRoleDeptMapper,sysDeptMapper);
             }
         }

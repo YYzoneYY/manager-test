@@ -304,7 +304,7 @@ public class BiztravePointController extends BaseController
                 }
             }
         } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType()) ) {
-            if(dto.getIsVertex()){
+            if(dto.getIsVertex() != null && !dto.getIsVertex()){
                 long counted = bizTravePointService.getVertexCount(dto.getPointId(),dto.getTunnelId(),true);
                 Assert.isTrue(counted <= 2 , "最多有两个顶点");
                 bizTravePointService.doit(entity);

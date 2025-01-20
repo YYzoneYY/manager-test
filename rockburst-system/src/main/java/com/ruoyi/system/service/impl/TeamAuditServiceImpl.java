@@ -129,8 +129,11 @@ public class TeamAuditServiceImpl extends ServiceImpl<TeamAuditMapper, TeamAudit
         if (flag > 0) {
             if (ConstantsInfo.AUDIT_REJECT.equals(teamAuditDTO.getAuditResult())) {
                 bizProjectRecord.setStatus(Integer.valueOf(ConstantsInfo.REJECTED));
-                bizProjectRecordMapper.updateById(bizProjectRecord);
+                bizProjectRecord.setTag(ConstantsInfo.INITIAL_TAG);
+            } else if (ConstantsInfo.AUDIT_SUCCESS.equals(teamAuditDTO.getAuditResult())) {
+                bizProjectRecord.setTag(ConstantsInfo.DEPT_TAG);
             }
+            bizProjectRecordMapper.updateById(bizProjectRecord);
         } else {
             throw new RuntimeException("审核失败,请联系管理员");
         }
