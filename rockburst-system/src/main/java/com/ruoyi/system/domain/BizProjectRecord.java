@@ -213,6 +213,6 @@ public class BizProjectRecord extends BaseSelfEntity
     @EntityMapping(thisField = "accepter", joinField = "constructionPersonnelId")
     private ConstructionPersonnelEntity accepterEntity;
 
-
-
+    @ApiModelProperty(value = "标识(适用于审核）")
+    private String tag;
 }

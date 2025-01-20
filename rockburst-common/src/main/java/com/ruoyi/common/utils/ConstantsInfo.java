@@ -83,6 +83,11 @@ public class ConstantsInfo {
     public static final String TEMPORARY_PLAN = "3"; // 临时计划
     public static final String SPECIAL_PLAN = "4"; // 特殊计划
 
+    // 填报信息审核标签
+    public static final String INITIAL_TAG = "0"; // 初始化标识
+    public static final String TEAM_TAG = "1"; // 区队审核
+    public static final String DEPT_TAG = "2"; // 科室审核
+
     // 类型 -掘进
     public static final String TUNNELING = "1";
     // 类型 - 回采

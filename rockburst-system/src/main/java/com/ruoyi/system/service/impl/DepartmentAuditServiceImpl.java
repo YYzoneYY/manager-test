@@ -160,6 +160,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 teamAuditEntity.setDepartAuditState(ConstantsInfo.REJECTED);
                 bizProjectRecord.setStatus(Integer.valueOf(ConstantsInfo.REJECTED));
             }
+            bizProjectRecord.setTag(ConstantsInfo.INITIAL_TAG);
             TeamAuditEntity teamAudit = new TeamAuditEntity();
             BeanUtils.copyProperties(teamAuditEntity, teamAudit);
             BizProjectRecord projectRecord = new BizProjectRecord();
@@ -282,7 +283,9 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
     private TeamAuditEntity checkTeamAudit(Long projectId) {
         TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
                 .eq(TeamAuditEntity::getProjectId, projectId)
-                .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .orderByDesc(TeamAuditEntity::getCreateTime)
+                .last("LIMIT 1"));
         if (ObjectUtil.isNull(teamAuditEntity)) {
             throw new DepartmentAuditException("区队暂未审核,请先进行区队审核！");
         }
