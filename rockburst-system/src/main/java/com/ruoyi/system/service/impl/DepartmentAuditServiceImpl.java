@@ -211,8 +211,9 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         return result;
     }
 
+    @DataScopeSelf
     @Override
-    public TableData auditHistoryPage(SelectProjectDTO selectProjectDTO, Integer pageNum, Integer pageSize) {
+    public TableData auditHistoryPage(BasePermission permission, SelectProjectDTO selectProjectDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -220,8 +221,10 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-        Page<ProjectVO> page = departmentAuditMapper.auditHistoryPage(selectProjectDTO);
+        Page<ProjectVO> page = departmentAuditMapper.auditHistoryPage(selectProjectDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
         Page<ProjectVO> planVOPage = getProjectListFmtTWO(page);
         result.setTotal(planVOPage.getTotal());
         result.setRows(planVOPage.getResult());
