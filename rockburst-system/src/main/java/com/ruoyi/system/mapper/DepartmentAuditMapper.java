@@ -28,7 +28,10 @@ public interface DepartmentAuditMapper extends BaseMapper<DepartmentAuditEntity>
                                 @Param("dateScopeSelf") Integer dateScopeSelf,
                                 @Param("userName") String userName);
 
-    Page<ProjectVO> auditHistoryPage(SelectProjectDTO selectProjectDTO);
+    Page<ProjectVO> auditHistoryPage(@Param("selectProjectDTO") SelectProjectDTO selectProjectDTO,
+                                     @Param("deptIds") List<Long> deptIds,
+                                     @Param("dateScopeSelf") Integer dateScopeSelf,
+                                     @Param("userName") String userName);
 
     /**
      * 适用于APP的科室审核分页查询(待审核)
