@@ -4,10 +4,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.service.ConstructDocumentService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,8 +68,8 @@ public class ConstructDocumentController {
     @PostMapping(value = "/queryByPage")
     @ApiOperation(value = "根据条件分页查询", notes = "根据条件分页查询")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "pageSize" , value = "每页显示记录数" , required = false, dataType = "Integer"),
-            @ApiImplicitParam(name = "pageNum" , value = "当前记录起始索引" , required = false, dataType = "Integer")
+            @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", required = false, dataType = "Integer"),
+            @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", required = false, dataType = "Integer")
     })
     public R<TableData> queryByPage(@RequestBody(required = false) SelectDocumentDTO selectDocumentDTO,
                                     @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
@@ -82,6 +79,7 @@ public class ConstructDocumentController {
 
     /**
      * 获取上级区域名称下拉列表
+     *
      * @return 返回结果
      */
     @ApiOperation(value = "获取上级层级下拉列表", notes = "获取上级层级下拉列表")
@@ -99,10 +97,16 @@ public class ConstructDocumentController {
 
     @ApiOperation(value = "删除数据", notes = "删除数据")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "dataId" , value = "数据id" , required = true, dataType = "Long")
+            @ApiImplicitParam(name = "dataId", value = "数据id", required = true, dataType = "Long")
     })
     @DeleteMapping("/deleteByDataId")
     public R<Object> deleteByDataId(@RequestParam(value = "dataId") Long dataId) {
         return R.ok(this.constructDocumentService.deleteByDataId(dataId));
+    }
+
+    @ApiOperation(value = "获取文件URL", notes = "获取文件URL")
+    @GetMapping("/getFileUrl")
+    public R<Object> downloadFile(@ApiParam(name = "fileId", value = "文件id", required = true) @RequestParam Long fileId) {
+        return R.ok(this.constructDocumentService.getFileUrl(fileId));
     }
 }

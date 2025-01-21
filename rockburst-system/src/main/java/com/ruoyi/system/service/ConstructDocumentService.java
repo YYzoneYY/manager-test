@@ -78,4 +78,11 @@ public interface ConstructDocumentService extends IService<ConstructDocumentEnti
      */
     boolean deleteByDataId(Long dataId);
 
+    /**
+     * 下载文件
+     * @param fileId 文件id
+     * @return 返回结果
+     */
+    String getFileUrl(Long fileId);
+
 }

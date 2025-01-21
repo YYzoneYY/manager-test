@@ -14,6 +14,7 @@ import com.ruoyi.system.domain.Entity.ConstructDocumentEntity;
 import com.ruoyi.system.domain.SysFileInfo;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.mapper.ConstructDocumentMapper;
+import com.ruoyi.system.mapper.SysFileInfoMapper;
 import com.ruoyi.system.service.ConstructDocumentService;
 import com.ruoyi.system.service.SysFileInfoService;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,9 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
 
     @Resource
     private SysFileInfoService sysFileInfoService;
+
+    @Resource
+    private SysFileInfoMapper sysFileInfoMapper;
 
     /**
      * 新增层级
@@ -371,6 +375,25 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
             return true;
         }
         return false;
+    }
+
+    /**
+     * 下载文件
+     * @param fileId 文件id
+     * @return 返回结果
+     */
+    @Override
+    public String getFileUrl(Long fileId) {
+        String url = "";
+        if (ObjectUtil.isNull(fileId)) {
+            throw new RuntimeException("参数错误,请选择有效的文件ID!");
+        }
+        SysFileInfo sysFileInfo = sysFileInfoMapper.selectById(fileId);
+        if (ObjectUtil.isNull(sysFileInfo)) {
+            throw new RuntimeException("文件不存在！！");
+        }
+        url = sysFileInfo.getFileUrl();
+        return url;
     }
 
     /**
