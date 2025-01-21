@@ -31,12 +31,14 @@ public class DepartAuditController {
     private DepartmentAuditService departmentAuditService;
 
     @ApiOperation(value = "点击审核按钮", notes = "点击审核按钮")
+    @PreAuthorize("@ss.hasPermi('departAudit:clickAudit')")
     @GetMapping(value = "/clickAudit")
     public R<DepartmentAuditDTO> audit(@ApiParam(name = "projectId", value = "项目填报id", required = true) @RequestParam Long projectId) {
         return R.ok(this.departmentAuditService.clickAudit(projectId));
     }
 
     @ApiOperation(value = "审核", notes = "审核")
+    @PreAuthorize("@ss.hasPermi('departAudit:addAudit')")
     @PostMapping(value = "/addAudit")
     public R<Object> addTeamAudit(@RequestBody @Validated(ParameterValidationOther.class) DepartAuditDTO departAuditDTO) {
         return R.ok(this.departmentAuditService.departmentAudit(departAuditDTO));
