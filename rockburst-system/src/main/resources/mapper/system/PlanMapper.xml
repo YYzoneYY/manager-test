@@ -15,6 +15,8 @@
         p.end_time as endTime,
         (case when p.type = '1' then '掘进' when p.type = '2' then '回采' end) as type,
         p.state as state,
+        p.create_by as createBy,
+        p.dept_id as deptId,
         p.del_flag as delFlag
         from plan as p
         left join plan_contents_mapping as c on p.plan_id = c.plan_id
@@ -39,6 +41,24 @@
             </if>
             <if test="selectPlanDTO.endTime != null and selectPlanDTO.endTime != ''">
                 and p.end_time &lt;= #{selectPlanDTO.endTime}
+            </if>
+            <if test="deptIds != null and !deptIds.isEmpty() or dateScopeSelf == 5">
+                <choose>
+                    <when test="deptIds != null and deptIds.size() > 0">
+                        <trim prefix="and (" suffix=")">
+                            p.dept_id in
+                            <foreach collection="deptIds" item="deptId" index="index" open="(" close=")" separator=",">
+                                #{deptId}
+                            </foreach>
+                            <if test="dateScopeSelf == 5">
+                                or p.create_by = #{userName}
+                            </if>
+                        </trim>
+                    </when>
+                    <when test="dateScopeSelf == 5">
+                        p.create_by = #{userName}
+                    </when>
+                </choose>
             </if>
             and p.del_flag = '0'
         order by p.create_time desc

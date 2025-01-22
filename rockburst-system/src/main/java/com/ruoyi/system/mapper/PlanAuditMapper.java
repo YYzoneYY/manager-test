@@ -21,10 +21,17 @@ public interface PlanAuditMapper extends BaseMapper<PlanAuditEntity> {
 
     Integer selectMaxNumber(@Param("planId") Long planId);
 
-    Page<PlanVO> queryPage(SelectPlanDTO selectPlanDTO);
+    Page<PlanVO> queryPage(@Param("selectPlanDTO") SelectPlanDTO selectPlanDTO,
+                           @Param("deptIds") List<Long> deptIds,
+                           @Param("dateScopeSelf") Integer dateScopeSelf,
+                           @Param("userName") String userName);
 
     /**
      * 审核历史分页查询
      */
-    Page<PlanVO> auditHistoryPage(@Param("selectPlanDTO") SelectPlanDTO selectPlanDTO, @Param("planIds") List<Long> planIds);
+    Page<PlanVO> auditHistoryPage(@Param("selectPlanDTO") SelectPlanDTO selectPlanDTO,
+                                  @Param("planIds") List<Long> planIds,
+                                  @Param("deptIds") List<Long> deptIds,
+                                  @Param("dateScopeSelf") Integer dateScopeSelf,
+                                  @Param("userName") String userName);
 }

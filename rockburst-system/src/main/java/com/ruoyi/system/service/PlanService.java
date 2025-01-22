@@ -1,6 +1,7 @@
 package com.ruoyi.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.PlanDTO;
@@ -39,12 +40,13 @@ public interface PlanService extends IService<PlanEntity> {
 
     /**
      * 分页查询
+     * @param permission 权限
      * @param selectPlanDTO 查询参数DTO
      * @param pageNum 当前页码
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData queryPage(SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize);
+    TableData queryPage(BasePermission permission, SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize);
 
     /**
      * 撤回

@@ -6,6 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.ruoyi.common.annotation.DataScopeSelf;
+import com.ruoyi.common.core.domain.BasePermission;
+import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
@@ -69,6 +73,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     @Resource
     private ProjectWarnSchemeMapper projectWarnSchemeMapper;
 
+    @Resource
+    private SysUserMapper sysUserMapper;
+
     /**
      * 工程计划新增
      * @param planDTO 参数DTO
@@ -95,6 +102,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         planEntity.setCreateBy(SecurityUtils.getUserId());
         planEntity.setCreateTime(System.currentTimeMillis());
         planEntity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
+        SysUser sysUser = sysUserMapper.selectUserById(SecurityUtils.getUserId());
+        planEntity.setDeptId(sysUser.getDeptId());
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = planMapper.insert(planEntity);
         if (flag > 0) {
@@ -211,13 +220,15 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
 
     /**
      * 分页查询
+     * @param permission 权限
      * @param selectPlanDTO 查询参数DTO
      * @param pageNum 当前页码
      * @param pageSize 条数
      * @return 返回结果
      */
+    @DataScopeSelf
     @Override
-    public TableData queryPage(SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize) {
+    public TableData queryPage(BasePermission permission, SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -225,10 +236,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser currentUser = loginUser.getUser();
         List<Long> panIds = contentsService.queryByCondition(selectPlanDTO.getContentsId());
         PageHelper.startPage(pageNum, pageSize);
-        if (ObjectUtil.isNotNull(panIds) && panIds.size() > 0) {
-            Page<PlanVO> page = planMapper.queryPage(selectPlanDTO, panIds);
+        if (ObjectUtil.isNotNull(panIds) && !panIds.isEmpty()) {
+            Page<PlanVO> page = planMapper.queryPage(selectPlanDTO, panIds, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
             if (ListUtils.isNotNull(page.getResult())) {
                 page.getResult().forEach(planVO -> {
                     List<RelatesInfoDTO> relatesInfoDTOS = relatesInfoService.getByPlanId(planVO.getPlanId());
