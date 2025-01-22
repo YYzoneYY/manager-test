@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.ruoyi.common.annotation.DataScopeSelf;
+import com.ruoyi.common.core.domain.BasePermission;
+import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
@@ -153,8 +157,9 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
      * @param pageSize 条数
      * @return 返回结果
      */
+    @DataScopeSelf
     @Override
-    public TableData queryPage(SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize) {
+    public TableData queryPage(BasePermission permission, SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -162,16 +167,27 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-        Page<PlanVO> page = planAuditMapper.queryPage(selectPlanDTO);
+        Page<PlanVO> page = planAuditMapper.queryPage(selectPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
         Page<PlanVO> planVOPage = getPlanListFmt(page);
         result.setTotal(planVOPage.getTotal());
         result.setRows(planVOPage.getResult());
         return result;
     }
 
+    /**
+     * 审核历史分页查询
+     * @param permission 权限
+     * @param selectPlanDTO 查询参数DTO
+     * @param pageNum 当前页码
+     * @param pageSize 条数
+     * @return 返回结果
+     */
+    @DataScopeSelf
     @Override
-    public TableData auditHistoryPage(SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize) {
+    public TableData auditHistoryPage(BasePermission permission, SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -180,9 +196,11 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
             pageSize = 10;
         }
         List<Long> panIds = contentsService.queryByCondition(selectPlanDTO.getContentsId());
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-        if (ObjectUtil.isNotNull(panIds) && panIds.size() > 0) {
-            Page<PlanVO> page = planAuditMapper.auditHistoryPage(selectPlanDTO, panIds);
+        if (ObjectUtil.isNotNull(panIds) && !panIds.isEmpty()) {
+            Page<PlanVO> page = planAuditMapper.auditHistoryPage(selectPlanDTO, panIds, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
             Page<PlanVO> planVOPage = getPlanListFmt(page);
             result.setTotal(planVOPage.getTotal());
             result.setRows(planVOPage.getResult());

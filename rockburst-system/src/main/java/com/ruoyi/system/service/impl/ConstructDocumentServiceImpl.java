@@ -119,7 +119,7 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
         constructDocumentEntity.setDataId(dataId);
         constructDocumentEntity.setSort(sort);
         constructDocumentEntity.setLevel(level);
-        constructDocumentEntity.setUpdateBy(1L);
+        constructDocumentEntity.setUpdateBy(SecurityUtils.getUserId());
         constructDocumentEntity.setUpdateTime(ts);
         constructDocumentEntity.setTag(documentEntity.getTag());
         constructDocumentEntity.setDelFlag(documentEntity.getDelFlag());
@@ -151,8 +151,8 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
                    constructDocumentEntity.setDocumentName(upload.getFileOldName());
                    constructDocumentEntity.setFileId(upload.getFileId());
                   constructDocumentEntity.setCreateTime(ts);
-                  constructDocumentEntity.setCreateBy(1L);
-                   constructDocumentEntity.setUpdateBy(1L);
+                  constructDocumentEntity.setCreateBy(SecurityUtils.getUserId());
+                   constructDocumentEntity.setUpdateBy(SecurityUtils.getUserId());
                    constructDocumentEntity.setUpdateTime(ts);
                    constructDocumentEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
                    if (ObjectUtil.isNull(dataId)) {
@@ -232,7 +232,7 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
                 fileName = upload.getFileOldName();
                 constructDocumentEntity.setDocumentName(fileName);
                 constructDocumentEntity.setFileId(upload.getFileId());
-                documentEntity.setUpdateBy(1L);
+                documentEntity.setUpdateBy(SecurityUtils.getUserId());
                 constructDocumentEntity.setUpdateTime(System.currentTimeMillis());
                 flag = constructDocumentMapper.updateById(constructDocumentEntity);
                 if (flag <= 0) {
@@ -321,12 +321,12 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
             // 更新上一条记录 sort 为当前值
             previousRe.setSort(previousRe.getSort() + 1);
             previousRe.setUpdateTime(ts);
-            previousRe.setUpdateBy(1L); //SecurityUtils.getUserId()
+            previousRe.setUpdateBy(SecurityUtils.getUserId());
             constructDocumentMapper.updateById(previousRe);
             //更新当前记录的 sort 为上一条
             documentEntity.setSort(documentEntity.getSort() - 1);
             documentEntity.setUpdateTime(ts);
-            documentEntity.setUpdateBy(1L);//SecurityUtils.getUserId()
+            documentEntity.setUpdateBy(SecurityUtils.getUserId());
             constructDocumentMapper.updateById(documentEntity);
         }
         //下移
@@ -337,12 +337,12 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
              //更新下一条记录的 sort 为当前值
             laterRe.setSort(laterRe.getSort() - 1);
             laterRe.setUpdateTime(ts);
-            laterRe.setUpdateBy(1L); //SecurityUtils.getUserId()
+            laterRe.setUpdateBy(SecurityUtils.getUserId());
             constructDocumentMapper.updateById(laterRe);
             //更新当前记录的 sort 为下一条
             documentEntity.setSort(documentEntity.getSort() + 1);
             documentEntity.setUpdateTime(ts);
-            documentEntity.setUpdateBy(1L); //SecurityUtils.getUserId()
+            documentEntity.setUpdateBy(SecurityUtils.getUserId());
             constructDocumentMapper.updateById(documentEntity);
         }
         return 1;

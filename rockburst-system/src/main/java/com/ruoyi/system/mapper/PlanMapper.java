@@ -19,5 +19,9 @@ import java.util.List;
 @Mapper
 public interface PlanMapper extends BaseMapper<PlanEntity>{
 
-    Page<PlanVO> queryPage(@Param("selectPlanDTO") SelectPlanDTO selectPlanDTO, @Param("planIds") List<Long> planIds);
+    Page<PlanVO> queryPage(@Param("selectPlanDTO") SelectPlanDTO selectPlanDTO,
+                           @Param("planIds") List<Long> planIds,
+                           @Param("deptIds") List<Long> deptIds,
+                           @Param("dateScopeSelf") Integer dateScopeSelf,
+                           @Param("userName") String userName);
 }
