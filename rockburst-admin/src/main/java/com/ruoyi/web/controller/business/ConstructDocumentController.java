@@ -72,9 +72,9 @@ public class ConstructDocumentController {
             @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", required = false, dataType = "Integer")
     })
     public R<TableData> queryByPage(@RequestBody(required = false) SelectDocumentDTO selectDocumentDTO,
-                                    @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-                                    @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
-        return R.ok(this.constructDocumentService.queryByPage(selectDocumentDTO, pageNum, pageSize));
+                                    @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                                    @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum) {
+        return R.ok(this.constructDocumentService.queryByPage(selectDocumentDTO, pageSize, pageNum));
     }
 
     /**

@@ -55,10 +55,6 @@ public class ConstructDocumentEntity extends BusinessBaseEntity implements Seria
     @TableField(value = "sort")
     private Long sort;
 
-//    @ApiModelProperty(value = "创建时间")
-//    @TableField(value = "create_time")
-//    private Long createTime;
-
     @ApiModelProperty(value = "标识")
     @TableField("tag")
     private String tag;

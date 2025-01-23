@@ -254,7 +254,7 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
      * @return 返回结果
      */
     @Override
-    public TableData queryByPage(SelectDocumentDTO selectDocumentDTO, Integer pageNum, Integer pageSize) {
+    public TableData queryByPage(SelectDocumentDTO selectDocumentDTO, Integer pageSize, Integer pageNum) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -262,8 +262,8 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
-        PageHelper.startPage(pageNum, pageSize);
-        Page<ConstructDocumentEntity> page = constructDocumentMapper.queryByPage(selectDocumentDTO);
+        Page<ConstructDocumentEntity> page = constructDocumentMapper.queryByPage();
+        System.out.println(page.getResult().size());
         List<DocumentTreeDTO> documentTreeDTOS = new ArrayList<>();
         page.getResult().stream().filter(constructDocumentEntity -> constructDocumentEntity.getSuperId() == null)
                 .peek(constructDocumentEntity -> documentTreeDTOS.add(new DocumentTreeDTO(constructDocumentEntity.getLabel(),

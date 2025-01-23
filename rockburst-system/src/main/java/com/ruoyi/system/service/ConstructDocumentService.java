@@ -56,7 +56,7 @@ public interface ConstructDocumentService extends IService<ConstructDocumentEnti
      * @param pageSize 分页参数
      * @return 返回结果
      */
-    TableData queryByPage(SelectDocumentDTO selectDocumentDTO, Integer pageNum, Integer pageSize);
+    TableData queryByPage(SelectDocumentDTO selectDocumentDTO, Integer pageSize, Integer pageNum);
 
     /**
      * 获取上级层级名称下拉列表

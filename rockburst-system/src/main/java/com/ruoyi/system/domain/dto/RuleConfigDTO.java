@@ -15,7 +15,7 @@ public class RuleConfigDTO {
     @ApiModelProperty("规则配置id")
     private Long ruleConfigId;
 
-    @ApiModelProperty("规则标签")
+    @ApiModelProperty("规则标签 计算时间-1,回采进尺-2，掘进进尺-3")
     private String ruleTag;
 
     @ApiModelProperty("规则名称")

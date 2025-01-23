@@ -18,7 +18,7 @@ import java.util.List;
 @Mapper
 public interface ConstructDocumentMapper extends BaseMapper<ConstructDocumentEntity> {
 
-    Page<ConstructDocumentEntity> queryByPage(SelectDocumentDTO selectDocumentDTO);
+    Page<ConstructDocumentEntity> queryByPage();
 
     List<DropDownListDTO> selectDropDownList();
 }
