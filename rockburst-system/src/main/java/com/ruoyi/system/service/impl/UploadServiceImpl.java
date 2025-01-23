@@ -46,8 +46,9 @@ public class UploadServiceImpl implements UploadService {
      */
     @Override
     public ResponseResult<Object> getByFileMd5(String md5) {
+        Boolean s = StringUtils.hasText(md5);
+        if (!StringUtils.hasText(md5)) {
 
-        if (StringUtils.hasText(md5)) {
             log.error("查询文件是否存在、入参无效");
             return ResponseResult.error(ACCESS_PARAMETER_INVALID);
         }
