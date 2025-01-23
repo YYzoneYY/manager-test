@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.ruoyi.common.config.MinioConfig;
 import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.file.FileTypeUtils;
 import com.ruoyi.common.utils.file.NewFileUploadUtils;
 import com.ruoyi.system.domain.SysFileInfo;
@@ -95,8 +96,8 @@ public class SysFileInfoServiceImpl extends ServiceImpl<SysFileInfoMapper, SysFi
         sysFileInfo.setCreateTime(ts);
         sysFileInfo.setUpdateTime(ts);
         // todo 最后统一鉴权 SecurityUtils.getUserId()
-        sysFileInfo.setCreateBy(1L);
-        sysFileInfo.setUpdateBy(1L);
+        sysFileInfo.setCreateBy(SecurityUtils.getUserId());
+        sysFileInfo.setUpdateBy(SecurityUtils.getUserId());
         if (sysFileInfoMapper.insert(sysFileInfo) < 1) {
             throw new RuntimeException("文件信息插入库失败!");
         }
@@ -115,8 +116,8 @@ public class SysFileInfoServiceImpl extends ServiceImpl<SysFileInfoMapper, SysFi
         SysFileInfo sysFileInfo = new SysFileInfo();
         sysFileInfo.setDelFlag(ConstantsInfo.TWO_DEL_FLAG);
         // todo 最后统一鉴权 SecurityUtils.getUserId()
-        sysFileInfo.setCreateBy(1L);
-        sysFileInfo.setUpdateBy(1L);
+        sysFileInfo.setCreateBy(SecurityUtils.getUserId());
+        sysFileInfo.setUpdateBy(SecurityUtils.getUserId());
         sysFileInfo.setUpdateTime(System.currentTimeMillis());
         for (Long fileId : fileIds) {
             sysFileInfo.setFileId(fileId);
