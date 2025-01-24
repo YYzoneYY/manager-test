@@ -74,14 +74,16 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         SupportResistanceEntity supportResistanceEntity = new SupportResistanceEntity();
         BeanUtils.copyProperties(supportResistanceDTO, supportResistanceEntity);
         String maxMeasureNum = supportResistanceMapper.selectMaxMeasureNum();
-        if (maxMeasureNum.isEmpty()) {
+        if (maxMeasureNum.equals("0")) {
             supportResistanceEntity.setMeasureNum(ConstantsInfo.SUPPORT_RESISTANCE_INITIAL_VALUE);
+        } else {
+            String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
+            supportResistanceEntity.setMeasureNum(nextValue);
         }
-        String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
-        supportResistanceEntity.setMeasureNum(nextValue);
         supportResistanceEntity.setCreateTime(System.currentTimeMillis());
         supportResistanceEntity.setCreateBy(SecurityUtils.getUserId());
         supportResistanceEntity.setTag(ConstantsInfo.MANUALLY_ADD);
+        supportResistanceEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = supportResistanceMapper.insert(supportResistanceEntity);
         if (flag <= 0) {
             throw new RuntimeException("测点新增失败,请联系管理员");
@@ -113,6 +115,9 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         }
         Long supportResistanceId = supportResistanceEntity.getSupportResistanceId();
         BeanUtils.copyProperties(supportResistanceDTO, supportResistanceEntity);
+        if (ObjectUtil.isNull(supportResistanceDTO.getMeasureNum())) {
+            throw new RuntimeException("测点编码不允许为空");
+        }
         if (!supportResistanceDTO.getMeasureNum().equals(supportResistanceEntity.getMeasureNum())) {
             throw new RuntimeException("测点编码不允许修改");
         }
@@ -246,7 +251,7 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         if (ListUtils.isNotNull(list.getResult())) {
             list.getResult().forEach(supportResistanceVO -> {
                 supportResistanceVO.setWorkFaceName(getWorkFaceName(supportResistanceVO.getWorkFaceId()));
-                supportResistanceVO.setSensorNum(montageSensorNum(supportResistanceVO.getSubstationNum(), supportResistanceVO.getColumnNum()));
+                supportResistanceVO.setSensorNum(montageSensorNum(supportResistanceVO.getColumnName(), supportResistanceVO.getColumnNum()));
                 supportResistanceVO.setDataTimeFmt(DateUtils.getDateStrByTime(supportResistanceVO.getDataTime()));
             });
         }

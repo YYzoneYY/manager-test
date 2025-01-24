@@ -1,6 +1,7 @@
 package com.ruoyi.system.domain.Entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.ruoyi.system.domain.BusinessBaseEntity;
@@ -88,14 +89,17 @@ public class SupportResistanceEntity extends BusinessBaseEntity implements Seria
 
     @ApiModelProperty("X轴")
     @TableField(value = "x_axis")
+    @JsonProperty(value = "xAxis")
     private String xAxis;
 
     @ApiModelProperty("Y轴")
     @TableField(value = "y_axis")
+    @JsonProperty(value = "yAxis")
     private String yAxis;
 
     @ApiModelProperty("Z轴")
     @TableField(value = "z_axis")
+    @JsonProperty(value = "zAxis")
     private String zAxis;
 
     @ApiModelProperty("数据时间")

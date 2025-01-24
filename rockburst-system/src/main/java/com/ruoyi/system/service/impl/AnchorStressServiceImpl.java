@@ -68,19 +68,21 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
         BeanUtils.copyProperties(anchorCableStressDTO, anchorCableStressEntity);
         String maxMeasureNum = anchorCableStressMapper.selectMaxMeasureNum(anchorCableStressDTO.getSensorType());
 
-        if (maxMeasureNum.isEmpty()) {
+        if (maxMeasureNum.equals("0")) {
             if (anchorCableStressDTO.getSensorType().equals(ConstantsInfo.ANCHOR_STRESS_TYPE)) {
                 anchorCableStressEntity.setMeasureNum(ConstantsInfo.ANCHOR_STRESS_INITIAL_VALUE);
             }
             if (anchorCableStressDTO.getSensorType().equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)) {
                 anchorCableStressEntity.setMeasureNum(ConstantsInfo.ANCHOR_CABLE_STRESS_INITIAL_VALUE);
             }
+        } else {
+            String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
+            anchorCableStressEntity.setMeasureNum(nextValue);
         }
-        String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
-        anchorCableStressEntity.setMeasureNum(nextValue);
         anchorCableStressEntity.setCreateTime(System.currentTimeMillis());
         anchorCableStressEntity.setCreateBy(SecurityUtils.getUserId());
         anchorCableStressEntity.setTag(ConstantsInfo.MANUALLY_ADD);
+        anchorCableStressEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = anchorCableStressMapper.insert(anchorCableStressEntity);
         if (flag <= 0) {
             throw new RuntimeException("测点新增失败,请联系管理员");
@@ -107,6 +109,9 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
         }
         Long anchorCableStressId = anchorCableStressEntity.getAnchorCableStressId();
         BeanUtils.copyProperties(anchorCableStressDTO, anchorCableStressEntity);
+        if (ObjectUtil.isNull(anchorCableStressDTO.getMeasureNum())) {
+            throw new RuntimeException("测点编码不允许为空");
+        }
         if (!anchorCableStressDTO.getMeasureNum().equals(anchorCableStressEntity.getMeasureNum())) {
             throw new RuntimeException("测点编码不允许修改");
         }

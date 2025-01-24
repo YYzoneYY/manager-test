@@ -16,7 +16,7 @@
             sr.support_resistance_id AS supportResistanceId,
             sr.measure_num AS measureNum,
             sr.survey_area_name AS surveyAreaName,
-            sr.work_face_id AS workFaceId,
+            sr.workface_id AS workFaceId,
             sr.sensor_type AS sensorType,
             sr.column_num AS columnNum,
             sr.column_name AS columnName,

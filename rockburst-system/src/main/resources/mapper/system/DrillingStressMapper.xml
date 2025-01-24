@@ -21,7 +21,7 @@
             ds.sensor_location AS sensorLocation,
             ds.install_time AS installTime,
             ds.install_depth AS installDepth,
-            ds.initial_stressAS initialStress,
+            ds.initial_stress AS initialStress,
             ds.status AS status
         FROM drilling_stress ds
         <where>

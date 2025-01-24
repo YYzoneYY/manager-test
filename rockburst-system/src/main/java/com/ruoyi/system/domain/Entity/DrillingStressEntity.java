@@ -1,6 +1,7 @@
 package com.ruoyi.system.domain.Entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.ruoyi.system.domain.BusinessBaseEntity;
@@ -40,7 +41,7 @@ public class DrillingStressEntity extends BusinessBaseEntity implements Serializ
 
     @ApiModelProperty("监测区名称")
     @TableField(value = "survey_area_name")
-    private Long survey_area_name;
+    private String surveyAreaName;
 
     @ApiModelProperty("工作面id")
     @TableField(value = "workface_id")
@@ -70,18 +71,21 @@ public class DrillingStressEntity extends BusinessBaseEntity implements Serializ
     @ApiModelProperty("初始应力")
     @JsonSerialize(using = ToStringSerializer.class)
     @TableField(value = "initial_stress", updateStrategy = FieldStrategy.IGNORED)
-    private BigDecimal InitialStress;
+    private BigDecimal initialStress;
 
     @ApiModelProperty("X轴")
     @TableField(value = "x_axis")
+    @JsonProperty(value = "xAxis")
     private String xAxis;
 
     @ApiModelProperty("Y轴")
     @TableField(value = "y_axis")
+    @JsonProperty(value = "yAxis")
     private String yAxis;
 
     @ApiModelProperty("Z轴")
     @TableField(value = "z_axis")
+    @JsonProperty(value = "zAxis")
     private String zAxis;
 
     @ApiModelProperty("状态---是否启用（0是1否）")

@@ -1,6 +1,7 @@
 package com.ruoyi.system.domain.Entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.ruoyi.system.domain.BusinessBaseEntity;
@@ -40,7 +41,7 @@ public class AnchorCableStressEntity extends BusinessBaseEntity implements Seria
 
     @ApiModelProperty("监测区域id")
     @TableField(value = "survey_area_name")
-    private Long surveyAreaName;
+    private String surveyAreaName;
 
     @ApiModelProperty("工作面id")
     @TableField(value = "workface_id")
@@ -65,14 +66,17 @@ public class AnchorCableStressEntity extends BusinessBaseEntity implements Seria
 
     @ApiModelProperty("X轴")
     @TableField(value = "x_axis")
+    @JsonProperty(value = "xAxis")
     private String xAxis;
 
     @ApiModelProperty("Y轴")
     @TableField(value = "y_axis")
+    @JsonProperty(value = "yAxis")
     private String yAxis;
 
     @ApiModelProperty("Z轴")
     @TableField(value = "z_axis")
+    @JsonProperty(value = "zAxis")
     private String zAxis;
 
     @ApiModelProperty("状态---是否启用（0是1否）")

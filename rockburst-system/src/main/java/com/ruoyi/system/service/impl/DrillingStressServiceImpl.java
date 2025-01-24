@@ -66,14 +66,16 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         DrillingStressEntity drillingStressEntity = new DrillingStressEntity();
         BeanUtils.copyProperties(drillingStressDTO, drillingStressEntity);
         String maxMeasureNum = drillingStressMapper.selectMaxMeasureNum();
-        if (maxMeasureNum.isEmpty()) {
+        if (maxMeasureNum.equals("0")) {
             drillingStressEntity.setMeasureNum(ConstantsInfo.Drill_Stress_INITIAL_VALUE);
+        } else {
+            String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
+            drillingStressEntity.setMeasureNum(nextValue);
         }
-        String nextValue = NumberGeneratorUtils.getNextValue(maxMeasureNum);
-        drillingStressEntity.setMeasureNum(nextValue);
         drillingStressEntity.setCreateTime(System.currentTimeMillis());
         drillingStressEntity.setCreateBy(SecurityUtils.getUserId());
         drillingStressEntity.setTag(ConstantsInfo.MANUALLY_ADD);
+        drillingStressEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = drillingStressMapper.insert(drillingStressEntity);
         if (flag <= 0) {
             throw new RuntimeException("测点添加失败,请联系管理员");
@@ -100,6 +102,9 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         }
         Long drillingStressId = drillingStressEntity.getDrillingStressId();
         BeanUtils.copyProperties(drillingStressDTO, drillingStressEntity);
+        if (ObjectUtil.isNull(drillingStressDTO.getMeasureNum())) {
+            throw new RuntimeException("测点编码不允许为空");
+        }
         if (!drillingStressDTO.getMeasureNum().equals(drillingStressEntity.getMeasureNum())) {
             throw new RuntimeException("测点编码不允许修改");
         }
