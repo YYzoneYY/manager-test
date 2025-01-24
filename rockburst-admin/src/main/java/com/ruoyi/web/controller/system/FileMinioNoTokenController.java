@@ -8,8 +8,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Paths;
 
 
 /**
@@ -86,6 +94,36 @@ public class FileMinioNoTokenController {
         return uploadService.fileIsExits(fileUploadInfo);
     }
 
+
+    @Anonymous
+    @ApiOperation("upload")
+    @PostMapping("/multipart/upload")
+    public void upload(@RequestPart("file") MultipartFile file, @RequestParam(value = "url") String url, HttpServletResponse response) throws IOException, InterruptedException {
+        log.info("执行");
+        log.info("REST: 通过 <{}> file", file.getSize());
+        log.info("REST: 通过 <{}> url", url);
+        byte[] fileBytes = file.getBytes();
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "application/octet-stream")
+                .PUT(HttpRequest.BodyPublishers.ofByteArray(fileBytes))
+                .build();
+        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        // 设置 HttpServletResponse 状态码
+        response.setStatus(httpResponse.statusCode());
+
+        // 设置 HttpServletResponse 响应头
+        httpResponse.headers().map().forEach((key, values) ->
+                values.forEach(value -> response.addHeader(key, value))
+        );
+
+        // 将 HttpResponse 的响应体写入到 HttpServletResponse 输出流
+        response.getWriter().write(httpResponse.body());
+    }
+
 //    @Anonymous
 //    @ApiOperation("createBucket")
 //    @RequestMapping("/createBucket")
@@ -93,7 +131,22 @@ public class FileMinioNoTokenController {
 //        String bucket = minioUtils.createBucket(bucketName);
 //    }
 
+    public static void main(String[] args) throws IOException, InterruptedException {
+//         创建 HTTP PUT 请求
 
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://47.92.215.128:19000/bust-dev/173768011732511395973.pdf?uploadId=Zjc0MWZjOTctOTU5Mi00OTQ2LWIyZTQtZmY4NmM4YjE4M2U0LjdmZTZlZjE3LWZhMTQtNGRkMS1hODQ5LTYzZTM2MDQ0NzBmNXgxNzM3NjgwMTE3MzU2NDExNjc4&partNumber=1&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=9nLLPYeJs3CX1jj3GC1r%2F20250124%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250124T005517Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=eb35195329d52bf3109ca3925fa36258584a2b7cb7909acce66dc0c25b4c99d1"
+                ))
+                .header("Content-Type", "application/octet-stream")
+                .PUT(HttpRequest.BodyPublishers.ofFile(Paths.get("D:\\WeChat Files\\wxid_hx6z9oiw8zi122\\FileStorage\\File\\2024-12\\7.山科大发〔2022〕21号关于印发《山东科技大学自然科学科研业绩等级认定办法（试行）》《山东科技大学人文社会科学科研业绩等级认定办法（试行）》的通知.pdf")))
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        response.headers();
+
+    }
 
 
 }
