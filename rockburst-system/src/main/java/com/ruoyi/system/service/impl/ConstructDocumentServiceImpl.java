@@ -397,6 +397,35 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
     }
 
     /**
+     * 详情
+     * @param dataId 数据id
+     * @return 返回结果
+     */
+    @Override
+    public DocumentDTO detail(Long dataId) {
+        if (ObjectUtil.isNull(dataId)) {
+            throw new RuntimeException("参数错误,请选择有效的数据ID!");
+        }
+        ConstructDocumentEntity documentEntity = constructDocumentMapper.selectOne(new LambdaQueryWrapper<ConstructDocumentEntity>()
+                .eq(ConstructDocumentEntity::getDataId, dataId)
+                .eq(ConstructDocumentEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(documentEntity)) {
+            throw new RuntimeException("未找到id为" + dataId + "的数据");
+        }
+        DocumentDTO documentDTO = new DocumentDTO();
+        BeanUtils.copyProperties(documentEntity, documentDTO);
+        if (ObjectUtil.isNotNull(documentEntity.getFileId())) {
+            SysFileInfo sysFileInfo = sysFileInfoMapper.selectOne(new LambdaQueryWrapper<SysFileInfo>()
+                    .eq(SysFileInfo::getFileId, documentEntity.getFileId())
+                    .eq(SysFileInfo::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNotNull(sysFileInfo)) {
+                documentDTO.setFileUrl(sysFileInfo.getFileUrl());
+            }
+        }
+        return documentDTO;
+    }
+
+    /**
      * 文件名称进行筛选
      */
     private List<DocumentTreeDTO> treeMatch(List<DocumentTreeDTO> documentTreeDTOS, String documentName) {

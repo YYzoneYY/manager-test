@@ -109,4 +109,13 @@ public class ConstructDocumentController {
     public R<Object> downloadFile(@ApiParam(name = "fileId", value = "文件id", required = true) @RequestParam Long fileId) {
         return R.ok(this.constructDocumentService.getFileUrl(fileId));
     }
+
+    @ApiOperation(value = "详情", notes = "详情")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "dataId", value = "数据id", required = true, dataType = "Long")
+    })
+    @GetMapping("/detail")
+    public R<DocumentDTO> detail(@ApiParam(name = "dataId", value = "数据id",required = true) @RequestParam Long dataId) {
+        return R.ok(this.constructDocumentService.detail(dataId));
+    }
 }

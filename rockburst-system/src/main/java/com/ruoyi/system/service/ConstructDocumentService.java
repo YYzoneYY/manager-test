@@ -85,4 +85,11 @@ public interface ConstructDocumentService extends IService<ConstructDocumentEnti
      */
     String getFileUrl(Long fileId);
 
+    /**
+     * 详情
+     * @param dataId 数据id
+     * @return 返回结果
+     */
+    DocumentDTO detail(Long dataId);
+
 }
