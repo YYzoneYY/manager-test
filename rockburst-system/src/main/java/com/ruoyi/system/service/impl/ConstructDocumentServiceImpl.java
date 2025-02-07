@@ -100,7 +100,7 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
         ConstructDocumentEntity documentEntity = constructDocumentMapper.selectOne(new LambdaQueryWrapper<ConstructDocumentEntity>()
                 .eq(ConstructDocumentEntity::getDataId, levelDTO.getDataId())
                 .eq(ConstructDocumentEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNotNull(documentEntity)) {
+        if (ObjectUtil.isNull(documentEntity)) {
             throw new RuntimeException("未找到此层级");
         }
         ConstructDocumentEntity entity = constructDocumentMapper.selectOne(new LambdaQueryWrapper<ConstructDocumentEntity>()
