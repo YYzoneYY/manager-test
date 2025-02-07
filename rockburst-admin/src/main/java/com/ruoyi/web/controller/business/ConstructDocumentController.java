@@ -44,7 +44,7 @@ public class ConstructDocumentController {
             @ApiImplicitParam(name = "dataId", value = "层级id", required = true, dataType = "Long")
     })
     @PostMapping("/addFile")
-    public R<Object> addFile(@RequestParam(value = "file") MultipartFile file,
+    public R<Object> addFile(@ApiParam(name = "file", value = "文件", required = true) @RequestPart(value = "file") MultipartFile file,
                              @RequestParam(value = "bucketName", required = false) String bucketName,
                              @RequestParam(value = "dataId", required = false) Long dataId) {
         return R.ok(this.constructDocumentService.addFile(file, bucketName, dataId));
@@ -56,7 +56,7 @@ public class ConstructDocumentController {
             @ApiImplicitParam(name = "bucketName", value = "桶名称", required = false, dataType = "String"),
     })
     @PutMapping("/updateFile")
-    public R<Object> updateFile(@ApiParam(name = "file", value = "文件", required = true) @RequestParam MultipartFile file,
+    public R<Object> updateFile(@ApiParam(name = "file", value = "文件", required = true) @RequestPart(value = "file") MultipartFile file,
                                 @RequestParam(value = "bucketName", required = false) String bucketName,
                                 @RequestParam(value = "dataId") Long dataId,
                                 @RequestParam(value = "fileIds") Long[] fileIds,
