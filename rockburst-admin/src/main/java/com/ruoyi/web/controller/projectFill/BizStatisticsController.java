@@ -92,7 +92,7 @@ public class BizStatisticsController extends BaseController
         return bizProjectRecordService.statsProject(new BasePermission(), dto);
     }
 
-
+//    @Anonymous
     @ApiOperation("牌板查询")
 //    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
     @GetMapping("/selectPaiList")
@@ -101,7 +101,7 @@ public class BizStatisticsController extends BaseController
         return R.ok(bizProjectRecordService.selectPaiList(new BasePermission(), dto,pagination));
     }
 
-
+    @Anonymous
     @ApiOperation("工程监控")
 //    @PreAuthorize("@ss.hasPermi('project:record:list')")
     @GetMapping("/monitor")
@@ -114,7 +114,7 @@ public class BizStatisticsController extends BaseController
     @ApiOperation("煤粉量日报表")
     @GetMapping("get666")
     public void get666(BizProjectRecordDto1 dto , HttpServletResponse response) throws IOException {
-        bizProjectRecordService.get444(response);
+        bizProjectRecordService.get444(dto,response);
     }
 
 

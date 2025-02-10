@@ -1,6 +1,6 @@
 package com.ruoyi.system.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.yulichang.base.MPJBaseMapper;
 import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -11,5 +11,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 
 @Mapper
-public interface RelatesInfoMapper extends BaseMapper<RelatesInfoEntity> {
+public interface RelatesInfoMapper extends MPJBaseMapper<RelatesInfoEntity> {
 }

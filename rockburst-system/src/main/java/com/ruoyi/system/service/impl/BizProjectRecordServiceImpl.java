@@ -25,9 +25,7 @@ import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.*;
-import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
-import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
-import com.ruoyi.system.domain.Entity.TunnelEntity;
+import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.dto.project.BizCardVDto;
 import com.ruoyi.system.domain.dto.project.BizWashProofDto;
@@ -37,6 +35,7 @@ import com.ruoyi.system.domain.excel.ChartDataAll;
 import com.ruoyi.system.domain.vo.*;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizProjectRecordService;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -44,9 +43,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -97,15 +98,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Autowired
     private BizTravePointMapper bizTravePointMapper;
 
-//    @Autowired
-//    EngineeringPlanMapper engineeringPlanMapper;
+    @Autowired
+    RelatesInfoMapper relatesInfoMapper;
 
     @Autowired
-    ApachePoiLineChart apachePoiLineChart;
+    ApachePoiLineChart11 apachePoiLineChart;
 
 
-//    @Autowired
-//    private MinioClient getMinioClient;
+
 
 
 
@@ -303,20 +303,41 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public MPage<Map<String, Object>> monitorProject(BizPlanDto dto, Pagination pagination) {
-//
-//        MPJLambdaWrapper<EngineeringPlanEntity> queryWrapper = new MPJLambdaWrapper<>();
-//        queryWrapper
-//                .selectAll(EngineeringPlanEntity.class)
-//                .selectCount(BizDrillRecord::getDrillRecordId,"drillNum")
-//                .selectSum(BizDrillRecord::getRealDeep,"deepNum")
-//                .leftJoin(BizDrillRecord.class, BizDrillRecord::getPlanId,EngineeringPlanEntity::getEngineeringPlanId)
-//                .eq(BizDrillRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
-//                .eq(SysDept::getDelFlag,BizBaseConstant.DELFLAG_N)
-////                .eq(StrUtil.isNotBlank(dto.getSearchDate()),EngineeringPlanEntity::getEndTime,dto.getSearchDate())
-//                .eq(dto.getDrillType() != null ,EngineeringPlanEntity::getDrillType,dto.getDrillType())
-//                .eq(dto.getTunnelId() != null , EngineeringPlanEntity::getConstructSite , dto.getTunnelId())
-//                .groupBy(EngineeringPlanEntity::getEngineeringPlanId);
-//        IPage<Map<String,Object>> ps =  engineeringPlanMapper.selectJoinMapsPage(pagination,queryWrapper);
+
+
+        if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
+            MPJLambdaWrapper<RelatesInfoEntity> queryWrapper = new MPJLambdaWrapper<>();
+            queryWrapper.innerJoin(PlanEntity.class,PlanEntity::getPlanId,RelatesInfoEntity::getPlanId)
+                    .leftJoin(BizDrillRecord.class,BizDrillRecord::getPlanId,RelatesInfoEntity::getPlanId)
+                    .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,RelatesInfoEntity::getPositionId)
+                    .eq(RelatesInfoEntity::getType,dto.getConstructType())
+                    .selectAs(BizWorkface::getWorkfaceName,"positionName")
+                    .selectSum(BizDrillRecord::getRealDeep,"realDeep")
+                    .selectCount(BizDrillRecord::getDrillRecordId,"drillRealNum")
+                    .selectAs(PlanEntity::getPlanName,"planName")
+                    .selectAs(RelatesInfoEntity::getPlanType,"planType")
+                    .selectAs(RelatesInfoEntity::getDrillNumber,"drillNumber")
+                    .selectAs(RelatesInfoEntity::getHoleDepth,"holeDepth");
+            IPage<Map<String,Object>> ps =  relatesInfoMapper.selectJoinMapsPage(pagination,queryWrapper);
+            return new MPage<>(ps);
+        }
+
+        if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_J)){
+            MPJLambdaWrapper<RelatesInfoEntity> queryWrapper = new MPJLambdaWrapper<>();
+            queryWrapper.innerJoin(PlanEntity.class,PlanEntity::getPlanId,RelatesInfoEntity::getPlanId)
+                    .leftJoin(BizDrillRecord.class,BizDrillRecord::getPlanId,RelatesInfoEntity::getPlanId)
+                    .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,RelatesInfoEntity::getPositionId)
+                    .eq(RelatesInfoEntity::getType,dto.getConstructType())
+                    .selectAs(TunnelEntity::getTunnelName,"positionName")
+                    .selectSum(BizDrillRecord::getRealDeep,"realDeep")
+                    .selectCount(BizDrillRecord::getDrillRecordId,"drillRealNum")
+                    .selectAs(PlanEntity::getPlanName,"planName")
+                    .selectAs(RelatesInfoEntity::getPlanType,"planType")
+                    .selectAs(RelatesInfoEntity::getDrillNumber,"drillNumber")
+                    .selectAs(RelatesInfoEntity::getHoleDepth,"holeDepth");
+            IPage<Map<String,Object>> ps =  relatesInfoMapper.selectJoinMapsPage(pagination,queryWrapper);
+            return new MPage<>(ps);
+        }
         return new MPage<>(null);
     }
 
@@ -367,8 +388,12 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         //掘进回采id
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
             entity.setWorkfaceId(dto.getLocationId());
+            BizTravePoint point = bizTravePointMapper.selectById(dto.getTravePointId());
+            entity.setTunnelId(point.getTunnelId());
         }else {
             entity.setTunnelId(dto.getLocationId());
+            TunnelEntity tunnel = tunnelMapper.selectById(dto.getLocationId());
+            entity.setWorkfaceId(tunnel.getWorkFaceId());
         }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());
          this.getBaseMapper().insert(entity);
@@ -417,10 +442,10 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         //掘进回采id
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
 //            entity.setWorkfaceId(dto.getLocationId());
-            dto.setLocationId(dto.getWorkfaceId());
+            entity.setLocationId(dto.getWorkfaceId());
         }else {
 //            entity.setTunnelId(dto.getLocationId());
-            dto.setLocationId(dto.getTunnelId());
+            entity.setLocationId(dto.getTunnelId());
         }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0);
 //                .setDeptId(currentUser.getDeptId());
@@ -634,13 +659,13 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     }
 
     @Override
-    public void get444(HttpServletResponse response) throws IOException {
-
+    public void get444(BizProjectRecordDto1 dto,HttpServletResponse response) throws IOException {
+        AtomicReference<XSSFWorkbook> wb = new AtomicReference<>();
         //查询工作面 下的 巷道
         QueryWrapper<TunnelEntity> tunnelQueryWrapper = new QueryWrapper<>();
         tunnelQueryWrapper.lambda()
                 .select(TunnelEntity::getTunnelId)
-                .eq(TunnelEntity::getWorkFaceId,"1")
+                .eq(TunnelEntity::getWorkFaceId,dto.getWorkfaceId())
                 .eq(TunnelEntity::getDelFlag,BizBaseConstant.DELFLAG_N);
         List<TunnelEntity> tunnelList = tunnelMapper.selectList(tunnelQueryWrapper);
         List<Long> tunnelIds = new ArrayList<>();
@@ -648,7 +673,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         tunnelIds = tunnelList.stream().map(TunnelEntity::getTunnelId).collect(Collectors.toList());
 
         //todo 预警值还没有表 设为
-        List<String>  alarmLabels = Arrays.asList("2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m","10m","11m","12m","13m","14m","15m");
+        List<String>  alarmLabels = Arrays.asList("1m","2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m","10m","11m","12m","13m","14m");
         List<Double>  alarmValues = Arrays.asList(3.1, 3.1, 3.9, 3.1, 3.4, 3.1, 3.2, 3.1, 3.1,3.5,3.1,3.1,3.8,3.1);
 
         MPJLambdaWrapper<BizProjectRecord> projectRecordQueryWrapper = new MPJLambdaWrapper<>();
@@ -656,28 +681,32 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         projectRecordQueryWrapper
                 .selectFunc(() -> "DATE_FORMAT(%s, '%%Y-%%m-%%d %%H:%%i:%%s')", BizProjectRecord::getConstructTime)
                 .select(BizDrillRecord::getCrumbWeight)
+                .selectAs(TunnelEntity::getTunnelName,BizProjectRecord::getTunnelName)
                 .select(BizProjectRecord::getConstructRange,BizProjectRecord::getTunnelId,BizProjectRecord::getTravePointId)
                 .in(BizProjectRecord::getTunnelId,tunnelIds)
                 .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
                 .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
+                .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_J)
                 .innerJoin(BizDrillRecord.class, BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId);
         List<BizProjectCDMAP> cdmaps = bizProjectRecordMapper.selectJoinList(BizProjectCDMAP.class,projectRecordQueryWrapper);
         Assert.isTrue(cdmaps != null && cdmaps.size() > 0, "没有记录");
 
         //先根据 巷道分组
-        Map<Long, List<BizProjectCDMAP>> groupedByTunnelId = cdmaps.stream()
-                .collect(Collectors.groupingBy(BizProjectCDMAP::getTunnelId));
+        final Map<Long, List<BizProjectCDMAP>>[] groupedByTunnelId = new Map[]{cdmaps.stream()
+                .collect(Collectors.groupingBy(BizProjectCDMAP::getTunnelId))};
 
-        groupedByTunnelId.forEach((tunnelId, groupbytunnel) -> {
+        groupedByTunnelId[0].forEach((tunnelId, groupbytunnel) -> {
             System.out.println("TunnelId: " + tunnelId);
             Map<String, List<BizProjectCDMAP>> groupbyTime = groupbytunnel
                     .stream().collect(Collectors.groupingBy(BizProjectCDMAP::getConstructTime));
-            QueryWrapper<BizProjectRecord> rangePointMapper = new QueryWrapper<>();
-            rangePointMapper.lambda()
+            MPJLambdaWrapper<BizProjectRecord> rangePointMapper = new MPJLambdaWrapper<>();
+            rangePointMapper.leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizProjectRecord::getTravePointId)
                     .select(BizProjectRecord::getConstructRange, BizProjectRecord::getTravePointId)
+                    .selectAs(BizTravePoint::getPointName,BizProjectRecord::getPointName)
                     .eq(BizProjectRecord::getTunnelId, tunnelId)
                     .eq(BizProjectRecord::getDelFlag, BizBaseConstant.DELFLAG_N)
+                    .eq(BizProjectRecord::getConstructType, BizBaseConstant.CONSTRUCT_TYPE_J)
                     .groupBy(BizProjectRecord::getTravePointId,BizProjectRecord::getConstructRange);
             //todo 需要的话 加日期筛选
             List<BizProjectRecord> rangePoints = bizProjectRecordMapper.selectList(rangePointMapper);
@@ -685,7 +714,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             for (BizProjectRecord rangePoint : rangePoints) {
                 ChartDataAll chartDataAll = new ChartDataAll();
                 List<ChartData> chartDataList = new ArrayList<>();
-                chartDataAll.setTitle(tunnelId+rangePoint.getTravePointId()+rangePoint.getConstructRange());
+                chartDataAll.setTitle(groupbytunnel.get(0).getTunnelName()+rangePoint.getPointName()+rangePoint.getConstructRange());
                 chartDataList.add(setAlarm(alarmValues));
                 groupbyTime.forEach((dateTime, group) -> {
                     List<BizProjectCDMAP> filteredRecords = group.stream().filter(record -> rangePoint.getConstructRange().equals(record.getConstructRange()) && record.getTravePointId() == rangePoint.getTravePointId()).collect(Collectors.toList());
@@ -702,13 +731,90 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             }
 
             try {
-                apachePoiLineChart.sssssss(alarmLabels,chartDataAlls,response);
-            } catch (IOException e) {
+                wb.set(apachePoiLineChart.sssssss(wb.get(), groupbytunnel.get(0).getTunnelName()+"掘进", alarmLabels, chartDataAlls));
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 
 
+
         });
+
+        MPJLambdaWrapper<BizProjectRecord> projectRecordQueryWrapper1 = new MPJLambdaWrapper<>();
+
+        projectRecordQueryWrapper1
+                .selectFunc(() -> "DATE_FORMAT(%s, '%%Y-%%m-%%d %%H:%%i:%%s')", BizProjectRecord::getConstructTime)
+                .select(BizDrillRecord::getCrumbWeight)
+                .selectAs(TunnelEntity::getTunnelName,BizProjectRecord::getTunnelName)
+                .select(BizProjectRecord::getConstructRange,BizProjectRecord::getTunnelId,BizProjectRecord::getTravePointId)
+                .in(BizProjectRecord::getTunnelId,tunnelIds)
+                .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
+                .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
+                .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_H)
+                .innerJoin(BizDrillRecord.class, BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
+                .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId);
+        List<BizProjectCDMAP> cdmaps1 = bizProjectRecordMapper.selectJoinList(BizProjectCDMAP.class,projectRecordQueryWrapper1);
+        Assert.isTrue(cdmaps != null && cdmaps.size() > 0, "没有记录");
+
+        //先根据 巷道分组
+        final Map<Long, List<BizProjectCDMAP>>[] groupedByTunnelId1 = new Map[]{cdmaps1.stream()
+                .collect(Collectors.groupingBy(BizProjectCDMAP::getTunnelId))};
+
+        groupedByTunnelId1[0].forEach((tunnelId, groupbytunnel) -> {
+            System.out.println("TunnelId: " + tunnelId);
+            Map<String, List<BizProjectCDMAP>> groupbyTime = groupbytunnel
+                    .stream().collect(Collectors.groupingBy(BizProjectCDMAP::getConstructTime));
+            MPJLambdaWrapper<BizProjectRecord> rangePointMapper = new MPJLambdaWrapper<>();
+            rangePointMapper.leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizProjectRecord::getTravePointId)
+                    .select(BizProjectRecord::getConstructRange, BizProjectRecord::getTravePointId)
+                    .selectAs(BizTravePoint::getPointName,BizProjectRecord::getPointName)
+                    .eq(BizProjectRecord::getTunnelId, tunnelId)
+                    .eq(BizProjectRecord::getDelFlag, BizBaseConstant.DELFLAG_N)
+                    .eq(BizProjectRecord::getConstructType, BizBaseConstant.CONSTRUCT_TYPE_H)
+                    .groupBy(BizProjectRecord::getTravePointId,BizProjectRecord::getConstructRange);
+            //todo 需要的话 加日期筛选
+            List<BizProjectRecord> rangePoints = bizProjectRecordMapper.selectList(rangePointMapper);
+            List<ChartDataAll> chartDataAlls = new ArrayList<>();
+            for (BizProjectRecord rangePoint : rangePoints) {
+                ChartDataAll chartDataAll = new ChartDataAll();
+                List<ChartData> chartDataList = new ArrayList<>();
+                chartDataAll.setTitle(groupbytunnel.get(0).getTunnelName()+rangePoint.getPointName()+rangePoint.getConstructRange());
+                chartDataList.add(setAlarm(alarmValues));
+                groupbyTime.forEach((dateTime, group) -> {
+                    List<BizProjectCDMAP> filteredRecords = group.stream().filter(record -> rangePoint.getConstructRange().equals(record.getConstructRange()) && record.getTravePointId() == rangePoint.getTravePointId()).collect(Collectors.toList());
+                    ChartData chartData = new ChartData();
+                    chartData.setTitle(dateTime);
+                    if(filteredRecords != null && filteredRecords.size() > 0){
+                        chartData.setData(addData( filteredRecords.get(0)));
+                        chartDataList.add(chartData);
+                        //默认只有一个同一时间点 同一导线点 同一距离 只有一个数据
+                    }
+                });
+                chartDataAll.setChartDataList(chartDataList);
+                chartDataAlls.add(chartDataAll);
+            }
+
+            try {
+                wb.set(apachePoiLineChart.sssssss(wb.get(), groupbytunnel.get(0).getTunnelName()+"回采", alarmLabels, chartDataAlls));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+
+
+        });
+
+        // 生成 Excel 并写入响应流
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=example.xlsx");
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            wb.get().write(byteArrayOutputStream);
+            byte[] excelData = byteArrayOutputStream.toByteArray();
+            response.setContentLength(excelData.length);
+            response.getOutputStream().write(excelData);
+            wb.get().close();
+        }
     }
 
     @Override
