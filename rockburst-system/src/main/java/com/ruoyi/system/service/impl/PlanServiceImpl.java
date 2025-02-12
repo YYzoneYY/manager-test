@@ -4,6 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.annotation.DataScopeSelf;
@@ -25,15 +28,13 @@ import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.ContentsService;
 import com.ruoyi.system.service.PlanService;
 import com.ruoyi.system.service.RelatesInfoService;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -337,6 +338,59 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             }).collect(Collectors.toList());
         }
         return projectWarnChoiceListDTOS;
+    }
+
+    @Override
+    public List<Long> getPlanByPoint(String traversePoint, String distance) {
+        Set<Long> traversePointIdSet = new HashSet<>();
+        ArrayList<RelatesInfoEntity> arrayList = new ArrayList<>();
+        List<RelatesInfoEntity> relatesInfoEntities = relatesInfoMapper.selectList(new LambdaQueryWrapper<RelatesInfoEntity>());
+        if (ListUtils.isNotNull(relatesInfoEntities)) {
+            relatesInfoEntities.forEach(relatesInfoEntity -> {
+                if (ObjectUtil.isNotNull(relatesInfoEntity.getArea())) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        List<AreaDTO> areaDTOS = objectMapper.readValue(relatesInfoEntity.getArea(),
+                                new TypeReference<List<AreaDTO>>() {});
+                        List<String> sTraversePoints = areaDTOS.stream().map(AreaDTO::getStartTraversePoint).collect(Collectors.toList());
+                        List<String> eTraversePoints = areaDTOS.stream().map(AreaDTO::getEndTraversePoint).collect(Collectors.toList());
+                        List<String> sDistances = areaDTOS.stream().map(AreaDTO::getStartDistance).collect(Collectors.toList());
+                        List<String> eDistances = areaDTOS.stream().map(AreaDTO::getEndDistance).collect(Collectors.toList());
+                        boolean s = sTraversePoints.contains(traversePoint);
+                        boolean e = eTraversePoints.contains(traversePoint);
+                        if (s) {
+                            arrayList.add(relatesInfoEntity);
+                        } else if (e) {
+                            arrayList.add(relatesInfoEntity);
+                        }
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        }
+        if (ListUtils.isNotNull(arrayList)) {
+            arrayList.removeIf(relatesInfoEntity -> relatesInfoEntity.getPlanType().equals(ConstantsInfo.SPECIAL_PLAN));
+        }
+        if (ListUtils.isNotNull(arrayList)) {
+            relatesInfoEntities.forEach(relatesInfoEntity -> {
+                if (ObjectUtil.isNotNull(relatesInfoEntity.getArea())) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        List<AreaDTO> areaDTOS = objectMapper.readValue(relatesInfoEntity.getArea(),
+                                new TypeReference<List<AreaDTO>>() {});
+                        List<String> sDistances = areaDTOS.stream().map(AreaDTO::getStartDistance).collect(Collectors.toList());
+                        List<String> eDistances = areaDTOS.stream().map(AreaDTO::getEndDistance).collect(Collectors.toList());
+                        boolean s = sDistances.contains(distance);
+                        boolean e = eDistances.contains(distance);
+
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        }
+        return List.of();
     }
 
     /**
