@@ -20,9 +20,11 @@ import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.utils.DataJudgeUtils;
 import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.ContentsService;
@@ -76,6 +78,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
 
     @Resource
     private SysUserMapper sysUserMapper;
+
+    @Resource
+    private BizTravePointMapper bizTravePointMapper;
 
     /**
      * 工程计划新增
@@ -343,7 +348,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     @Override
     public List<Long> getPlanByPoint(String traversePoint, String distance) {
         Set<Long> traversePointIdSet = new HashSet<>();
-        ArrayList<RelatesInfoEntity> arrayList = new ArrayList<>();
         List<RelatesInfoEntity> relatesInfoEntities = relatesInfoMapper.selectList(new LambdaQueryWrapper<RelatesInfoEntity>());
         if (ListUtils.isNotNull(relatesInfoEntities)) {
             relatesInfoEntities.forEach(relatesInfoEntity -> {
@@ -352,45 +356,71 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                     try {
                         List<AreaDTO> areaDTOS = objectMapper.readValue(relatesInfoEntity.getArea(),
                                 new TypeReference<List<AreaDTO>>() {});
-                        List<String> sTraversePoints = areaDTOS.stream().map(AreaDTO::getStartTraversePoint).collect(Collectors.toList());
-                        List<String> eTraversePoints = areaDTOS.stream().map(AreaDTO::getEndTraversePoint).collect(Collectors.toList());
-                        List<String> sDistances = areaDTOS.stream().map(AreaDTO::getStartDistance).collect(Collectors.toList());
-                        List<String> eDistances = areaDTOS.stream().map(AreaDTO::getEndDistance).collect(Collectors.toList());
-                        boolean s = sTraversePoints.contains(traversePoint);
-                        boolean e = eTraversePoints.contains(traversePoint);
-                        if (s) {
-                            arrayList.add(relatesInfoEntity);
-                        } else if (e) {
-                            arrayList.add(relatesInfoEntity);
-                        }
+                        areaDTOS.forEach(areaDTO -> {
+                            Long tunnelId = areaDTO.getTunnelId();
+                            BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
+                                    .eq(BizTravePoint::getPointId, Long.valueOf(traversePoint))
+                                    .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                            if (ObjectUtil.isNull(bizTravePoint)) {
+                                throw new RuntimeException("未找到此导线点");
+                            }
+                            if (bizTravePoint.getTunnelId().equals(tunnelId)) {
+                                Long startPointId =Long.valueOf(areaDTO.getStartTraversePoint());
+                                Long sPointNo = getPointNo(startPointId);
+                                Long eP = Long .valueOf(areaDTO.getEndTraversePoint());
+                                Long ePointNo = getPointNo(eP);
+                                String startDistance = areaDTO.getStartDistance();
+                                String endDistance = areaDTO.getEndDistance();
+                                if (sPointNo < bizTravePoint.getNo() && bizTravePoint.getNo() < ePointNo) {
+                                    traversePointIdSet.add(relatesInfoEntity.getPlanId());
+                                }
+                                if (bizTravePoint.getNo().equals(sPointNo) && !bizTravePoint.getNo().equals(ePointNo)) {
+                                    if (distance.charAt(0) == '-') {
+                                        boolean b = DataJudgeUtils.greaterThan(distance, startDistance);
+                                        if (b) {
+                                            traversePointIdSet.add(relatesInfoEntity.getPlanId());
+                                        }
+                                    } else {
+                                        traversePointIdSet.add(relatesInfoEntity.getPlanId());
+                                    }
+                                }
+                                if (bizTravePoint.getNo().equals(ePointNo) && !bizTravePoint.getNo().equals(sPointNo)) {
+                                    if (distance.charAt(0) == ' ') {
+                                        boolean b = DataJudgeUtils.lessThan(distance, endDistance);
+                                        if (b) {
+                                            traversePointIdSet.add(relatesInfoEntity.getPlanId());
+                                        }
+                                    } else {
+                                        traversePointIdSet.add(relatesInfoEntity.getPlanId());
+                                    }
+                                }
+                                if (bizTravePoint.getNo().equals(sPointNo) && bizTravePoint.getNo().equals(ePointNo)) {
+                                    boolean b = DataJudgeUtils.isInRange(distance, startDistance, endDistance);
+                                    if (b) {
+                                        traversePointIdSet.add(relatesInfoEntity.getPlanId());
+                                    }
+                                }
+                            }
+                        });
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
                 }
             });
         }
-        if (ListUtils.isNotNull(arrayList)) {
-            arrayList.removeIf(relatesInfoEntity -> relatesInfoEntity.getPlanType().equals(ConstantsInfo.SPECIAL_PLAN));
-        }
-        if (ListUtils.isNotNull(arrayList)) {
-            relatesInfoEntities.forEach(relatesInfoEntity -> {
-                if (ObjectUtil.isNotNull(relatesInfoEntity.getArea())) {
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    try {
-                        List<AreaDTO> areaDTOS = objectMapper.readValue(relatesInfoEntity.getArea(),
-                                new TypeReference<List<AreaDTO>>() {});
-                        List<String> sDistances = areaDTOS.stream().map(AreaDTO::getStartDistance).collect(Collectors.toList());
-                        List<String> eDistances = areaDTOS.stream().map(AreaDTO::getEndDistance).collect(Collectors.toList());
-                        boolean s = sDistances.contains(distance);
-                        boolean e = eDistances.contains(distance);
+        return new ArrayList<>(traversePointIdSet);
+    }
 
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
+    private Long getPointNo(Long pointId) {
+        Long pointNo = 0L;
+        BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
+                .eq(BizTravePoint::getPointId, pointId)
+                .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(bizTravePoint)) {
+            throw new RuntimeException("未找到此导线点");
         }
-        return List.of();
+        pointNo = bizTravePoint.getNo();
+        return pointNo;
     }
 
     /**

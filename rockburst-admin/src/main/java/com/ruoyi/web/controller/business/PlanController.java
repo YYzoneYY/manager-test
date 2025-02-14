@@ -12,6 +12,7 @@ import com.ruoyi.system.service.PlanService;
 import com.ruoyi.system.service.RelatesInfoService;
 import io.swagger.annotations.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -103,5 +104,16 @@ public class PlanController {
                                       @RequestParam(value = "planType") String planType,
                                       @RequestParam(value = "tunnelId") Long tunnelId) {
        return R.ok(this.relatesInfoService.getTraversePoint(planType, type, tunnelId));
+    }
+
+    @ApiOperation(value = "根据导线点获取计划", notes = "根据导线点获取计划")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "traversePoint", value = "点", required = true),
+            @ApiImplicitParam(name = "distance", value = "距离", required = true)
+    })
+    @GetMapping(value = "/getPlanByPoint")
+    public R<Object> getPlanByPoint(@RequestParam String traversePoint,
+                                    @RequestParam String distance) {
+        return R.ok(this.planService.getPlanByPoint(traversePoint, distance));
     }
 }
