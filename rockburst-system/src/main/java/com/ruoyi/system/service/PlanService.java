@@ -68,5 +68,11 @@ public interface PlanService extends IService<PlanEntity> {
      */
     List<ProjectWarnChoiceListDTO> getProjectWarnChoiceList();
 
+    /**
+     * 根据导线点获取计划
+     * @param traversePoint 导线点id
+     * @param distance 距离（+-）
+     * @return 返回结果
+     */
     List<Long> getPlanByPoint(String traversePoint, String distance);
 }

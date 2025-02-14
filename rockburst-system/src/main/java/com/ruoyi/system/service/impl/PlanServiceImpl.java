@@ -385,7 +385,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                                     }
                                 }
                                 if (bizTravePoint.getNo().equals(ePointNo) && !bizTravePoint.getNo().equals(sPointNo)) {
-                                    if (distance.charAt(0) == ' ') {
+                                    if (distance.charAt(0) == '+') {
                                         boolean b = DataJudgeUtils.lessThan(distance, endDistance);
                                         if (b) {
                                             traversePointIdSet.add(relatesInfoEntity.getPlanId());
