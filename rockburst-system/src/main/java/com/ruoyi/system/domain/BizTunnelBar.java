@@ -27,7 +27,7 @@ public class BizTunnelBar extends BaseSelfEntity
     @TableId(type = IdType.AUTO)
     private Long barId;
 
-    @ApiModelProperty(value = "等级")
+    @ApiModelProperty(value = "类型")
     private String type;
 
     @ApiModelProperty(value = "巷道id")
@@ -47,6 +47,9 @@ public class BizTunnelBar extends BaseSelfEntity
 
     @ApiModelProperty(value = "预设孔方向角度")
     private Integer directAngle;
+
+    @ApiModelProperty(value = "预设孔方向距离")
+    private Double range;
 
     @ApiModelProperty(value = "地图位置")
     private String svg;

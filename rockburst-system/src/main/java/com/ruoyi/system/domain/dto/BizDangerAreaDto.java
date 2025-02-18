@@ -23,22 +23,22 @@ public class BizDangerAreaDto
     @TableId(type = IdType.AUTO)
     private Long dangerAreaId;
 
-    @ApiModelProperty(value = "等级")
+    @ApiModelProperty(value = "等级",required = true)
     private String level;
 
-    @ApiModelProperty(value = "工作面id")
+    @ApiModelProperty(value = "工作面id",required = true)
     private Long workfaceId;
 
-    @ApiModelProperty(value = "开始导线点")
+    @ApiModelProperty(value = "开始导线点",required = true)
     private Long startPointId;
 
-    @ApiModelProperty(value = "结束导线点")
+    @ApiModelProperty(value = "结束导线点",required = true)
     private Long endPointId;
 
-    @ApiModelProperty(value = "开始导线点前后距离")
+    @ApiModelProperty(value = "开始导线点前后距离",required = true)
     private Double startMeter;
 
-    @ApiModelProperty(value = "结束导线点前后距离")
+    @ApiModelProperty(value = "结束导线点前后距离",required = true)
     private Double endMeter;
 
     @ApiModelProperty(value = "地图位置")

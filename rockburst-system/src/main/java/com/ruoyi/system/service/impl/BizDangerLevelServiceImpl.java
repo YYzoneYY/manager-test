@@ -35,6 +35,8 @@ public class BizDangerLevelServiceImpl extends ServiceImpl<BizDangerLevelMapper,
     public MPage<BizDangerLevel> selectEntityList(BizDangerLevel dto, Pagination pagination) {
         QueryWrapper<BizDangerLevel> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
+                .eq(StrUtil.isNotEmpty(dto.getColor()), BizDangerLevel::getColor, dto.getColor())
+                .like(StrUtil.isNotEmpty(dto.getName()), BizDangerLevel::getName, dto.getName())
                 .eq(StrUtil.isNotEmpty(dto.getLevel()), BizDangerLevel::getLevel, dto.getLevel());
         IPage<BizDangerLevel> list = bizDangerLevelMapper.selectPage(pagination,queryWrapper);
         return new MPage<>(list);

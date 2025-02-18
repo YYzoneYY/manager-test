@@ -2,18 +2,22 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizDangerArea;
+import com.ruoyi.system.domain.BizDangerLevel;
+import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
+import com.ruoyi.system.domain.vo.BizDangerAreaVo;
 import com.ruoyi.system.mapper.BizDangerAreaMapper;
 import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.IBizDangerAreaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 /**
  *
@@ -35,8 +39,18 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
 
 
     @Override
-    public BizDangerArea selectEntityById(Long id) {
-        return bizDangerAreaMapper.selectById(id);
+    public BizDangerAreaVo selectEntityById(Long id) {
+        MPJLambdaWrapper<BizDangerArea> queryWrapper = new MPJLambdaWrapper<>();
+        queryWrapper.selectAll(BizDangerArea.class)
+                .selectAssociation("t1",BizTravePoint.class, BizDangerAreaVo::getStartPoint)
+                .selectAssociation("t2",BizTravePoint.class, BizDangerAreaVo::getEndPoint)
+                .selectAssociation(BizDangerLevel.class, BizDangerAreaVo::getBizDangerLevel)
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizDangerArea::getStartPointId)
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizDangerArea::getEndPointId)
+                .leftJoin(BizDangerLevel.class,BizDangerLevel::getLevel,BizDangerArea::getLevel)
+                .eq( BizDangerArea::getDangerAreaId, id);
+         BizDangerAreaVo vo = bizDangerAreaMapper.selectJoinOne(BizDangerAreaVo.class,queryWrapper);
+        return vo;
     }
 
     @Override
@@ -45,11 +59,19 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
     }
 
     @Override
-    public MPage<BizDangerArea> selectEntityList(BizDangerAreaDto dto, Pagination pagination) {
-        QueryWrapper<BizDangerArea> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(dto.getDangerAreaId() != null, BizDangerArea::getWorkfaceId, dto.getWorkfaceId())
+    public MPage<BizDangerAreaVo> selectEntityList(BizDangerAreaDto dto, Pagination pagination) {
+        MPJLambdaWrapper<BizDangerArea> queryWrapper = new MPJLambdaWrapper<>();
+        queryWrapper.selectAll(BizDangerArea.class)
+                .selectAssociation("t1",BizTravePoint.class, BizDangerAreaVo::getStartPoint)
+                .selectAssociation("t2",BizTravePoint.class, BizDangerAreaVo::getEndPoint)
+                .selectAssociation(BizDangerLevel.class, BizDangerAreaVo::getBizDangerLevel)
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizDangerArea::getStartPointId)
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizDangerArea::getEndPointId)
+                .leftJoin(BizDangerLevel.class,BizDangerLevel::getLevel,BizDangerArea::getLevel)
+                .eq(dto.getDangerAreaId() != null, BizDangerArea::getWorkfaceId, dto.getWorkfaceId())
+                .eq(dto.getWorkfaceId() != null , BizDangerArea::getWorkfaceId , dto.getWorkfaceId())
                 .eq(StrUtil.isNotEmpty(dto.getLevel()), BizDangerArea::getLevel, dto.getLevel());
-        IPage<BizDangerArea> list = bizDangerAreaMapper.selectPage(pagination,queryWrapper);
+        IPage<BizDangerAreaVo> list = bizDangerAreaMapper.selectJoinPage(pagination,BizDangerAreaVo.class,queryWrapper);
         return new MPage<>(list);
     }
 
@@ -57,6 +79,7 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
     public int insertEntity(BizDangerAreaDto dto) {
         BizDangerArea bizDangerArea = new BizDangerArea();
         BeanUtil.copyProperties(dto, bizDangerArea);
+        Assert.isTrue(dto.getStartMeter()<0,"必须在导线点前开始");
         return bizDangerAreaMapper.insert(bizDangerArea);
     }
 
@@ -64,6 +87,7 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
     public int updateEntity(BizDangerAreaDto dto) {
         BizDangerArea bizDangerArea = new BizDangerArea();
         BeanUtil.copyProperties(dto, bizDangerArea);
+        Assert.isTrue(dto.getStartMeter()<0,"必须在导线点前开始");
         return bizDangerAreaMapper.updateById(bizDangerArea);
     }
 

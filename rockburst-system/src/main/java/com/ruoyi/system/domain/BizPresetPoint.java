@@ -31,7 +31,7 @@ public class BizPresetPoint extends BaseSelfEntity
     private Long tunnelId;
 
     @ApiModelProperty(value = "帮")
-    private String tunnelBarId;
+    private Long tunnelBarId;
 
     @ApiModelProperty(value = "危险区")
     private Long dangerAreaId;
@@ -45,9 +45,19 @@ public class BizPresetPoint extends BaseSelfEntity
     private Double meter;
 
 
-    @ApiModelProperty(value = "地图位置")
-    private String svg;
+    @ApiModelProperty(value = "纬度")
+    private String latitude;
 
+    @ApiModelProperty(value = "经度")
+    private String longitude;
+
+
+
+    @ApiModelProperty(value = "纬度T")
+    private String latitudet;
+
+    @ApiModelProperty(value = "经度T")
+    private String longitudet;
 
 
 

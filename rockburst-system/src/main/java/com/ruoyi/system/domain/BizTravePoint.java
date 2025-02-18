@@ -64,7 +64,7 @@ public class BizTravePoint extends BaseSelfEntity
     @TableField()
     private String longitude;
 
-    @ApiModelProperty(value = "经度")
+    @ApiModelProperty(value = "纬度")
     @TableField()
     private String latitude;
 

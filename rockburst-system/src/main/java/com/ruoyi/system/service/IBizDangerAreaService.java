@@ -5,6 +5,7 @@ import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizDangerArea;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
+import com.ruoyi.system.domain.vo.BizDangerAreaVo;
 
 /**
  *
@@ -16,10 +17,10 @@ public interface IBizDangerAreaService extends MPJDeepService<BizDangerArea>
 {
 
 
-    public BizDangerArea selectEntityById(Long id);
+    public BizDangerAreaVo selectEntityById(Long id);
 
 
-    public MPage<BizDangerArea> selectEntityList(BizDangerAreaDto dto, Pagination pagination);
+    public MPage<BizDangerAreaVo> selectEntityList(BizDangerAreaDto dto, Pagination pagination);
 
 
     public int insertEntity(BizDangerAreaDto dto);

@@ -40,6 +40,7 @@ public interface IBizPresetPointService extends IService<BizPresetPoint>
 
 
 
+    int savebarPresetPoint(BizPresetPoint dto);
 
 
 }

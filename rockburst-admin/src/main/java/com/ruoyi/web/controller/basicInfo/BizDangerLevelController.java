@@ -8,6 +8,7 @@ import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.constant.BizBaseConstant;
+import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.BizDangerLevel;
 import com.ruoyi.system.service.IBizDangerLevelService;
@@ -53,10 +54,10 @@ public class BizDangerLevelController extends BaseController
      */
     @ApiOperation("获取危险等级管理详细信息")
     @PreAuthorize("@ss.hasPermi('basicInfo:dangerLevel:query')")
-    @GetMapping(value = "/{mineId}")
-    public R<BizDangerLevel> getInfo(@PathVariable("mineId") Long mineId)
+    @GetMapping(value = "/{dangerLevelId}")
+    public R<BizDangerLevel> getInfo(@PathVariable("dangerLevelId") Long dangerLevelId)
     {
-        return R.ok(bizDangerLevelService.selectEntityById(mineId));
+        return R.ok(bizDangerLevelService.selectEntityById(dangerLevelId));
     }
 
     /**
@@ -66,7 +67,7 @@ public class BizDangerLevelController extends BaseController
     @PreAuthorize("@ss.hasPermi('basicInfo:dangerLevel:add')")
     @Log(title = "危险等级管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public R add(@RequestBody  BizDangerLevel dto)
+    public R add(@RequestBody  @Validated(value = {GroupAdd.class})  BizDangerLevel dto)
     {
         return R.ok(bizDangerLevelService.insertEntity(dto));
     }
@@ -83,6 +84,7 @@ public class BizDangerLevelController extends BaseController
     @PutMapping
     public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizDangerLevel dto)
     {
+
         return R.ok(bizDangerLevelService.updateEntity(dto));
     }
 
@@ -112,9 +114,11 @@ public class BizDangerLevelController extends BaseController
     public R remove(@PathVariable("dangerLevelId") Long dangerLevelId)
     {
 
-        BizDangerLevel entity = new BizDangerLevel();
-        entity.setDangerLevelId(dangerLevelId).setDelFlag(BizBaseConstant.DELFLAG_Y);
-        return R.ok(bizDangerLevelService.updateById(entity));
+
+        UpdateWrapper<BizDangerLevel> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().eq(BizDangerLevel::getDangerLevelId, dangerLevelId)
+                .set(BizDangerLevel::getDelFlag,BizBaseConstant.DELFLAG_Y);
+        return R.ok(bizDangerLevelService.update(updateWrapper));
     }
 
 

@@ -51,7 +51,7 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         Double rest = meter + spaced;
         if(rest <= 0){
             BizPresetPoint bizPresetPoint = new BizPresetPoint();
-            bizPresetPoint.setPointId(pointId).setMeter(meter);
+            bizPresetPoint.setPointId(pointId).setMeter(rest);
             return bizPresetPoint;
         }
         //获取下一个间隔距离的导线点
@@ -59,8 +59,24 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         return okkPoint;
     }
 
+    @Override
+    public Long judgePointInArea(Long pointId, Double meter) {
+        BizTravePoint point =  this.getById(pointId);
+
+        return 1l;
+    }
+
+    /**
+     * 获取下一个间隔的导线点加 前距离
+     * @param pointId
+     * @param rest
+     * @return
+     */
     BizPresetPoint getNextSpaced(Long pointId,Double rest){
         BizTravePoint nextPoint = getNextPoint(pointId);
+        if(nextPoint == null || nextPoint.getPointId() == null){
+            return null;
+        }
         rest = rest - nextPoint.getPrePointDistance();
         if(rest <= 0){
             BizPresetPoint point = new BizPresetPoint();
@@ -98,6 +114,20 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(BizTravePoint::getTunnelId, current.getTunnelId())
                 .eq(BizTravePoint::getNo, current.getNo()+1);
+        List<BizTravePoint> points = bizTravePointMapper.selectList(queryWrapper);
+        if(points != null && points.size() == 1){
+            return points.get(0);
+        }
+        return null;
+    }
+
+
+    @Override
+    public BizTravePoint getPrePoint(Long currentPointId) {
+        BizTravePoint current = this.getById(currentPointId);
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizTravePoint::getTunnelId, current.getTunnelId())
+                .eq(BizTravePoint::getNo, current.getNo()-1);
         List<BizTravePoint> points = bizTravePointMapper.selectList(queryWrapper);
         if(points != null && points.size() == 1){
             return points.get(0);
