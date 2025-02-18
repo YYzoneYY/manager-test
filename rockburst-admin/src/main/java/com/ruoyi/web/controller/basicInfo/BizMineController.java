@@ -25,6 +25,10 @@ import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -161,4 +165,55 @@ public class BizMineController extends BaseController
         entity.setMineId(mineId).setDelFlag(BizBaseConstant.DELFLAG_Y);
         return R.ok(bizMineService.updateBizMine(entity));
     }
+
+
+    public static void main(String[] args) {
+        try {
+            // API URL
+            URL url = new URL("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            // Set the request method to POST
+            connection.setRequestMethod("POST");
+
+            // Set headers
+            connection.setRequestProperty("Authorization", "Bearer " + System.getenv("sk-9b6b5d723c7646f79808ff12e83c5260"));
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setDoOutput(true);
+
+            // JSON payload
+            String jsonInputString = "{"
+                    + "\"model\": \"deepseek-r1\","
+                    + "\"messages\": ["
+                    + "    {"
+                    + "        \"role\": \"user\","
+                    + "        \"content\": \"9.9和9.11谁大\""
+                    + "    }"
+                    + "]"
+                    + "}";
+
+            // Send the request
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            // Get the response
+            int responseCode = connection.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // Read the response
+            try (java.io.InputStream is = connection.getInputStream();
+                 java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A")) {
+                String response = s.hasNext() ? s.next() : "";
+                System.out.println("Response: " + response);
+            }
+
+            // Close the connection
+            connection.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
