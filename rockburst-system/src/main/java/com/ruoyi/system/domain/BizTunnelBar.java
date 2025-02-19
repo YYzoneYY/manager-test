@@ -30,6 +30,9 @@ public class BizTunnelBar extends BaseSelfEntity
     @ApiModelProperty(value = "类型")
     private String type;
 
+    @ApiModelProperty(value = "工作面id")
+    private Long workfaceId;
+
     @ApiModelProperty(value = "巷道id")
     private Long tunnelId;
 

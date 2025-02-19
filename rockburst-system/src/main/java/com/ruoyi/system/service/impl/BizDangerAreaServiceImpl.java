@@ -81,7 +81,7 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
                 .leftJoin(BizDangerLevel.class,BizDangerLevel::getLevel,BizDangerArea::getLevel)
                 .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizDangerArea::getWorkfaceId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizDangerArea::getTunnelId)
-                .eq(dto.getDangerAreaId() != null, BizDangerArea::getWorkfaceId, dto.getWorkfaceId())
+//                .eq(dto.getDangerAreaId() != null, BizDangerArea::getWorkfaceId, dto.getWorkfaceId())
                 .eq(dto.getWorkfaceId() != null , BizDangerArea::getWorkfaceId , dto.getWorkfaceId())
                 .eq(StrUtil.isNotEmpty(dto.getLevel()), BizDangerArea::getLevel, dto.getLevel());
         IPage<BizDangerAreaVo> list = bizDangerAreaMapper.selectJoinPage(pagination,BizDangerAreaVo.class,queryWrapper);

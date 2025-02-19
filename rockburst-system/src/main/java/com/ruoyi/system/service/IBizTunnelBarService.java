@@ -5,6 +5,7 @@ import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.dto.BizTunnelBarDto;
+import com.ruoyi.system.domain.vo.BizTunnelBarVo;
 
 /**
  *
@@ -19,7 +20,7 @@ public interface IBizTunnelBarService extends IService<BizTunnelBar>
     public BizTunnelBar selectEntityById(Long id);
 
 
-    public MPage<BizTunnelBar> selectEntityList(BizTunnelBarDto dto, Pagination pagination);
+    public MPage<BizTunnelBarVo> selectEntityList(BizTunnelBarDto dto, Pagination pagination);
 
 
     public int insertEntity(BizTunnelBarDto dto);
