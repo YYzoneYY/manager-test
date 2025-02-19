@@ -35,6 +35,7 @@ import com.ruoyi.system.domain.excel.ChartDataAll;
 import com.ruoyi.system.domain.vo.*;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizProjectRecordService;
+import com.ruoyi.system.service.PlanPastService;
 import com.ruoyi.system.service.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -109,7 +110,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     ApachePoiLineChart11 apachePoiLineChart;
 
     @Autowired
-    PlanService planService;
+    PlanPastService planService;
 
 
 
