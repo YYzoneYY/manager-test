@@ -42,4 +42,34 @@ public class DataJudgeUtils {
         }
         return flag;
     }
+
+    public static boolean compare(String s, String min) {
+        boolean flag = false;
+        double s1 = Double.parseDouble(s);
+        double min1 = Double.parseDouble(min);
+        if (s1 < min1) {
+            flag = true;
+        }
+        return flag;
+    }
+
+    public static boolean compareTwo(String s, String min) {
+        boolean flag = false;
+        double s1 = Double.parseDouble(s);
+        double min1 = Double.parseDouble(min);
+        if (s1 <= min1) {
+            flag = true;
+        }
+        return flag;
+    }
+
+    public static boolean absoluteValueCompare(String s, String min) {
+        boolean flag = false;
+        double s1 = Double.parseDouble(s);
+        double min1 = Double.parseDouble(min);
+        if (Math.abs(s1) > Math.abs(min1)) {
+            flag = true;
+        }
+        return flag;
+    }
 }

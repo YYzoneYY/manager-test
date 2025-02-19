@@ -57,7 +57,7 @@ public class BizProjectAppController extends BaseController
     private IBizVideoService bizVideoService;
 
     @Autowired
-    private PlanService planService;
+    private PlanPastService planPastService;
 
     @Autowired
     private SysProjectTypeMapper sysProjectTypeMapper;

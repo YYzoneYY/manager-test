@@ -77,6 +77,8 @@ public class PressureHoleFormsServiceImpl implements PressureHoleFormsService {
                 .between(BizProjectRecord::getConstructTime, startTime, endTime)
                 .orderByDesc(BizProjectRecord::getConstructTime));
         bizProjectRecords.forEach(bizProjectRecord -> {
+            String constructionPersonnel = "";
+            String inspector = "";
             PressureHoleImportDTO pressureHoleImportDTO = new PressureHoleImportDTO();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             pressureHoleImportDTO.setConstructTime(dateFormat.format(bizProjectRecord.getConstructTime()));
@@ -107,8 +109,14 @@ public class PressureHoleFormsServiceImpl implements PressureHoleFormsService {
             pressureHoleImportDTO.setHeight(String.valueOf(bizDrillRecord.getHeight()));
             pressureHoleImportDTO.setRealDeep(String.valueOf(bizDrillRecord.getRealDeep()));
             pressureHoleImportDTO.setDiameter(String.valueOf(bizDrillRecord.getDiameter()));
-            pressureHoleImportDTO.setWorker(getPersonalName("1", bizProjectRecord.getWorker())); // 获取施工人员名称
-            pressureHoleImportDTO.setAccepter(getPersonalName("2", bizProjectRecord.getAccepter())); // 获取验收人员名称
+            if (ObjectUtil.isNotNull(bizProjectRecord.getWorker())){
+                constructionPersonnel = getPersonalName("1", bizProjectRecord.getWorker());
+            }
+            pressureHoleImportDTO.setWorker(constructionPersonnel); // 获取施工人员名称
+            if (ObjectUtil.isNotNull(bizProjectRecord.getAccepter())) {
+                inspector = getPersonalName("2", bizProjectRecord.getAccepter());
+            }
+            pressureHoleImportDTO.setAccepter(inspector); // 获取验收人员名称
             String d = sysDictDataMapper.selectDictLabel(ConstantsInfo.DRILL_DEVICE_DICT_TYPE, bizDrillRecord.getBorer()); // 获取钻孔设备(施工工具)
             pressureHoleImportDTO.setBorer(d);
             importDTOList.add(pressureHoleImportDTO);

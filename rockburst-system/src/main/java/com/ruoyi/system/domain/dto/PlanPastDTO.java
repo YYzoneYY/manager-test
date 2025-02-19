@@ -1,7 +1,6 @@
-package com.ruoyi.system.domain.vo;
+package com.ruoyi.system.domain.dto;
 
 import com.ruoyi.system.domain.Entity.PlanPastEntity;
-import com.ruoyi.system.domain.dto.RelatesInfoDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,7 +15,7 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class PlanVO extends PlanPastEntity {
+public class PlanPastDTO extends PlanPastEntity {
 
     @ApiModelProperty(value = "目录id")
     private Long contentsId;
@@ -30,8 +29,8 @@ public class PlanVO extends PlanPastEntity {
     @ApiModelProperty(value = "计划结束时间格式化")
     private String endTimeFmt;
 
-    @ApiModelProperty(value = "状态格式化")
-    private String statusFmt;
+    @ApiModelProperty(value = "审核结果")
+    private String auditResult;
 
     @ApiModelProperty(value = "驳回原因")
     private String rejectReason;
