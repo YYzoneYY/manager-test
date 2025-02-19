@@ -3,10 +3,13 @@ package com.ruoyi.system.domain.dto;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.ruoyi.system.constant.GroupAdd;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * 矿井管理对象 biz_mine
@@ -85,6 +88,14 @@ public class BizTravePointDto
     @ApiModelProperty(value = "距标记点距离")
     @TableField()
     private Double distance;
+
+
+    @ApiModelProperty(value = "纬度")
+    private String latitude;
+
+    @NotNull(groups = GroupAdd.class)
+    @ApiModelProperty(value = "经度")
+    private String longitude;
 
 
 

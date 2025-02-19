@@ -18,7 +18,7 @@ public class BizProjectRecordListVo extends BizProjectRecord {
 
     public String getConstructLocation() {
         if(BizBaseConstant.CONSTRUCT_TYPE_J.equals(super.getConstructType())){
-            System.out.println("constructLocation = " + constructLocation);
+//            System.out.println("constructLocation = " + constructLocation);
             return super.getTunnelName();
         }
         return super.getWorkfaceName();
@@ -26,7 +26,7 @@ public class BizProjectRecordListVo extends BizProjectRecord {
 
     public void setConstructLocation(String constructLocation) {
         if(BizBaseConstant.CONSTRUCT_TYPE_J.equals(super.getConstructType())){
-            System.out.println("constructLocation = " + constructLocation);
+//            System.out.println("constructLocation = " + constructLocation);
             this.constructLocation =  super.getTunnelName();
         }
         this.constructLocation = super.getWorkfaceName();

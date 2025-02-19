@@ -10,6 +10,7 @@ import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.utils.MathUtil;
 import com.ruoyi.system.constant.BizBaseConstant;
+import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
@@ -23,9 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 矿井管理Service业务层处理
@@ -42,6 +45,101 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
 
     @Autowired
     private TunnelMapper tunnelMapper;
+
+    @Override
+    public BizPresetPoint getPresetPoint(Long pointId,Double meter,Double spaced) {
+        Double rest = meter + spaced;
+        if(rest <= 0){
+            BizPresetPoint bizPresetPoint = new BizPresetPoint();
+            bizPresetPoint.setPointId(pointId).setMeter(rest);
+            return bizPresetPoint;
+        }
+        //获取下一个间隔距离的导线点
+        BizPresetPoint okkPoint = getNextSpaced(pointId,rest);
+        return okkPoint;
+    }
+
+    @Override
+    public Long judgePointInArea(Long pointId, Double meter) {
+        BizTravePoint point =  this.getById(pointId);
+
+        return 1l;
+    }
+
+    /**
+     * 获取下一个间隔的导线点加 前距离
+     * @param pointId
+     * @param rest
+     * @return
+     */
+    BizPresetPoint getNextSpaced(Long pointId,Double rest){
+        BizTravePoint nextPoint = getNextPoint(pointId);
+        if(nextPoint == null || nextPoint.getPointId() == null){
+            return null;
+        }
+        rest = rest - nextPoint.getPrePointDistance();
+        if(rest <= 0){
+            BizPresetPoint point = new BizPresetPoint();
+            point.setPointId(nextPoint.getPointId()).setMeter(rest);
+            return point;
+        }
+        return getNextSpaced(nextPoint.getPointId(),rest);
+    }
+
+    @Override
+    public List<Long> getInPointList(Long startPointId, Double startMeter, Long endPointId, Double endMeter) {
+        BizTravePoint startPoint = bizTravePointMapper.selectById(startPointId);
+        BizTravePoint endPoint = bizTravePointMapper.selectById(endPointId);
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizTravePoint::getTunnelId, startPoint.getTunnelId())
+                .between(BizTravePoint::getNo, startPoint.getNo(), endPoint.getNo());
+        List<BizTravePoint> points = bizTravePointMapper.selectList(queryWrapper);
+        List<Long> pointIds = new ArrayList<>();
+        if(points != null && points.size() > 0){
+            pointIds = points.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
+        }
+        if(startMeter > 0){
+            pointIds.remove(startPointId);
+        }
+        if(endMeter < 0){
+            pointIds.remove(endPointId);
+        }
+
+        return pointIds;
+    }
+
+    @Override
+    public BizTravePoint getNextPoint(Long currentPointId) {
+        BizTravePoint current = this.getById(currentPointId);
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizTravePoint::getTunnelId, current.getTunnelId())
+                .eq(BizTravePoint::getNo, current.getNo()+1);
+        List<BizTravePoint> points = bizTravePointMapper.selectList(queryWrapper);
+        if(points != null && points.size() == 1){
+            return points.get(0);
+        }
+        return null;
+    }
+
+
+    @Override
+    public BizTravePoint getPrePoint(Long currentPointId) {
+        BizTravePoint current = this.getById(currentPointId);
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizTravePoint::getTunnelId, current.getTunnelId())
+                .eq(BizTravePoint::getNo, current.getNo()-1);
+        List<BizTravePoint> points = bizTravePointMapper.selectList(queryWrapper);
+        if(points != null && points.size() == 1){
+            return points.get(0);
+        }
+        return null;
+    }
+
+    @Override
+    public BizTravePoint getLatLon(Long point, Double meter) {
+
+        return null;
+    }
 
     @Override
     public MPage<BizTravePointVo> geRuleList(Long locationId,String constructType, Pagination pagination) {
