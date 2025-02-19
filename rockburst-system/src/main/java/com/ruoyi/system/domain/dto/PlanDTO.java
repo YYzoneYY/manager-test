@@ -3,25 +3,20 @@ package com.ruoyi.system.domain.dto;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
 /**
  * @author: shikai
- * @date: 2024/11/22
+ * @date: 2025/2/18
  * @description:
  */
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 public class PlanDTO extends PlanEntity {
 
-    @ApiModelProperty(value = "目录id")
-    private Long contentsId;
-
-    @ApiModelProperty(value = "关联信息")
-    private List<RelatesInfoDTO> relatesInfoDTOS;
+    @ApiModelProperty(value = "区域信息")
+    private List<PlanAreaDTO> planAreaDTOS;
 
     @ApiModelProperty(value = "计划开始时间格式化")
     private String startTimeFmt;

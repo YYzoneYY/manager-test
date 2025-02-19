@@ -93,7 +93,7 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
     void getDayReport(Long mineId, String statsDate , Long deptId, HttpServletResponse response) throws UnsupportedEncodingException;
 
 
-    void get444(HttpServletResponse response) throws IOException;
+    void get444(BizProjectRecordDto1 dto, HttpServletResponse response) throws IOException;
 
 
     void sss555(HttpServletResponse response);

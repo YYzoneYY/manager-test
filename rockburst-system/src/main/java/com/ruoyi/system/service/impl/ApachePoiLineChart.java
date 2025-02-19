@@ -22,13 +22,17 @@ import java.util.List;
 @Service
 public class ApachePoiLineChart
 {
-    public void sssssss(List<String> titles, List<ChartDataAll> data1, HttpServletResponse response) throws IOException {
+    public void sssssss(XSSFWorkbook wb , String sheetName, List<String> titles, List<ChartDataAll> data1, HttpServletResponse response) throws IOException {
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=example.xlsx");
         FileOutputStream fileOut = null;
-        XSSFWorkbook wb = new XSSFWorkbook();
-        String sheetName = "Sheet1";
+//        XSSFWorkbook wb = new XSSFWorkbook();
+        if (wb == null) {
+            wb = new XSSFWorkbook(); // 只有第一次调用时才创建 Workbook
+        }
+
+//        String sheetName = "Sheet1";
         XSSFSheet sheet = wb.createSheet(sheetName);
 
 
@@ -71,6 +75,7 @@ public class ApachePoiLineChart
                 cell.setCellValue(titles.get(j));
             }
 
+            System.out.println("i = " + i);
             for (int k = 0; k < data1.get(i).getChartDataList().size(); k++) {
                 Row r = null;
                 Cell c = null;
@@ -79,6 +84,9 @@ public class ApachePoiLineChart
                     c = r.createCell(i*titles.size()+i);
                 }else {
                     r = sheet.getRow(k+2);
+                    if (r == null) {
+                        r = sheet.createRow(k + 2);
+                    }
                     c = r.createCell(i*titles.size()+i);
                 }
                 c.setCellValue(data1.get(i).getChartDataList().get(k).getTitle());
@@ -124,7 +132,7 @@ public class ApachePoiLineChart
             XSSFDrawing drawing = sheet.createDrawingPatriarch();
             // 前四个默认0，[0,5]：从0列5行开始;[7,26]:到7列26行结束
             // 默认宽度(14-8)*12
-            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5+k*14, 7, 26+k*14);
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, 5+k*30, 7, 26+k*30);
             // 创建一个chart对象
             XSSFChart chart = drawing.createChart(anchor);
             // 标题
@@ -142,7 +150,7 @@ public class ApachePoiLineChart
                 XDDFNumericalDataSource<Double> area = XDDFDataSourcesFactory.fromNumericCellRange(sheet, new CellRangeAddress(i+2, i+2, 1+k*titles.size()+k, k*titles.size()+k+titles.size()));
                 XDDFLineChartData.Series series1 = (XDDFLineChartData.Series) data.addSeries(countries, area);
                 // 折线图例标题
-                String title = data1.get(0).getChartDataList().get(i).getTitle();
+                String title = data1.get(k).getChartDataList().get(i).getTitle();
                 System.out.println("title = " + title);
                 series1.setTitle(String.valueOf(title)+"值", null);
                 // 直线

@@ -1,6 +1,6 @@
 package com.ruoyi.system.domain.vo;
 
-import com.ruoyi.system.domain.Entity.PlanEntity;
+import com.ruoyi.system.domain.Entity.PlanPastEntity;
 import com.ruoyi.system.domain.dto.RelatesInfoDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class PlanVO extends PlanEntity {
+public class PlanVO extends PlanPastEntity {
 
     @ApiModelProperty(value = "目录id")
     private Long contentsId;

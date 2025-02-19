@@ -215,4 +215,8 @@ public class BizProjectRecord extends BaseSelfEntity
 
     @ApiModelProperty(value = "标识(适用于审核）")
     private String tag;
+
+
+    @TableField(exist = false)
+    private String pointName;
 }

@@ -2,7 +2,6 @@ package com.ruoyi.system.domain.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +12,8 @@ public class BizProjectRecordDto1 {
 
 
 
-
+    @ApiModelProperty(value = "search -- workfaceId")
+    private Long workfaceId;
 
 
 

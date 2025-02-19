@@ -5,7 +5,7 @@ import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.PlanAuditEntity;
 import com.ruoyi.system.domain.dto.PlanAuditDTO;
-import com.ruoyi.system.domain.dto.PlanDTO;
+import com.ruoyi.system.domain.dto.PlanPastDTO;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
 
 /**
@@ -20,7 +20,7 @@ public interface PlanAuditService extends IService<PlanAuditEntity> {
      * @param planId 计划id
      * @return 返回结果
      */
-    PlanDTO audit(Long planId);
+    PlanPastDTO audit(Long planId);
 
     /**
      * 审核

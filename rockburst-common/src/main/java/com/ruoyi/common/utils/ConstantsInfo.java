@@ -48,6 +48,9 @@ public class ConstantsInfo {
     public static final String SUPPORT_FORM_DICT_TYPE = "support_form";
     public static final String AUDIT_STATUS_DICT_TYPE = "audit_status";
     public static final String PROFESSION_DICT_TYPE = "profession";
+    public static final String DRILL_TYPE_DICT_TYPE = "drill_type";
+    public static final String TYPE_DICT_TYPE = "type";
+    public static final String DRILL_DEVICE_DICT_TYPE = "drill_device";
 
 
     public static final String WORKLOAD = "工作量";
@@ -92,6 +95,11 @@ public class ConstantsInfo {
     public static final String TUNNELING = "1";
     // 类型 - 回采
     public static final String STOPE = "2";
+
+    // 施工员
+    public static final String CONSTRUCTION_WORKER = "1";
+    // 验收员
+    public static final String INSPECTOR = "2";
 
     public static final String ONE_TYPE = "1";
     public static final String TWO_TYPE = "2";

@@ -13,7 +13,7 @@ import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.domain.BizProjectRecord;
-import com.ruoyi.system.domain.Entity.PlanEntity;
+import com.ruoyi.system.domain.Entity.PlanPastEntity;
 import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
@@ -23,7 +23,7 @@ import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import com.ruoyi.system.service.IBizDrillRecordService;
 import com.ruoyi.system.service.IBizProjectRecordService;
 import com.ruoyi.system.service.IBizVideoService;
-import com.ruoyi.system.service.PlanService;
+import com.ruoyi.system.service.PlanPastService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -52,7 +52,7 @@ public class BizProjectRecordController extends BaseController
     private IBizVideoService bizVideoService;
 
     @Autowired
-    private PlanService planService;
+    private PlanPastService planPastService;
 
     /**
      * 查询工程填报记录列表
@@ -72,21 +72,21 @@ public class BizProjectRecordController extends BaseController
     @ApiOperation("查询施工计划列表")
 //    @PreAuthorize("@ss.hasPermi('project:record:list')")
     @GetMapping("/planList")
-    public R<MPage<PlanEntity>> planlist(@ParameterObject BizProjectPlanDto dto, Pagination pagination)
+    public R<MPage<PlanPastEntity>> planlist(@ParameterObject BizProjectPlanDto dto, Pagination pagination)
     {
         long timestamp = System.currentTimeMillis();
-        MPJLambdaWrapper<PlanEntity> queryWrapper = new MPJLambdaWrapper<PlanEntity>();
-        queryWrapper.select(PlanEntity::getPlanId, PlanEntity::getPlanName)
+        MPJLambdaWrapper<PlanPastEntity> queryWrapper = new MPJLambdaWrapper<PlanPastEntity>();
+        queryWrapper.select(PlanPastEntity::getPlanId, PlanPastEntity::getPlanName)
                 .leftJoin(RelatesInfoEntity.class, RelatesInfoEntity::getPlanId, RelatesInfoEntity::getPlanId)
-                .eq(StrUtil.isNotEmpty(dto.getDrillType()), PlanEntity::getDrillType, dto.getDrillType())
-                .eq(StrUtil.isNotEmpty(dto.getState()), PlanEntity::getState, dto.getState())
-                .eq(StrUtil.isNotEmpty(dto.getType()), PlanEntity::getType,dto.getType())
+                .eq(StrUtil.isNotEmpty(dto.getDrillType()), PlanPastEntity::getDrillType, dto.getDrillType())
+                .eq(StrUtil.isNotEmpty(dto.getState()), PlanPastEntity::getState, dto.getState())
+                .eq(StrUtil.isNotEmpty(dto.getType()), PlanPastEntity::getType,dto.getType())
                 .eq(StrUtil.isNotEmpty(dto.getType()), RelatesInfoEntity::getType,dto.getType())
                 .eq(dto.getLocationId() != null ,RelatesInfoEntity::getPositionId, dto.getLocationId())
-                .gt(dto.getIsfinish() != null && dto.getIsfinish() == 0,PlanEntity::getStartTime, timestamp)
+                .gt(dto.getIsfinish() != null && dto.getIsfinish() == 0, PlanPastEntity::getStartTime, timestamp)
                 .and(dto.getIsfinish() != null && dto.getIsfinish() == 1,
-                        i->i.le(PlanEntity::getStartTime,timestamp).ge(PlanEntity::getEndTime,timestamp));
-        IPage<PlanEntity> pages =  planService.page(pagination, queryWrapper);
+                        i->i.le(PlanPastEntity::getStartTime,timestamp).ge(PlanPastEntity::getEndTime,timestamp));
+        IPage<PlanPastEntity> pages =  planPastService.page(pagination, queryWrapper);
         return R.ok(new MPage<>(pages));
     }
 

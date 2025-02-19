@@ -26,6 +26,14 @@ public class BizProjectCDMAP {
     @ApiModelProperty(value = "施工地点")
     private Long tunnelId;
 
+    @ApiModelProperty(value = "施工地点")
+    private String pointName;
+
+
+    @ApiModelProperty(value = "施工地点")
+    private String tunnelName;
+
+
 
 
 

@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 @ApiModel("工程计划")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("plan")
+@TableName("plan_copy")
 public class PlanEntity extends BusinessBaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -33,6 +33,16 @@ public class PlanEntity extends BusinessBaseEntity implements Serializable {
     @NotNull(groups = {ParameterValidationUpdate.class}, message = "计划id不能为空")
     @TableId(value = "plan_id", type = IdType.AUTO)
     private Long planId;
+
+    @ApiModelProperty(value = "年度")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "年度不能为空")
+    @TableField("annual")
+    private String annual;
+
+    @ApiModelProperty(value = "所属工作面")
+    @NotNull(groups = {ParameterValidationOther.class}, message = "工作面id不能为空")
+    @TableField("workface_id")
+    private Long workfaceId;
 
     @ApiModelProperty(value = "计划类型")
     @NotBlank(groups = {ParameterValidationOther.class}, message = "计划类型不能为空")
@@ -59,20 +69,19 @@ public class PlanEntity extends BusinessBaseEntity implements Serializable {
     private BigDecimal totalHoleDepth;
 
     @ApiModelProperty(value = "钻孔类型")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "钻孔类型不能为空")
     @TableField("drill_type")
     private String drillType;
 
     @ApiModelProperty(value = "计划开始时间")
+    @NotNull(groups = {ParameterValidationOther.class}, message = "计划开始时间不能为空")
     @TableField("start_time")
     private Long startTime;
 
     @ApiModelProperty(value = "计划结束时间")
+    @NotNull(groups = {ParameterValidationOther.class}, message = "计划结束时间不能为空")
     @TableField("end_time")
     private Long endTime;
-
-    @ApiModelProperty(value = " 布置方式")
-    @TableField("arrangement")
-    private String arrangement;
 
     @ApiModelProperty(value = "状态")
     @TableField("state")

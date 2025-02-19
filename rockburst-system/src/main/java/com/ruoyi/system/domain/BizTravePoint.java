@@ -60,6 +60,13 @@ public class BizTravePoint extends BaseSelfEntity
     @TableField()
     private String axisz;
 
+    @ApiModelProperty(value = "经度")
+    @TableField()
+    private String longitude;
+
+    @ApiModelProperty(value = "纬度")
+    @TableField()
+    private String latitude;
 
     @ApiModelProperty(value = "状态")
     @TableField()
@@ -77,7 +84,7 @@ public class BizTravePoint extends BaseSelfEntity
     @TableField()
     private Double prePointDistance;
 
-    @ApiModelProperty(value = "顶点 1 是 0 否")
+    @ApiModelProperty(value = "顶点 1 是 0 否 距离切眼最近的点为顶点,需要记录距切眼距离")
     @TableField()
     private Boolean isVertex;
 
