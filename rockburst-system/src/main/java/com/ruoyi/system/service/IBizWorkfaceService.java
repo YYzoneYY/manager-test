@@ -28,6 +28,13 @@ public interface IBizWorkfaceService  extends MPJDeepService<BizWorkface>
 
     public List<BizWorkfaceVo> selectWorkfaceVoList();
 
+
+    /**
+     * 根据规划查询工作面
+     * @return
+     */
+    public MPage<BizWorkface> getWorkfaceByScheme(String scheme,String workfaceName,Pagination pagination);
+
     /**
      * 查询工作面管理列表
      * 

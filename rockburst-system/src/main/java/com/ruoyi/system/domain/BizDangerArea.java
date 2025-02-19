@@ -56,6 +56,9 @@ public class BizDangerArea extends BaseSelfEntity
     @ApiModelProperty(value = "地图位置")
     private String svg;
 
+    @ApiModelProperty(value = "导线点集合")
+    private String pointlist;
+
     @ApiModelProperty(value = "原始位置")
     private String source;
 

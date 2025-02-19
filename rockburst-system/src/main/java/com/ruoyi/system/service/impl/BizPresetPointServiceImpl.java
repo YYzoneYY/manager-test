@@ -6,17 +6,23 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.system.domain.BizPlanPreset;
 import com.ruoyi.system.domain.BizPresetPoint;
+import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizTunnelBar;
+import com.ruoyi.system.domain.Entity.PlanPastEntity;
+import com.ruoyi.system.domain.dto.BizPlanPrePointDto;
 import com.ruoyi.system.domain.dto.BizPresetPointDto;
-import com.ruoyi.system.mapper.BizPresetPointMapper;
-import com.ruoyi.system.mapper.BizTunnelBarMapper;
+import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizPresetPointService;
+import com.ruoyi.system.service.IBizTravePointService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -34,6 +40,16 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
 
     @Autowired
     private BizTunnelBarMapper bizTunnelBarMapper;
+    @Autowired
+    private IBizTravePointService bizTravePointService;
+
+    @Autowired
+    private PlanPastMapper planPastMapper;
+
+    @Autowired
+    private BizPlanPresetMapper bizPlanPresetMapper;
+    @Autowired
+    private BizTravePointMapper bizTravePointMapper;
 
 
     @Override
@@ -63,19 +79,112 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
     }
 
     @Override
-    public boolean setPlanPrePoint(Long planId, List<BizPresetPointDto> dtos) {
+    public boolean setPlanPrePoint(Long planId, List<BizPlanPrePointDto> dtos) {
+
+        PlanPastEntity entity =  planPastMapper.selectById(planId);
+
+        List<BizPresetPoint> bizPresetPoints = new ArrayList<>();
+        for (BizPlanPrePointDto dto : dtos) {
+            //
+            if(dto.getStartPointId() == null || dto.getEndPointId() == null){
+                continue;
+            }
+            List<BizPresetPoint> startpoints = this.getPrePointByPointMeter(dto.getStartPointId(),dto.getStartMeter(),entity.getDrillType());
+            List<BizPresetPoint> endpoints = this.getPrePointByPointMeter(dto.getEndPointId(),dto.getEndMeter(),entity.getDrillType());
+            bizPresetPoints.addAll(startpoints);
+            bizPresetPoints.addAll(endpoints);
+        }
+        for (BizPresetPoint dto : bizPresetPoints) {
+            BizPlanPreset bizPlanPreset = new BizPlanPreset();
+            bizPlanPreset.setPlanId(planId)
+                    .setPresetPointId(dto.getPresetPointId())
+                    .setBottom(String.join(dto.getLongitude(),",",dto.getLatitude()))
+                    .setTop(String.join(dto.getLongitudet(),",",dto.getLongitudet()));
+            bizPlanPresetMapper.insert(bizPlanPreset);
+        }
         return true;
     }
 
+
+    @Override
+    public List<BizPresetPoint> getPrePointByPointRange(Long startPointId, Long endPointId, String drillType) {
+        //同一个导线点
+        if(startPointId == endPointId){
+            QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizPresetPoint::getPointId, startPointId)
+                    .eq(BizPresetPoint::getDrillType, drillType);
+            return bizPresetPointMapper.selectList(queryWrapper);
+        }
+
+        //必须起始小于结束
+        BizTravePoint startPoint = bizTravePointService.getById(startPointId);
+        BizTravePoint endPoint = bizTravePointService.getById(endPointId);
+        if(startPoint.getNo() > endPoint.getNo()){
+            return null;
+        }
+
+        //获取
+        List<Long> pointIds = new ArrayList<>();
+        List<BizTravePoint> points = bizTravePointService.getPointByRange(startPointId, endPointId);
+        if(points != null && points.size() > 0){
+            pointIds = points.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
+        }else {
+            return null;
+        }
+        QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().in(BizPresetPoint::getPointId, pointIds)
+                .eq(BizPresetPoint::getDrillType, drillType);
+        return bizPresetPointMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<BizPresetPoint> getPrePointByPointMeter(Long pointId, Double meter, String drillType) {
+        if(meter == 0.0){
+            QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId)
+                    .eq(BizPresetPoint::getMeter,0)
+                    .eq(BizPresetPoint::getDrillType,drillType);
+            List<BizPresetPoint> list = bizPresetPointMapper.selectList(queryWrapper);
+            return list;
+        }
+        //判断前后
+        if(meter > 0){
+           BizTravePoint aftePoint = bizTravePointService.getNextPoint(pointId);
+           //后一个导线点不存在
+           if(aftePoint == null || aftePoint.getPointId() == null){
+                return null;
+           }
+            Double distance = aftePoint.getPrePointDistance();
+           //两导线点间距离 不足 传入的距离
+           if(distance - meter < 0){
+               return null;
+           }
+           meter = meter - distance;
+           pointId = aftePoint.getPointId();
+        }
+
+        QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId)
+                .ge(BizPresetPoint::getMeter,meter)
+                .eq(BizPresetPoint::getDrillType,drillType);
+        List<BizPresetPoint> list = bizPresetPointMapper.selectList(queryWrapper);
+        return list;
+
+    }
+
+
+
     @Override
     public int savebarPresetPoint(BizPresetPoint dto) {
+        BizTravePoint point11 =  bizTravePointMapper.selectById(dto.getPointId());
         //先存生产帮,再存非生产帮
         QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(BizTunnelBar::getTunnelId, dto.getTunnelId());
+        queryWrapper.lambda().eq(BizTunnelBar::getTunnelId, point11.getTunnelId());
         List<BizTunnelBar> tunnelBars = bizTunnelBarMapper.selectList(queryWrapper);
         for (BizTunnelBar tunnelBar : tunnelBars) {
-            BizPresetPoint point = sssss(tunnelBar.getRange(),tunnelBar.getDirectAngle(),dto);
+            BizPresetPoint point = sssss(tunnelBar.getDirectRange(),tunnelBar.getDirectAngle(),dto);
             point.setTunnelBarId(tunnelBar.getBarId());
+            point.setPresetPointId(null);
             this.save(point);
         }
         return 0;
@@ -85,8 +194,8 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
     public BizPresetPoint sssss(Double x,Integer jio,BizPresetPoint point){
         BigDecimal lonMove =  new BigDecimal(Math.sin(Math.toRadians(jio))).multiply(new BigDecimal(x));
         BigDecimal latMove =  new BigDecimal(Math.cos(Math.toRadians(jio))).multiply(new BigDecimal(x));
-        point.setLatitudet(new BigDecimal(point.getLatitudet()).add(latMove)+"");
-        point.setLongitudet(new BigDecimal(point.getLongitudet()).add(lonMove)+"");
+//        point.setLatitudet(new BigDecimal(point.getLatitudet()).add(latMove)+"");
+//        point.setLongitudet(new BigDecimal(point.getLongitudet()).add(lonMove)+"");
         return point;
     }
 }

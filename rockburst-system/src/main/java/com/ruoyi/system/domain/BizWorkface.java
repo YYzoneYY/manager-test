@@ -146,5 +146,11 @@ public class BizWorkface extends BaseSelfEntity
     private String notes;
 
 
+    @ApiModelProperty(value = "规划,逗号分隔")
+    private String scheme;
+
+    @ApiModelProperty(value = "地图位置")
+    private String svg;
+
 
 }

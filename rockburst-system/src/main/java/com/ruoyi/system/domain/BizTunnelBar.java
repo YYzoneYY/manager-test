@@ -49,7 +49,7 @@ public class BizTunnelBar extends BaseSelfEntity
     private Integer directAngle;
 
     @ApiModelProperty(value = "预设孔方向距离")
-    private Double range;
+    private Double directRange;
 
     @ApiModelProperty(value = "地图位置")
     private String svg;
