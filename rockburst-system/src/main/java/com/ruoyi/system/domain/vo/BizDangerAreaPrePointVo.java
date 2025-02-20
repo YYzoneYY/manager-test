@@ -3,9 +3,6 @@ package com.ruoyi.system.domain.vo;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.ruoyi.system.domain.BizDangerArea;
 import com.ruoyi.system.domain.BizDangerLevel;
-import com.ruoyi.system.domain.BizTravePoint;
-import com.ruoyi.system.domain.BizWorkface;
-import com.ruoyi.system.domain.Entity.TunnelEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -23,28 +20,14 @@ import lombok.experimental.Accessors;
 @Setter
 @Accessors(chain = true)
 @ApiModel("矿井危险区对象")
-public class BizDangerAreaVo extends BizDangerArea
+public class BizDangerAreaPrePointVo extends BizDangerArea
 {
 
     @ApiModelProperty(value = "危险等级")
     @TableField(exist = false)
     BizDangerLevel bizDangerLevel;
 
-    @ApiModelProperty(value = "工作面")
-    @TableField(exist = false)
-    BizWorkface workface;
 
-    @ApiModelProperty(value = "巷道")
-    @TableField(exist = false)
-    TunnelEntity tunnel;
-
-    @ApiModelProperty(value = "开始导线点")
-    @TableField(exist = false)
-    BizTravePoint startPoint;
-
-    @ApiModelProperty(value = "结束导线点")
-    @TableField(exist = false)
-    BizTravePoint endPoint;
 
 
 

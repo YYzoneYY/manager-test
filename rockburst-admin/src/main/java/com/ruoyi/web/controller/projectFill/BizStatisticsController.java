@@ -1,7 +1,11 @@
 package com.ruoyi.web.controller.projectFill;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.BasePermission;
@@ -9,16 +13,18 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.constant.BizBaseConstant;
-import com.ruoyi.system.domain.BizDrillRecord;
-import com.ruoyi.system.domain.BizProjectRecord;
-import com.ruoyi.system.domain.BizVideo;
+import com.ruoyi.system.domain.*;
+import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizPlanDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto1;
 import com.ruoyi.system.domain.dto.project.BizCardVDto;
 import com.ruoyi.system.domain.dto.project.BizWashProofDto;
+import com.ruoyi.system.domain.utils.CrumbWeight;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordPaibanVo;
+import com.ruoyi.system.domain.vo.BizPulverizedCoalDaily;
+import com.ruoyi.system.mapper.BizProjectRecordMapper;
 import com.ruoyi.system.service.IBizDrillRecordService;
 import com.ruoyi.system.service.IBizProjectRecordService;
 import com.ruoyi.system.service.IBizVideoService;
@@ -30,8 +36,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 工程填报记录Controller
@@ -50,6 +55,8 @@ public class BizStatisticsController extends BaseController
     private IBizVideoService bizVideoService;
     @Autowired
     private IBizDrillRecordService bizDrillRecordService;
+    @Autowired
+    private BizProjectRecordMapper bizProjectRecordMapper;
 
 
     @ApiOperation("防冲工程查询")
@@ -115,6 +122,68 @@ public class BizStatisticsController extends BaseController
     @GetMapping("get666")
     public void get666(BizProjectRecordDto1 dto , HttpServletResponse response) throws IOException {
         bizProjectRecordService.get444(dto,response);
+    }
+
+//    @Anonymous
+    @ApiOperation("煤粉量查询")
+    @GetMapping("getPulverizedCoalDaily")
+    public R<MPage<BizPulverizedCoalDaily>> getPulverizedCoalDaily(@RequestParam(name = "工作面id", required = false) Long workfaceId,
+                                       @RequestParam(name = "巷道id", required = false) Long tunnelId,
+                                       @RequestParam(name = "施工类型", required = false) String constructType,
+                                       @RequestParam(name = "开始日期", required = false) String startDate,
+                                       @RequestParam(name = "结束日期", required = false) String endDate,
+                                       @ParameterObject Pagination pagination) {
+
+        MPJLambdaWrapper<BizProjectRecord> mpjLambdaWrapper = new MPJLambdaWrapper<>();
+        mpjLambdaWrapper
+                .selectAs(BizProjectRecord::getConstructTime,BizPulverizedCoalDaily::getConstructTime)
+                .selectAs(BizWorkface::getWorkfaceName,BizPulverizedCoalDaily::getWorkfaceName)
+                .selectAs(TunnelEntity::getTunnelName,BizPulverizedCoalDaily::getTunnelName)
+                .selectAs(BizTravePoint::getPointName,BizPulverizedCoalDaily::getPointName)
+                .selectCollection(BizDrillRecord.class,BizPulverizedCoalDaily::getDrillRecordList)
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizProjectRecord::getProjectId)
+                .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizProjectRecord::getWorkfaceId)
+                .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId)
+                .leftJoin(BizDrillRecord.class,BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
+                .eq(workfaceId != null ,BizProjectRecord::getWorkfaceId, workfaceId)
+                .eq(tunnelId != null , BizProjectRecord::getTunnelId,tunnelId)
+                .eq(StrUtil.isNotEmpty(constructType),BizProjectRecord::getConstructType,constructType)
+                .between(StrUtil.isNotEmpty(startDate) && StrUtil.isNotEmpty(endDate),BizProjectRecord::getConstructTime,startDate,endDate);
+
+        IPage<BizPulverizedCoalDaily> sss =  bizProjectRecordMapper.selectJoinPage(pagination, BizPulverizedCoalDaily.class,mpjLambdaWrapper);
+        List<BizPulverizedCoalDaily> voList =  sss.getRecords();
+        List<BizPulverizedCoalDaily> voList1 =  new ArrayList<>();
+        Integer s = voList.size();
+        for (int i = 0; i < s; i++) {
+            BizPulverizedCoalDaily bizPulverizedCoalDaily = voList.get(i);
+            String a =  bizPulverizedCoalDaily.getWorkfaceName() +
+                    "-" + bizPulverizedCoalDaily.getTunnelName() +
+                    "-"+ bizPulverizedCoalDaily.getPointName() +
+                    "-" +bizPulverizedCoalDaily.getConstructRange();
+            bizPulverizedCoalDaily.setConstructLocation(a);
+            System.out.println("bizPulverizedCoalDaily = " + bizPulverizedCoalDaily);
+            if(bizPulverizedCoalDaily != null && bizPulverizedCoalDaily.getDrillRecordList() != null && bizPulverizedCoalDaily.getDrillRecordList().size() > 0){
+                BizDrillRecord drillRecord = bizPulverizedCoalDaily.getDrillRecordList().get(0);
+                String crumStr = drillRecord.getCrumbWeight();
+                bizPulverizedCoalDaily.setDrillRealDeep(drillRecord.getRealDeep()+"");
+                if(StrUtil.isNotEmpty(crumStr) && !crumStr.equals("[]") && !crumStr.equals("\"\"")){
+                    List<CrumbWeight> crumbWeights = JSONUtil.toList(crumStr, CrumbWeight.class);
+                    double sum = crumbWeights.stream()
+                            .mapToDouble(CrumbWeight::getValue1)
+                            .sum();
+                    Optional<CrumbWeight> maxPoint = crumbWeights.stream().max(Comparator.comparing(CrumbWeight::getValue1));
+                    if (maxPoint.isPresent()) {
+                        bizPulverizedCoalDaily.setCoalMax(maxPoint.get().getValue1()+"");
+                        bizPulverizedCoalDaily.setCoalSum(sum+"");
+                    }
+                }
+            }
+            voList1.add(bizPulverizedCoalDaily);
+        }
+        sss.setRecords(null);
+        sss.setRecords(voList1);
+
+        return R.ok(new MPage<>(sss));
     }
 
 

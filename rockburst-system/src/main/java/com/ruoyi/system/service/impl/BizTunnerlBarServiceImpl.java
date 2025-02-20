@@ -2,13 +2,17 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizTunnelBar;
+import com.ruoyi.system.domain.BizWorkface;
+import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizTunnelBarDto;
+import com.ruoyi.system.domain.vo.BizTunnelBarVo;
 import com.ruoyi.system.mapper.BizTunnelBarMapper;
 import com.ruoyi.system.service.IBizTunnelBarService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +38,22 @@ public class BizTunnerlBarServiceImpl extends ServiceImpl<BizTunnelBarMapper, Bi
     }
 
     @Override
-    public MPage<BizTunnelBar> selectEntityList(BizTunnelBarDto dto, Pagination pagination) {
-        QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(dto.getTunnelId() != null, BizTunnelBar::getTunnelId, dto.getTunnelId())
+    public MPage<BizTunnelBarVo> selectEntityList(BizTunnelBarDto dto, Pagination pagination) {
+        MPJLambdaWrapper<BizTunnelBar> queryWrapper = new MPJLambdaWrapper<>();
+        queryWrapper
+                .selectAll(BizTunnelBar.class)
+                .selectAs("t1",BizTravePoint::getPointName,BizTunnelBarVo::getStartPointName)
+                .selectAs("t2",BizTravePoint::getPointName,BizTunnelBarVo::getEndPointName)
+                .selectAs(BizWorkface::getWorkfaceName,BizTunnelBarVo::getWorkfaceName)
+                .selectAs(TunnelEntity::getTunnelName,BizTunnelBarVo::getTunnelName)
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizTunnelBar::getStartPointId)
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizTunnelBar::getEndPointId)
+                .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizTunnelBar::getTunnelId)
+                .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizTunnelBar::getWorkfaceId)
+                .eq(dto.getWorkfaceId() != null , BizTunnelBar::getWorkfaceId,dto.getWorkfaceId())
+                .eq(dto.getTunnelId() != null, BizTunnelBar::getTunnelId, dto.getTunnelId())
                 .eq(StrUtil.isNotEmpty(dto.getType()), BizTunnelBar::getType, dto.getType());
-        IPage<BizTunnelBar> list = bizTunnelBarMapper.selectPage(pagination,queryWrapper);
+        IPage<BizTunnelBarVo> list = bizTunnelBarMapper.selectJoinPage(pagination,BizTunnelBarVo.class,queryWrapper);
         return new MPage<>(list);
     }
 

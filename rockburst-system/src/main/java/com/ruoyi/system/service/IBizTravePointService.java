@@ -22,6 +22,15 @@ public interface IBizTravePointService extends IService<BizTravePoint>
     //导线点加距离,第几个,间隔,返回导线点加距离
     BizPresetPoint getPresetPoint(Long pointId,Double meter,Double spaced);
 
+
+    /**
+     * 根据 起始和结束导线点获取 所有 导线点 列表 包含 起始和结束
+     * @param startPointId
+     * @param endPoinId
+     * @return
+     */
+    List<BizTravePoint> getPointByRange(Long startPointId,Long endPoinId);
+
     /**
      * 给定 导线点加距离,判断是在 哪个 危险区内
      * @param pointId
@@ -29,6 +38,8 @@ public interface IBizTravePointService extends IService<BizTravePoint>
      * @return
      */
     Long judgePointInArea(Long pointId,Double meter);
+
+
 
     List<Long> getInPointList(Long startPointId,Double startMeter,Long endPointId,Double endMeter);
 

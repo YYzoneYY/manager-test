@@ -41,6 +41,10 @@ public class BizPresetPoint extends BaseSelfEntity
     private Long pointId;
 
 
+    @ApiModelProperty(value = "钻孔类型")
+    private String drillType;
+
+
     @ApiModelProperty(value = "实际位置 前后距离")
     private Double meter;
 

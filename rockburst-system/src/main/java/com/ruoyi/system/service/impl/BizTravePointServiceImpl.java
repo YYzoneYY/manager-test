@@ -40,6 +40,11 @@ import java.util.stream.Collectors;
 public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, BizTravePoint> implements IBizTravePointService
 {
 
+    //此 service 不能引用 其他service
+
+
+
+
     @Autowired
     private BizTravePointMapper bizTravePointMapper;
 
@@ -57,6 +62,19 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         //获取下一个间隔距离的导线点
         BizPresetPoint okkPoint = getNextSpaced(pointId,rest);
         return okkPoint;
+    }
+
+
+    @Override
+    public List<BizTravePoint> getPointByRange(Long startPointId, Long endPoinId) {
+       BizTravePoint start =  this.getById(startPointId);
+       BizTravePoint end =  this.getById(startPointId);
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(BizTravePoint::getTunnelId,start.getTunnelId())
+                .between(BizTravePoint::getNo, start.getNo(), end.getNo());
+
+        return this.list(queryWrapper);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizPresetPoint;
+import com.ruoyi.system.domain.dto.BizPlanPrePointDto;
 import com.ruoyi.system.domain.dto.BizPresetPointDto;
 
 import java.util.List;
@@ -31,12 +32,30 @@ public interface IBizPresetPointService extends IService<BizPresetPoint>
 
 
     /**
-     * 计划预设导线点
+     * 计划预设点
      * @param planId
      * @param dtos
      * @return
      */
-    public boolean setPlanPrePoint(Long planId,List<BizPresetPointDto> dtos);
+    public boolean setPlanPrePoint(Long planId,List<BizPlanPrePointDto> dtos);
+
+    /**
+     * 根据开始结束导线点获取区间内所有的预设点
+     * @param startPointId
+     * @param endPointId
+     * @return
+     */
+    public List<BizPresetPoint> getPrePointByPointRange(Long startPointId,Long endPointId,String drillType);
+
+
+    /**
+     * 根据导线点加距离获取区间内所有的预设点
+     * @remark 可以传入 导线点  +  正向距离和 负向距离 以及 0 都可以正常返回
+     * @param pointId
+     * @param meter
+     * @return
+     */
+    public List<BizPresetPoint> getPrePointByPointMeter(Long pointId,Double meter,String drillType);
 
 
 
