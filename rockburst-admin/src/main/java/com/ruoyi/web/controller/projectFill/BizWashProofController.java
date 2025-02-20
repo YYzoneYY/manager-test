@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.controller.BaseController;
-import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
@@ -12,16 +11,13 @@ import com.ruoyi.system.domain.BizPlanPreset;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
-import com.ruoyi.system.domain.dto.project.BizWashProofDto;
 import com.ruoyi.system.domain.vo.BizDangerAreaVo;
-import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import com.ruoyi.system.mapper.BizPlanPresetMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -64,18 +60,18 @@ public class BizWashProofController extends BaseController
     private BizPlanPresetMapper bizPlanPresetMapper;
 
 
-    @ApiOperation("防冲管理")
-    @PreAuthorize("@ss.hasPermi('project:wash:workfacelist')")
-    @GetMapping("/workfacelist")
-    public R<MPage<BizProjectRecordListVo>> workfacelist(@ParameterObject BizWashProofDto dto, Pagination pagination)
-    {
-        return R.ok(bizProjectRecordService.selectproList(new BasePermission(), dto,pagination));
-    }
+//    @ApiOperation("防冲管理")
+//    @PreAuthorize("@ss.hasPermi('project:wash:workfacelist')")
+//    @GetMapping("/workfacelist")
+//    public R<MPage<BizProjectRecordListVo>> workfacelist(@ParameterObject BizWashProofDto dto, Pagination pagination)
+//    {
+//        return R.ok(bizProjectRecordService.selectproList(new BasePermission(), dto,pagination));
+//    }
 
     @ApiOperation("根据规划查询工作面")
     @GetMapping("/getWorkfaceByScheme")
     public R<MPage<BizWorkface>> getWorkfaceByScheme(@RequestParam(value = "规划", required = false) String scheme,
-                                                       @RequestParam(value = "工作面名称", required = true) String workfaceName,
+                                                       @RequestParam(value = "工作面名称", required = false) String workfaceName,
                                                        @ParameterObject  Pagination pagination)
     {
         return R.ok(bizWorkfaceService.getWorkfaceByScheme(scheme, workfaceName, pagination));

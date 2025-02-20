@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.basicInfo;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.annotation.Log;
@@ -24,6 +25,7 @@ import com.ruoyi.system.service.IBizWorkfaceService;
 import com.ruoyi.system.service.SurveyAreaService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +33,8 @@ import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -71,9 +75,9 @@ public class BizWorkfaceController extends BaseController
     @ApiOperation("下拉工作面列表")
 //    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/checkList")
-    public R<List<BizWorkface>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,
-                                          @RequestParam(value = "矿区集合", required = false) Long[] mineIds,
-                                          @RequestParam(value = "采区集合", required = false) Long[] miningAreaIds)
+    public R<List<BizWorkface>> checkList(@RequestParam( required = false) Long[] statuss,
+                                          @RequestParam( required = false) Long[] mineIds,
+                                          @RequestParam( required = false) Long[] miningAreaIds)
     {
         QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
@@ -114,6 +118,59 @@ public class BizWorkfaceController extends BaseController
         }
         return R.ok(bizWorkfaceService.insertBizWorkface(entity));
     }
+
+    @ApiOperation("添加工作面计划")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:schemeEdit')")
+    @Log(title = "添加工作面计划", businessType = BusinessType.UPDATE)
+    @PostMapping("/schemeAdd")
+    public R schemeUpdate(@ApiParam(name = "scheme", value = "规划")  @RequestParam(required = true) String scheme,
+                          @ApiParam(name = "workfaceIds", value = "工作面id集合")  @RequestParam(required = true) Long[] workfaceIds)
+    {
+        QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().select(BizWorkface::getWorkfaceId,BizWorkface::getWorkfaceName,BizWorkface::getScheme)
+                        .in(BizWorkface::getWorkfaceId,workfaceIds);
+        List<BizWorkface> workfaces = bizWorkfaceService.list(queryWrapper);
+        for (BizWorkface workface : workfaces) {
+            if(StrUtil.isEmpty(workface.getScheme())){
+                workface.setScheme(scheme);
+                bizWorkfaceService.updateById(workface);
+                continue;
+            }
+            if(!workface.getScheme().contains(scheme)){
+                workface.setScheme(String.join(",",workface.getScheme()));
+                bizWorkfaceService.updateById(workface);
+            }
+        }
+        return R.ok();
+    }
+
+
+    @ApiOperation("删除工作面规划")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:schemeEdit')")
+//    @Log(title = "删除工作面规划", businessType = BusinessType.UPDATE)
+    @PostMapping("/schemeRemove")
+    public R schemeRemove(@ApiParam(name = "scheme", value = "规划")  @RequestParam(required = true) String scheme,
+                          @ApiParam(name = "workfaceIds", value = "工作面id集合")  @RequestParam(required = true) Long[] workfaceIds)
+    {
+        QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().select(BizWorkface::getWorkfaceId,BizWorkface::getWorkfaceName,BizWorkface::getScheme)
+                .in(BizWorkface::getWorkfaceId,workfaceIds);
+        List<BizWorkface> workfaces = bizWorkfaceService.list(queryWrapper);
+        for (BizWorkface workface : workfaces) {
+            if(StrUtil.isEmpty(workface.getScheme())){
+                continue;
+            }
+            if(workface.getScheme().contains(scheme)){
+                List<String> schemeList = new ArrayList<>(Arrays.asList(workface.getScheme()));
+                schemeList.remove(scheme);
+                schemeList.remove("");
+                workface.setScheme(String.join(",", schemeList));
+                bizWorkfaceService.updateById(workface);
+            }
+        }
+        return R.ok();
+    }
+
 
     /**
      * 修改工作面管理

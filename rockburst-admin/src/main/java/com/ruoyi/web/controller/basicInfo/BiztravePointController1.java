@@ -24,7 +24,6 @@ import com.ruoyi.system.domain.vo.BizTravePointVo;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +45,8 @@ import java.util.stream.Collectors;
  */
 @Api(tags = "basic-导线点管理")
 @RestController
-@RequestMapping("/basicInfo/point")
-public class BiztravePointController extends BaseController
+@RequestMapping("/basicInfo/point111")
+public class BiztravePointController1 extends BaseController
 {
     @Autowired
     private IBizMineService bizMineService;
@@ -70,50 +69,29 @@ public class BiztravePointController extends BaseController
     @ApiOperation("查询导线点管理列表")
     @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
     @GetMapping("/list")
-    public R<MPage<BizTravePoint>> list(@ApiParam(name = "workfaceId", value = "工作面id") @RequestParam(required = false) Long workfaceId,
-                                        @ApiParam(name = "tunnelId", value = "巷道id") @RequestParam( required = false) Long tunnelId,
-                                        @ApiParam(name = "pointName", value = "导线点名称") @RequestParam( required = false) String pointName,
-                                        @ParameterObject Pagination pagination)
+    public R<MPage<BizTravePoint>> list(@ParameterObject BizTravePointDto dto, @ParameterObject Pagination pagination)
     {
         QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<BizTravePoint>();
         queryWrapper.lambda()
-                .like(StrUtil.isNotEmpty( pointName), BizTravePoint::getPointName,pointName)
-                .eq(workfaceId != null , BizTravePoint::getWorkfaceId,workfaceId)
-                .eq(tunnelId != null , BizTravePoint::getTunnelId,tunnelId)
+//                .like(StrUtil.isNotEmpty(dto.getAxisx()),BizTravePoint::getAxisx,dto.getAxisx())
+//                .like(StrUtil.isNotEmpty(dto.getAxisy()),BizTravePoint::getAxisx,dto.getAxisy())
+//                .like(StrUtil.isNotEmpty(dto.getAxisz()),BizTravePoint::getAxisx,dto.getAxisz())
+                .like(StrUtil.isNotEmpty( dto.getPointName()), BizTravePoint::getPointName, dto.getPointName())
+//                .eq(dto.getStatus() != null , BizTravePoint::getStatus,dto.getStatus())
+                .eq(dto.getWorkfaceId() != null , BizTravePoint::getWorkfaceId,dto.getWorkfaceId())
+                .eq(dto.getTunnelId() != null , BizTravePoint::getTunnelId,dto.getTunnelId())
                 .eq(BizTravePoint::getDelFlag, BizBaseConstant.DELFLAG_N);
         IPage<BizTravePoint> list = bizTravePointService.getBaseMapper().selectPage(pagination,queryWrapper);
         return R.ok(new MPage<>(list));
     }
 
 
-//    @ApiOperation("判断输入导线点加距离是否合法")
-////    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
-//    @GetMapping("/checkJudge")
-//    public R<Boolean> checkList(@RequestParam(name = "导线点id", required = false) Long pointId,
-//                                            @RequestParam(name = "距离", required = false) Double meter)
-//    {
-//        if(meter  == 0){
-//            return R.ok(true);
-//        }
-//        if(meter < 0){
-//            BizTravePoint prePoint = bizTravePointService.getPrePoint(pointId);
-//            if(prePoint == null || prePoint.getPointId() == null){
-//                Assert.isTrue(true,"此导线点为第一个导线点,前方向距离为0");
-//            }
-//            if(Double.parseDouble(prePoint.getPrePointDistance()) ){
-//
-//            }
-//
-//        }
-//        return R.ok(list);
-//    }
-
     @ApiOperation("下拉导线点列表-根据状态,工作面 查询导线点")
 //    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
     @GetMapping("/checkList")
-    public R<List<BizTravePoint>> checkList(
-                                            @ApiParam(name = "workfaceIds", value = "工作面集合") @RequestParam(required = false) Long[] workfaceIds,
-                                            @ApiParam(name = "tunnelIds", value = "巷道集合") @RequestParam( required = false) Long[] tunnelIds)
+    public R<List<BizTravePoint>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,
+                                            @RequestParam(value = "工作面合集", required = false) Long[] workfaceIds,
+                                            @RequestParam(value = "巷道合集", required = false) Long[] tunnelIds)
     {
         QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
@@ -396,14 +374,14 @@ public class BiztravePointController extends BaseController
         long i = bizTravePointService.count(queryWrapper);
         Assert.isTrue(i <= 0 , "名称重复");
         queryWrapper.clear();
-//        if(dto.getIsVertex()){
-//            queryWrapper.lambda()
-////                    .eq(BizTravePoint::getIsVertex,dto.getIsVertex())
-//                    .eq(BizTravePoint::getTunnelId,dto.getTunnelId());
-//            long count = bizTravePointService.count(queryWrapper);
-//            Assert.isTrue(count <= 0 , "每条巷道只有一个顶点");
-////            Assert.isTrue(dto.getDistance() != null  , "顶点必须有距离切眼距离");
-//        }
+        if(dto.getIsVertex()){
+            queryWrapper.lambda()
+//                    .eq(BizTravePoint::getIsVertex,dto.getIsVertex())
+                    .eq(BizTravePoint::getTunnelId,dto.getTunnelId());
+            long count = bizTravePointService.count(queryWrapper);
+            Assert.isTrue(count <= 0 , "每条巷道只有一个顶点");
+            Assert.isTrue(dto.getDistance() != null  , "顶点必须有距离切眼距离");
+        }
 
 //        TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
 //        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){

@@ -53,7 +53,7 @@ public class EqtRoofSeparatController extends BaseController
     @ApiOperation("下拉全部电磁辐射列表")
 //    @PreAuthorize("@ss.hasPermi('eqt:roofSeparat:list')")
     @GetMapping("/checkList")
-    public R<List<EqtRoofSeparat>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss)
+    public R<List<EqtRoofSeparat>> checkList()
     {
         QueryWrapper<EqtRoofSeparat> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()

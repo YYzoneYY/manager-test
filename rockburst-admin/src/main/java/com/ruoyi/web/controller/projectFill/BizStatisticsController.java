@@ -30,6 +30,7 @@ import com.ruoyi.system.service.IBizProjectRecordService;
 import com.ruoyi.system.service.IBizVideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -127,12 +128,12 @@ public class BizStatisticsController extends BaseController
 //    @Anonymous
     @ApiOperation("煤粉量查询")
     @GetMapping("getPulverizedCoalDaily")
-    public R<MPage<BizPulverizedCoalDaily>> getPulverizedCoalDaily(@RequestParam(name = "工作面id", required = false) Long workfaceId,
-                                       @RequestParam(name = "巷道id", required = false) Long tunnelId,
-                                       @RequestParam(name = "施工类型", required = false) String constructType,
-                                       @RequestParam(name = "开始日期", required = false) String startDate,
-                                       @RequestParam(name = "结束日期", required = false) String endDate,
-                                       @ParameterObject Pagination pagination) {
+    public R<MPage<BizPulverizedCoalDaily>> getPulverizedCoalDaily(@ApiParam(name = "workfaceId", value = "工作面id") @RequestParam(required = false) Long workfaceId,
+                                                                   @ApiParam(name = "tunnelId", value = "巷道id") @RequestParam(required = false) Long tunnelId,
+                                                                   @ApiParam(name = "constructType", value = "施工类型") @RequestParam( required = false) String constructType,
+                                                                   @ApiParam(name = "startDate", value = "开始日期") @RequestParam( required = false) String startDate,
+                                                                   @ApiParam(name = "endDate", value = "结束日期") @RequestParam(required = false) String endDate,
+                                                                   @ParameterObject Pagination pagination) {
 
         MPJLambdaWrapper<BizProjectRecord> mpjLambdaWrapper = new MPJLambdaWrapper<>();
         mpjLambdaWrapper
