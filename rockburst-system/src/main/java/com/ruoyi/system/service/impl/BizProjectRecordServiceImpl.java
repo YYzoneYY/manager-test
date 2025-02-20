@@ -36,7 +36,6 @@ import com.ruoyi.system.domain.vo.*;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizProjectRecordService;
 import com.ruoyi.system.service.PlanPastService;
-import com.ruoyi.system.service.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +107,9 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Autowired
     ApachePoiLineChart11 apachePoiLineChart;
+
+    @Autowired
+    BizPlanPresetMapper bizPlanPresetMapper;
 
     @Autowired
     PlanPastService planService;
@@ -882,6 +884,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Override
     public void sss555(HttpServletResponse response) {
 
+    }
+
+    @Override
+    public void deletePlan(Long planId) {
+        UpdateWrapper<BizPlanPreset> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(BizPlanPreset::getDelFlag, BizBaseConstant.DELFLAG_Y)
+                .eq(BizPlanPreset::getPlanId, planId);
+        bizPlanPresetMapper.delete(updateWrapper);
     }
 
     @Override

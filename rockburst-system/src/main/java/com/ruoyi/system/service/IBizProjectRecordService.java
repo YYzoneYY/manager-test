@@ -98,6 +98,13 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
 
     void sss555(HttpServletResponse response);
 
+
+    /**
+     * 删除计划时调用
+     * @param planId
+     */
+    void deletePlan(Long planId);
+
     /**
      * 提交审核
      * @param projectId 工程填报id

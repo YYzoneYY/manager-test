@@ -136,8 +136,10 @@ public class BizWorkfaceController extends BaseController
                 bizWorkfaceService.updateById(workface);
                 continue;
             }
-            if(!workface.getScheme().contains(scheme)){
-                workface.setScheme(String.join(",",workface.getScheme()));
+            List<String> schemeList = new ArrayList<>(Arrays.asList(workface.getScheme().split(",")));
+            if(!schemeList.contains(scheme)){
+                schemeList.add(scheme);
+                workface.setScheme(String.join(",", schemeList));
                 bizWorkfaceService.updateById(workface);
             }
         }
@@ -160,12 +162,21 @@ public class BizWorkfaceController extends BaseController
             if(StrUtil.isEmpty(workface.getScheme())){
                 continue;
             }
-            if(workface.getScheme().contains(scheme)){
-                List<String> schemeList = new ArrayList<>(Arrays.asList(workface.getScheme()));
+            List<String> schemeList = new ArrayList<>(Arrays.asList(workface.getScheme().split(",")));
+            if(schemeList.contains(scheme)){
+
                 schemeList.remove(scheme);
                 schemeList.remove("");
-                workface.setScheme(String.join(",", schemeList));
-                bizWorkfaceService.updateById(workface);
+                if(schemeList == null || schemeList.size() == 0){
+                    UpdateWrapper<BizWorkface> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.lambda().set(BizWorkface::getScheme,null).eq(BizWorkface::getWorkfaceId,workface.getWorkfaceId());
+                    bizWorkfaceService.update(updateWrapper);
+
+                }else {
+                    workface.setScheme(String.join(",", schemeList));
+                    bizWorkfaceService.updateById(workface);
+                }
+
             }
         }
         return R.ok();
