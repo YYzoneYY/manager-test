@@ -1,8 +1,14 @@
 package com.ruoyi.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.pagehelper.Page;
 import com.ruoyi.system.domain.Entity.PlanEntity;
+import com.ruoyi.system.domain.dto.SelectNewPlanDTO;
+import com.ruoyi.system.domain.vo.NewPlanVo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -12,5 +18,10 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface PlanMapper extends BaseMapper<PlanEntity>{
+
+    Page<NewPlanVo> queryPage(@Param("selectNewPlanDTO") SelectNewPlanDTO selectNewPlanDTO,
+                              @Param("deptIds") List<Long> deptIds,
+                              @Param("dateScopeSelf") Integer dateScopeSelf,
+                              @Param("userName") String userName);
 
 }

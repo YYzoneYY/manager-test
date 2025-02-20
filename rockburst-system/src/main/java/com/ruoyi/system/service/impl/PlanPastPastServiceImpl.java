@@ -311,7 +311,7 @@ public class PlanPastPastServiceImpl extends ServiceImpl<PlanPastMapper, PlanPas
                     .eq(BizProjectRecord::getPlanId, planId)
                     .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
             if (ListUtils.isNotNull(bizProjectRecords)) {
-                throw new RuntimeException("该计划下有未完成的项目,不能删除");
+                throw new RuntimeException("该计划下有填报信息,不能删除");
             }
         });
         flag = this.removeBatchByIds(planIdList);

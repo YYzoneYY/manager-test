@@ -42,7 +42,7 @@ public class PlanEntity extends BusinessBaseEntity implements Serializable {
     @ApiModelProperty(value = "所属工作面")
     @NotNull(groups = {ParameterValidationOther.class}, message = "工作面id不能为空")
     @TableField("workface_id")
-    private Long workfaceId;
+    private Long workFaceId;
 
     @ApiModelProperty(value = "计划类型")
     @NotBlank(groups = {ParameterValidationOther.class}, message = "计划类型不能为空")

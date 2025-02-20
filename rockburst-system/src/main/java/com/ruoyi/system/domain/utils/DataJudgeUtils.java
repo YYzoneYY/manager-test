@@ -63,13 +63,38 @@ public class DataJudgeUtils {
         return flag;
     }
 
+    /**
+     * 两数绝对值比较（>=）
+     */
     public static boolean absoluteValueCompare(String s, String min) {
         boolean flag = false;
         double s1 = Double.parseDouble(s);
         double min1 = Double.parseDouble(min);
-        if (Math.abs(s1) > Math.abs(min1)) {
+        if (Math.abs(s1) >= Math.abs(min1)) {
             flag = true;
         }
         return flag;
+    }
+
+    /**
+     * 两数绝对值比较（>=）
+     */
+    public static boolean absoluteValueCompareTwo(double s, String min) {
+        boolean flag = false;
+        double min1 = Double.parseDouble(min);
+        if (Math.abs(s) > Math.abs(min1)) {
+            flag = true;
+        }
+        return flag;
+    }
+
+    /**
+     * 两数差值
+     */
+    public static double doingPoorly(Double max, Double s1) {
+        double num = 0.0;
+        double abs = Math.abs(s1);
+        num = max - abs;
+        return num;
     }
 }
