@@ -72,8 +72,9 @@ public class BizWorkfaceServiceImpl  extends MPJBaseServiceImpl<BizWorkfaceMappe
         List<BizTunnelVo> tunnelVos =  tunnelMapper.selectJoinList(BizTunnelVo.class,queryWrapper);
         Map<Long, List<BizTunnelVo>> groupedByFaceId = tunnelVos.stream()
                 .collect(Collectors.groupingBy(BizTunnelVo::getWorkFaceId));
-
-        List<BizWorkfaceVo> vos =  this.selectJoinList(BizWorkfaceVo.class,new MPJLambdaWrapper<BizWorkface>());
+        MPJLambdaWrapper<BizWorkface> mpjLambdaWrapper = new MPJLambdaWrapper<BizWorkface>();
+        mpjLambdaWrapper.select(BizWorkface::getWorkfaceId,BizWorkface::getWorkfaceName);
+        List<BizWorkfaceVo> vos =  this.selectJoinList(BizWorkfaceVo.class,mpjLambdaWrapper);
         for (BizWorkfaceVo vo : vos) {
             List<BizTunnelVo> tvos = groupedByFaceId.get(vo.getWorkfaceId());
             vo.setTunnels(tvos);
