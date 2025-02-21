@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface PlanAreaService extends IService<PlanAreaEntity> {
 
-    void insert(Long planId, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS);
+    boolean insert(Long planId, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS);
 
     boolean deleteById(List<Long> planIdList);
 

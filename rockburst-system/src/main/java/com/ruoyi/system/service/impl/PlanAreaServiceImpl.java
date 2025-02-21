@@ -31,7 +31,8 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
     private PlanAreaMapper planAreaMapper;
 
     @Override
-    public void insert(Long planId, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS) {
+    public boolean insert(Long planId, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS) {
+        boolean flag = false;
         ArrayList<PlanAreaEntity> planAreaEntities = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
         planAreaDTOS.forEach(planAreaDTO -> {
@@ -50,7 +51,8 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
             }
             planAreaEntities.add(planAreaEntity);
         });
-        this.saveBatch(planAreaEntities);
+        flag = this.saveBatch(planAreaEntities);
+        return flag;
     }
 
     @Override

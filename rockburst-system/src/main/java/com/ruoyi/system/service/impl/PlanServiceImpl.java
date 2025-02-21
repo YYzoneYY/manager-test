@@ -22,10 +22,12 @@ import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.utils.AreaAlgorithmUtils;
 import com.ruoyi.system.domain.utils.DataJudgeUtils;
 import com.ruoyi.system.domain.vo.NewPlanVo;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizPresetPointService;
+import com.ruoyi.system.service.IBizTravePointService;
 import com.ruoyi.system.service.PlanAreaService;
 import com.ruoyi.system.service.PlanService;
 import org.springframework.stereotype.Service;
@@ -73,6 +75,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     private BizTravePointMapper bizTravePointMapper;
 
     @Resource
+    private IBizTravePointService bizTravePointService;
+
+    @Resource
     private PlanAreaService planAreaService;
 
     @Resource
@@ -84,10 +89,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     @Override
     public int insertPlan(PlanDTO planDTO) {
         int flag = 0;
+        if (ObjectUtil.isNull(planDTO)) {
+            throw new RuntimeException("参数错误,参数不能为空");
+        }
         // 参数校验
-
-
-
+        checkParameter(planDTO, planAreaMapper, bizTravePointMapper);
         if (ObjectUtil.isNotNull(planDTO.getPlanName())) {
             // 计划名称不能重复
             Long selectCount = planMapper.selectCount(new LambdaQueryWrapper<PlanEntity>()
@@ -109,10 +115,28 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = planMapper.insert(planEntity);
         if (flag > 0) {
-//            bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),)
             // 区域信息
             if (ObjectUtil.isNotNull(planDTO.getPlanAreaDTOS()) && !planDTO.getPlanAreaDTOS().isEmpty()) {
-
+                List<TraversePointGatherDTO> traversePointGatherDTOS = new ArrayList<>();
+                List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
+                planDTO.getPlanAreaDTOS().forEach(planAreaDTO -> {
+                    BizPlanPrePointDto bizPlanPrePointDto = getBizPlanPrePointDto(planAreaDTO);
+                    bizPlanPrePointDtos.add(bizPlanPrePointDto);
+                    // 获取计划区域内所有的导线点
+                    List<Long> pointList = bizTravePointService.getInPointList(planAreaDTO.getStartTraversePointId(), Double.valueOf(planAreaDTO.getStartDistance()),
+                            planAreaDTO.getEndTraversePointId(), Double.valueOf(planAreaDTO.getEndDistance()));
+                    if (ObjectUtil.isNotNull(pointList) && !pointList.isEmpty()) {
+                       for (Long point : pointList) {
+                           TraversePointGatherDTO traversePointGatherDTO = new TraversePointGatherDTO();
+                           traversePointGatherDTO.setTraversePointId(point);
+                           traversePointGatherDTOS.add(traversePointGatherDTO);
+                       }
+                    }
+                });
+                boolean insert = planAreaService.insert(planEntity.getPlanId(), planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
+                if (insert) {
+                    bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
+                }
             }
         } else {
             throw new RuntimeException("计划添加失败");
@@ -122,7 +146,69 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
 
     @Override
     public int updatePlan(PlanDTO planDTO) {
-        return 0;
+        int flag = 0;
+        if (ObjectUtil.isNull(planDTO)) {
+            throw new RuntimeException("参数错误,参数不能为空");
+        }
+        PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>().eq(PlanEntity::getPlanId, planDTO.getPlanId())
+                .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isEmpty(planEntity)) {
+            throw new RuntimeException("未找到此计划！");
+        }
+        // 参数校验
+        checkParameter(planDTO, planAreaMapper, bizTravePointMapper);
+
+        if (planEntity.getState().equals(ConstantsInfo.IN_REVIEW_DICT_VALUE)) {
+            throw new RuntimeException("该计划正在审核中，无法编辑");
+        }
+        if (planEntity.getState().equals(ConstantsInfo.AUDITED_DICT_VALUE)) {
+            throw new RuntimeException("该计划已审核通过，无法编辑");
+        }
+        Long selectCount = planMapper.selectCount(new LambdaQueryWrapper<PlanEntity>()
+                .eq(PlanEntity::getPlanName, planDTO.getPlanName())
+                .eq(PlanEntity::getType, planDTO.getType())
+                .eq(PlanEntity::getPlanType, planDTO.getPlanType())
+                .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .ne(PlanEntity::getPlanId, planDTO.getPlanId()));
+        if (selectCount > 0) {
+            throw new RuntimeException("计划名称已存在");
+        }
+        Long planId = planEntity.getPlanId();
+        BeanUtils.copyProperties(planDTO, planEntity);
+        planEntity.setPlanId(planId);
+        planEntity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
+        planEntity.setUpdateTime(System.currentTimeMillis());
+        planEntity.setUpdateBy(SecurityUtils.getUserId());
+        flag = planMapper.updateById(planEntity);
+        if (flag > 0) {
+            // 区域信息修改
+            List<Long> planIdList = new ArrayList<>();
+            planIdList.add(planId);
+            planAreaService.deleteById(planIdList);
+            if (ObjectUtil.isNotNull(planDTO.getPlanAreaDTOS()) && !planDTO.getPlanAreaDTOS().isEmpty()) {
+                List<TraversePointGatherDTO> traversePointGatherDTOS = new ArrayList<>();
+                List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
+                planDTO.getPlanAreaDTOS().forEach(planAreaDTO -> {
+                    BizPlanPrePointDto bizPlanPrePointDto = getBizPlanPrePointDto(planAreaDTO);
+                    bizPlanPrePointDtos.add(bizPlanPrePointDto);
+                    // 获取计划区域内所有的导线点
+                    List<Long> pointList = bizTravePointService.getInPointList(planAreaDTO.getStartTraversePointId(), Double.valueOf(planAreaDTO.getStartDistance()),
+                            planAreaDTO.getEndTraversePointId(), Double.valueOf(planAreaDTO.getEndDistance()));
+                    if (ObjectUtil.isNotNull(pointList) && !pointList.isEmpty()) {
+                        for (Long point : pointList) {
+                            TraversePointGatherDTO traversePointGatherDTO = new TraversePointGatherDTO();
+                            traversePointGatherDTO.setTraversePointId(point);
+                            traversePointGatherDTOS.add(traversePointGatherDTO);
+                        }
+                    }
+                });
+                boolean insert = planAreaService.insert(planDTO.getPlanId(), planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
+                if (insert) {
+                    bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
+                }
+            }
+        }
+        return flag;
     }
 
     /**
@@ -239,14 +325,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             throw new RuntimeException("请选择要删除的数据!");
         }
         List<Long > planIdList = Arrays.asList(planIds);
-        planIdList.forEach(planId -> {
-            List<BizProjectRecord> bizProjectRecords = bizProjectRecordMapper.selectList(new LambdaQueryWrapper<BizProjectRecord>()
-                    .eq(BizProjectRecord::getPlanId, planId)
-                    .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-            if (ListUtils.isNotNull(bizProjectRecords)) {
-                throw new RuntimeException("该计划下有填报信息,不能删除");
-            }
-        });
+//        planIdList.forEach(planId -> {
+//            List<BizProjectRecord> bizProjectRecords = bizProjectRecordMapper.selectList(new LambdaQueryWrapper<BizProjectRecord>()
+//                    .eq(BizProjectRecord::getPlanId, planId)
+//                    .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+//            if (ListUtils.isNotNull(bizProjectRecords)) {
+//                throw new RuntimeException("该计划下有填报信息,不能删除");
+//            }
+//        });
         flag = this.removeBatchByIds(planIdList);
         if (flag) {
             // 删除区域信息
@@ -275,285 +361,48 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         return projectWarnChoiceListDTOS;
     }
 
-    private void checkParameter(PlanDTO planDTO) {
-        if (ObjectUtil.isNull(planDTO)) {
-            throw new RuntimeException("参数错误,参数不能为空");
-        }
+    private void checkParameter(PlanDTO planDTO, PlanAreaMapper planAreaMapper, BizTravePointMapper bizTravePointMapper) {
         if (ListUtils.isNull(planDTO.getPlanAreaDTOS())) {
             throw new RuntimeException("区域信息不能为空");
         }
+        // 月计划、临时计划区域不可重复选择校验
+        if (planDTO.getPlanType().equals(ConstantsInfo.Month_PLAN) ||
+                planDTO.getPlanType().equals(ConstantsInfo.TEMPORARY_PLAN)) {
+            checkArea(planDTO, planAreaMapper, bizTravePointMapper);
+        }
     }
 
-    private void checkArea(PlanDTO planDTO) {
+    private void checkArea(PlanDTO planDTO, PlanAreaMapper planAreaMapper, BizTravePointMapper bizTravePointMapper) {
         if (ListUtils.isNull(planDTO.getPlanAreaDTOS()) || planDTO.getPlanAreaDTOS().isEmpty()) {
             throw new RuntimeException("区域信息不能为空");
         }
         planDTO.getPlanAreaDTOS().forEach(planAreaDTO -> {
-            List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(new LambdaQueryWrapper<PlanAreaEntity>()
-                    .eq(PlanAreaEntity::getTunnelId, planAreaDTO.getTunnelId()));
+            LambdaQueryWrapper<PlanAreaEntity> queryWrapper = new LambdaQueryWrapper<PlanAreaEntity>()
+                    .eq(PlanAreaEntity::getTunnelId, planAreaDTO.getTunnelId());
+            // 判断是否是修改
+            if (ObjectUtil.isNotNull(planDTO.getPlanId())) {
+                queryWrapper.ne(PlanAreaEntity::getPlanId, planDTO.getPlanId());
+            }
+            List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(queryWrapper);
             if (ListUtils.isNotNull(planAreaEntities)) {
                 planAreaEntities.forEach(planAreaEntity -> {
-                    // 判断输入起始导线点与对照体起始导线点是否相同
-                    if (Objects.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getStartTraversePointId())) {
-                        char firstChar = planAreaEntity.getStartDistance().charAt(0);
-                        char charAt = planAreaDTO.getStartDistance().charAt(0);
-
-                        // 判断输入的起始距离与对照体的起始距离方向是否一致
-                        if (charAt != firstChar) {
-                            throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                        } else {
-                            boolean b = DataJudgeUtils.compare(planAreaDTO.getStartDistance(), planAreaEntity.getStartDistance());
-                            // 判断是否 输入的起始距离 < 对照体的起始距离
-                            if (b) {
-                                BizTravePoint bizTravePoint = getBizTravePoint(planAreaEntity.getStartTraversePointId());
-                                Long no = bizTravePoint.getNo();
-                                BizTravePoint eTraPoint = getBizTravePoint(planAreaDTO.getEndTraversePointId());
-                                BizTravePoint sTraPoint = getBizTravePoint(planAreaDTO.getStartTraversePointId());
-                                // 判断对照体起始距离方向
-                                if (firstChar == '-') {
-                                    // 判断是否 输入的终始点 < 对照体起始点下一个导线点 and 输入的起始点 < 输入的终始点
-                                    if (eTraPoint.getNo() < no + 1L && sTraPoint.getNo() < eTraPoint.getNo()) {
-                                        // 判断输入终始点是否与对照体的起始点相同
-                                        if (Objects.equals(planAreaDTO.getEndTraversePointId(), planAreaEntity.getStartTraversePointId())) {
-                                            // 判断输入的终始距离方向是否与起始距离方向一致
-                                            if (planAreaDTO.getEndDistance().charAt(0) == '-') {
-                                                boolean compare = DataJudgeUtils.compare(planAreaDTO.getStartDistance(), planAreaDTO.getEndDistance());
-                                                boolean compareTwo = DataJudgeUtils.compareTwo(planAreaDTO.getEndDistance(), planAreaEntity.getStartDistance());
-                                                // 判断是否 输入的终始距离 > 输入起始距离 and 输入的终始距离 <= 对照体的起始距离
-                                                if (!compare && compareTwo) {
-                                                    throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                                                }
-                                            } else {
-                                                throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                                            }
-                                        }
-                                    } else {
-                                        throw new RuntimeException("输入的区域不符合[起始导线点小于终始导线点]的规则!!");
-                                    }
-                                } else {
-                                    // 判断是否 输入的终始点 <= 对照体起始点下一个导线点 and 输入的起始点 < 输入的终始点
-                                    if (eTraPoint.getNo() <= no + 1L && sTraPoint.getNo() < eTraPoint.getNo()) {
-                                        // 判断输入终始点是否与对照体的起始点相同
-                                        if (Objects.equals(planAreaDTO.getEndTraversePointId(), planAreaEntity.getStartTraversePointId())) {
-                                            // 判断输入的终始距离方向是否与起始距离方向一致
-                                            if (planAreaDTO.getEndDistance().charAt(0) == '-') {
-                                                boolean compare = DataJudgeUtils.compare(planAreaDTO.getStartDistance(), planAreaDTO.getEndDistance());
-                                                boolean compareTwo = DataJudgeUtils.compareTwo(planAreaDTO.getEndDistance(), planAreaEntity.getStartDistance());
-                                                // 判断是否 输入的终始距离 > 输入起始距离 and 输入的终始距离 <= 对照体的起始距离
-                                                if (!compare && compareTwo) {
-                                                    throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                                                }
-                                            } else {
-                                                throw new RuntimeException("输入的区域不符合[起始导线点小于终始导线点]的规则!!");
-                                            }
-                                        }
-                                    } else {
-                                        throw new RuntimeException("输入的区域不符合[起始导线点小于终始导线点]的规则!!");
-                                    }
-                                }
-                            } else {
-                                throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                            }
+                    try {
+                        PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
+                                .eq(PlanEntity::getPlanId, planAreaEntity.getPlanId())
+                                .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                        if (ObjectUtil.isNull(planEntity)) {
+                            throw new RuntimeException("区域校验时发生异常");
                         }
-                    }
-                    // 判断输入起始导线点与对照体终始导线点是否相同
-                    if (Objects.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getEndTraversePointId())) {
-                        char firstChar = planAreaEntity.getEndDistance().charAt(0);
-                        char charAt = planAreaDTO.getStartDistance().charAt(0);
-                        char endCharAt = planAreaDTO.getEndDistance().charAt(0);
-                        // 判断输入的起始距离与对照体的终始距离方向是否一致
-                        if (charAt != firstChar) {
-                            throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                        } else {
-                            boolean compare = DataJudgeUtils.compare(planAreaDTO.getStartDistance(), planAreaEntity.getEndDistance());
-                            // 判断输入的起始距离 > 对照体终始距离
-                            if (compare) {
-                                Long eNo = getBizTravePoint(planAreaDTO.getEndTraversePointId()).getNo();
-                                Long sNo = getBizTravePoint(planAreaDTO.getStartTraversePointId()).getNo();
-                                // 判断 输入的终始点 >= 输入的起始点
-                                if (eNo >= sNo) {
-                                    // 判断 输入的终始点 = 输入的起始点
-                                    if (eNo.equals(sNo)) {
-                                        boolean b = DataJudgeUtils.compare(planAreaDTO.getStartDistance(), planAreaDTO.getEndDistance());
-                                        // 判断 输入的起始距离 < 输入的终始距离
-                                        if (!b) {
-                                            throw new RuntimeException("输入的区域不符合[起始点小于终始点]的规则!!");
-                                        }
-                                    }
-                                    Long initialNo = getBizTravePoint(planAreaEntity.getEndTraversePointId()).getNo();
-                                    Integer maxNo = bizTravePointMapper.selectMaxNo(planAreaDTO.getTunnelId());
-                                    AtomicReference<Long> planAreaId = new AtomicReference<>(0L);
-                                    ObjectMapper objectMapper = new ObjectMapper();
-                                    try {
-                                        int startNo = Math.toIntExact(initialNo) + 1;
-                                        for (int no = startNo; no <= maxNo; no++) {
-                                            for (PlanAreaEntity pae : planAreaEntities) {
-                                                if (no == pae.getStartTraversePointId()) {
-                                                    if (no == eNo) {
-                                                        planAreaId.set(pae.getPlanId());
-                                                    }
-                                                } else {
-                                                    String traversePointGather = pae.getTraversePointGather();
-                                                    if (traversePointGather != null && !traversePointGather.isEmpty()) {
-                                                        List<TraversePointGatherDTO> tPointGatherDTOS = objectMapper.readValue(traversePointGather,
-                                                                new TypeReference<List<TraversePointGatherDTO>>() {
-                                                                });
-                                                        if (tPointGatherDTOS != null && !tPointGatherDTOS.isEmpty()) {
-                                                            for (TraversePointGatherDTO tpg : tPointGatherDTOS) {
-                                                                Long targetNo = getBizTravePoint(tpg.getTraversePointId()).getNo();
-                                                                if (no == targetNo.intValue() && no == eNo) {
-                                                                    if (planAreaDTO.getEndTraversePointId().equals(pae.getStartTraversePointId())) {
-                                                                        planAreaId.set(pae.getPlanId());
-                                                                    } else {
-                                                                        throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    } else {
-                                                        BizTravePoint bizTravePoint = getBizTraPointTwo(pae.getTunnelId(), (long) no);
-                                                        if (pae.getStartTraversePointId().equals(bizTravePoint.getPointId())) {
-                                                            planAreaId.set(pae.getPlanId());
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } catch (ArithmeticException e) {
-                                        throw new IllegalArgumentException("initialNo 超出 int 范围", e);
-                                    } catch (JsonProcessingException e) {
-                                        throw new RuntimeException("JSON 解析失败: " + e.getMessage(), e);
-                                    }
-                                    PlanAreaEntity planArea = planAreaMapper.selectOne(new LambdaQueryWrapper<PlanAreaEntity>()
-                                            .eq(PlanAreaEntity::getPlanAreaId, planAreaId.get()));
-                                    String conditionDistance = planArea.getStartDistance();
-                                    char symbol = conditionDistance.charAt(0);
-                                    // 判断标志点起始距离方向是否为'-'
-                                    if (symbol == '-') {
-                                        // 判断输入的终始导线点 = 标志点起始导线点
-                                        if (planAreaDTO.getEndTraversePointId().equals(planArea.getStartTraversePointId())) {
-                                            // 判断输入的终始距离与标记点起始距离方向是否相同
-                                            if (endCharAt == symbol) {
-                                                boolean compared = DataJudgeUtils.compareTwo(planAreaDTO.getEndDistance(), conditionDistance);
-                                                // 判断输入的终始距离 <= 标记点起始距离
-                                                if (!compared) {
-                                                    throw new RuntimeException("输入的区域不符合[终始区域大于起始区域的规则]!!");
-                                                }
-                                            } else {
-                                                throw new RuntimeException("输入的区域不符合[终始区域大于起始区域的规则]!!");
-                                            }
-                                        } else {
-                                            // 判断输入的终始距离方向
-                                            if (endCharAt == '-') {
-                                                // 获取输入终始导线点的距前一个导线点的距离
-                                                Double prePointDistance = getPrePointDistance(planAreaDTO.getEndTraversePointId());
-                                                // 获取距离差
-                                                double v = DataJudgeUtils.doingPoorly(prePointDistance, Double.valueOf(planAreaDTO.getStartDistance()));
-                                                // 判断输入的终始距离是否小于距离差
-                                                boolean avc = DataJudgeUtils.absoluteValueCompareTwo(v, planAreaDTO.getEndDistance());
-                                                if (!avc) {
-                                                    throw new RuntimeException("输入的区域不符合[终始区域大于起始区域的规则]!!");
-                                                }
-                                            } else {
-                                                // 获取标志起始导线点与上一个导线点的距离
-                                                Double prePointDistance = getPrePointDistance(planArea.getStartTraversePointId());
-                                                // 获取去除标志起始距离的距离
-                                                double a = DataJudgeUtils.doingPoorly(prePointDistance, Double.valueOf(conditionDistance));
-                                                String ed = planAreaDTO.getEndDistance();
-                                                boolean b = DataJudgeUtils.absoluteValueCompare(String.valueOf(a), ed);
-                                                if (!b) {
-                                                    throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        // 判断输入的终始导线点 = 标志点起始导线点
-                                        if (planAreaDTO.getEndTraversePointId().equals(planArea.getStartTraversePointId())) {
-                                            // 判断输入的终始距离与标记点起始距离方向是否相同
-                                            if (endCharAt == symbol) {
-                                                boolean compared = DataJudgeUtils.compareTwo(planAreaDTO.getEndDistance(), conditionDistance);
-                                                // 判断输入的终始距离 <= 标记点起始距离
-                                                if (!compared) {
-                                                    throw new RuntimeException("输入的区域不符合[终始区域大于起始区域的规则]!!");
-                                                }
-                                            } else {
-                                                // 获取输入终始导线点的距前一个导线点的距离
-                                                Double prePointDistance = getPrePointDistance(planAreaDTO.getEndTraversePointId());
-                                                // 获取距离差
-                                                double v = DataJudgeUtils.doingPoorly(prePointDistance, Double.valueOf(planAreaDTO.getStartDistance()));
-                                                // 判断输入的终始距离是否小于距离差
-                                                boolean avc = DataJudgeUtils.absoluteValueCompareTwo(v, planAreaDTO.getEndDistance());
-                                                if (!avc) {
-                                                    throw new RuntimeException("输入的区域不符合[终始区域大于起始区域的规则]!!");
-                                                }
-                                            }
-                                        } else {
-                                            if (endCharAt == '-') {
-                                                BizTravePoint travePoint = getBizTravePoint(planArea.getStartTraversePointId());
-                                                // 获取标记点开始点下一个导线点
-                                                BizTravePoint bizTravePoint = getBizTraPointTwo(planArea.getTunnelId(), travePoint.getNo());
-                                                // 获取两个导线点距离
-                                                Double distance = getPrePointDistance(bizTravePoint.getPointId());
-                                                // 获取总距离-标记点开始点距离的差值
-                                                double doingPoorly = DataJudgeUtils.doingPoorly(distance, Double.valueOf(planArea.getStartDistance()));
-                                                String s = "-" + doingPoorly;
-                                                boolean compared = DataJudgeUtils.compare(planAreaDTO.getEndDistance(), s);
-                                                // 判断输入的终始距离是否小于标记点起始距离的反转距离
-                                                if (!compared) {
-                                                    throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                                                }
-                                            }
-                                            throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                                        }
-                                    }
-                                } else {
-                                    throw new RuntimeException("输入的区域不符合[起始导线点小于终始导线点]的规则!!");
-                                }
-
-                            } else {
-                                throw new RuntimeException("输入的区域与之前计划区域有重叠,请重新输入");
-                            }
+                        // 判断同一计划类型是否有重复的区域
+                        if (planDTO.getPlanType().equals(planEntity.getPlanType())) {
+                            AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
                         }
+                    } catch (Exception e) {
+                        throw new RuntimeException("区域校验时发生异常", e);
                     }
                 });
             }
         });
-
-    }
-
-    private BizTravePoint getBizTravePoint(Long pointId) {
-        BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
-                .eq(BizTravePoint::getPointId, pointId)
-                .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(bizTravePoint)) {
-            throw new RuntimeException("发生未知异常，请联系管理员!");
-        }
-        return bizTravePoint;
-    }
-
-    private BizTravePoint getBizTraPointTwo(Long tunnelId, Long no) {
-        BizTravePoint bizTravePoint = new BizTravePoint();
-        bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
-                .eq(BizTravePoint::getTunnelId, tunnelId)
-                .eq(BizTravePoint::getNo, no + 1)
-                .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(bizTravePoint)) {
-            throw new RuntimeException("获取导线点异常！");
-        }
-        return bizTravePoint;
-    }
-
-    /**
-     * 获取距前一个导线点的距离
-     */
-    private Double getPrePointDistance(Long pointId) {
-        BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
-                .eq(BizTravePoint::getPointId, pointId)
-                .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(bizTravePoint)) {
-            throw new RuntimeException("获取导线点异常！");
-        }
-        return bizTravePoint.getPrePointDistance();
     }
 
     /**
@@ -605,6 +454,16 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         }
         workFaceName =  bizWorkface.getWorkfaceName();
         return workFaceName;
+    }
+
+    private BizPlanPrePointDto getBizPlanPrePointDto(PlanAreaDTO planAreaDTO) {
+        BizPlanPrePointDto bizPlanPrePointDto = new BizPlanPrePointDto();
+        bizPlanPrePointDto.setTunnelId(planAreaDTO.getTunnelId());
+        bizPlanPrePointDto.setStartPointId(planAreaDTO.getStartTraversePointId());
+        bizPlanPrePointDto.setEndPointId(planAreaDTO.getEndTraversePointId());
+        bizPlanPrePointDto.setStartMeter(Double.valueOf(planAreaDTO.getStartDistance()));
+        bizPlanPrePointDto.setEndMeter(Double.valueOf(planAreaDTO.getEndDistance()));
+        return bizPlanPrePointDto;
     }
 
     /**
