@@ -68,7 +68,7 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
     private RelatesInfoService relatesInfoService;
 
     @Override
-    public PlanVO audit(Long planId) {
+    public PlanDTO audit(Long planId) {
         if (ObjectUtil.isNull(planId)) {
             throw new RuntimeException("参数错误");
         }
@@ -81,9 +81,9 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         planEntity.setState(ConstantsInfo.IN_REVIEW_DICT_VALUE);
         int update = planMapper.updateById(planEntity);
         if (update > 0) {
-            PlanVO planVO = new PlanVO();
-            PlanVO dto = planService.queryById(planId);
-            BeanUtils.copyProperties(dto, planVO);
+            PlanDTO planDTO = new PlanDTO();
+            PlanDTO dto = planService.queryById(planId);
+            BeanUtils.copyProperties(dto, planDTO);
             PlanContentsMappingEntity planContentsMappingEntity = planContentsMappingMapper.selectOne(
                     new LambdaQueryWrapper<PlanContentsMappingEntity>()
                             .eq(PlanContentsMappingEntity::getPlanId, planId));
@@ -94,12 +94,12 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
 //            List<RelatesInfoDTO> relatesInfoDTOS = relatesInfoService.getByPlanId(planId);
 //            planDTO.setRelatesInfoDTOS(relatesInfoDTOS);
             if (ObjectUtil.isNotNull(planEntity.getStartTime())) {
-                planVO.setStartTimeFmt(DateUtils.getDateStrByTime(planEntity.getStartTime()));
+                planDTO.setStartTimeFmt(DateUtils.getDateStrByTime(planEntity.getStartTime()));
             }
             if (ObjectUtil.isNotNull(planEntity.getEndTime())) {
-                planVO.setEndTimeFmt(DateUtils.getDateStrByTime(planEntity.getEndTime()));
+                planDTO.setEndTimeFmt(DateUtils.getDateStrByTime(planEntity.getEndTime()));
             }
-            return planVO;
+            return planDTO;
         } else {
             throw new RuntimeException("审核失败,请联系管理员");
         }
