@@ -21,7 +21,7 @@ public interface PlanAuditService extends IService<PlanAuditEntity> {
      * @param planId 计划id
      * @return 返回结果
      */
-    PlanVO audit(Long planId);
+    PlanDTO audit(Long planId);
 
     /**
      * 审核

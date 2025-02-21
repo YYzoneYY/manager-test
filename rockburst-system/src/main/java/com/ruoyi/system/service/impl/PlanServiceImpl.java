@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -9,22 +10,28 @@ import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.TableData;
+import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.common.utils.bean.BeanValidators;
+import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.utils.AreaAlgorithmUtils;
+import com.ruoyi.system.domain.utils.TrimUtils;
 import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.validation.Validator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,6 +85,12 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
 
     @Resource
     IBizProjectRecordService iBizProjectRecordService;
+
+    @Resource
+    protected Validator validator;
+
+    @Resource
+    private TunnelMapper tunnelMapper;
 
     @Override
     public int insertPlan(PlanDTO planDTO) {
@@ -210,7 +223,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
      * @return 返回结果
      */
     @Override
-    public PlanVO queryById(Long planId) {
+    public PlanDTO queryById(Long planId) {
         if (ObjectUtil.isNull(planId)) {
             throw new RuntimeException("参数错误,主键不能为空");
         }
@@ -239,7 +252,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             // 获取驳回原因
             planDTO.setRejectReason(getRejectReason(planEntity.getPlanId()));
         }
-        return null;
+        return planDTO;
     }
 
     /**
@@ -353,6 +366,54 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             }).collect(Collectors.toList());
         }
         return projectWarnChoiceListDTOS;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String importPlan(String tag, MultipartFile file) throws Exception{
+        if (tag.equals(ConstantsInfo.TUNNELING)) {
+            ExcelUtil<ImportPlanDTO> util = new ExcelUtil<ImportPlanDTO>(ImportPlanDTO.class);
+            List<ImportPlanDTO> list = util.importExcel(file.getInputStream());
+            if (CollUtil.isEmpty(list)) {
+                throw new RuntimeException("导入数据内容不能为空");
+            }
+
+            int errorLine = 2;
+            for (ImportPlanDTO importPlanDTO : list) {
+                try {
+                    if (ObjectUtil.isNull(importPlanDTO)) {
+                        throw new ServiceException("数据解析失败,请使用规定模板");
+                    }
+                    //去除字符串前后的空格
+                    TrimUtils.trimBean(importPlanDTO);
+                    //参数校验
+
+                } catch (Exception e) {
+
+                }
+            }
+
+
+        }
+        return "";
+    }
+
+    private void checkParam(ImportPlanDTO importPlanDTO) {
+        //校验实体类中的判断
+        BeanValidators.validateWithException(validator, importPlanDTO);
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceName, importPlanDTO.getWorkFaceName())
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(bizWorkface)) {
+            throw new ServiceException("不存在工作面名称为" + importPlanDTO.getWorkFaceName() + "的工作面,请填写正确的工作面名称");
+        }
+        Long workfaceId = bizWorkface.getWorkfaceId();
+
+        TunnelEntity tunnelEntity = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getWorkFaceId, workfaceId)
+                .eq(TunnelEntity::getTunnelName, importPlanDTO.getTunnelName())
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
     }
 
     private void checkParameter(PlanDTO planDTO, PlanAreaMapper planAreaMapper, BizTravePointMapper bizTravePointMapper) {

@@ -8,6 +8,7 @@ import com.ruoyi.system.domain.dto.PlanDTO;
 import com.ruoyi.system.domain.dto.ProjectWarnChoiceListDTO;
 import com.ruoyi.system.domain.dto.SelectNewPlanDTO;
 import com.ruoyi.system.domain.vo.PlanVO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -37,7 +38,7 @@ public interface PlanService extends IService<PlanEntity> {
      * @param planId 计划id
      * @return 返回结果
      */
-    PlanVO queryById(Long planId);
+    PlanDTO queryById(Long planId);
 
     /**
      * 分页查询
@@ -68,5 +69,7 @@ public interface PlanService extends IService<PlanEntity> {
      * @return 返回结果
      */
     List<ProjectWarnChoiceListDTO> getProjectWarnChoiceList();
+
+    String importPlan(String tag, MultipartFile file) throws Exception;
 
 }

@@ -11,6 +11,8 @@
             p.type as type,
             p.drill_type as drillType,
             p.plan_name as planName,
+            p.total_drill_number as totalDrillNumber,
+            p.total_hole_depth as totalHoleDepth,
             p.start_time as startTime,
             p.end_time as endTime,
             p.state as state,
