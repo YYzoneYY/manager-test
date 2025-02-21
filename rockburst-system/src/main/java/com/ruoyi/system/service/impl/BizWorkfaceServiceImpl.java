@@ -17,6 +17,7 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.vo.BizTunnelVo;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
+import com.ruoyi.system.domain.vo.JsonVo;
 import com.ruoyi.system.mapper.BizWorkfaceMapper;
 import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.IBizWorkfaceService;
@@ -78,6 +79,24 @@ public class BizWorkfaceServiceImpl  extends MPJBaseServiceImpl<BizWorkfaceMappe
         for (BizWorkfaceVo vo : vos) {
             List<BizTunnelVo> tvos = groupedByFaceId.get(vo.getWorkfaceId());
             vo.setTunnels(tvos);
+        }
+        return vos;
+    }
+
+    @Override
+    public List<JsonVo> selectWorkfacejilianList() {
+
+        MPJLambdaWrapper<BizWorkface> mpjLambdaWrapper = new MPJLambdaWrapper<BizWorkface>();
+        mpjLambdaWrapper.selectAs(BizWorkface::getWorkfaceId,"value")
+                .selectAs(BizWorkface::getWorkfaceName,"label");
+        List<JsonVo> vos =  this.selectJoinList(JsonVo.class,mpjLambdaWrapper);
+        for (JsonVo vo : vos) {
+            MPJLambdaWrapper<TunnelEntity> queryWrapper = new MPJLambdaWrapper<TunnelEntity>();
+            queryWrapper
+                    .selectAs(TunnelEntity::getTunnelId,"value")
+                    .selectAs(TunnelEntity::getTunnelName,"label");
+            List<JsonVo> tunnelVos =  tunnelMapper.selectJoinList(JsonVo.class,queryWrapper);
+            vo.setChild(tunnelVos);
         }
         return vos;
     }

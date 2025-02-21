@@ -20,6 +20,7 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.dto.BizWorkfaceSchemeDto;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
+import com.ruoyi.system.domain.vo.JsonVo;
 import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.IBizMiningAreaService;
 import com.ruoyi.system.service.IBizWorkfaceService;
@@ -66,7 +67,7 @@ public class BizWorkfaceController extends BaseController
     @PostMapping("/workfaceAll")
     public R<?> getWorkfaceListAll()
     {
-        List<BizWorkfaceVo> cos = bizWorkfaceService.selectWorkfaceVoList();
+        List<JsonVo> cos = bizWorkfaceService.selectWorkfacejilianList();
         return R.ok(cos);
     }
 
