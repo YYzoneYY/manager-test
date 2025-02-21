@@ -43,8 +43,7 @@ public class BizWashProofController extends BaseController
     @Autowired
     private IBizDrillRecordService bizDrillRecordService;
 
-    @Resource
-    PlanPastService planPastService;
+
 
     @Resource
     private IBizDangerAreaService bizDangerAreaService;

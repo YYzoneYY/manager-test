@@ -48,7 +48,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -380,53 +379,53 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Override
     public int saveRecord(BizProjectRecordAddDto dto) {
 
-        try{
-            log.info("开始查询任务id:{},{}", dto.getTravePointId(),dto.getConstructRange());
-            List<Long> playIds = new ArrayList<>();
-            if (StrUtil.isNotEmpty(dto.getConstructRange()) ){
-                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
-            }else {
-                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
-            }
-
-            BigDecimal result = null;
-            Long pointid = 0l;
-            if(playIds == null || playIds.size()==0){
-                String symbol =  dto.getConstructRange().substring(0, 1);
-                if(symbol.equals("+")){
-                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
-                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()+1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
-                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
-                    if(bizTravePoints != null && bizTravePoints.size() > 0){
-                        pointid = bizTravePoints.get(0).getPointId();
-                        result = new BigDecimal(bizTravePoints.get(0).getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
-                        log.info("入参:{},{}", pointid,"-"+result);
-                        playIds = planService.getPlanByPoint(pointid+"","-"+result);
-                    }
-                }else if(symbol.equals("-")){
-                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
-                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()-1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
-                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
-                    if(bizTravePoints != null && bizTravePoints.size() > 0){
-                        pointid = bizTravePoints.get(0).getPointId();
-                        result = new BigDecimal(ent.getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
-                        log.info("入参:{},{}", pointid,"+"+result);
-                        playIds = planService.getPlanByPoint(pointid+"","+"+result);
-
-                    }
-                }
-            }
-            log.info("结果:{}", playIds);
-            if(playIds != null && playIds.size()==1){
-                log.info("结果:{}", playIds);
-                dto.setPlanId(playIds.get(0));
-            }
-
-        }catch (Exception e){
-
-        }
+//        try{
+//            log.info("开始查询任务id:{},{}", dto.getTravePointId(),dto.getConstructRange());
+//            List<Long> playIds = new ArrayList<>();
+//            if (StrUtil.isNotEmpty(dto.getConstructRange()) ){
+//                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
+//            }else {
+//                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
+//            }
+//
+//            BigDecimal result = null;
+//            Long pointid = 0l;
+//            if(playIds == null || playIds.size()==0){
+//                String symbol =  dto.getConstructRange().substring(0, 1);
+//                if(symbol.equals("+")){
+//                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
+//                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+//                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()+1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
+//                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
+//                    if(bizTravePoints != null && bizTravePoints.size() > 0){
+//                        pointid = bizTravePoints.get(0).getPointId();
+//                        result = new BigDecimal(bizTravePoints.get(0).getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
+//                        log.info("入参:{},{}", pointid,"-"+result);
+//                        playIds = planService.getPlanByPoint(pointid+"","-"+result);
+//                    }
+//                }else if(symbol.equals("-")){
+//                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
+//                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+//                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()-1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
+//                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
+//                    if(bizTravePoints != null && bizTravePoints.size() > 0){
+//                        pointid = bizTravePoints.get(0).getPointId();
+//                        result = new BigDecimal(ent.getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
+//                        log.info("入参:{},{}", pointid,"+"+result);
+//                        playIds = planService.getPlanByPoint(pointid+"","+"+result);
+//
+//                    }
+//                }
+//            }
+//            log.info("结果:{}", playIds);
+//            if(playIds != null && playIds.size()==1){
+//                log.info("结果:{}", playIds);
+//                dto.setPlanId(playIds.get(0));
+//            }
+//
+//        }catch (Exception e){
+//
+//        }
 
 
         LoginUser loginUser = SecurityUtils.getLoginUser();
