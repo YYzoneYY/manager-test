@@ -38,19 +38,19 @@ public class PlanController {
     private PlanService planService;
 
 
-//    @ApiOperation(value = "计划新增", notes = "计划新增")
-//    @PreAuthorize("@ss.hasPermi('engineeringPlan:addPlan')")
-//    @PostMapping(value = "/addPlan")
-//    public R<Object> addPlan(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) PlanDTO planDTO){
-//        return R.ok(this.planService.insertPlan(planDTO));
-//    }
-//
-//    @ApiOperation(value = "计划修改", notes = "计划修改")
-//    @PreAuthorize("@ss.hasPermi('engineeringPlan:updatePlan')")
-//    @PutMapping(value = "/updatePlan")
-//    public R<Object> updatePlan(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) PlanDTO planDTO){
-//        return R.ok(this.planService.updatePlan(planDTO));
-//    }
+    @ApiOperation(value = "计划新增", notes = "计划新增")
+    @PreAuthorize("@ss.hasPermi('engineeringPlan:addPlan')")
+    @PostMapping(value = "/addPlan")
+    public R<Object> addPlan(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) PlanDTO planDTO){
+        return R.ok(this.planService.insertPlan(planDTO));
+    }
+
+    @ApiOperation(value = "计划修改", notes = "计划修改")
+    @PreAuthorize("@ss.hasPermi('engineeringPlan:updatePlan')")
+    @PutMapping(value = "/updatePlan")
+    public R<Object> updatePlan(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) PlanDTO planDTO){
+        return R.ok(this.planService.updatePlan(planDTO));
+    }
 
     @ApiOperation(value = "根据id查询", notes = "根据id查询")
     @PreAuthorize("@ss.hasPermi('engineeringPlan:queryById')")
