@@ -17,10 +17,6 @@ public class SelectDTO {
     @ApiModelProperty(value = "施工单位")
     private Long constructionUnitId;
 
-    public SelectDTO() {
-
-    }
-
     public SelectDTO(String fillingType, Long constructionUnitId) {
         this.fillingType = fillingType;
         this.constructionUnitId = constructionUnitId;

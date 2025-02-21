@@ -29,6 +29,9 @@ public class BizDangerAreaDto
     @ApiModelProperty(value = "工作面id",required = true)
     private Long workfaceId;
 
+    @ApiModelProperty(value = "巷道id",required = true)
+    private Long tunnelId;
+
     @ApiModelProperty(value = "开始导线点",required = true)
     private Long startPointId;
 

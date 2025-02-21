@@ -61,8 +61,8 @@ public class BizMiningAreaController extends BaseController
     @ApiOperation("下拉全部列表")
 //    @PreAuthorize("@ss.hasPermi('basicInfo:area:list')")
     @GetMapping("/checkList")
-    public R<List<BizMiningArea>> checkList(  @RequestParam(value = "状态合集", required = false) Long[] statuss,
-                                              @RequestParam(value = "矿井id集合", required = false) Long[] mineIds)
+    public R<List<BizMiningArea>> checkList(  @RequestParam( required = false) Long[] statuss,
+                                              @RequestParam( required = false) Long[] mineIds)
     {
         QueryWrapper<BizMiningArea> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()

@@ -11,6 +11,7 @@ import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.dto.BizTunnelBarDto;
+import com.ruoyi.system.domain.vo.BizTunnelBarVo;
 import com.ruoyi.system.service.IBizTunnelBarService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -43,9 +44,9 @@ public class BizTunnelBarController extends BaseController
     @ApiOperation("查询巷道帮管理列表")
     @PreAuthorize("@ss.hasPermi('basicInfo:bar:list')")
     @GetMapping("/list")
-    public R<MPage<BizTunnelBar>> list(@ParameterObject BizTunnelBarDto dto, @ParameterObject Pagination pagination)
+    public R<MPage<BizTunnelBarVo>> list(@ParameterObject BizTunnelBarDto dto, @ParameterObject Pagination pagination)
     {
-        MPage<BizTunnelBar> list = bizTunnelBarService.selectEntityList(dto,pagination);
+        MPage<BizTunnelBarVo> list = bizTunnelBarService.selectEntityList(dto,pagination);
         return R.ok(list);
     }
 

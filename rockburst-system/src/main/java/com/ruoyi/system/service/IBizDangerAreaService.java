@@ -7,6 +7,8 @@ import com.ruoyi.system.domain.BizDangerArea;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
 import com.ruoyi.system.domain.vo.BizDangerAreaVo;
 
+import java.util.List;
+
 /**
  *
  * 
@@ -23,14 +25,18 @@ public interface IBizDangerAreaService extends MPJDeepService<BizDangerArea>
     public MPage<BizDangerAreaVo> selectEntityList(BizDangerAreaDto dto, Pagination pagination);
 
 
+    public List<BizDangerAreaVo> selectEntityCheckList(BizDangerAreaDto dto);
+
+
     public int insertEntity(BizDangerAreaDto dto);
 
 
     public int updateEntity(BizDangerAreaDto dto);
 
 
-
     public int initPresetPoint(Long workfaceId);
+
+
 
 
 

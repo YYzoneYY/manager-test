@@ -146,6 +146,8 @@ public class BizWorkfaceDto
     @ApiModelProperty(value = "其他备注或说明 ")
     private String notes;
 
+    @ApiModelProperty(value = "规划,逗号分隔")
+    private String scheme;
 
 
 }

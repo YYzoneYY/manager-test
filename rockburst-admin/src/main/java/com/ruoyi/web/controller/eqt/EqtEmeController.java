@@ -55,7 +55,7 @@ public class EqtEmeController extends BaseController
     @ApiOperation("下拉全部电磁辐射列表")
 //    @PreAuthorize("@ss.hasPermi('basicInfo:eme:list')")
     @GetMapping("/checkList")
-    public R<List<EqtEme>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss)
+    public R<List<EqtEme>> checkList(@RequestParam( required = false) Long[] statuss)
     {
         QueryWrapper<EqtEme> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()

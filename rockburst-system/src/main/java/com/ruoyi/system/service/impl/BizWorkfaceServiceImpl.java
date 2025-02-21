@@ -1,6 +1,7 @@
 package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.yulichang.base.MPJBaseServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
@@ -80,6 +81,16 @@ public class BizWorkfaceServiceImpl  extends MPJBaseServiceImpl<BizWorkfaceMappe
         return vos;
     }
 
+    @Override
+    public MPage<BizWorkface> getWorkfaceByScheme(String scheme, String workfaceName,Pagination pagination) {
+        QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .select(BizWorkface::getWorkfaceId,BizWorkface::getWorkfaceName)
+                .like(StrUtil.isNotBlank(workfaceName), BizWorkface::getWorkfaceName, workfaceName)
+                .apply( StrUtil.isNotEmpty(scheme) && !scheme.equals("or"),"FIND_IN_SET({0}, platform_codes)", scheme);
+        IPage<BizWorkface> vos = bizWorkfaceMapper.selectPage(pagination,queryWrapper);
+        return new MPage<>(vos);
+    }
 
     /**
      * 查询工作面管理列表
