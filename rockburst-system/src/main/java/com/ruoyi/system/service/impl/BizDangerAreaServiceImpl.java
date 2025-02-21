@@ -2,6 +2,7 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
@@ -21,7 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -102,8 +105,21 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
 
     @Override
     public int insertEntity(BizDangerAreaDto dto) {
+
+        QueryWrapper<BizDangerArea> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .select(BizDangerArea::getNo)
+                .eq(BizDangerArea::getWorkfaceId,dto.getTunnelId());
+        List<BizDangerArea> list =  bizDangerAreaMapper.selectList(queryWrapper);
+        Optional<BizDangerArea> maxArea = list.stream().max(Comparator.comparingInt(BizDangerArea::getNo));
+
+        //todo   自动生成no
+
         BizDangerArea bizDangerArea = new BizDangerArea();
         BeanUtil.copyProperties(dto, bizDangerArea);
+        if (maxArea.isPresent()) {
+            bizDangerArea.setNo(maxArea.get().getNo()+1) ;
+        }
         Assert.isTrue(dto.getStartMeter()<0,"必须在导线点前开始");
         return bizDangerAreaMapper.insert(bizDangerArea);
     }

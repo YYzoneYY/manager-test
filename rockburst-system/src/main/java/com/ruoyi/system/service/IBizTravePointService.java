@@ -53,13 +53,13 @@ public interface IBizTravePointService extends IService<BizTravePoint>
 
     BizTravePoint getPrePointDistance(BizTravePointDto dto);
 
-    List<BizTravePoint>  getQyPoint(Long workfaceId);
+//    List<BizTravePoint>  getQyPoint(Long workfaceId);
 
-    Long getVertexCount(Long pointId, Long tunnelId, Boolean vertex);
+//    Long getVertexCount(Long pointId, Long tunnelId, Boolean vertex);
 
     BizTravePoint getNearPoint(BizTravePoint point);
 
-    BizTravePoint getPoint(BizTravePoint a, BizTravePoint b, Double direction );
+//    BizTravePoint getPoint(BizTravePoint a, BizTravePoint b, Double direction );
 
-    void  doit(BizTravePoint point);
+//    void  doit(BizTravePoint point);
 }

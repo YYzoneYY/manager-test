@@ -53,7 +53,7 @@ public class EqtDisplacementController extends BaseController
     @ApiOperation("下拉全部巷道表面位移列表")
 //    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/checkList")
-    public R<List<EqtDisplacement>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss)
+    public R<List<EqtDisplacement>> checkList(@RequestParam( required = false) Long[] statuss)
     {
         QueryWrapper<EqtDisplacement> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()

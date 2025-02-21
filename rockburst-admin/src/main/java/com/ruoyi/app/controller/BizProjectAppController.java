@@ -20,6 +20,7 @@ import com.ruoyi.system.mapper.SysProjectTypeMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,9 +94,9 @@ public class BizProjectAppController extends BaseController
     @ApiOperation("获取工作面")
     @Log(title = "获取工作面", businessType = BusinessType.INSERT)
     @PostMapping("/workfaces")
-    public R<?> getWorkfaceList(@RequestParam(value = "状态合集", required = false) Long[] statuss,
-                                @RequestParam(value = "矿区集合", required = false) Long[] mineIds,
-                                @RequestParam(value = "采区集合", required = false) Long[] miningAreaIds)
+    public R<?> getWorkfaceList(@ApiParam(name = "statuss", value = "状态合集") @RequestParam( required = false) Long[] statuss,
+                                @ApiParam(name = "mineIds", value = "矿区集合") @RequestParam( required = false) Long[] mineIds,
+                                @ApiParam(name = "miningAreaIds", value = "采区集合") @RequestParam( required = false) Long[] miningAreaIds)
     {
         QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
@@ -112,7 +113,7 @@ public class BizProjectAppController extends BaseController
     @ApiOperation("获取巷道")
     @Log(title = "获取巷道", businessType = BusinessType.INSERT)
     @PostMapping("/tunnels")
-    public R<?> getTunnelList(@RequestParam(value = "工作面集合", required = false) Long[] workfaceIds)
+    public R<?> getTunnelList(@ApiParam(name = "workfaceIds", value = "工作面集合") @RequestParam( required = false) Long[] workfaceIds)
     {
         QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<TunnelEntity>();
         queryWrapper.lambda()
@@ -137,7 +138,7 @@ public class BizProjectAppController extends BaseController
     @ApiOperation("获取导线点")
     @Log(title = "获取导线点", businessType = BusinessType.INSERT)
     @PostMapping("/points")
-    public R<?> getPointList(@RequestParam(value = "巷道id", required = false) Long tunnelId)
+    public R<?> getPointList(@ApiParam(name = "tunnelId", value = "巷道id")  @RequestParam( required = false) Long tunnelId)
     {
         QueryWrapper<BizTravePoint> pointQueryWrapper = new QueryWrapper<>();
         pointQueryWrapper.lambda().eq(tunnelId != null, BizTravePoint::getTunnelId, tunnelId);
