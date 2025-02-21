@@ -51,6 +51,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     @Resource
     private PlanMapper planMapper;
 
+    @Resource
     private PlanAreaMapper planAreaMapper;
 
     @Resource
@@ -399,7 +400,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                             AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
                         }
                     } catch (Exception e) {
-                        throw new RuntimeException("区域校验时发生异常", e);
+                        throw new RuntimeException(e.getMessage());
                     }
                 });
             }
