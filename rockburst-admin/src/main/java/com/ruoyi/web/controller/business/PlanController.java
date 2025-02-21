@@ -6,7 +6,6 @@ import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.dto.*;
-import com.ruoyi.system.service.PlanPastService;
 import com.ruoyi.system.service.PlanService;
 import com.ruoyi.system.service.RelatesInfoService;
 import io.swagger.annotations.*;
@@ -27,12 +26,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/engineeringPlan")
 public class PlanController {
-
-    @Resource
-    private PlanPastService planPastService;
-
-    @Resource
-    private RelatesInfoService relatesInfoService;
 
     @Resource
     private PlanService planService;

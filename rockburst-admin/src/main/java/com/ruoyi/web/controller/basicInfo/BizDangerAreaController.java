@@ -99,7 +99,7 @@ public class BizDangerAreaController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:sss')")
     @Log(title = "危险区管理", businessType = BusinessType.INSERT)
     @PostMapping("/addpre")
-    public R addpre( Long workfaceId)
+    public R addpre( Long workfaceId,String drillType)
     {
 
         QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
@@ -109,11 +109,10 @@ public class BizDangerAreaController extends BaseController
             List<BizDangerArea> areas = getAreaSort(tunnelEntity.getTunnelId());
             if(areas != null && areas.size() > 0){
                 for (BizDangerArea area : areas) {
-                    initAreaPrePoint1(area.getDangerAreaId(),area.getTunnelId());
+                    initAreaPrePoint1(area.getDangerAreaId(),area.getTunnelId(),drillType);
                 }
             }
         }
-        //循环所有危险区 从第一个危险区开始 每个巷道 从1 开始
 
         return R.ok();
     }
@@ -128,9 +127,9 @@ public class BizDangerAreaController extends BaseController
         return list;
     }
 
-    public void initAreaPrePoint1(Long areaId,Long tunnelId){
+    public void initAreaPrePoint1(Long areaId,Long tunnelId,String drillType){
         BizDangerArea dangerArea =  bizDangerAreaService.getByIdDeep(areaId);
-        BizPresetPoint point = ooo(areaId,dangerArea.getStartPointId(),dangerArea.getStartMeter(),dangerArea.getDangerLevel().getSpaced());
+        BizPresetPoint point = ooo(areaId,dangerArea.getStartPointId(),dangerArea.getStartMeter(),dangerArea.getDangerLevel().getSpaced(),drillType);
     }
 
     public void initAreaPrePoint(Long areaId,Long tunnelId){
@@ -183,19 +182,23 @@ public class BizDangerAreaController extends BaseController
 
     }
 
-    public BizPresetPoint ooo(Long  areaId , Long id, Double meter, Double spaced ){
+    public BizPresetPoint ooo(Long  areaId , Long id, Double meter, Double spaced ,String drillType){
         BizPresetPoint point = bizTravePointService.getPresetPoint(id,meter,spaced);
         Long inAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
         //超出危险区 或者 后面没有导线点了
-        if( inAreaId != areaId || point == null){
+        if( inAreaId == null || inAreaId != areaId){
             return null;
         }
+        if(  point == null){
+            return null;
+        }
+        point.setDrillType(drillType);
         point = setAxis(areaId,point.getPointId(),point.getMeter());
 //        sssss(x,jio,point);
         bizPresetPointService.savebarPresetPoint(point);
 
 
-        return ooo(areaId,point.getPointId(),point.getMeter(),spaced);
+        return ooo(areaId,point.getPointId(),point.getMeter(),spaced,drillType);
     }
 
 

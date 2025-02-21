@@ -16,16 +16,15 @@ import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.PlanContentsMappingEntity;
-import com.ruoyi.system.domain.Entity.PlanPastEntity;
 import com.ruoyi.system.domain.Entity.PlanAuditEntity;
+import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.PlanAuditDTO;
-import com.ruoyi.system.domain.dto.PlanPastDTO;
-import com.ruoyi.system.domain.dto.RelatesInfoDTO;
+import com.ruoyi.system.domain.dto.PlanDTO;
 import com.ruoyi.system.domain.dto.SelectPlanDTO;
 import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.PlanContentsMappingMapper;
-import com.ruoyi.system.mapper.PlanPastMapper;
 import com.ruoyi.system.mapper.PlanAuditMapper;
+import com.ruoyi.system.mapper.PlanMapper;
 import com.ruoyi.system.mapper.SysDictDataMapper;
 import com.ruoyi.system.service.ContentsService;
 import com.ruoyi.system.service.PlanAuditService;
@@ -51,13 +50,13 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
     private PlanAuditMapper planAuditMapper;
 
     @Resource
-    private PlanPastMapper planPastMapper;
+    private PlanMapper planMapper;
 
     @Resource
     private SysDictDataMapper sysDictDataMapper;
 
     @Resource
-    private PlanPastPastServiceImpl planService;
+    private PlanServiceImpl planService;
 
     @Resource
     private ContentsService contentsService;
@@ -69,38 +68,38 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
     private RelatesInfoService relatesInfoService;
 
     @Override
-    public PlanPastDTO audit(Long planId) {
+    public PlanVO audit(Long planId) {
         if (ObjectUtil.isNull(planId)) {
             throw new RuntimeException("参数错误");
         }
-        PlanPastEntity planPastEntity = planPastMapper.selectOne(new LambdaQueryWrapper<PlanPastEntity>()
-                .eq(PlanPastEntity::getPlanId, planId)
-                .eq(PlanPastEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(planPastEntity)) {
+        PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
+                .eq(PlanEntity::getPlanId, planId)
+                .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(planEntity)) {
             throw new RuntimeException("未找到此计划,无法进行审核");
         }
-        planPastEntity.setState(ConstantsInfo.IN_REVIEW_DICT_VALUE);
-        int update = planPastMapper.updateById(planPastEntity);
+        planEntity.setState(ConstantsInfo.IN_REVIEW_DICT_VALUE);
+        int update = planMapper.updateById(planEntity);
         if (update > 0) {
-            PlanPastDTO planDTO = new PlanPastDTO();
-            PlanPastDTO dto = planService.queryById(planId);
-            BeanUtils.copyProperties(dto, planDTO);
+            PlanVO planVO = new PlanVO();
+            PlanVO dto = planService.queryById(planId);
+            BeanUtils.copyProperties(dto, planVO);
             PlanContentsMappingEntity planContentsMappingEntity = planContentsMappingMapper.selectOne(
                     new LambdaQueryWrapper<PlanContentsMappingEntity>()
                             .eq(PlanContentsMappingEntity::getPlanId, planId));
-            if (ObjectUtil.isNotNull(planContentsMappingEntity)) {
-                planDTO.setContentsId(planContentsMappingEntity.getContentsId());
-            }
+//            if (ObjectUtil.isNotNull(planContentsMappingEntity)) {
+//                planDTO.setContentsId(planContentsMappingEntity.getContentsId());
+//            }
             // 关联信息
-            List<RelatesInfoDTO> relatesInfoDTOS = relatesInfoService.getByPlanId(planId);
-            planDTO.setRelatesInfoDTOS(relatesInfoDTOS);
-            if (ObjectUtil.isNotNull(planPastEntity.getStartTime())) {
-                planDTO.setStartTimeFmt(DateUtils.getDateStrByTime(planPastEntity.getStartTime()));
+//            List<RelatesInfoDTO> relatesInfoDTOS = relatesInfoService.getByPlanId(planId);
+//            planDTO.setRelatesInfoDTOS(relatesInfoDTOS);
+            if (ObjectUtil.isNotNull(planEntity.getStartTime())) {
+                planVO.setStartTimeFmt(DateUtils.getDateStrByTime(planEntity.getStartTime()));
             }
-            if (ObjectUtil.isNotNull(planPastEntity.getEndTime())) {
-                planDTO.setEndTimeFmt(DateUtils.getDateStrByTime(planPastEntity.getEndTime()));
+            if (ObjectUtil.isNotNull(planEntity.getEndTime())) {
+                planVO.setEndTimeFmt(DateUtils.getDateStrByTime(planEntity.getEndTime()));
             }
-            return planDTO;
+            return planVO;
         } else {
             throw new RuntimeException("审核失败,请联系管理员");
         }
@@ -109,10 +108,10 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
     @Override
     public int addAudit(PlanAuditDTO planAuditDTO) {
         int flag = 0;
-        PlanPastEntity planPastEntity = planPastMapper.selectOne(new LambdaQueryWrapper<PlanPastEntity>()
-                .eq(PlanPastEntity::getPlanId, planAuditDTO.getPlanId())
-                .eq(PlanPastEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        if (ObjectUtil.isNull(planPastEntity)) {
+        PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
+                .eq(PlanEntity::getPlanId, planAuditDTO.getPlanId())
+                .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(planEntity)) {
             throw new RuntimeException("未找到此计划,无法进行审核");
         }
         Integer i = planAuditMapper.selectMaxNumber(planAuditDTO.getPlanId());
@@ -136,13 +135,13 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
             throw new RuntimeException("审核失败,请联系管理员");
         } else {
             if (ConstantsInfo.AUDIT_SUCCESS.equals(planAuditDTO.getAuditResult())) {
-                planPastEntity.setState(ConstantsInfo.AUDITED_DICT_VALUE);
+                planEntity.setState(ConstantsInfo.AUDITED_DICT_VALUE);
             } else {
-                planPastEntity.setState(ConstantsInfo.REJECTED);
+                planEntity.setState(ConstantsInfo.REJECTED);
             }
-            PlanPastEntity plan = new PlanPastEntity();
-            BeanUtils.copyProperties(planPastEntity, plan);
-            int update = planPastMapper.updateById(plan);
+            PlanEntity plan = new PlanEntity();
+            BeanUtils.copyProperties(planEntity, plan);
+            int update = planMapper.updateById(plan);
             if (update <= 0) {
                 throw new RuntimeException("审核失败,请联系管理员");
             }

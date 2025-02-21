@@ -10,7 +10,7 @@ import com.ruoyi.system.domain.BizPlanPreset;
 import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizTunnelBar;
-import com.ruoyi.system.domain.Entity.PlanPastEntity;
+import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.BizPlanPrePointDto;
 import com.ruoyi.system.domain.dto.BizPresetPointDto;
 import com.ruoyi.system.mapper.*;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
     private IBizTravePointService bizTravePointService;
 
     @Autowired
-    private PlanPastMapper planPastMapper;
+    private PlanMapper planMapper;
 
     @Autowired
     private BizPlanPresetMapper bizPlanPresetMapper;
@@ -81,7 +82,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
     @Override
     public boolean setPlanPrePoint(Long planId, List<BizPlanPrePointDto> dtos) {
 
-        PlanPastEntity entity =  planPastMapper.selectById(planId);
+        PlanEntity entity =  planMapper.selectById(planId);
 
         List<BizPresetPoint> bizPresetPoints = new ArrayList<>();
         for (BizPlanPrePointDto dto : dtos) {
@@ -98,8 +99,8 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
             BizPlanPreset bizPlanPreset = new BizPlanPreset();
             bizPlanPreset.setPlanId(planId)
                     .setPresetPointId(dto.getPresetPointId())
-                    .setBottom(String.join(dto.getLongitude(),",",dto.getLatitude()))
-                    .setTop(String.join(dto.getLongitudet(),",",dto.getLongitudet()));
+                    .setBottom(dto.getLongitude()+","+dto.getLatitude());
+//                    .setTop(String.join(dto.getLongitudet(),",",dto.getLongitudet()));
             bizPlanPresetMapper.insert(bizPlanPreset);
         }
         return true;
@@ -192,10 +193,11 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
 
 
     public BizPresetPoint sssss(Double x,Integer jio,BizPresetPoint point){
-        BigDecimal lonMove =  new BigDecimal(Math.sin(Math.toRadians(jio))).multiply(new BigDecimal(x));
-        BigDecimal latMove =  new BigDecimal(Math.cos(Math.toRadians(jio))).multiply(new BigDecimal(x));
-//        point.setLatitudet(new BigDecimal(point.getLatitudet()).add(latMove)+"");
-//        point.setLongitudet(new BigDecimal(point.getLongitudet()).add(lonMove)+"");
+        BigDecimal lonMove =  new BigDecimal(Math.sin(Math.toRadians(jio))).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
+        BigDecimal latMove =  new BigDecimal(Math.cos(Math.toRadians(jio))).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
+        BigDecimal lat =  new BigDecimal(point.getLatitude());
+        point.setLatitudet(lat.add(latMove)+"");
+        point.setLongitudet(new BigDecimal(point.getLongitude()).add(lonMove)+"");
         return point;
     }
 }

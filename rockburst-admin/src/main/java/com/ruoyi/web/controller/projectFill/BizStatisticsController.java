@@ -149,6 +149,7 @@ public class BizStatisticsController extends BaseController
                 .eq(workfaceId != null ,BizProjectRecord::getWorkfaceId, workfaceId)
                 .eq(tunnelId != null , BizProjectRecord::getTunnelId,tunnelId)
                 .eq(StrUtil.isNotEmpty(constructType),BizProjectRecord::getConstructType,constructType)
+                .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
                 .between(StrUtil.isNotEmpty(startDate) && StrUtil.isNotEmpty(endDate),BizProjectRecord::getConstructTime,startDate,endDate);
 
         IPage<BizPulverizedCoalDaily> sss =  bizProjectRecordMapper.selectJoinPage(pagination, BizPulverizedCoalDaily.class,mpjLambdaWrapper);
@@ -187,6 +188,20 @@ public class BizStatisticsController extends BaseController
         return R.ok(new MPage<>(sss));
     }
 
+    @ApiOperation("煤粉量查询sss")
+    @GetMapping("getPulverize111dCoalDaily")
+    public R get111PulverizedCoalDaily(@ApiParam(name = "workfaceId", value = "工作面id") @RequestParam(required = false) Long workfaceId,
+                                                                   @ApiParam(name = "tunnelId", value = "巷道id") @RequestParam(required = false) Long tunnelId,
+                                                                   @ApiParam(name = "constructType", value = "施工类型") @RequestParam( required = false) String constructType,
+                                                                   @ApiParam(name = "startDate", value = "开始日期") @RequestParam( required = false) String startDate,
+                                                                   @ApiParam(name = "endDate", value = "结束日期") @RequestParam(required = false) String endDate,
+                                                                      HttpServletResponse response
+                                                                  ) throws IOException {
+
+
+        bizProjectRecordService.get999( startDate,  endDate,  tunnelId,  workfaceId,  constructType,  response);
+        return R.ok();
+    }
 
     @Anonymous
     @ApiOperation("999")

@@ -16,15 +16,18 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
 import com.ruoyi.system.domain.vo.BizDangerAreaVo;
 import com.ruoyi.system.mapper.BizDangerAreaMapper;
+import com.ruoyi.system.mapper.BizTravePointMapper;
 import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.IBizDangerAreaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -44,6 +47,8 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
     private TunnelMapper tunnelMapper;
     @Autowired
     private BizTravePointServiceImpl bizTravePointServiceImpl;
+    @Autowired
+    private BizTravePointMapper bizTravePointMapper;
 
 
     @Override
@@ -121,6 +126,33 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
             bizDangerArea.setNo(maxArea.get().getNo()+1) ;
         }
         Assert.isTrue(dto.getStartMeter()<0,"必须在导线点前开始");
+
+        if(dto.getStartPointId() != dto.getEndPointId()){
+            BizTravePoint startPoint = bizTravePointMapper.selectById(dto.getStartPointId());
+            BizTravePoint endPoint = bizTravePointMapper.selectById(dto.getEndPointId());
+            QueryWrapper<BizTravePoint> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.lambda()
+                    .between(BizTravePoint::getNo,startPoint.getNo(),endPoint.getNo());
+            List<BizTravePoint> list2 = bizTravePointMapper.selectList(queryWrapper2);
+            List<Long> pointIds = new ArrayList<>();
+            if(list2 != null && list2.size()>0){
+                pointIds = list2.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
+            }
+
+            if(dto.getStartMeter() >= 0){
+                pointIds.remove(dto.getStartPointId());
+            }
+
+            if(dto.getStartMeter() <= 0){
+                pointIds.remove(dto.getEndPointId());
+            }
+
+            bizDangerArea.setPointlist(String.join(",", pointIds.stream()
+                    .map(Object::toString)
+                    .toArray(String[]::new)));
+
+        }
+
         return bizDangerAreaMapper.insert(bizDangerArea);
     }
 

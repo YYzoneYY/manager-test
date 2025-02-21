@@ -14,14 +14,14 @@ import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
-import com.ruoyi.system.domain.Entity.PlanPastEntity;
+import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.ProjectWarnSchemeEntity;
 import com.ruoyi.system.domain.dto.DistanceRuleDTO;
 import com.ruoyi.system.domain.dto.ProjectWarnSchemeDTO;
 import com.ruoyi.system.domain.dto.SelectProjectWarnDTO;
 import com.ruoyi.system.domain.dto.WorkloadRuleDTO;
 import com.ruoyi.system.domain.vo.ProjectWarnSchemeVO;
-import com.ruoyi.system.mapper.PlanPastMapper;
+import com.ruoyi.system.mapper.PlanMapper;
 import com.ruoyi.system.mapper.ProjectWarnSchemeMapper;
 import com.ruoyi.system.service.ProjectWarnSchemeService;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,7 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
     private ProjectWarnSchemeMapper projectWarnSchemeMapper;
 
     @Resource
-    private PlanPastMapper planPastMapper;
+    private PlanMapper planMapper;
 
     /**
      * 新增工程预警方案
@@ -247,9 +247,9 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
             if (StringUtils.equals(ConstantsInfo.ENABLE, projectWarnSchemeEntity.getStatus())) {
                 throw new RuntimeException("该预警方案已启用,无法删除");
             }
-            List<PlanPastEntity> planEntities = planPastMapper.selectList(new LambdaQueryWrapper<PlanPastEntity>()
-                    .eq(PlanPastEntity::getProjectWarnSchemeId, projectWarnSchemeId)
-                    .eq(PlanPastEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            List<PlanEntity> planEntities = planMapper.selectList(new LambdaQueryWrapper<PlanEntity>()
+                    .eq(PlanEntity::getProjectWarnSchemeId, projectWarnSchemeId)
+                    .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
             if (ListUtils.isNotNull(planEntities) && !planEntities.isEmpty()) {
                 throw new RuntimeException("该预警方案已被使用,无法删除");
             }

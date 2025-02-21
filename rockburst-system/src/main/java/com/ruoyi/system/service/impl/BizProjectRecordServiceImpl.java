@@ -35,7 +35,7 @@ import com.ruoyi.system.domain.excel.ChartDataAll;
 import com.ruoyi.system.domain.vo.*;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizProjectRecordService;
-import com.ruoyi.system.service.PlanPastService;
+import com.ruoyi.system.service.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +48,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -109,10 +108,10 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     ApachePoiLineChart11 apachePoiLineChart;
 
     @Autowired
-    BizPlanPresetMapper bizPlanPresetMapper;
+    PlanMapper planMapper;
 
     @Autowired
-    PlanPastService planService;
+    PlanService planService;
 
 
 
@@ -317,14 +316,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
             MPJLambdaWrapper<RelatesInfoEntity> queryWrapper = new MPJLambdaWrapper<>();
-            queryWrapper.innerJoin(PlanPastEntity.class, PlanPastEntity::getPlanId,RelatesInfoEntity::getPlanId)
+            queryWrapper.innerJoin(PlanEntity.class, PlanEntity::getPlanId,RelatesInfoEntity::getPlanId)
                     .leftJoin(BizDrillRecord.class,BizDrillRecord::getPlanId,RelatesInfoEntity::getPlanId)
                     .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,RelatesInfoEntity::getPositionId)
                     .eq(RelatesInfoEntity::getType,dto.getConstructType())
                     .selectAs(BizWorkface::getWorkfaceName,"positionName")
                     .selectSum(BizDrillRecord::getRealDeep,"realDeep")
                     .selectCount(BizDrillRecord::getDrillRecordId,"drillRealNum")
-                    .selectAs(PlanPastEntity::getPlanName,"planName")
+                    .selectAs(PlanEntity::getPlanName,"planName")
                     .selectAs(RelatesInfoEntity::getPlanType,"planType")
                     .selectAs(RelatesInfoEntity::getDrillNumber,"drillNumber")
                     .selectAs(RelatesInfoEntity::getHoleDepth,"holeDepth");
@@ -334,14 +333,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_J)){
             MPJLambdaWrapper<RelatesInfoEntity> queryWrapper = new MPJLambdaWrapper<>();
-            queryWrapper.innerJoin(PlanPastEntity.class, PlanPastEntity::getPlanId,RelatesInfoEntity::getPlanId)
+            queryWrapper.innerJoin(PlanEntity.class, PlanEntity::getPlanId,RelatesInfoEntity::getPlanId)
                     .leftJoin(BizDrillRecord.class,BizDrillRecord::getPlanId,RelatesInfoEntity::getPlanId)
                     .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,RelatesInfoEntity::getPositionId)
                     .eq(RelatesInfoEntity::getType,dto.getConstructType())
                     .selectAs(TunnelEntity::getTunnelName,"positionName")
                     .selectSum(BizDrillRecord::getRealDeep,"realDeep")
                     .selectCount(BizDrillRecord::getDrillRecordId,"drillRealNum")
-                    .selectAs(PlanPastEntity::getPlanName,"planName")
+                    .selectAs(PlanEntity::getPlanName,"planName")
                     .selectAs(RelatesInfoEntity::getPlanType,"planType")
                     .selectAs(RelatesInfoEntity::getDrillNumber,"drillNumber")
                     .selectAs(RelatesInfoEntity::getHoleDepth,"holeDepth");
@@ -380,53 +379,53 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Override
     public int saveRecord(BizProjectRecordAddDto dto) {
 
-        try{
-            log.info("开始查询任务id:{},{}", dto.getTravePointId(),dto.getConstructRange());
-            List<Long> playIds = new ArrayList<>();
-            if (StrUtil.isNotEmpty(dto.getConstructRange()) ){
-                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
-            }else {
-                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
-            }
-
-            BigDecimal result = null;
-            Long pointid = 0l;
-            if(playIds == null || playIds.size()==0){
-                String symbol =  dto.getConstructRange().substring(0, 1);
-                if(symbol.equals("+")){
-                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
-                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()+1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
-                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
-                    if(bizTravePoints != null && bizTravePoints.size() > 0){
-                        pointid = bizTravePoints.get(0).getPointId();
-                        result = new BigDecimal(bizTravePoints.get(0).getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
-                        log.info("入参:{},{}", pointid,"-"+result);
-                        playIds = planService.getPlanByPoint(pointid+"","-"+result);
-                    }
-                }else if(symbol.equals("-")){
-                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
-                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()-1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
-                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
-                    if(bizTravePoints != null && bizTravePoints.size() > 0){
-                        pointid = bizTravePoints.get(0).getPointId();
-                        result = new BigDecimal(ent.getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
-                        log.info("入参:{},{}", pointid,"+"+result);
-                        playIds = planService.getPlanByPoint(pointid+"","+"+result);
-
-                    }
-                }
-            }
-            log.info("结果:{}", playIds);
-            if(playIds != null && playIds.size()==1){
-                log.info("结果:{}", playIds);
-                dto.setPlanId(playIds.get(0));
-            }
-
-        }catch (Exception e){
-
-        }
+//        try{
+//            log.info("开始查询任务id:{},{}", dto.getTravePointId(),dto.getConstructRange());
+//            List<Long> playIds = new ArrayList<>();
+//            if (StrUtil.isNotEmpty(dto.getConstructRange()) ){
+//                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
+//            }else {
+//                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
+//            }
+//
+//            BigDecimal result = null;
+//            Long pointid = 0l;
+//            if(playIds == null || playIds.size()==0){
+//                String symbol =  dto.getConstructRange().substring(0, 1);
+//                if(symbol.equals("+")){
+//                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
+//                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+//                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()+1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
+//                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
+//                    if(bizTravePoints != null && bizTravePoints.size() > 0){
+//                        pointid = bizTravePoints.get(0).getPointId();
+//                        result = new BigDecimal(bizTravePoints.get(0).getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
+//                        log.info("入参:{},{}", pointid,"-"+result);
+//                        playIds = planService.getPlanByPoint(pointid+"","-"+result);
+//                    }
+//                }else if(symbol.equals("-")){
+//                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
+//                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+//                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()-1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
+//                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
+//                    if(bizTravePoints != null && bizTravePoints.size() > 0){
+//                        pointid = bizTravePoints.get(0).getPointId();
+//                        result = new BigDecimal(ent.getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
+//                        log.info("入参:{},{}", pointid,"+"+result);
+//                        playIds = planService.getPlanByPoint(pointid+"","+"+result);
+//
+//                    }
+//                }
+//            }
+//            log.info("结果:{}", playIds);
+//            if(playIds != null && playIds.size()==1){
+//                log.info("结果:{}", playIds);
+//                dto.setPlanId(playIds.get(0));
+//            }
+//
+//        }catch (Exception e){
+//
+//        }
 
 
         LoginUser loginUser = SecurityUtils.getLoginUser();
@@ -881,6 +880,69 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         }
     }
 
+
+    @Override
+    public void get999(String startDate, String endDate, Long tunnelId, Long workfaceId, String constructType, HttpServletResponse response) throws IOException {
+        MPJLambdaWrapper<BizProjectRecord> mpjLambdaWrapper = new MPJLambdaWrapper<>();
+        mpjLambdaWrapper
+                .selectAs(BizProjectRecord::getDrillType,BizPulverizedCoalDailyVo::getDrillType)
+                .selectAs(BizProjectRecord::getConstructRange,BizPulverizedCoalDailyVo::getConstructRange)
+                .selectAs(BizProjectRecord::getConstructType,BizPulverizedCoalDailyVo::getConstructType)
+                .selectAs(BizProjectRecord::getConstructTime,BizPulverizedCoalDailyVo::getConstructTime)
+                .selectAs(BizProjectRecord::getWorkfaceId,BizPulverizedCoalDailyVo::getWorkfaceId)
+                .selectAs(BizProjectRecord::getTunnelId,BizPulverizedCoalDailyVo::getTunnelId)
+                .selectAs(BizProjectRecord::getBarId,BizPulverizedCoalDailyVo::getBarId)
+                .selectAs(BizProjectRecord::getTravePointId,BizPulverizedCoalDailyVo::getTravePointId)
+
+                .selectAs(BizWorkface::getWorkfaceName,BizPulverizedCoalDailyVo::getWorkfaceName)
+                .selectAs(TunnelEntity::getTunnelName,BizPulverizedCoalDailyVo::getTunnelName)
+                .selectAs(BizTravePoint::getPointName,BizPulverizedCoalDailyVo::getPointName)
+                .selectCollection(BizDrillRecord.class,BizPulverizedCoalDailyVo::getDrillRecords)
+
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizProjectRecord::getProjectId)
+                .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizProjectRecord::getWorkfaceId)
+                .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId)
+                .leftJoin(BizDrillRecord.class,BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
+                .eq(workfaceId != null ,BizProjectRecord::getWorkfaceId, workfaceId)
+                .eq(tunnelId != null , BizProjectRecord::getTunnelId,tunnelId)
+                .eq(StrUtil.isNotEmpty(constructType),BizProjectRecord::getConstructType,constructType)
+                .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
+                .between(StrUtil.isNotEmpty(startDate) && StrUtil.isNotEmpty(endDate),BizProjectRecord::getConstructTime,startDate,endDate);
+
+        List<BizPulverizedCoalDailyVo> vos =  bizProjectRecordMapper.selectJoinList(BizPulverizedCoalDailyVo.class,mpjLambdaWrapper);
+
+        final Map<Long, List<BizPulverizedCoalDailyVo>>[] groupedByTunnelId = new Map[]{vos.stream()
+                .collect(Collectors.groupingBy(BizPulverizedCoalDailyVo::getTunnelId))};
+
+        groupedByTunnelId[0].forEach((tunnId, groupbytunnel) -> {
+            List<List<BizPulverizedCoalDailyDetailVo>> tunnelList = new ArrayList<>();
+            final Map<Long, List<BizPulverizedCoalDailyVo>>[] groupedByPointId = new Map[]{groupbytunnel.stream()
+                    .collect(Collectors.groupingBy(BizPulverizedCoalDailyVo::getTravePointId))};
+            groupedByPointId[0].forEach((pointId, groupedbypoint) -> {
+                tunnelList.add(sssssgeeessss(pointId,groupedbypoint));
+            });
+            System.out.println("tunnelId = " + tunnelList);
+        });
+    }
+
+    public void sssssgeee(Long tunnelId, List<BizPulverizedCoalDailyVo> tunnelList) {
+
+
+    }
+
+    //获取 该导线点的 list
+    public List<BizPulverizedCoalDailyDetailVo> sssssgeeessss(Long pointId, List<BizPulverizedCoalDailyVo> poinyList) {
+        List<BizPulverizedCoalDailyDetailVo> point = new ArrayList<>();
+        for (BizPulverizedCoalDailyVo bizPulverizedCoalDailyVo : poinyList) {
+            BizPulverizedCoalDailyDetailVo vo = new BizPulverizedCoalDailyDetailVo();
+            vo.setRiqi(bizPulverizedCoalDailyVo.getConstructTime()+"")
+                    .setWeizhi(bizPulverizedCoalDailyVo.getConstructRange())
+                    .setCrumWeight(bizPulverizedCoalDailyVo.getDrillRecords().get(0).getCrumbWeight());
+            point.add(vo);
+        }
+        return point;
+    }
+
     @Override
     public void sss555(HttpServletResponse response) {
 
@@ -888,10 +950,10 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public void deletePlan(Long planId) {
-        UpdateWrapper<BizPlanPreset> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.lambda().set(BizPlanPreset::getDelFlag, BizBaseConstant.DELFLAG_Y)
-                .eq(BizPlanPreset::getPlanId, planId);
-        bizPlanPresetMapper.delete(updateWrapper);
+        UpdateWrapper<PlanEntity> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(PlanEntity::getDelFlag, BizBaseConstant.DELFLAG_Y)
+                .eq(PlanEntity::getPlanId, planId);
+        planMapper.delete(updateWrapper);
     }
 
     @Override

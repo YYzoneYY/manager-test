@@ -18,6 +18,7 @@ import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
+import com.ruoyi.system.domain.dto.BizWorkfaceSchemeDto;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
 import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.IBizMiningAreaService;
@@ -25,7 +26,6 @@ import com.ruoyi.system.service.IBizWorkfaceService;
 import com.ruoyi.system.service.SurveyAreaService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -123,22 +123,38 @@ public class BizWorkfaceController extends BaseController
     @PreAuthorize("@ss.hasPermi('basicInfo:workface:schemeEdit')")
     @Log(title = "添加工作面计划", businessType = BusinessType.UPDATE)
     @PostMapping("/schemeAdd")
-    public R schemeUpdate(@ApiParam(name = "scheme", value = "规划")  @RequestParam(required = true) String scheme,
-                          @ApiParam(name = "workfaceIds", value = "工作面id集合")  @RequestParam(required = true) Long[] workfaceIds)
+    public R schemeUpdate(@RequestBody  BizWorkfaceSchemeDto dto)
     {
         QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().select(BizWorkface::getWorkfaceId,BizWorkface::getWorkfaceName,BizWorkface::getScheme)
-                        .in(BizWorkface::getWorkfaceId,workfaceIds);
+                        .apply("FIND_IN_SET({0}, scheme)", dto.getScheme());
         List<BizWorkface> workfaces = bizWorkfaceService.list(queryWrapper);
         for (BizWorkface workface : workfaces) {
+            List<String> schemeList = new ArrayList<>(Arrays.asList(workface.getScheme().split(",")));
+            schemeList.remove(dto.getScheme());
+            if(schemeList == null || schemeList.size() == 0){
+                UpdateWrapper<BizWorkface> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.lambda().set(BizWorkface::getScheme,null).eq(BizWorkface::getWorkfaceId,workface.getWorkfaceId());
+                bizWorkfaceService.update(updateWrapper);
+            }else{
+                workface.setScheme(String.join(",", schemeList));
+                bizWorkfaceService.updateById(workface);
+            }
+        }
+
+        QueryWrapper<BizWorkface> queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.lambda().select(BizWorkface::getWorkfaceId,BizWorkface::getWorkfaceName,BizWorkface::getScheme)
+                .in(BizWorkface::getWorkfaceId,dto.getWorkfaceIds());
+        List<BizWorkface> workfaces1 = bizWorkfaceService.list(queryWrapper1);
+        for (BizWorkface workface : workfaces1) {
             if(StrUtil.isEmpty(workface.getScheme())){
-                workface.setScheme(scheme);
+                workface.setScheme(dto.getScheme());
                 bizWorkfaceService.updateById(workface);
                 continue;
             }
             List<String> schemeList = new ArrayList<>(Arrays.asList(workface.getScheme().split(",")));
-            if(!schemeList.contains(scheme)){
-                schemeList.add(scheme);
+            if(!schemeList.contains(dto.getScheme())){
+                schemeList.add(dto.getScheme());
                 workface.setScheme(String.join(",", schemeList));
                 bizWorkfaceService.updateById(workface);
             }
@@ -151,21 +167,20 @@ public class BizWorkfaceController extends BaseController
     @PreAuthorize("@ss.hasPermi('basicInfo:workface:schemeEdit')")
 //    @Log(title = "删除工作面规划", businessType = BusinessType.UPDATE)
     @PostMapping("/schemeRemove")
-    public R schemeRemove(@ApiParam(name = "scheme", value = "规划")  @RequestParam(required = true) String scheme,
-                          @ApiParam(name = "workfaceIds", value = "工作面id集合")  @RequestParam(required = true) Long[] workfaceIds)
+    public R schemeRemove(@RequestBody  BizWorkfaceSchemeDto dto)
     {
         QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().select(BizWorkface::getWorkfaceId,BizWorkface::getWorkfaceName,BizWorkface::getScheme)
-                .in(BizWorkface::getWorkfaceId,workfaceIds);
+                .in(BizWorkface::getWorkfaceId,dto.getWorkfaceIds());
         List<BizWorkface> workfaces = bizWorkfaceService.list(queryWrapper);
         for (BizWorkface workface : workfaces) {
             if(StrUtil.isEmpty(workface.getScheme())){
                 continue;
             }
             List<String> schemeList = new ArrayList<>(Arrays.asList(workface.getScheme().split(",")));
-            if(schemeList.contains(scheme)){
+            if(schemeList.contains(dto.getScheme())){
 
-                schemeList.remove(scheme);
+                schemeList.remove(dto.getScheme());
                 schemeList.remove("");
                 if(schemeList == null || schemeList.size() == 0){
                     UpdateWrapper<BizWorkface> updateWrapper = new UpdateWrapper<>();

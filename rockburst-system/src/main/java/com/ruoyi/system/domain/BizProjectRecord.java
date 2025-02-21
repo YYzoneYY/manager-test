@@ -49,6 +49,9 @@ public class BizProjectRecord extends BaseSelfEntity
     @ApiModelProperty(value = "计划Id")
     private Long planId;
 
+    @ApiModelProperty(value = "帮id")
+    private Long barId;
+
     /** 距离 */
     @ApiModelProperty(value = "距离")
     private String constructRange;
