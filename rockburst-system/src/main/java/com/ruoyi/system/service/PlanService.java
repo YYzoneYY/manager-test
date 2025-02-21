@@ -7,8 +7,7 @@ import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.PlanDTO;
 import com.ruoyi.system.domain.dto.ProjectWarnChoiceListDTO;
 import com.ruoyi.system.domain.dto.SelectNewPlanDTO;
-import com.ruoyi.system.domain.dto.SelectPlanDTO;
-import com.ruoyi.system.domain.vo.NewPlanVo;
+import com.ruoyi.system.domain.vo.PlanVO;
 
 import java.util.List;
 
@@ -38,7 +37,7 @@ public interface PlanService extends IService<PlanEntity> {
      * @param planId 计划id
      * @return 返回结果
      */
-    NewPlanVo queryById(Long planId);
+    PlanVO queryById(Long planId);
 
     /**
      * 分页查询

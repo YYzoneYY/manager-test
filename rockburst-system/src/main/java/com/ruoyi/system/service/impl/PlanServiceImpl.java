@@ -3,9 +3,6 @@ package com.ruoyi.system.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.domain.BasePermission;
@@ -17,14 +14,11 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
-import com.ruoyi.system.domain.BizProjectRecord;
-import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.utils.AreaAlgorithmUtils;
-import com.ruoyi.system.domain.utils.DataJudgeUtils;
-import com.ruoyi.system.domain.vo.NewPlanVo;
+import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
 import org.springframework.stereotype.Service;
@@ -34,8 +28,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -218,7 +210,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
      * @return 返回结果
      */
     @Override
-    public NewPlanVo queryById(Long planId) {
+    public PlanVO queryById(Long planId) {
         if (ObjectUtil.isNull(planId)) {
             throw new RuntimeException("参数错误,主键不能为空");
         }
@@ -270,22 +262,22 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-        Page<NewPlanVo> page = planMapper.queryPage(selectNewPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
+        Page<PlanVO> page = planMapper.queryPage(selectNewPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
         if (ListUtils.isNotNull(page.getResult())) {
-            page.getResult().forEach(newPlanVO -> {
-                List<PlanAreaDTO> planAreaDTOS = planAreaService.getByPlanId(newPlanVO.getPlanId());
-                newPlanVO.setPlanAreaDTOS(planAreaDTOS);
-                newPlanVO.setStartTimeFmt(DateUtils.getDateStrByTime(newPlanVO.getStartTime()));
-                newPlanVO.setEndTimeFmt(DateUtils.getDateStrByTime(newPlanVO.getEndTime()));
+            page.getResult().forEach(planVO -> {
+                List<PlanAreaDTO> planAreaDTOS = planAreaService.getByPlanId(planVO.getPlanId());
+                planVO.setPlanAreaDTOS(planAreaDTOS);
+                planVO.setStartTimeFmt(DateUtils.getDateStrByTime(planVO.getStartTime()));
+                planVO.setEndTimeFmt(DateUtils.getDateStrByTime(planVO.getEndTime()));
                 // 工作面名称
-                String workFaceName = getWorkFaceName(newPlanVO.getWorkFaceId());
-                newPlanVO.setWorkFaceName(workFaceName);
+                String workFaceName = getWorkFaceName(planVO.getWorkFaceId());
+                planVO.setWorkFaceName(workFaceName);
                 //审核状态字典lable
-                String auditStatus = sysDictDataMapper.selectDictLabel(ConstantsInfo.AUDIT_STATUS_DICT_TYPE, newPlanVO.getState());
-                newPlanVO.setStatusFmt(auditStatus);
-                if (newPlanVO.getState().equals(ConstantsInfo.REJECTED)) {
+                String auditStatus = sysDictDataMapper.selectDictLabel(ConstantsInfo.AUDIT_STATUS_DICT_TYPE, planVO.getState());
+                planVO.setStatusFmt(auditStatus);
+                if (planVO.getState().equals(ConstantsInfo.REJECTED)) {
                     // 获取驳回原因
-                    newPlanVO.setRejectReason(getRejectReason(newPlanVO.getPlanId()));
+                    planVO.setRejectReason(getRejectReason(planVO.getPlanId()));
                 }
             });
         }

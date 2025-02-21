@@ -35,7 +35,7 @@ import com.ruoyi.system.domain.excel.ChartDataAll;
 import com.ruoyi.system.domain.vo.*;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizProjectRecordService;
-import com.ruoyi.system.service.PlanPastService;
+import com.ruoyi.system.service.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +112,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     PlanMapper planMapper;
 
     @Autowired
-    PlanPastService planService;
+    PlanService planService;
 
 
 
@@ -317,14 +317,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
             MPJLambdaWrapper<RelatesInfoEntity> queryWrapper = new MPJLambdaWrapper<>();
-            queryWrapper.innerJoin(PlanPastEntity.class, PlanPastEntity::getPlanId,RelatesInfoEntity::getPlanId)
+            queryWrapper.innerJoin(PlanEntity.class, PlanEntity::getPlanId,RelatesInfoEntity::getPlanId)
                     .leftJoin(BizDrillRecord.class,BizDrillRecord::getPlanId,RelatesInfoEntity::getPlanId)
                     .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,RelatesInfoEntity::getPositionId)
                     .eq(RelatesInfoEntity::getType,dto.getConstructType())
                     .selectAs(BizWorkface::getWorkfaceName,"positionName")
                     .selectSum(BizDrillRecord::getRealDeep,"realDeep")
                     .selectCount(BizDrillRecord::getDrillRecordId,"drillRealNum")
-                    .selectAs(PlanPastEntity::getPlanName,"planName")
+                    .selectAs(PlanEntity::getPlanName,"planName")
                     .selectAs(RelatesInfoEntity::getPlanType,"planType")
                     .selectAs(RelatesInfoEntity::getDrillNumber,"drillNumber")
                     .selectAs(RelatesInfoEntity::getHoleDepth,"holeDepth");
@@ -334,14 +334,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_J)){
             MPJLambdaWrapper<RelatesInfoEntity> queryWrapper = new MPJLambdaWrapper<>();
-            queryWrapper.innerJoin(PlanPastEntity.class, PlanPastEntity::getPlanId,RelatesInfoEntity::getPlanId)
+            queryWrapper.innerJoin(PlanEntity.class, PlanEntity::getPlanId,RelatesInfoEntity::getPlanId)
                     .leftJoin(BizDrillRecord.class,BizDrillRecord::getPlanId,RelatesInfoEntity::getPlanId)
                     .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,RelatesInfoEntity::getPositionId)
                     .eq(RelatesInfoEntity::getType,dto.getConstructType())
                     .selectAs(TunnelEntity::getTunnelName,"positionName")
                     .selectSum(BizDrillRecord::getRealDeep,"realDeep")
                     .selectCount(BizDrillRecord::getDrillRecordId,"drillRealNum")
-                    .selectAs(PlanPastEntity::getPlanName,"planName")
+                    .selectAs(PlanEntity::getPlanName,"planName")
                     .selectAs(RelatesInfoEntity::getPlanType,"planType")
                     .selectAs(RelatesInfoEntity::getDrillNumber,"drillNumber")
                     .selectAs(RelatesInfoEntity::getHoleDepth,"holeDepth");
