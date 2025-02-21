@@ -96,6 +96,9 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
     void get444(BizProjectRecordDto1 dto, HttpServletResponse response) throws IOException;
 
 
+    void get999(String startTime, String endTime, Long tunnelId, Long workfaceId,String  constructType, HttpServletResponse response) throws IOException;
+
+
     void sss555(HttpServletResponse response);
 
 

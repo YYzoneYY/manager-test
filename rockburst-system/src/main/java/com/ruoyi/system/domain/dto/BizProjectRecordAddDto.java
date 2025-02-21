@@ -24,6 +24,9 @@ public class BizProjectRecordAddDto  {
     @ApiModelProperty(value = "计划Id")
     private Long planId;
 
+    @ApiModelProperty(value = "帮id")
+    private Long barId;
+
     @ApiModelProperty(value = "施工类型 回踩 掘进",required = true)
     private String constructType;
 

@@ -40,6 +40,13 @@ public interface IBizTravePointService extends IService<BizTravePoint>
     Long judgePointInArea(Long pointId,Double meter);
 
 
+    /**
+     * 给定 导线点加距离, 转换成 负方向距离
+     * @param pointId
+     * @param meter
+     * @return
+     */
+    BizPresetPoint getPointPre(Long pointId,Double meter);
 
     List<Long> getInPointList(Long startPointId,Double startMeter,Long endPointId,Double endMeter);
 

@@ -109,7 +109,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     ApachePoiLineChart11 apachePoiLineChart;
 
     @Autowired
-    BizPlanPresetMapper bizPlanPresetMapper;
+    PlanMapper planMapper;
 
     @Autowired
     PlanPastService planService;
@@ -881,6 +881,69 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         }
     }
 
+
+    @Override
+    public void get999(String startDate, String endDate, Long tunnelId, Long workfaceId, String constructType, HttpServletResponse response) throws IOException {
+        MPJLambdaWrapper<BizProjectRecord> mpjLambdaWrapper = new MPJLambdaWrapper<>();
+        mpjLambdaWrapper
+                .selectAs(BizProjectRecord::getDrillType,BizPulverizedCoalDailyVo::getDrillType)
+                .selectAs(BizProjectRecord::getConstructRange,BizPulverizedCoalDailyVo::getConstructRange)
+                .selectAs(BizProjectRecord::getConstructType,BizPulverizedCoalDailyVo::getConstructType)
+                .selectAs(BizProjectRecord::getConstructTime,BizPulverizedCoalDailyVo::getConstructTime)
+                .selectAs(BizProjectRecord::getWorkfaceId,BizPulverizedCoalDailyVo::getWorkfaceId)
+                .selectAs(BizProjectRecord::getTunnelId,BizPulverizedCoalDailyVo::getTunnelId)
+                .selectAs(BizProjectRecord::getBarId,BizPulverizedCoalDailyVo::getBarId)
+                .selectAs(BizProjectRecord::getTravePointId,BizPulverizedCoalDailyVo::getTravePointId)
+
+                .selectAs(BizWorkface::getWorkfaceName,BizPulverizedCoalDailyVo::getWorkfaceName)
+                .selectAs(TunnelEntity::getTunnelName,BizPulverizedCoalDailyVo::getTunnelName)
+                .selectAs(BizTravePoint::getPointName,BizPulverizedCoalDailyVo::getPointName)
+                .selectCollection(BizDrillRecord.class,BizPulverizedCoalDailyVo::getDrillRecords)
+
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizProjectRecord::getProjectId)
+                .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizProjectRecord::getWorkfaceId)
+                .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId)
+                .leftJoin(BizDrillRecord.class,BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
+                .eq(workfaceId != null ,BizProjectRecord::getWorkfaceId, workfaceId)
+                .eq(tunnelId != null , BizProjectRecord::getTunnelId,tunnelId)
+                .eq(StrUtil.isNotEmpty(constructType),BizProjectRecord::getConstructType,constructType)
+                .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
+                .between(StrUtil.isNotEmpty(startDate) && StrUtil.isNotEmpty(endDate),BizProjectRecord::getConstructTime,startDate,endDate);
+
+        List<BizPulverizedCoalDailyVo> vos =  bizProjectRecordMapper.selectJoinList(BizPulverizedCoalDailyVo.class,mpjLambdaWrapper);
+
+        final Map<Long, List<BizPulverizedCoalDailyVo>>[] groupedByTunnelId = new Map[]{vos.stream()
+                .collect(Collectors.groupingBy(BizPulverizedCoalDailyVo::getTunnelId))};
+
+        groupedByTunnelId[0].forEach((tunnId, groupbytunnel) -> {
+            List<List<BizPulverizedCoalDailyDetailVo>> tunnelList = new ArrayList<>();
+            final Map<Long, List<BizPulverizedCoalDailyVo>>[] groupedByPointId = new Map[]{groupbytunnel.stream()
+                    .collect(Collectors.groupingBy(BizPulverizedCoalDailyVo::getTravePointId))};
+            groupedByPointId[0].forEach((pointId, groupedbypoint) -> {
+                tunnelList.add(sssssgeeessss(pointId,groupedbypoint));
+            });
+            System.out.println("tunnelId = " + tunnelList);
+        });
+    }
+
+    public void sssssgeee(Long tunnelId, List<BizPulverizedCoalDailyVo> tunnelList) {
+
+
+    }
+
+    //获取 该导线点的 list
+    public List<BizPulverizedCoalDailyDetailVo> sssssgeeessss(Long pointId, List<BizPulverizedCoalDailyVo> poinyList) {
+        List<BizPulverizedCoalDailyDetailVo> point = new ArrayList<>();
+        for (BizPulverizedCoalDailyVo bizPulverizedCoalDailyVo : poinyList) {
+            BizPulverizedCoalDailyDetailVo vo = new BizPulverizedCoalDailyDetailVo();
+            vo.setRiqi(bizPulverizedCoalDailyVo.getConstructTime()+"")
+                    .setWeizhi(bizPulverizedCoalDailyVo.getConstructRange())
+                    .setCrumWeight(bizPulverizedCoalDailyVo.getDrillRecords().get(0).getCrumbWeight());
+            point.add(vo);
+        }
+        return point;
+    }
+
     @Override
     public void sss555(HttpServletResponse response) {
 
@@ -888,10 +951,10 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public void deletePlan(Long planId) {
-        UpdateWrapper<BizPlanPreset> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.lambda().set(BizPlanPreset::getDelFlag, BizBaseConstant.DELFLAG_Y)
-                .eq(BizPlanPreset::getPlanId, planId);
-        bizPlanPresetMapper.delete(updateWrapper);
+        UpdateWrapper<PlanEntity> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(PlanEntity::getDelFlag, BizBaseConstant.DELFLAG_Y)
+                .eq(PlanEntity::getPlanId, planId);
+        planMapper.delete(updateWrapper);
     }
 
     @Override

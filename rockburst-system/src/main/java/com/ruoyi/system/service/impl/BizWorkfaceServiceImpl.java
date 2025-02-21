@@ -82,14 +82,24 @@ public class BizWorkfaceServiceImpl  extends MPJBaseServiceImpl<BizWorkfaceMappe
     }
 
     @Override
-    public MPage<BizWorkface> getWorkfaceByScheme(String scheme, String workfaceName,Pagination pagination) {
+    public MPage<BizWorkface> getWorkfaceBySchemePage(String scheme, String workfaceName,Pagination pagination) {
         QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .select(BizWorkface::getWorkfaceId,BizWorkface::getWorkfaceName)
                 .like(StrUtil.isNotBlank(workfaceName), BizWorkface::getWorkfaceName, workfaceName)
-                .apply( StrUtil.isNotEmpty(scheme) && !scheme.equals("or"),"FIND_IN_SET({0}, platform_codes)", scheme);
+                .apply( StrUtil.isNotEmpty(scheme) && !scheme.equals("or"),"FIND_IN_SET({0}, scheme)", scheme);
         IPage<BizWorkface> vos = bizWorkfaceMapper.selectPage(pagination,queryWrapper);
         return new MPage<>(vos);
+    }
+
+    @Override
+    public List<BizWorkface> getWorkfaceByScheme(String scheme, String workfaceName) {
+        QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .like(StrUtil.isNotBlank(workfaceName), BizWorkface::getWorkfaceName, workfaceName)
+                .apply( StrUtil.isNotEmpty(scheme) && !scheme.equals("or"),"FIND_IN_SET({0}, scheme)", scheme);
+        List<BizWorkface> vos = bizWorkfaceMapper.selectList(queryWrapper);
+        return vos;
     }
 
     /**

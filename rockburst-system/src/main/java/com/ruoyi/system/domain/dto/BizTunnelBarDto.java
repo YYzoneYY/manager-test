@@ -26,6 +26,9 @@ public class BizTunnelBarDto
     @ApiModelProperty(value = "类型", required = true)
     private String type;
 
+    @ApiModelProperty(value = "名称", required = true)
+    private String barName;
+
     @ApiModelProperty(value = "工作面id", required = true)
     private Long workfaceId;
 

@@ -10,6 +10,7 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.BizPresetPoint;
+import com.ruoyi.system.domain.dto.BizPlanPrePointDto;
 import com.ruoyi.system.domain.dto.BizPresetPointDto;
 import com.ruoyi.system.service.IBizPresetPointService;
 import io.swagger.annotations.Api;
@@ -19,6 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 预设点管理Controller
@@ -58,6 +62,17 @@ public class BizPresetPointController extends BaseController
     public R<BizPresetPoint> getInfo(@PathVariable("mineId") Long mineId)
     {
         return R.ok(bizPresetPointService.selectEntityById(mineId));
+    }
+
+    @ApiOperation("sssssss")
+    @GetMapping(value = "ssss/{planId}")
+    public R sssssss(@PathVariable("planId") Long planId)
+    {
+        BizPlanPrePointDto dto = new BizPlanPrePointDto();
+        dto.setTunnelId(15l).setStartPointId(71l).setStartMeter(-10.0).setEndPointId(77l).setEndMeter(-9.0);
+        List<BizPlanPrePointDto> dtos = new ArrayList<>();
+        dtos.add(dto);
+        return R.ok(bizPresetPointService.setPlanPrePoint(planId,dtos));
     }
 
     /**

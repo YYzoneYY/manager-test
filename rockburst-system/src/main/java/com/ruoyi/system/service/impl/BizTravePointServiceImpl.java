@@ -2,28 +2,26 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
-import com.ruoyi.common.utils.MathUtil;
 import com.ruoyi.system.constant.BizBaseConstant;
+import com.ruoyi.system.domain.BizDangerArea;
 import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizTravePoint;
-import com.ruoyi.system.domain.Entity.TunnelEntity;
-import com.ruoyi.system.domain.Point;
 import com.ruoyi.system.domain.dto.BizTravePointDto;
 import com.ruoyi.system.domain.vo.BizTravePointVo;
+import com.ruoyi.system.mapper.BizDangerAreaMapper;
+import com.ruoyi.system.mapper.BizPresetPointMapper;
 import com.ruoyi.system.mapper.BizTravePointMapper;
 import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.IBizTravePointService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -51,6 +49,10 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
     @Autowired
     private TunnelMapper tunnelMapper;
 
+    @Autowired
+    private BizDangerAreaMapper bizDangerAreaMapper;
+    @Autowired
+    private BizPresetPointMapper bizPresetPointMapper;
 
 
     @Override
@@ -81,9 +83,51 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
 
     @Override
     public Long judgePointInArea(Long pointId, Double meter) {
-        BizTravePoint point =  this.getById(pointId);
 
-        return 1l;
+
+        QueryWrapper<BizDangerArea> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .apply("FIND_IN_SET({0}, pointlist)", pointId);
+        List<BizDangerArea> points = bizDangerAreaMapper.selectList(queryWrapper);
+        if(points != null && points.size() > 0){
+            return points.get(0).getDangerAreaId();
+        }
+        queryWrapper.clear();
+        queryWrapper.lambda().eq(BizDangerArea::getStartPointId,pointId);
+        List<BizDangerArea> startPoints = bizDangerAreaMapper.selectList(queryWrapper);
+        if(startPoints != null && startPoints.size() > 0){
+            for (BizDangerArea startPoint : startPoints) {
+                if(meter >= startPoint.getStartMeter()){
+                    return startPoint.getDangerAreaId();
+                }
+            }
+        }
+        queryWrapper.clear();
+        queryWrapper.lambda().eq(BizDangerArea::getEndPointId,pointId);
+        List<BizDangerArea> endPoints = bizDangerAreaMapper.selectList(queryWrapper);
+
+        if(endPoints != null && endPoints.size() > 0){
+            for (BizDangerArea endPoint : endPoints) {
+                if(meter <= endPoint.getStartMeter()){
+                    return endPoint.getDangerAreaId();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public BizPresetPoint getPointPre(Long pointId, Double meter) {
+        if(meter > 0){
+            BizTravePoint point = this.getNextPoint(pointId);
+            meter = meter - point.getPrePointDistance();
+            BizPresetPoint presetPoint = new BizPresetPoint();
+            presetPoint.setPointId(pointId).setMeter(meter);
+        }
+        BizPresetPoint presetPoint = new BizPresetPoint();
+        presetPoint.setPointId(pointId).setMeter(meter);
+        return presetPoint;
     }
 
     /**

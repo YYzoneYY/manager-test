@@ -63,18 +63,27 @@ public class BizWashProofController extends BaseController
 //    @ApiOperation("防冲管理")
 //    @PreAuthorize("@ss.hasPermi('project:wash:workfacelist')")
 //    @GetMapping("/workfacelist")
+
 //    public R<MPage<BizProjectRecordListVo>> workfacelist(@ParameterObject BizWashProofDto dto, Pagination pagination)
 //    {
 //        return R.ok(bizProjectRecordService.selectproList(new BasePermission(), dto,pagination));
 //    }
 
-    @ApiOperation("根据规划查询工作面")
-    @GetMapping("/getWorkfaceByScheme")
-    public R<MPage<BizWorkface>> getWorkfaceByScheme(@RequestParam(value = "规划", required = false) String scheme,
-                                                       @RequestParam(value = "工作面名称", required = false) String workfaceName,
+    @ApiOperation("根据规划查询工作面-分页")
+    @GetMapping("/getWorkfaceBySchemePage")
+    public R<MPage<BizWorkface>> getWorkfaceBySchemePage(@RequestParam(required = false) String scheme,
+                                                       @RequestParam(required = false) String workfaceName,
                                                        @ParameterObject  Pagination pagination)
     {
-        return R.ok(bizWorkfaceService.getWorkfaceByScheme(scheme, workfaceName, pagination));
+        return R.ok(bizWorkfaceService.getWorkfaceBySchemePage(scheme, workfaceName, pagination));
+    }
+
+    @ApiOperation("根据规划查询工作面-不分页")
+    @GetMapping("/getWorkfaceByScheme")
+    public R<List<BizWorkface>> getWorkfaceByScheme(@RequestParam(required = false) String scheme,
+                                                     @RequestParam(required = false) String workfaceName)
+    {
+        return R.ok(bizWorkfaceService.getWorkfaceByScheme(scheme, workfaceName));
     }
 
 
