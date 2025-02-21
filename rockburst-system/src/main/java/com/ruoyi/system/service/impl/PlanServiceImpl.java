@@ -26,10 +26,7 @@ import com.ruoyi.system.domain.utils.AreaAlgorithmUtils;
 import com.ruoyi.system.domain.utils.DataJudgeUtils;
 import com.ruoyi.system.domain.vo.NewPlanVo;
 import com.ruoyi.system.mapper.*;
-import com.ruoyi.system.service.IBizPresetPointService;
-import com.ruoyi.system.service.IBizTravePointService;
-import com.ruoyi.system.service.PlanAreaService;
-import com.ruoyi.system.service.PlanService;
+import com.ruoyi.system.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,6 +82,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
 
     @Resource
     private IBizPresetPointService bizPresetPointService;
+
+    @Resource
+    IBizProjectRecordService iBizProjectRecordService;
 
     @Override
     public int insertPlan(PlanDTO planDTO) {
@@ -325,14 +325,15 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             throw new RuntimeException("请选择要删除的数据!");
         }
         List<Long > planIdList = Arrays.asList(planIds);
-//        planIdList.forEach(planId -> {
+        planIdList.forEach(planId -> {
+            iBizProjectRecordService.deletePlan(planId);
 //            List<BizProjectRecord> bizProjectRecords = bizProjectRecordMapper.selectList(new LambdaQueryWrapper<BizProjectRecord>()
 //                    .eq(BizProjectRecord::getPlanId, planId)
 //                    .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
 //            if (ListUtils.isNotNull(bizProjectRecords)) {
 //                throw new RuntimeException("该计划下有填报信息,不能删除");
 //            }
-//        });
+        });
         flag = this.removeBatchByIds(planIdList);
         if (flag) {
             // 删除区域信息
