@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 @ApiModel("工程计划")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("plan_copy")
+@TableName("plan")
 public class PlanEntity extends BusinessBaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
