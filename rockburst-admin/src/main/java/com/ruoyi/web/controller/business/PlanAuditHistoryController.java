@@ -2,7 +2,7 @@ package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.R;
-import com.ruoyi.system.domain.dto.SelectPlanDTO;
+import com.ruoyi.system.domain.dto.SelectNewPlanDTO;
 import com.ruoyi.system.service.PlanAuditService;
 import com.ruoyi.system.service.PlanService;
 import io.swagger.annotations.*;
@@ -41,9 +41,9 @@ public class PlanAuditHistoryController {
     })
     @PreAuthorize("@ss.hasPermi('planAuditHistory:auditHistoryPage')")
     @PostMapping(value = "/auditHistoryPage")
-    public R<Object> auditHistoryPage(@RequestBody SelectPlanDTO selectPlanDTO,
+    public R<Object> auditHistoryPage(@RequestBody SelectNewPlanDTO selectNewPlanDTO,
                                       @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                       @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
-        return R.ok(this.planAuditService.auditHistoryPage(new BasePermission(), selectPlanDTO, pageNum, pageSize));
+        return R.ok(this.planAuditService.auditHistoryPage(new BasePermission(), selectNewPlanDTO, pageNum, pageSize));
     }
 }

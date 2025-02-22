@@ -18,15 +18,14 @@ import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.PlanContentsMappingEntity;
 import com.ruoyi.system.domain.Entity.PlanAuditEntity;
 import com.ruoyi.system.domain.Entity.PlanEntity;
-import com.ruoyi.system.domain.dto.PlanAuditDTO;
-import com.ruoyi.system.domain.dto.PlanDTO;
-import com.ruoyi.system.domain.dto.SelectPlanDTO;
+import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.PlanContentsMappingMapper;
 import com.ruoyi.system.mapper.PlanAuditMapper;
 import com.ruoyi.system.mapper.PlanMapper;
 import com.ruoyi.system.mapper.SysDictDataMapper;
 import com.ruoyi.system.service.ContentsService;
+import com.ruoyi.system.service.PlanAreaService;
 import com.ruoyi.system.service.PlanAuditService;
 import com.ruoyi.system.service.RelatesInfoService;
 import org.springframework.stereotype.Service;
@@ -58,15 +57,6 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
     @Resource
     private PlanServiceImpl planService;
 
-    @Resource
-    private ContentsService contentsService;
-
-    @Resource
-    private PlanContentsMappingMapper planContentsMappingMapper;
-
-    @Resource
-    private RelatesInfoService relatesInfoService;
-
     @Override
     public PlanDTO audit(Long planId) {
         if (ObjectUtil.isNull(planId)) {
@@ -81,18 +71,8 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         planEntity.setState(ConstantsInfo.IN_REVIEW_DICT_VALUE);
         int update = planMapper.updateById(planEntity);
         if (update > 0) {
-            PlanDTO planDTO = new PlanDTO();
-            PlanDTO dto = planService.queryById(planId);
-            BeanUtils.copyProperties(dto, planDTO);
-            PlanContentsMappingEntity planContentsMappingEntity = planContentsMappingMapper.selectOne(
-                    new LambdaQueryWrapper<PlanContentsMappingEntity>()
-                            .eq(PlanContentsMappingEntity::getPlanId, planId));
-//            if (ObjectUtil.isNotNull(planContentsMappingEntity)) {
-//                planDTO.setContentsId(planContentsMappingEntity.getContentsId());
-//            }
-            // 关联信息
-//            List<RelatesInfoDTO> relatesInfoDTOS = relatesInfoService.getByPlanId(planId);
-//            planDTO.setRelatesInfoDTOS(relatesInfoDTOS);
+            PlanDTO planDTO = planService.queryById(planId);
+
             if (ObjectUtil.isNotNull(planEntity.getStartTime())) {
                 planDTO.setStartTimeFmt(DateUtils.getDateStrByTime(planEntity.getStartTime()));
             }
@@ -151,14 +131,14 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
 
     /**
      * 分页查询
-     * @param selectPlanDTO 查询参数DTO
+     * @param selectNewPlanDTO 查询参数DTO
      * @param pageNum 当前页码
      * @param pageSize 条数
      * @return 返回结果
      */
     @DataScopeSelf
     @Override
-    public TableData queryPage(BasePermission permission, SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize) {
+    public TableData queryPage(BasePermission permission, SelectNewPlanDTO selectNewPlanDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -169,7 +149,7 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-        Page<PlanVO> page = planAuditMapper.queryPage(selectPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
+        Page<PlanVO> page = planAuditMapper.queryPage(selectNewPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
         Page<PlanVO> planVOPage = getPlanListFmt(page);
         result.setTotal(planVOPage.getTotal());
         result.setRows(planVOPage.getResult());
@@ -179,14 +159,14 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
     /**
      * 审核历史分页查询
      * @param permission 权限
-     * @param selectPlanDTO 查询参数DTO
+     * @param selectNewPlanDTO 查询参数DTO
      * @param pageNum 当前页码
      * @param pageSize 条数
      * @return 返回结果
      */
     @DataScopeSelf
     @Override
-    public TableData auditHistoryPage(BasePermission permission, SelectPlanDTO selectPlanDTO, Integer pageNum, Integer pageSize) {
+    public TableData auditHistoryPage(BasePermission permission, SelectNewPlanDTO selectNewPlanDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -194,19 +174,15 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         if (null == pageSize || pageSize < 1) {
             pageSize = 10;
         }
-        List<Long> panIds = contentsService.queryByCondition(selectPlanDTO.getContentsId());
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-        if (ObjectUtil.isNotNull(panIds) && !panIds.isEmpty()) {
-            Page<PlanVO> page = planAuditMapper.auditHistoryPage(selectPlanDTO, panIds, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
+            Page<PlanVO> page = planAuditMapper.auditHistoryPage(selectNewPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
             Page<PlanVO> planVOPage = getPlanListFmt(page);
             result.setTotal(planVOPage.getTotal());
             result.setRows(planVOPage.getResult());
-        } else {
             result.setTotal(0L);
             result.setRows(new ArrayList<>());
-        }
         return result;
     }
 
