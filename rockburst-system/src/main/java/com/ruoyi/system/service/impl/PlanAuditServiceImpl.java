@@ -15,15 +15,13 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.PlanContentsMappingEntity;
 import com.ruoyi.system.domain.Entity.PlanAuditEntity;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.vo.PlanVO;
-import com.ruoyi.system.mapper.PlanContentsMappingMapper;
-import com.ruoyi.system.mapper.PlanAuditMapper;
-import com.ruoyi.system.mapper.PlanMapper;
-import com.ruoyi.system.mapper.SysDictDataMapper;
+import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.ContentsService;
 import com.ruoyi.system.service.PlanAreaService;
 import com.ruoyi.system.service.PlanAuditService;
@@ -56,6 +54,9 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
 
     @Resource
     private PlanServiceImpl planService;
+
+    @Resource
+    private BizWorkfaceMapper bizWorkfaceMapper;
 
     @Override
     public PlanDTO audit(Long planId) {
@@ -194,6 +195,9 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
             list.getResult().forEach(planVO -> {
                 planVO.setStartTimeFmt(DateUtils.getDateStrByTime(planVO.getStartTime()));
                 planVO.setEndTimeFmt(DateUtils.getDateStrByTime(planVO.getEndTime()));
+                // 工作面名称
+                String workFaceName = getWorkFaceName(planVO.getWorkFaceId());
+                planVO.setWorkFaceName(workFaceName);
                 //审核状态字典lable
                 String auditStatus = sysDictDataMapper.selectDictLabel(ConstantsInfo.AUDIT_STATUS_DICT_TYPE, planVO.getState());
                 planVO.setStatusFmt(auditStatus);
@@ -223,5 +227,20 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
             throw new RuntimeException("未找到此计划，计划ID: " + planId);
         }
         return planAuditEntity.getAuditResult();
+    }
+
+    /**
+     * 获取工面名称
+     */
+    private String getWorkFaceName(Long workFaceId) {
+        String workFaceName = null;
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceId, workFaceId)
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(bizWorkface)) {
+            return workFaceName;
+        }
+        workFaceName =  bizWorkface.getWorkfaceName();
+        return workFaceName;
     }
 }

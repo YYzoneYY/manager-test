@@ -88,6 +88,13 @@ public class PlanController {
         return R.ok(this.planService.getProjectWarnChoiceList());
     }
 
+    @ApiOperation(value = "获取文件URL", notes = "获取文件URL")
+    @GetMapping("/getFileUrl")
+    public R<Object> downloadFile(@ApiParam(name = "fileId", value = "文件id", required = true) @RequestParam String fileId,
+                                  @ApiParam(name = "type", value = "文件类型", required = true) @RequestParam String type) {
+        return R.ok(this.planService.getFileUrl(fileId, type));
+    }
+
     @ApiOperation(value = "计划导入", notes = "计划导入")
     @PostMapping(value = "/importPlan")
     public R<Object> importPlan(@RequestParam(value = "tag") String tag,

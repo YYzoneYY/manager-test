@@ -22,6 +22,7 @@ import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.*;
+import com.ruoyi.system.domain.SysFileInfo;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.utils.AreaAlgorithmUtils;
 import com.ruoyi.system.domain.utils.TrimUtils;
@@ -100,6 +101,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
 
     @Resource
     private ImportPlanAssistService importPlanAssistService;
+
+    @Resource
+    private SysFileInfoMapper sysFileInfoMapper;
 
     @Override
     public int insertPlan(PlanDTO planDTO) {
@@ -438,6 +442,58 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             }
         }
         return "导入成功";
+    }
+
+    @Override
+    public List<ReturnDTO> getSketchMap(List<Long> tunnelId, String type) {
+        List<ReturnDTO> returnDTOS = new ArrayList<>();
+        List<PlanAreaDTO> planAreaDTOS = new ArrayList<>();
+        List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(new LambdaQueryWrapper<PlanAreaEntity>()
+                .eq(PlanAreaEntity::getType, type)
+                .in(PlanAreaEntity::getTunnelId, tunnelId));
+        if (ListUtils.isNotNull(planAreaEntities)) {
+            planAreaEntities.forEach(planAreaEntity -> {
+                PlanAreaDTO planAreaDTO = new PlanAreaDTO();
+                planAreaDTO.setTunnelId(planAreaEntity.getTunnelId());
+                planAreaDTO.setStartTraversePointId(planAreaEntity.getStartTraversePointId());
+                planAreaDTO.setStartDistance(planAreaEntity.getStartDistance());
+                planAreaDTO.setEndTraversePointId(planAreaEntity.getEndTraversePointId());
+                planAreaDTO.setEndDistance(planAreaEntity.getEndDistance());
+                planAreaDTOS.add(planAreaDTO);
+            });
+
+        }
+        return List.of();
+    }
+
+    /**
+     * 获取模板文件URL
+     * @param fileId 文件id
+     * @return 返回结果
+     */
+    @Override
+    public String getFileUrl(String fileId, String type) {
+        String url = "";
+        if (ObjectUtil.isNull(fileId) || ObjectUtil.isNull(type)) {
+            throw new RuntimeException("参数错误,不能为空");
+        }
+        if (fileId.equals("209") && type.equals(ConstantsInfo.TUNNELING)) {
+            SysFileInfo sysFileInfo = sysFileInfoMapper.selectOne(new LambdaQueryWrapper<SysFileInfo>()
+                    .eq(SysFileInfo::getFileId, Long.parseLong(fileId)));
+            if (ObjectUtil.isNull(sysFileInfo)) {
+                throw new RuntimeException("模板不存在,下载失败,请联系管理员！");
+            }
+            url = sysFileInfo.getFileUrl();
+        }
+        if (fileId.equals("210") && type.equals(ConstantsInfo.STOPE)) {
+            SysFileInfo sysFileInfo = sysFileInfoMapper.selectOne(new LambdaQueryWrapper<SysFileInfo>()
+                    .eq(SysFileInfo::getFileId, Long.parseLong(fileId)));
+            if (ObjectUtil.isNull(sysFileInfo)) {
+                throw new RuntimeException("模板不存在,下载失败,请联系管理员！");
+            }
+            url = sysFileInfo.getFileUrl();
+        }
+        return url;
     }
 
     /**
