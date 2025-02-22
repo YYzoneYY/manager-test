@@ -22,6 +22,7 @@ import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.*;
+import com.ruoyi.system.domain.SysFileInfo;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.utils.AreaAlgorithmUtils;
 import com.ruoyi.system.domain.utils.TrimUtils;
@@ -101,6 +102,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     @Resource
     private ImportPlanAssistService importPlanAssistService;
 
+    @Resource
+    private SysFileInfoMapper sysFileInfoMapper;
+
     @Override
     public int insertPlan(PlanDTO planDTO) {
         int flag = 0;
@@ -148,7 +152,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                        }
                     }
                 });
-                boolean insert = planAreaService.insert(planEntity.getPlanId(), planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
+                boolean insert = planAreaService.insert(planEntity.getPlanId(), planEntity.getType(),
+                        planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
                 if (insert) {
                     bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
                 }
@@ -217,7 +222,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                         }
                     }
                 });
-                boolean insert = planAreaService.insert(planDTO.getPlanId(), planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
+                boolean insert = planAreaService.insert(planDTO.getPlanId(), planDTO.getType(),
+                        planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
                 if (insert) {
                     bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
                 }
@@ -380,13 +386,15 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String importPlan(String tag, MultipartFile file) throws Exception{
+        if (ObjectUtil.isNull(tag)) {
+            throw new ServiceException("模板类型不能为空,请先选择模板类型！");
+        }
         if (tag.equals(ConstantsInfo.TUNNELING)) {
             ExcelUtil<ImportPlanDTO> util = new ExcelUtil<ImportPlanDTO>(ImportPlanDTO.class);
             List<ImportPlanDTO> list = util.importExcel(file.getInputStream());
             if (CollUtil.isEmpty(list)) {
                 throw new RuntimeException("导入数据内容不能为空");
             }
-
             int errorLine = 2;
             for (ImportPlanDTO importPlanDTO : list) {
                 try {
@@ -409,13 +417,87 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             }
         }
         if (tag.equals(ConstantsInfo.STOPE)) {
-
+            ExcelUtil<ImportPlanTwoDTO> excelUtil = new ExcelUtil<ImportPlanTwoDTO>(ImportPlanTwoDTO.class);
+            List<ImportPlanTwoDTO> list = excelUtil.importExcel(file.getInputStream());
+            if (CollUtil.isEmpty(list)) {
+                throw new RuntimeException("导入数据内容不能为空");
+            }
+            int errorLine = 2;
+            for (ImportPlanTwoDTO importPlanTwoDTO : list) {
+                try {
+                    if (ObjectUtil.isNull(importPlanTwoDTO)) {
+                        throw new ServiceException("数据解析失败,请使用规定模板");
+                    }
+                    TrimUtils.trimBean(importPlanTwoDTO);
+                    // 参数校验
+                    checkParamTwo(importPlanTwoDTO);
+                    try {
+                        importPlanAssistService.importDataAddTwo(importPlanTwoDTO);
+                    } catch (ConstraintViolationException e) {
+                        throw new RuntimeException(e.getConstraintViolations().iterator().next().getMessage());
+                    }
+                } catch (Exception e) {
+                    throw new ServiceException("导入第(" + errorLine + ")行失败！失败原因：" + e.getMessage());
+                }
+            }
         }
         return "导入成功";
     }
 
+    @Override
+    public List<ReturnDTO> getSketchMap(List<Long> tunnelId, String type) {
+        List<ReturnDTO> returnDTOS = new ArrayList<>();
+        List<PlanAreaDTO> planAreaDTOS = new ArrayList<>();
+        List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(new LambdaQueryWrapper<PlanAreaEntity>()
+                .eq(PlanAreaEntity::getType, type)
+                .in(PlanAreaEntity::getTunnelId, tunnelId));
+        if (ListUtils.isNotNull(planAreaEntities)) {
+            planAreaEntities.forEach(planAreaEntity -> {
+                PlanAreaDTO planAreaDTO = new PlanAreaDTO();
+                planAreaDTO.setTunnelId(planAreaEntity.getTunnelId());
+                planAreaDTO.setStartTraversePointId(planAreaEntity.getStartTraversePointId());
+                planAreaDTO.setStartDistance(planAreaEntity.getStartDistance());
+                planAreaDTO.setEndTraversePointId(planAreaEntity.getEndTraversePointId());
+                planAreaDTO.setEndDistance(planAreaEntity.getEndDistance());
+                planAreaDTOS.add(planAreaDTO);
+            });
+
+        }
+        return List.of();
+    }
+
     /**
-     * 校验参数
+     * 获取模板文件URL
+     * @param fileId 文件id
+     * @return 返回结果
+     */
+    @Override
+    public String getFileUrl(String fileId, String type) {
+        String url = "";
+        if (ObjectUtil.isNull(fileId) || ObjectUtil.isNull(type)) {
+            throw new RuntimeException("参数错误,不能为空");
+        }
+        if (fileId.equals("209") && type.equals(ConstantsInfo.TUNNELING)) {
+            SysFileInfo sysFileInfo = sysFileInfoMapper.selectOne(new LambdaQueryWrapper<SysFileInfo>()
+                    .eq(SysFileInfo::getFileId, Long.parseLong(fileId)));
+            if (ObjectUtil.isNull(sysFileInfo)) {
+                throw new RuntimeException("模板不存在,下载失败,请联系管理员！");
+            }
+            url = sysFileInfo.getFileUrl();
+        }
+        if (fileId.equals("210") && type.equals(ConstantsInfo.STOPE)) {
+            SysFileInfo sysFileInfo = sysFileInfoMapper.selectOne(new LambdaQueryWrapper<SysFileInfo>()
+                    .eq(SysFileInfo::getFileId, Long.parseLong(fileId)));
+            if (ObjectUtil.isNull(sysFileInfo)) {
+                throw new RuntimeException("模板不存在,下载失败,请联系管理员！");
+            }
+            url = sysFileInfo.getFileUrl();
+        }
+        return url;
+    }
+
+    /**
+     * 校验参数（掘进）
      * @param importPlanDTO 实体类
      */
     private void checkParam(ImportPlanDTO importPlanDTO) {
@@ -444,32 +526,106 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         // 校验字典项
         checkDicTwo(importPlanDTO.getAnnual(), importPlanDTO.getPlanType(), importPlanDTO.getType(), importPlanDTO.getDrillType());
         // 组装DTO
-        PlanAreaDTO planAreaDTO = assembleDTO(tunnelEntity.getTunnelId(), startPoint, importPlanDTO.getStartDistance(), endPoint, importPlanDTO.getEndDistance());
+        String type = dicValue(ConstantsInfo.TYPE_DICT_TYPE, importPlanDTO.getType());
+        String planType = dicValue(ConstantsInfo.PLAN_TYPE_DICT_TYPE, importPlanDTO.getPlanType());// 计划类型
+        PlanAreaDTO planAreaDTO = assembleDTO(tunnelEntity.getTunnelId(), startPoint,
+                importPlanDTO.getStartDistance(), endPoint, importPlanDTO.getEndDistance());
         List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(new LambdaQueryWrapper<PlanAreaEntity>()
-                .eq(PlanAreaEntity::getTunnelId, tunnelEntity.getTunnelId()));
-        // 区域校验
-        importCheckArea(importPlanDTO.getPlanType(), planAreaDTO, planAreaEntities);
+                .eq(PlanAreaEntity::getTunnelId, tunnelEntity.getTunnelId()).eq(PlanAreaEntity::getType, type));
+        // 月计划、临时计划区域不可重复选择校验
+        if (planType.equals(ConstantsInfo.Month_PLAN) ||
+                planType.equals(ConstantsInfo.TEMPORARY_PLAN)) {
+            // 区域校验
+            importCheckArea(planAreaDTO, planAreaEntities);
+        }
     }
 
     /**
-     * 导入时区域校验
+     * 校验参数（回采）
+     * @param importPlanTwoDTO 实体类
      */
-    private void importCheckArea(String planType, PlanAreaDTO planAreaDTO, List<PlanAreaEntity> planAreaEntities) {
+    private void checkParamTwo(ImportPlanTwoDTO importPlanTwoDTO) {
+        //校验实体类中的判断
+        BeanValidators.validateWithException(validator, importPlanTwoDTO);
+        // 校验工作面名称
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceName, importPlanTwoDTO.getWorkFaceName())
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(bizWorkface)) {
+            throw new ServiceException("不存在名称为" + importPlanTwoDTO.getWorkFaceName() + "的工作面,请填写正确的工作面名称");
+        }
+        // 校验巷道名称
+        Long workFaceId = bizWorkface.getWorkfaceId();
+        TunnelEntity tunnelEntity = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getWorkFaceId, workFaceId)
+                .eq(TunnelEntity::getTunnelName, importPlanTwoDTO.getTunnelName())
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(tunnelEntity)) {
+            throw new ServiceException("不存在名称为" + importPlanTwoDTO.getTunnelName() + "的巷道,请填写正确的巷道(1)名称");
+        }
+        TunnelEntity entity = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getWorkFaceId, workFaceId)
+                .eq(TunnelEntity::getTunnelName, importPlanTwoDTO.getTunnelNameTwo())
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(entity)) {
+            throw new ServiceException("不存在名称为" + importPlanTwoDTO.getTunnelNameTwo() + "的巷道(2)名称");
+        }
+        // 校验起始导线点(1)名称
+        Long startPoint = checkPoint(tunnelEntity.getTunnelId(), importPlanTwoDTO.getStartPoint());
+        // 校验结束导线点(1)名称
+        Long endPoint = checkPoint(tunnelEntity.getTunnelId(), importPlanTwoDTO.getEndPoint());
+        // 校验起始导线点(2)名称
+        Long startPointTwo = checkPoint(tunnelEntity.getTunnelId(), importPlanTwoDTO.getStartPointTwo());
+        // 校验结束导线点(2)名称
+        Long endPointTwo = checkPoint(tunnelEntity.getTunnelId(), importPlanTwoDTO.getEndPointTwo());
+        // 校验字典项
+        checkDicTwo(importPlanTwoDTO.getAnnual(), importPlanTwoDTO.getPlanType(),
+                importPlanTwoDTO.getType(), importPlanTwoDTO.getDrillType());
+        // 组装DTOs
+        PlanAreaDTO planAreaDTO = assembleDTO(tunnelEntity.getTunnelId(), startPoint,
+                importPlanTwoDTO.getStartDistance(), endPoint, importPlanTwoDTO.getEndDistance());
+        PlanAreaDTO dto = assembleDTO(tunnelEntity.getTunnelId(), startPointTwo,
+                importPlanTwoDTO.getStartDistanceTwo(), endPointTwo, importPlanTwoDTO.getEndDistanceTwo());
+        List<PlanAreaDTO> planAreaDTOS = new ArrayList<>();
+        planAreaDTOS.add(planAreaDTO);
+        planAreaDTOS.add(dto);
+        String type = dicValue(ConstantsInfo.TYPE_DICT_TYPE, importPlanTwoDTO.getType());
+        String planType = dicValue(ConstantsInfo.PLAN_TYPE_DICT_TYPE, importPlanTwoDTO.getPlanType());// 计划类型
+        List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(new LambdaQueryWrapper<PlanAreaEntity>()
+                .eq(PlanAreaEntity::getTunnelId, tunnelEntity.getTunnelId()).eq(PlanAreaEntity::getType, type));
+        // 月计划、临时计划区域不可重复选择校验
+        if (planType.equals(ConstantsInfo.Month_PLAN) ||
+                planType.equals(ConstantsInfo.TEMPORARY_PLAN)) {
+            // 区域校验
+            importCheckAreaT(planAreaDTOS, planAreaEntities);
+        }
+    }
+
+    /**
+     * 导入时区域校验（掘进）
+     */
+    private void importCheckArea(PlanAreaDTO planAreaDTO, List<PlanAreaEntity> planAreaEntities) {
         planAreaEntities.forEach(planAreaEntity -> {
             try {
-                PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
-                        .eq(PlanEntity::getPlanId, planAreaEntity.getPlanId())
-                        .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-                if (ObjectUtil.isNull(planEntity)) {
-                    throw new RuntimeException("区域校验时发生异常");
-                }
-                // 判断同一计划类型是否有重复的区域
-                if (planType.equals(planEntity.getPlanType())) {
-                    AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
-                }
+                AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage());
             }
+        });
+    }
+
+    /**
+     * 导入时区域校验（回采）
+     */
+    private void importCheckAreaT(List<PlanAreaDTO> planAreaDTOS, List<PlanAreaEntity> planAreaEntities) {
+        planAreaDTOS.forEach(planAreaDTO -> {
+            planAreaEntities.forEach(planAreaEntity -> {
+                try {
+                    AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getMessage());
+                }
+            });
         });
     }
 
@@ -548,20 +704,21 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         // 月计划、临时计划区域不可重复选择校验
         if (planDTO.getPlanType().equals(ConstantsInfo.Month_PLAN) ||
                 planDTO.getPlanType().equals(ConstantsInfo.TEMPORARY_PLAN)) {
-            checkArea(planDTO.getPlanId(),planDTO.getPlanType(), planDTO.getPlanAreaDTOS());
+            checkArea(planDTO.getPlanId(),planDTO.getType(), planDTO.getPlanAreaDTOS());
         }
     }
 
     /**
      * 区域信息校验
      */
-    private void checkArea(Long planId, String planType, List<PlanAreaDTO> planAreaDTOS) {
+    private void checkArea(Long planId, String type, List<PlanAreaDTO> planAreaDTOS) {
         if (ListUtils.isNull(planAreaDTOS) ||planAreaDTOS.isEmpty()) {
             throw new RuntimeException("区域信息不能为空");
         }
         planAreaDTOS.forEach(planAreaDTO -> {
             LambdaQueryWrapper<PlanAreaEntity> queryWrapper = new LambdaQueryWrapper<PlanAreaEntity>()
-                    .eq(PlanAreaEntity::getTunnelId, planAreaDTO.getTunnelId());
+                    .eq(PlanAreaEntity::getTunnelId, planAreaDTO.getTunnelId())
+                    .eq(PlanAreaEntity::getType, type);
             // 判断是否是修改
             if (ObjectUtil.isNotNull(planId)) {
                 queryWrapper.ne(PlanAreaEntity::getPlanId,planId);
@@ -570,22 +727,29 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             if (ListUtils.isNotNull(planAreaEntities)) {
                 planAreaEntities.forEach(planAreaEntity -> {
                     try {
-                        PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
-                                .eq(PlanEntity::getPlanId, planAreaEntity.getPlanId())
-                                .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-                        if (ObjectUtil.isNull(planEntity)) {
-                            throw new RuntimeException("区域校验时发生异常");
-                        }
-                        // 判断同一计划类型是否有重复的区域
-                        if (planType.equals(planEntity.getPlanType())) {
-                            AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
-                        }
+                        AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
                     } catch (Exception e) {
                         throw new RuntimeException(e.getMessage());
                     }
                 });
             }
         });
+    }
+
+
+    /**
+     * 根据字典类型和字典标签获取字典值
+     */
+    private String dicValue(String dicType, String dicLab) {
+        String dicValue = "";
+        SysDictData sysDictData = sysDictDataMapper.selectOne(new LambdaQueryWrapper<SysDictData>()
+                .eq(SysDictData::getDictType, dicType)
+                .eq(SysDictData::getDictLabel, dicLab));
+        if (ObjectUtil.isNull(sysDictData)) {
+            throw new RuntimeException("字典转化失败，请联系管理员");
+        }
+        dicValue = sysDictData.getDictValue();
+        return dicValue;
     }
 
     /**

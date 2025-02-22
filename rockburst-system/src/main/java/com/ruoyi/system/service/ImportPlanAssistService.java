@@ -7,6 +7,7 @@ package com.ruoyi.system.service;
  */
 
 import com.ruoyi.system.domain.dto.ImportPlanDTO;
+import com.ruoyi.system.domain.dto.ImportPlanTwoDTO;
 
 import javax.validation.Valid;
 import java.text.ParseException;
@@ -17,4 +18,6 @@ import java.text.ParseException;
 public interface ImportPlanAssistService {
 
     int importDataAdd(ImportPlanDTO importPlanDTO) throws ParseException;
+
+    int importDataAddTwo(ImportPlanTwoDTO importPlanTwoDTO) throws ParseException;
 }

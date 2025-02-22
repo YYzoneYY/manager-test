@@ -6,6 +6,7 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.PlanDTO;
 import com.ruoyi.system.domain.dto.ProjectWarnChoiceListDTO;
+import com.ruoyi.system.domain.dto.ReturnDTO;
 import com.ruoyi.system.domain.dto.SelectNewPlanDTO;
 import com.ruoyi.system.domain.vo.PlanVO;
 import org.springframework.web.multipart.MultipartFile;
@@ -78,5 +79,14 @@ public interface PlanService extends IService<PlanEntity> {
      * @throws Exception 异常
      */
     String importPlan(String tag, MultipartFile file) throws Exception;
+
+    List<ReturnDTO> getSketchMap(List<Long> tunnelId, String type);
+
+    /**
+     * 获取模板文件URL
+     * @param fileId 文件id
+     * @return 返回结果
+     */
+    String getFileUrl(String fileId, String type);
 
 }
