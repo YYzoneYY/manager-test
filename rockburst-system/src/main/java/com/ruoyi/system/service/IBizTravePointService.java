@@ -48,10 +48,28 @@ public interface IBizTravePointService extends IService<BizTravePoint>
      */
     BizPresetPoint getPointPre(Long pointId,Double meter);
 
+    /**
+     * 给定起始结束  加距离 获取 区间内导线点
+     * @param startPointId
+     * @param startMeter
+     * @param endPointId
+     * @param endMeter
+     * @return
+     */
     List<Long> getInPointList(Long startPointId,Double startMeter,Long endPointId,Double endMeter);
 
+    /**
+     * 传入导线点id 获取下一个导线点
+     * @param currentPoint
+     * @return
+     */
     BizTravePoint getNextPoint(Long currentPoint);
 
+    /**
+     * 传入导线点id 获取上一个导线点
+     * @param currentPoint
+     * @return
+     */
     BizTravePoint getPrePoint(Long currentPoint);
 
     BizTravePoint getLatLon(Long point,Double meter);
