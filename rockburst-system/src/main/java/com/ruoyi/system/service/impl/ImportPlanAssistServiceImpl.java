@@ -2,20 +2,20 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
-import com.ruoyi.system.domain.dto.BizPlanPrePointDto;
-import com.ruoyi.system.domain.dto.ImportPlanDTO;
-import com.ruoyi.system.domain.dto.PlanAreaDTO;
-import com.ruoyi.system.domain.dto.TraversePointGatherDTO;
+import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizPresetPointService;
 import com.ruoyi.system.service.IBizTravePointService;
@@ -75,10 +75,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
         int flag = 0;
         PlanEntity planEntity = new PlanEntity();
         planEntity.setPlanName(importPlanDTO.getPlanName());
-        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
-                .eq(BizWorkface::getWorkfaceName, importPlanDTO.getWorkFaceName())
-                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        planEntity.setWorkFaceId(bizWorkface.getWorkfaceId());
+        planEntity.setWorkFaceId(getBizWorkFaceId(importPlanDTO.getWorkFaceName()));
         planEntity.setAnnual(dicValue(ConstantsInfo.YEAR_DICT_TYPE, importPlanDTO.getAnnual())); // 年度
         planEntity.setPlanType(dicValue(ConstantsInfo.PLAN_TYPE_DICT_TYPE, importPlanDTO.getPlanType())); // 计划类型
         planEntity.setType(dicValue(ConstantsInfo.TYPE_DICT_TYPE, importPlanDTO.getType())); // 类型
@@ -98,11 +95,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
             List<PlanAreaDTO> planAreaDTOS = new ArrayList<>();
             List<TraversePointGatherDTO> traversePointGatherDTOS = new ArrayList<>();
             List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
-            TunnelEntity tunnelEntity = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
-                    .eq(TunnelEntity::getWorkFaceId, planEntity.getWorkFaceId())
-                    .eq(TunnelEntity::getTunnelName, importPlanDTO.getTunnelName())
-                    .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-            Long tunnelId =tunnelEntity.getTunnelId();
+            Long tunnelId = getTunnelId(planEntity.getWorkFaceId(), importPlanDTO.getTunnelName());
             PlanAreaDTO planAreaDTO = assembleDTO(tunnelId, getPointId(tunnelId, importPlanDTO.getStartPoint()),
                     importPlanDTO.getStartDistance(),
                     getPointId(tunnelId, importPlanDTO.getEndPoint()), importPlanDTO.getEndDistance());
@@ -120,8 +113,62 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
                     traversePointGatherDTOS.add(traversePointGatherDTO);
                 }
             }
-            boolean insert = planAreaService.insert(planEntity.getPlanId(), planAreaDTOS, traversePointGatherDTOS);
+            boolean insert = planAreaService.insert(planEntity.getPlanId(), planEntity.getType(), planAreaDTOS, traversePointGatherDTOS);
             if (insert) {
+                bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
+            }
+        } else {
+            throw new ServiceException("保存数据失败！！");
+        }
+        return flag;
+    }
+
+
+    @Override
+    public int importDataAddTwo(ImportPlanTwoDTO importPlanTwoDTO) throws ParseException {
+        int flag = 0;
+        PlanEntity planEntity = new PlanEntity();
+        planEntity.setPlanName(importPlanTwoDTO.getPlanName());
+        planEntity.setWorkFaceId(getBizWorkFaceId(importPlanTwoDTO.getWorkFaceName()));
+        planEntity.setAnnual(dicValue(ConstantsInfo.YEAR_DICT_TYPE, importPlanTwoDTO.getAnnual())); // 年度
+        planEntity.setPlanType(dicValue(ConstantsInfo.PLAN_TYPE_DICT_TYPE, importPlanTwoDTO.getPlanType())); // 计划类型
+        planEntity.setType(dicValue(ConstantsInfo.TYPE_DICT_TYPE, importPlanTwoDTO.getType())); // 类型
+        planEntity.setDrillType(dicValue(ConstantsInfo.DRILL_TYPE_DICT_TYPE, importPlanTwoDTO.getDrillType())); // 钻孔类型
+        planEntity.setTotalDrillNumber(Integer.valueOf(importPlanTwoDTO.getTotalDrillNumber()));
+        planEntity.setTotalHoleDepth(new BigDecimal(importPlanTwoDTO.getTotalHoleDepth()));
+        planEntity.setStartTime(DateUtils.getDateByTime(importPlanTwoDTO.getStartTime()));
+        planEntity.setEndTime(DateUtils.getDateByTime(importPlanTwoDTO.getEndTime()));
+        planEntity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
+        planEntity.setCreateTime(System.currentTimeMillis());
+        planEntity.setCreateBy(SecurityUtils.getUserId());
+        SysUser sysUser = sysUserMapper.selectUserById(SecurityUtils.getUserId());
+        planEntity.setDeptId(sysUser.getDeptId());
+        planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
+        flag = planMapper.insert(planEntity);
+        if (flag > 0) {
+            List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
+            List<PlanAreaBatchDTO> planAreaBatchDTOS = new ArrayList<>();
+            Long tunnelId = getTunnelId(planEntity.getWorkFaceId(), importPlanTwoDTO.getTunnelName());
+            List<AddDTO> addDTOS = assembleDTOs(importPlanTwoDTO, tunnelId);
+            if (ObjectUtil.isNotNull(addDTOS) && !addDTOS.isEmpty()) {
+                addDTOS.forEach(addDTO -> {
+                    PlanAreaBatchDTO planAreaBatchDTO = new PlanAreaBatchDTO();
+                    BeanUtils.copyProperties(addDTO, planAreaBatchDTO);
+                    planAreaBatchDTO.setPlanId(planEntity.getPlanId());
+                    planAreaBatchDTO.setType(planEntity.getType());
+                    planAreaBatchDTO.setTunnelId(tunnelId);
+                    planAreaBatchDTOS.add(planAreaBatchDTO);
+                });
+            }
+            List<PlanAreaDTO> planAreaDTOS = assembleAreaDTOs(addDTOS, tunnelId);
+            if (ObjectUtil.isNotNull(planAreaDTOS) && !planAreaDTOS.isEmpty()) {
+                planAreaDTOS.forEach(planAreaDTO -> {
+                    BizPlanPrePointDto bizPlanPrePointDto = getBizPlanPrePointDto(planAreaDTO);
+                    bizPlanPrePointDtos.add(bizPlanPrePointDto);
+                });
+            }
+            boolean batchInsert = planAreaService.batchInsert(planAreaBatchDTOS);
+            if (batchInsert) {
                 bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
             }
         } else {
@@ -159,6 +206,77 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
     }
 
     /**
+     * 组装计划区域DTOs
+     */
+    private List<PlanAreaDTO> assembleAreaDTOs(List<AddDTO> addDTOS, Long tunnelId) {
+        List<PlanAreaDTO> planAreaDTOS = new ArrayList<>();
+        addDTOS.forEach(addDTO -> {
+            PlanAreaDTO planAreaDTO = new PlanAreaDTO();
+            BeanUtils.copyProperties(addDTO, planAreaDTO);
+            planAreaDTO.setTunnelId(tunnelId);
+            planAreaDTOS.add(planAreaDTO);
+        });
+        return planAreaDTOS;
+    }
+
+    /**
+     * 组装辅助AddDTOs
+     */
+    private List<AddDTO> assembleDTOs(ImportPlanTwoDTO importPlanTwoDTO, Long tunnelId) {
+        List<AddDTO> addDTOS = new ArrayList<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+        AddDTO addDTO = new AddDTO();
+        addDTO.setStartTraversePointId(getPointId(tunnelId, importPlanTwoDTO.getStartPoint()));
+        addDTO.setStartDistance(importPlanTwoDTO.getStartDistance());
+        addDTO.setEndTraversePointId(getPointId(tunnelId, importPlanTwoDTO.getEndPoint()));
+        addDTO.setEndDistance(importPlanTwoDTO.getEndDistance());
+        List<TraversePointGatherDTO> traversePointGatherDTOS = assembleTraversePointGatherDTOS(getPointId(tunnelId, importPlanTwoDTO.getStartPoint()),
+                importPlanTwoDTO.getStartDistance(), getPointId(tunnelId, importPlanTwoDTO.getEndPoint()),
+                importPlanTwoDTO.getEndDistance());
+        try {
+            String gather = objectMapper.writeValueAsString(traversePointGatherDTOS);
+            addDTO.setTraversePointGather(gather);
+        } catch (JacksonException e) {
+            throw new RuntimeException(e);
+        }
+        addDTOS.add(addDTO);
+        AddDTO addDTOTwo = new AddDTO();
+        addDTOTwo.setStartTraversePointId(getPointId(tunnelId, importPlanTwoDTO.getStartPointTwo()));
+        addDTOTwo.setStartDistance(importPlanTwoDTO.getStartDistanceTwo());
+        addDTOTwo.setEndTraversePointId(getPointId(tunnelId, importPlanTwoDTO.getEndPointTwo()));
+        addDTOTwo.setEndDistance(importPlanTwoDTO.getEndDistanceTwo());
+        List<TraversePointGatherDTO> traversePointGatherDTOST = assembleTraversePointGatherDTOS(getPointId(tunnelId, importPlanTwoDTO.getStartPointTwo()),
+                importPlanTwoDTO.getStartDistanceTwo(), getPointId(tunnelId, importPlanTwoDTO.getEndPointTwo()),
+                importPlanTwoDTO.getEndDistanceTwo());
+        try {
+            String gather = objectMapper.writeValueAsString(traversePointGatherDTOST);
+            addDTOTwo.setTraversePointGather(gather);
+        } catch (JacksonException e) {
+            throw new RuntimeException(e);
+        }
+        addDTOS.add(addDTOTwo);
+        return addDTOS;
+    }
+
+    /**
+     * 组装导线集合
+     */
+    private List<TraversePointGatherDTO> assembleTraversePointGatherDTOS(Long sPointId, String sDistance,
+                                                                         Long ePointId, String eDistance) {
+        List<TraversePointGatherDTO> traversePointGatherDTOS = new ArrayList<>();
+        // 获取计划区域内所有的导线点
+        List<Long> pointList = bizTravePointService.getInPointList(sPointId, Double.valueOf(sDistance), ePointId, Double.valueOf(eDistance));
+        if (ObjectUtil.isNotNull(pointList) && !pointList.isEmpty()) {
+            for (Long point : pointList) {
+                TraversePointGatherDTO traversePointGatherDTO = new TraversePointGatherDTO();
+                traversePointGatherDTO.setTraversePointId(point);
+                traversePointGatherDTOS.add(traversePointGatherDTO);
+            }
+        }
+        return traversePointGatherDTOS;
+    }
+
+    /**
      * 根据导线名称和巷道id获取导线点id
      */
     private Long getPointId(Long tunnelId, String pointName) {
@@ -182,5 +300,28 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
         bizPlanPrePointDto.setStartMeter(Double.valueOf(planAreaDTO.getStartDistance()));
         bizPlanPrePointDto.setEndMeter(Double.valueOf(planAreaDTO.getEndDistance()));
         return bizPlanPrePointDto;
+    }
+
+    /**
+     * 根据工作面名称获取工作面id
+     */
+    private Long getBizWorkFaceId(String workFaceName) {
+        Long bizWorkFaceId = null;
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceName, workFaceName)
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        return bizWorkFaceId = bizWorkface.getWorkfaceId();
+    }
+
+    /**
+     * 根据工作面id和巷道名称获取巷道id
+     */
+    private Long getTunnelId(Long faceId, String tunnelName) {
+        Long tunnelId = null;
+        TunnelEntity tunnel = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                        .eq(TunnelEntity::getWorkFaceId, faceId)
+                .eq(TunnelEntity::getTunnelName, tunnelName)
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        return tunnelId = tunnel.getTunnelId();
     }
 }

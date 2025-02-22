@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.PlanAreaEntity;
+import com.ruoyi.system.domain.dto.PlanAreaBatchDTO;
 import com.ruoyi.system.domain.dto.PlanAreaDTO;
 import com.ruoyi.system.domain.dto.TraversePointGatherDTO;
 import com.ruoyi.system.mapper.PlanAreaMapper;
@@ -31,13 +33,14 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
     private PlanAreaMapper planAreaMapper;
 
     @Override
-    public boolean insert(Long planId, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS) {
+    public boolean insert(Long planId, String type, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS) {
         boolean flag = false;
         ArrayList<PlanAreaEntity> planAreaEntities = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
         planAreaDTOS.forEach(planAreaDTO -> {
             PlanAreaEntity planAreaEntity = new PlanAreaEntity();
             planAreaEntity.setPlanId(planId);
+            planAreaEntity.setType(type);
             planAreaEntity.setTunnelId(planAreaDTO.getTunnelId());
             planAreaEntity.setStartTraversePointId(planAreaDTO.getStartTraversePointId());
             planAreaEntity.setStartDistance(planAreaDTO.getStartDistance());
@@ -50,6 +53,18 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
                 throw new RuntimeException(e);
             }
             planAreaEntities.add(planAreaEntity);
+        });
+        flag = this.saveBatch(planAreaEntities);
+        return flag;
+    }
+
+    @Override
+    public boolean batchInsert(List<PlanAreaBatchDTO> planAreaBatchDTOS) {
+        boolean flag = false;
+        List<PlanAreaEntity> planAreaEntities = new ArrayList<>();
+        planAreaBatchDTOS.forEach(planAreaBatchDTO -> {
+            PlanAreaEntity planAreaEntity = new PlanAreaEntity();
+            BeanUtils.copyBeanProp(planAreaBatchDTO, planAreaEntity);
         });
         flag = this.saveBatch(planAreaEntities);
         return flag;

@@ -35,6 +35,10 @@ public class PlanAreaEntity implements Serializable {
     @TableField(value = "plan_id")
     private Long planId;
 
+    @ApiModelProperty(value = "类型(掘进or回采)")
+    @TableField(value = "type")
+    private String type;
+
     @ApiModelProperty(value = "巷道id")
     @TableField(value = "tunnel_id")
     private Long tunnelId;
