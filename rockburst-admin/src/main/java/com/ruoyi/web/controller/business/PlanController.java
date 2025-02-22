@@ -12,6 +12,7 @@ import io.swagger.annotations.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -85,6 +86,13 @@ public class PlanController {
     @GetMapping(value = "/getProjectWarnChoiceList")
     public R<List<ProjectWarnChoiceListDTO>> getProjectWarnChoiceList() {
         return R.ok(this.planService.getProjectWarnChoiceList());
+    }
+
+    @ApiOperation(value = "计划导入", notes = "计划导入")
+    @PostMapping(value = "/importPlan")
+    public R<Object> importPlan(@RequestParam(value = "tag") String tag,
+                                @ApiParam(name = "file", value = "文件", required = true) @RequestPart(value = "file") MultipartFile file) throws Exception {
+        return R.ok(this.planService.importPlan(tag, file));
     }
 
 //    @ApiOperation(value = "获取计划中已使用的导线点", notes = "获取计划中已使用的导线点")

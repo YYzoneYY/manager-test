@@ -70,6 +70,13 @@ public interface PlanService extends IService<PlanEntity> {
      */
     List<ProjectWarnChoiceListDTO> getProjectWarnChoiceList();
 
+    /**
+     * 导入
+     * @param tag 标签 tag :1 掘进 2:回采
+     * @param file 文件
+     * @return 返回结果
+     * @throws Exception 异常
+     */
     String importPlan(String tag, MultipartFile file) throws Exception;
 
 }

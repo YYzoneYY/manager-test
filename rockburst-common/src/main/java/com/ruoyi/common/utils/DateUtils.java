@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.poi.ss.formula.functions.T;
 
 /**
  * 时间工具类
@@ -57,6 +58,18 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
             e.printStackTrace();
         }
         return dateStr;
+    }
+
+    public static Long getDateByTime(String str) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        long time = 0L;
+        try {
+            Date date = formatter.parse(str);
+            time = date.getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return time;
     }
 
     /**
