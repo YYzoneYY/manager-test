@@ -20,6 +20,7 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.dto.BizWorkfaceSchemeDto;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
+import com.ruoyi.system.domain.vo.JsonVo;
 import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.IBizMiningAreaService;
 import com.ruoyi.system.service.IBizWorkfaceService;
@@ -59,6 +60,16 @@ public class BizWorkfaceController extends BaseController
 
     @Autowired
     private TunnelMapper tunnelMapper;
+
+
+    @ApiOperation("获取工作面all")
+    @Log(title = "获取工作面all", businessType = BusinessType.INSERT)
+    @PostMapping("/workfaceAll")
+    public R<?> getWorkfaceListAll()
+    {
+        List<JsonVo> cos = bizWorkfaceService.selectWorkfacejilianList();
+        return R.ok(cos);
+    }
 
     /**
      * 查询工作面管理列表
@@ -119,9 +130,9 @@ public class BizWorkfaceController extends BaseController
         return R.ok(bizWorkfaceService.insertBizWorkface(entity));
     }
 
-    @ApiOperation("添加工作面计划")
+    @ApiOperation("添加工作面规划")
     @PreAuthorize("@ss.hasPermi('basicInfo:workface:schemeEdit')")
-    @Log(title = "添加工作面计划", businessType = BusinessType.UPDATE)
+    @Log(title = "添加工作面规划", businessType = BusinessType.UPDATE)
     @PostMapping("/schemeAdd")
     public R schemeUpdate(@RequestBody  BizWorkfaceSchemeDto dto)
     {

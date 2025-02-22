@@ -4,7 +4,7 @@ import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.dto.PlanAuditDTO;
-import com.ruoyi.system.domain.dto.SelectPlanDTO;
+import com.ruoyi.system.domain.dto.SelectNewPlanDTO;
 import com.ruoyi.system.service.PlanAuditService;
 import io.swagger.annotations.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,9 +48,9 @@ public class PlanAuditController {
     })
     @PreAuthorize("@ss.hasPermi('planAudit:queryPage')")
     @PostMapping(value = "/queryPage")
-    public R<Object> queryPage(@RequestBody SelectPlanDTO selectPlanDTO,
+    public R<Object> queryPage(@RequestBody SelectNewPlanDTO selectNewPlanDTO,
                                 @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                 @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
-        return R.ok(this.planAuditService.queryPage(new BasePermission(), selectPlanDTO, pageNum, pageSize));
+        return R.ok(this.planAuditService.queryPage(new BasePermission(), selectNewPlanDTO, pageNum, pageSize));
     }
 }

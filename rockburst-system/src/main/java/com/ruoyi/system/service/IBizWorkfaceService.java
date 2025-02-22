@@ -6,6 +6,7 @@ import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
+import com.ruoyi.system.domain.vo.JsonVo;
 
 import java.util.List;
 
@@ -27,6 +28,9 @@ public interface IBizWorkfaceService  extends MPJDeepService<BizWorkface>
 
 
     public List<BizWorkfaceVo> selectWorkfaceVoList();
+
+
+    public List<JsonVo> selectWorkfacejilianList();
 
 
     /**
