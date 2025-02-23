@@ -77,6 +77,7 @@ public class BizWashProofController extends BaseController
         return R.ok(bizWorkfaceService.getWorkfaceBySchemePage(scheme, workfaceName, pagination));
     }
 
+
     @ApiOperation("根据规划查询工作面-不分页")
     @GetMapping("/getWorkfaceByScheme")
     public R<List<BizWorkface>> getWorkfaceByScheme(@RequestParam(required = false) String scheme,
@@ -84,6 +85,8 @@ public class BizWashProofController extends BaseController
     {
         return R.ok(bizWorkfaceService.getWorkfaceByScheme(scheme, workfaceName));
     }
+
+
 
 
     @ApiOperation("工作面地图位置")

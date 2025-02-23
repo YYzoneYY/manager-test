@@ -430,31 +430,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
-
         QueryWrapper<SysDept> deptQueryWrapper = new QueryWrapper<>();
         deptQueryWrapper.lambda().select(SysDept::getConstructionUnitId).eq(SysDept::getDeptId,currentUser.getDeptId());
         List<SysDept> sysDepts = sysDeptMapper.selectList(deptQueryWrapper);
-
-
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
-
-
-
         entity.setTag(ConstantsInfo.INITIAL_TAG);
-//        entity.setStatus(ConstantsInfo.AUDIT_STATUS_DICT_VALUE)
         if(sysDepts != null && sysDepts.size() > 0){
             entity.setConstructionUnitId(sysDepts.get(0).getConstructionUnitId());
-        }
-        //掘进回采id
-        if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
-            entity.setWorkfaceId(dto.getLocationId());
-            BizTravePoint point = bizTravePointMapper.selectById(dto.getTravePointId());
-            entity.setTunnelId(point.getTunnelId());
-        }else {
-            entity.setTunnelId(dto.getLocationId());
-            TunnelEntity tunnel = tunnelMapper.selectById(dto.getLocationId());
-            entity.setWorkfaceId(tunnel.getWorkFaceId());
         }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());
          this.getBaseMapper().insert(entity);
@@ -539,12 +522,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     public int updateRecord(BizProjectRecordAddDto dto) {
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
-        //掘进回采id
-        if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
-            entity.setWorkfaceId(dto.getLocationId());
-        }else {
-            entity.setTunnelId(dto.getLocationId());
-        }
+
         this.updateById(entity);
 
         UpdateWrapper<BizDrillRecord> drillUpdateWrapper= new UpdateWrapper<>();

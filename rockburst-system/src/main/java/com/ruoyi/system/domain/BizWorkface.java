@@ -1,6 +1,7 @@
 package com.ruoyi.system.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -149,8 +150,13 @@ public class BizWorkface extends BaseSelfEntity
     @ApiModelProperty(value = "规划,逗号分隔")
     private String scheme;
 
-    @ApiModelProperty(value = "地图位置")
+    @ApiModelProperty(value = "svg")
+    @TableField()
     private String svg;
+
+    @ApiModelProperty(value = "中心点")
+    @TableField()
+    private String center;
 
 
 }

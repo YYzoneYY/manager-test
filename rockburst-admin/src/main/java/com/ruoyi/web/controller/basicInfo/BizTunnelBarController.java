@@ -1,5 +1,7 @@
 package com.ruoyi.web.controller.basicInfo;
 
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
@@ -20,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 巷道帮管理Controller
@@ -49,6 +53,23 @@ public class BizTunnelBarController extends BaseController
         MPage<BizTunnelBarVo> list = bizTunnelBarService.selectEntityList(dto,pagination);
         return R.ok(list);
     }
+
+    /**
+     * 查询巷道帮管理列表
+     */
+    @ApiOperation("查询巷道帮下拉")
+    @GetMapping("/checkList")
+    public R<List<BizTunnelBar>> checkList(@ParameterObject BizTunnelBarDto dto)
+    {
+        QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(StrUtil.isNotEmpty(dto.getType()), BizTunnelBar::getType,dto.getType())
+                .eq(StrUtil.isNotEmpty(dto.getBarName()),BizTunnelBar::getBarName,dto.getBarName())
+                .eq(dto.getTunnelId() != null,BizTunnelBar::getTunnelId, dto.getTunnelId());
+        List<BizTunnelBar> list = bizTunnelBarService.list(queryWrapper);
+        return R.ok(list);
+    }
+
 
 
 
