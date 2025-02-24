@@ -149,18 +149,18 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
             List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
             List<PlanAreaBatchDTO> planAreaBatchDTOS = new ArrayList<>();
             Long tunnelId = getTunnelId(planEntity.getWorkFaceId(), importPlanTwoDTO.getTunnelName());
-            List<AddDTO> addDTOS = assembleDTOs(importPlanTwoDTO, tunnelId);
+            Long tunnelIdT = getTunnelId(planEntity.getWorkFaceId(), importPlanTwoDTO.getTunnelNameTwo());
+            List<AddDTO> addDTOS = assembleDTOs(importPlanTwoDTO, tunnelId, tunnelIdT);
             if (ObjectUtil.isNotNull(addDTOS) && !addDTOS.isEmpty()) {
                 addDTOS.forEach(addDTO -> {
                     PlanAreaBatchDTO planAreaBatchDTO = new PlanAreaBatchDTO();
                     BeanUtils.copyProperties(addDTO, planAreaBatchDTO);
                     planAreaBatchDTO.setPlanId(planEntity.getPlanId());
                     planAreaBatchDTO.setType(planEntity.getType());
-                    planAreaBatchDTO.setTunnelId(tunnelId);
                     planAreaBatchDTOS.add(planAreaBatchDTO);
                 });
             }
-            List<PlanAreaDTO> planAreaDTOS = assembleAreaDTOs(addDTOS, tunnelId);
+            List<PlanAreaDTO> planAreaDTOS = assembleAreaDTOs(addDTOS);
             if (ObjectUtil.isNotNull(planAreaDTOS) && !planAreaDTOS.isEmpty()) {
                 planAreaDTOS.forEach(planAreaDTO -> {
                     BizPlanPrePointDto bizPlanPrePointDto = getBizPlanPrePointDto(planAreaDTO);
@@ -208,12 +208,11 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
     /**
      * 组装计划区域DTOs
      */
-    private List<PlanAreaDTO> assembleAreaDTOs(List<AddDTO> addDTOS, Long tunnelId) {
+    private List<PlanAreaDTO> assembleAreaDTOs(List<AddDTO> addDTOS) {
         List<PlanAreaDTO> planAreaDTOS = new ArrayList<>();
         addDTOS.forEach(addDTO -> {
             PlanAreaDTO planAreaDTO = new PlanAreaDTO();
             BeanUtils.copyProperties(addDTO, planAreaDTO);
-            planAreaDTO.setTunnelId(tunnelId);
             planAreaDTOS.add(planAreaDTO);
         });
         return planAreaDTOS;
@@ -222,10 +221,11 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
     /**
      * 组装辅助AddDTOs
      */
-    private List<AddDTO> assembleDTOs(ImportPlanTwoDTO importPlanTwoDTO, Long tunnelId) {
+    private List<AddDTO> assembleDTOs(ImportPlanTwoDTO importPlanTwoDTO, Long tunnelId, Long tunnelIdT) {
         List<AddDTO> addDTOS = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
         AddDTO addDTO = new AddDTO();
+        addDTO.setTunnelId(tunnelId);
         addDTO.setStartTraversePointId(getPointId(tunnelId, importPlanTwoDTO.getStartPoint()));
         addDTO.setStartDistance(importPlanTwoDTO.getStartDistance());
         addDTO.setEndTraversePointId(getPointId(tunnelId, importPlanTwoDTO.getEndPoint()));
@@ -241,12 +241,13 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
         }
         addDTOS.add(addDTO);
         AddDTO addDTOTwo = new AddDTO();
-        addDTOTwo.setStartTraversePointId(getPointId(tunnelId, importPlanTwoDTO.getStartPointTwo()));
+        addDTOTwo.setTunnelId(tunnelIdT);
+        addDTOTwo.setStartTraversePointId(getPointId(tunnelIdT, importPlanTwoDTO.getStartPointTwo()));
         addDTOTwo.setStartDistance(importPlanTwoDTO.getStartDistanceTwo());
-        addDTOTwo.setEndTraversePointId(getPointId(tunnelId, importPlanTwoDTO.getEndPointTwo()));
+        addDTOTwo.setEndTraversePointId(getPointId(tunnelIdT, importPlanTwoDTO.getEndPointTwo()));
         addDTOTwo.setEndDistance(importPlanTwoDTO.getEndDistanceTwo());
-        List<TraversePointGatherDTO> traversePointGatherDTOST = assembleTraversePointGatherDTOS(getPointId(tunnelId, importPlanTwoDTO.getStartPointTwo()),
-                importPlanTwoDTO.getStartDistanceTwo(), getPointId(tunnelId, importPlanTwoDTO.getEndPointTwo()),
+        List<TraversePointGatherDTO> traversePointGatherDTOST = assembleTraversePointGatherDTOS(getPointId(tunnelIdT, importPlanTwoDTO.getStartPointTwo()),
+                importPlanTwoDTO.getStartDistanceTwo(), getPointId(tunnelIdT, importPlanTwoDTO.getEndPointTwo()),
                 importPlanTwoDTO.getEndDistanceTwo());
         try {
             String gather = objectMapper.writeValueAsString(traversePointGatherDTOST);

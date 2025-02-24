@@ -1,20 +1,22 @@
 package com.ruoyi.system.domain;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
-import com.ruoyi.common.annotation.Excel;
 import lombok.experimental.Accessors;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 采区管理对象 biz_mining_area
@@ -73,6 +75,13 @@ public class BizMiningArea extends BaseSelfEntity
     @Schema(description = "其他备注或说明")
     private String notes;
 
+    @ApiModelProperty(value = "svg")
+    @TableField()
+    private String svg;
+
+    @ApiModelProperty(value = "中心点")
+    @TableField()
+    private String center;
 
 
 }

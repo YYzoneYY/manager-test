@@ -36,12 +36,11 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -383,88 +382,126 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         return projectWarnChoiceListDTOS;
     }
 
+    /**
+     * 导入
+     * @param tag 标签 tag :1 掘进 2:回采
+     * @param file 文件
+     * @return 返回结果
+     * @throws Exception 异常
+     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String importPlan(String tag, MultipartFile file) throws Exception{
+    @Transactional(rollbackFor = ServiceException.class)
+    public String importPlan(String tag, MultipartFile file) throws Exception {
         if (ObjectUtil.isNull(tag)) {
             throw new ServiceException("模板类型不能为空,请先选择模板类型！");
         }
-        if (tag.equals(ConstantsInfo.TUNNELING)) {
-            ExcelUtil<ImportPlanDTO> util = new ExcelUtil<ImportPlanDTO>(ImportPlanDTO.class);
-            List<ImportPlanDTO> list = util.importExcel(file.getInputStream());
-            if (CollUtil.isEmpty(list)) {
-                throw new RuntimeException("导入数据内容不能为空");
-            }
-            int errorLine = 2;
-            for (ImportPlanDTO importPlanDTO : list) {
-                try {
-                    if (ObjectUtil.isNull(importPlanDTO)) {
-                        throw new ServiceException("数据解析失败,请使用规定模板");
-                    }
-                    //去除字符串前后的空格
-                    TrimUtils.trimBean(importPlanDTO);
-                    //参数校验
-                    checkParam(importPlanDTO);
-                    try {
-                        importPlanAssistService.importDataAdd(importPlanDTO);
-                    } catch (ConstraintViolationException e) {
-                        throw new RuntimeException(e.getConstraintViolations().iterator().next().getMessage());
-                    }
-                    errorLine++;
-                } catch (Exception e) {
-                    throw new ServiceException("导入第(" + errorLine + ")行失败！失败原因：" + e.getMessage());
-                }
+        try (InputStream inputStream = file.getInputStream()) {
+            if (tag.equals(ConstantsInfo.TUNNELING)) {
+                return importData(inputStream, ImportPlanDTO.class, this::checkParam, importPlanAssistService::importDataAdd);
+            } else if (tag.equals(ConstantsInfo.STOPE)) {
+                return importData(inputStream, ImportPlanTwoDTO.class, this::checkParamTwo, importPlanAssistService::importDataAddTwo);
+            } else {
+                throw new ServiceException("不支持的模板类型");
             }
         }
-        if (tag.equals(ConstantsInfo.STOPE)) {
-            ExcelUtil<ImportPlanTwoDTO> excelUtil = new ExcelUtil<ImportPlanTwoDTO>(ImportPlanTwoDTO.class);
-            List<ImportPlanTwoDTO> list = excelUtil.importExcel(file.getInputStream());
-            if (CollUtil.isEmpty(list)) {
-                throw new RuntimeException("导入数据内容不能为空");
-            }
-            int errorLine = 2;
-            for (ImportPlanTwoDTO importPlanTwoDTO : list) {
-                try {
-                    if (ObjectUtil.isNull(importPlanTwoDTO)) {
-                        throw new ServiceException("数据解析失败,请使用规定模板");
-                    }
-                    TrimUtils.trimBean(importPlanTwoDTO);
-                    // 参数校验
-                    checkParamTwo(importPlanTwoDTO);
-                    try {
-                        importPlanAssistService.importDataAddTwo(importPlanTwoDTO);
-                    } catch (ConstraintViolationException e) {
-                        throw new RuntimeException(e.getConstraintViolations().iterator().next().getMessage());
-                    }
-                } catch (Exception e) {
-                    throw new ServiceException("导入第(" + errorLine + ")行失败！失败原因：" + e.getMessage());
+    }
+
+    private <T> String importData(InputStream inputStream, Class<T> dtoClass, PlanServiceImpl.ParamChecker<T> paramChecker,
+                                  PlanServiceImpl.DataImporter<T> dataImporter) throws Exception {
+        ExcelUtil<T> util = new ExcelUtil<>(dtoClass);
+        List<T> list = util.importExcel(inputStream);
+        if (CollUtil.isEmpty(list)) {
+            throw new ServiceException("导入数据内容不能为空");
+        }
+        int errorLine = 2; // 第一行通常是表头，所以从第二行开始计数
+        for (T dto : list) {
+            try {
+                if (ObjectUtil.isNull(dto)) {
+                    throw new ServiceException("数据解析失败,请使用规定模板");
                 }
+                TrimUtils.trimBean(dto);
+                paramChecker.check(dto);
+                try {
+                    dataImporter.importData(dto);
+                } catch (ConstraintViolationException e) {
+                    throw new ServiceException(e.getConstraintViolations().iterator().next().getMessage());
+                }
+                errorLine++;
+            } catch (Exception e) {
+                throw new ServiceException("导入第(" + errorLine + ")行失败！失败原因：" + e.getMessage());
             }
         }
         return "导入成功";
     }
 
-    @Override
-    public List<ReturnDTO> getSketchMap(List<Long> tunnelId, String type) {
-        List<ReturnDTO> returnDTOS = new ArrayList<>();
-        List<PlanAreaDTO> planAreaDTOS = new ArrayList<>();
-        List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(new LambdaQueryWrapper<PlanAreaEntity>()
-                .eq(PlanAreaEntity::getType, type)
-                .in(PlanAreaEntity::getTunnelId, tunnelId));
-        if (ListUtils.isNotNull(planAreaEntities)) {
-            planAreaEntities.forEach(planAreaEntity -> {
-                PlanAreaDTO planAreaDTO = new PlanAreaDTO();
-                planAreaDTO.setTunnelId(planAreaEntity.getTunnelId());
-                planAreaDTO.setStartTraversePointId(planAreaEntity.getStartTraversePointId());
-                planAreaDTO.setStartDistance(planAreaEntity.getStartDistance());
-                planAreaDTO.setEndTraversePointId(planAreaEntity.getEndTraversePointId());
-                planAreaDTO.setEndDistance(planAreaEntity.getEndDistance());
-                planAreaDTOS.add(planAreaDTO);
-            });
-
-        }
-        return List.of();
+    @FunctionalInterface
+    interface ParamChecker<T> {
+        void check(T dto) throws Exception;
     }
+    @FunctionalInterface
+    interface DataImporter<T> {
+        void importData(T dto) throws Exception;
+    }
+
+    /**
+     * 根据巷道id和类型获取区域集合
+     * @param tunnelIds 巷道ids
+     * @param type 类型
+     * @return 返回结果
+     */
+    @Override
+    public List<ReturnDTO> getSketchMap(List<Long> tunnelIds, String type) {
+        if (tunnelIds == null || tunnelIds.isEmpty() || type == null || type.isEmpty()) {
+            throw new RuntimeException("参数不能为空");
+        }
+        List<ReturnDTO> returnDTOS = new ArrayList<>();
+        try {
+            List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(new LambdaQueryWrapper<PlanAreaEntity>()
+                    .eq(PlanAreaEntity::getType, type)
+                    .in(PlanAreaEntity::getTunnelId, tunnelIds));
+            if (planAreaEntities != null && !planAreaEntities.isEmpty()) {
+                Set<Long> planIdSet = planAreaEntities.stream()
+                        .map(PlanAreaEntity::getPlanId)
+                        .collect(Collectors.toSet());
+                List<PlanEntity> planEntities = planMapper.selectBatchIds(planIdSet.stream()
+                        .filter(id -> ConstantsInfo.ZERO_DEL_FLAG.equals(
+                                planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
+                                        .eq(PlanEntity::getPlanId, id))
+                                        .getDelFlag()))
+                        .collect(Collectors.toList()));
+                List<PlanAreaEntity> allPlanAreaEntities = planAreaMapper.selectList(new LambdaQueryWrapper<PlanAreaEntity>()
+                        .in(PlanAreaEntity::getPlanId, planIdSet));
+                for (Long planId : planIdSet) {
+                    ReturnDTO returnDTO = new ReturnDTO();
+                    Optional<PlanEntity> planEntityOpt = planEntities.stream().filter(e -> e.getPlanId().equals(planId)).findFirst();
+                    if (planEntityOpt.isPresent()) {
+                        PlanEntity planEntity = planEntityOpt.get();
+                        returnDTO.setPlanId(planId);
+                        returnDTO.setPlanName(planEntity.getPlanName());
+                        returnDTO.setType(type);
+                        List<PlanAreaDTO> planAreaDTOS = allPlanAreaEntities.stream()
+                                .filter(entity -> entity.getPlanId().equals(planId))
+                                .map(entity -> {
+                                    PlanAreaDTO planAreaDTO = new PlanAreaDTO();
+                                    planAreaDTO.setTunnelId(entity.getTunnelId());
+                                    planAreaDTO.setStartTraversePointId(entity.getStartTraversePointId());
+                                    planAreaDTO.setStartDistance(entity.getStartDistance());
+                                    planAreaDTO.setEndTraversePointId(entity.getEndTraversePointId());
+                                    planAreaDTO.setEndDistance(entity.getEndDistance());
+                                    return planAreaDTO;
+                                })
+                                .collect(Collectors.toList());
+                        returnDTO.setPlanAreaDTOS(planAreaDTOS);
+                        returnDTOS.add(returnDTO);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch sketch map", e);
+        }
+        return returnDTOS;
+    }
+
 
     /**
      * 获取模板文件URL
@@ -575,9 +612,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         // 校验结束导线点(1)名称
         Long endPoint = checkPoint(tunnelEntity.getTunnelId(), importPlanTwoDTO.getEndPoint());
         // 校验起始导线点(2)名称
-        Long startPointTwo = checkPoint(tunnelEntity.getTunnelId(), importPlanTwoDTO.getStartPointTwo());
+        Long startPointTwo = checkPoint(entity.getTunnelId(), importPlanTwoDTO.getStartPointTwo());
         // 校验结束导线点(2)名称
-        Long endPointTwo = checkPoint(tunnelEntity.getTunnelId(), importPlanTwoDTO.getEndPointTwo());
+        Long endPointTwo = checkPoint(entity.getTunnelId(), importPlanTwoDTO.getEndPointTwo());
         // 校验字典项
         checkDicTwo(importPlanTwoDTO.getAnnual(), importPlanTwoDTO.getPlanType(),
                 importPlanTwoDTO.getType(), importPlanTwoDTO.getDrillType());

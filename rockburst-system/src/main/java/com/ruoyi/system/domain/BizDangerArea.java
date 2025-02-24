@@ -62,6 +62,10 @@ public class BizDangerArea extends BaseSelfEntity
     @ApiModelProperty(value = "原始位置")
     private String source;
 
+    @ApiModelProperty(value = "中心点")
+    @TableField()
+    private String center;
+
     @ApiModelProperty(value = "间隔距离")
     @TableField(exist = false)
     @EntityMapping(thisField = "level" , joinField = "level")

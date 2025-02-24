@@ -102,6 +102,13 @@ public class PlanController {
         return R.ok(this.planService.importPlan(tag, file));
     }
 
+    @ApiOperation(value = "获取区域缩略图数据", notes = "获取区域缩略图数据")
+    @GetMapping(value = "/getSketchMap")
+    public R<Object> getSketchMap(@ApiParam(name = "tunnelIds", value = "巷道id数组", required = true) @RequestParam List<Long> tunnelIds,
+                                  @ApiParam(name = "type", value = "类型", required = true) @RequestParam String type) {
+        return R.ok(this.planService.getSketchMap(tunnelIds, type));
+    }
+
 //    @ApiOperation(value = "获取计划中已使用的导线点", notes = "获取计划中已使用的导线点")
 //    @ApiImplicitParams(value = {
 //            @ApiImplicitParam(name = "type", value = "类型", required = true),
