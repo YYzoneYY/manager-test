@@ -80,7 +80,13 @@ public interface PlanService extends IService<PlanEntity> {
      */
     String importPlan(String tag, MultipartFile file) throws Exception;
 
-    List<ReturnDTO> getSketchMap(List<Long> tunnelId, String type);
+    /**
+     * 根据巷道id和类型获取区域集合
+     * @param tunnelIds 巷道ids
+     * @param type 类型
+     * @return 返回结果
+     */
+    List<ReturnDTO> getSketchMap(List<Long> tunnelIds, String type);
 
     /**
      * 获取模板文件URL

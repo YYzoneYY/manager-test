@@ -348,7 +348,7 @@ public class AreaAlgorithmUtils {
                 .eq(BizTravePoint::getPointId, pointId)
                 .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(bizTravePoint)) {
-            throw new RuntimeException("获取导线点异常！");
+            throw new RuntimeException("获取导线点异常(1)！");
         }
         return bizTravePoint.getPrePointDistance();
     }
@@ -376,7 +376,7 @@ public class AreaAlgorithmUtils {
                 .eq(BizTravePoint::getNo, no + 1)
                 .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNull(bizTravePoint)) {
-            throw new RuntimeException("获取导线点异常！");
+            throw new RuntimeException("获取导线点异常(2)！");
         }
         return bizTravePoint;
     }

@@ -12,6 +12,8 @@ import lombok.Data;
 @Data
 public class AddDTO {
 
+    private Long tunnelId;
+
     @ApiModelProperty(value = "起始导线点id")
     private Long startTraversePointId;
 

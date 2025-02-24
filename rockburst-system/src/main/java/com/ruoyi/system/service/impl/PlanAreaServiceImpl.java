@@ -64,7 +64,15 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
         List<PlanAreaEntity> planAreaEntities = new ArrayList<>();
         planAreaBatchDTOS.forEach(planAreaBatchDTO -> {
             PlanAreaEntity planAreaEntity = new PlanAreaEntity();
-            BeanUtils.copyBeanProp(planAreaBatchDTO, planAreaEntity);
+            planAreaEntity.setPlanId(planAreaBatchDTO.getPlanId());
+            planAreaEntity.setType(planAreaBatchDTO.getType());
+            planAreaEntity.setTunnelId(planAreaBatchDTO.getTunnelId());
+            planAreaEntity.setStartTraversePointId(planAreaBatchDTO.getStartTraversePointId());
+            planAreaEntity.setStartDistance(planAreaBatchDTO.getStartDistance());
+            planAreaEntity.setEndTraversePointId(planAreaBatchDTO.getEndTraversePointId());
+            planAreaEntity.setEndDistance(planAreaBatchDTO.getEndDistance());
+            planAreaEntity.setTraversePointGather(planAreaBatchDTO.getTraversePointGather());
+            planAreaEntities.add(planAreaEntity);
         });
         flag = this.saveBatch(planAreaEntities);
         return flag;
