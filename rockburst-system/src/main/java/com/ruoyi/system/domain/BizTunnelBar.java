@@ -1,6 +1,7 @@
 package com.ruoyi.system.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
 import io.swagger.annotations.ApiModel;
@@ -57,8 +58,13 @@ public class BizTunnelBar extends BaseSelfEntity
     @ApiModelProperty(value = "预设孔方向距离")
     private Double directRange;
 
-    @ApiModelProperty(value = "地图位置")
+    @ApiModelProperty(value = "svg")
+    @TableField()
     private String svg;
+
+    @ApiModelProperty(value = "中心点")
+    @TableField()
+    private String center;
 
     @ApiModelProperty(value = "原始位置")
     private String source;

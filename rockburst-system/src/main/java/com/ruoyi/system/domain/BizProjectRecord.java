@@ -168,6 +168,11 @@ public class BizProjectRecord extends BaseSelfEntity
     @FieldMapping(tag = TunnelEntity.class ,thisField = "tunnelId" , joinField = "tunnelId" , select = "tunnelName")
     private String tunnelName;
 
+    @ApiModelProperty(value = "帮")
+    @TableField(exist = false)
+    @FieldMapping(tag = BizTunnelBar.class ,thisField = "barId" , joinField = "barId" , select = "barName")
+    private String barName;
+
 
     @ApiModelProperty(value = "施工单位实例")
     @TableField(exist = false)

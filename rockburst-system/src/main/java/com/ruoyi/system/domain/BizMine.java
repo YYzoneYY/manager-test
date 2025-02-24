@@ -220,4 +220,12 @@ public class BizMine extends BaseSelfEntity
     @TableField("table_id")
     private Long tableId;
 
+    @ApiModelProperty(value = "svg")
+    @TableField()
+    private String svg;
+
+    @ApiModelProperty(value = "中心点")
+    @TableField()
+    private String center;
+
 }
