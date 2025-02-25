@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.MiningMapper">
+
+    <select id="selectMiningFootageByPage" resultType="com.ruoyi.system.domain.dto.MiningFootageNewDTO">
+        select
+            mfn.mining_footage_id as miningFootageId,
+            mfn.workface_id as workFaceId,
+            mfn.tunnel_id as tunnelId,
+            mfn.mining_time as miningTime,
+            mfn.mining_pace as miningPace,
+            mfn.flag as flag,
+            mfn.create_time as createTime,
+            mfn.update_time as updateTime
+        from mining_footage_new mfn
+        <where>
+            <if test="miningSelectNewDTO.startTime != null">and mfn.mining_time &gt;= #{miningSelectNewDTO.startTime}</if>
+            <if test="miningSelectNewDTO.endTime != null">and mfn.mining_time &lt;= #{miningSelectNewDTO.endTime}</if>
+            <choose>
+                <when test="miningSelectNewDTO.pace == '0'.toString()">
+                    and mfn.mining_pace='0'
+                </when>
+
+                <when test="miningSelectNewDTO.pace == '1'.toString()">
+                    and mfn.mining_pace <![CDATA[ <> ]]>'0'
+                </when>
+                <otherwise>
+                    and mfn.del_flag = '0'
+                </otherwise>
+            </choose>
+            and mfn.del_flag = '0'
+            and mfn.workface_id = #{miningSelectNewDTO.workFaceId} and mfn.tunnelId = #{displayForm}
+        </where>
+        order by mfn.mining_time desc
+    </select>
+
+
+    <select id="selectMining" resultType="com.ruoyi.system.domain.dto.MiningFootageNewDTO">
+        select
+        mfn.mining_footage_id as miningFootageId,
+        mfn.workface_id as workFaceId,
+        mfn.tunnel_id as tunnelId,
+        mfn.mining_time as miningTime,
+        mfn.mining_pace as miningPace,
+        from mining_footage_new mfn
+        <where>
+            <if test="miningSelectNewDTO.startTime != null">and mfn.mining_time &gt;= #{miningSelectNewDTO.startTime}</if>
+            <if test="miningSelectNewDTO.endTime != null">and mfn.mining_time &lt;= #{miningSelectNewDTO.endTime}</if>
+            <choose>
+                <when test="miningSelectNewDTO.pace == '0'.toString()">
+                    and mfn.mining_pace='0'
+                </when>
+                <when test="miningSelectNewDTO.pace == '1'.toString()">
+                    and mfn.mining_pace <![CDATA[ <> ]]>'0'
+                </when>
+                <otherwise>
+                    and mfn.del_flag = '0'
+                </otherwise>
+            </choose>
+            and mfn.del_flag = '0'
+            and mfn.workface_id = #{miningSelectNewDTO.workFaceId}
+        </where>
+        order by mfn.mining_time desc
+    </select>
+
+
+<!--    <select id="selectMining" resultType="com.ruoyi.system.domain.dto.MiningFootageNewDTO">-->
+<!--        select-->
+<!--        mfn.mining_footage_id as miningFootageId,-->
+<!--        mfn.workface_id as workFaceId,-->
+<!--        mfn.tunnel_id as tunnelId,-->
+<!--        mfn.mining_time as miningTime,-->
+<!--        mfn.mining_pace as miningPace,-->
+<!--        from mining_footage_new mfn-->
+<!--        where mfn.tunnel_id in-->
+<!--        <foreach collection="tunnelIds" item="tunnelId" index="index" open="(" close=")" separator=",">-->
+<!--            #{tunnelId}-->
+<!--        </foreach>-->
+<!--        <if test="miningSelectNewDTO.startTime != null">and mfn.mining_time &gt;= #{miningSelectNewDTO.startTime}</if>-->
+<!--        <if test="miningSelectNewDTO.endTime != null">and mfn.mining_time &lt;= #{miningSelectNewDTO.endTime}</if>-->
+<!--        <choose>-->
+<!--            <when test="miningSelectNewDTO.pace == '0'.toString()">-->
+<!--                and mfn.mining_pace='0'-->
+<!--            </when>-->
+
+<!--            <when test="miningSelectNewDTO.pace == '1'.toString()">-->
+<!--                and mfn.mining_pace <![CDATA[ <> ]]>'0'-->
+<!--            </when>-->
+<!--            <otherwise>-->
+<!--                and mfn.del_flag = '0'-->
+<!--            </otherwise>-->
+<!--        </choose>-->
+<!--        and mfn.del_flag = '0'-->
+<!--        and mfn.workface_id = #{miningSelectNewDTO.workFaceId}-->
+<!--        order by mfn.mining_time desc-->
+<!--    </select>-->
+
+    <!--统计某条巷道的回采总长度-->
+    <select id="mineLength" resultType="java.math.BigDecimal">
+        select sum(mfn.mining_pace) as minedLength
+        from mining_footage_new mfn
+        <where>
+            mfn.workface_id = #{workfaceId} and mfn.tunnel_id = #{tunnelId} and mfn.del_flag = '0'
+        </where>
+    </select>
+
+    <!--统计的开采时间之前的所有开采进度-->
+    <select id="miningPaceSum" resultType="java.math.BigDecimal">
+        select IFNULL(SUM(mfn.mining_pace),0) as miningPaceSum
+        from mining_footage_new mfn
+        <where>
+            mfn.mining_time <![CDATA[ <= ]]> #{time}
+            and mfn.tunnel_id = #{tunnelId}
+            and mfn.del_flag='0'
+        </where>
+    </select>
+
+    <select id="miningPaceSumT" resultType="java.math.BigDecimal">
+        select IFNULL(SUM(mfn.mining_pace),0) as miningPaceSum
+        from mining_footage_new mfn
+        where mfn.tunnel_id in
+        <foreach collection="tunnelIds" item="tunnelId" index="index" open="(" close=")" separator=",">
+            #{tunnelId}
+        </foreach>
+          and mfn.mining_time <![CDATA[ <= ]]> #{time} and mfn.del_flag='0'
+    </select>
+
+</mapper>

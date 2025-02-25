@@ -237,6 +237,30 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
         return tunnelChoiceListDTOS;
     }
 
+    @Override
+    public List<TunnelChoiceListDTO> getTunnelChoiceListTwo(Long faceId) {
+        List<TunnelChoiceListDTO> tunnelChoiceListDTOS = new ArrayList<>();
+        if (ObjectUtil.isNull(faceId)) {
+            throw new RuntimeException("工作面id不能为空!!");
+        }
+        List<String> type = new ArrayList<>();
+        type.add(ConstantsInfo.UPPER_TUNNEL);
+        type.add(ConstantsInfo.BELOW_TUNNEL);
+        List<TunnelEntity> tunnelEntities = tunnelMapper.selectList(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getWorkFaceId, faceId)
+                .in(TunnelEntity::getTunnelType, type)
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ListUtils.isNotNull(tunnelEntities)) {
+            tunnelChoiceListDTOS = tunnelEntities.stream().map(tunnelEntity -> {
+                TunnelChoiceListDTO tunnelChoiceListDTO = new TunnelChoiceListDTO();
+                tunnelChoiceListDTO.setLabel(tunnelEntity.getTunnelName());
+                tunnelChoiceListDTO.setValue(tunnelEntity.getTunnelId());
+                return tunnelChoiceListDTO;
+            }).collect(Collectors.toList());
+        }
+        return tunnelChoiceListDTOS;
+    }
+
     /**
      * 获取工作面名称
      */
