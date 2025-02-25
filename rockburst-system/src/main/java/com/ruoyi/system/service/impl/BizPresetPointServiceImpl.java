@@ -82,28 +82,39 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
     @Override
     public boolean setPlanPrePoint(Long planId, List<BizPlanPrePointDto> dtos) {
 
-        PlanEntity entity =  planMapper.selectById(planId);
+        try {
+            PlanEntity entity =  planMapper.selectById(planId);
 
-        List<BizPresetPoint> bizPresetPoints = new ArrayList<>();
-        for (BizPlanPrePointDto dto : dtos) {
-            //
-            if(dto.getStartPointId() == null || dto.getEndPointId() == null){
-                continue;
+            List<BizPresetPoint> bizPresetPoints = new ArrayList<>();
+            for (BizPlanPrePointDto dto : dtos) {
+                //
+                if(dto.getStartPointId() == null || dto.getEndPointId() == null){
+                    continue;
+                }
+                List<BizPresetPoint> startpoints = this.getPrePointByPointMeter(dto.getStartPointId(),dto.getStartMeter(),entity.getDrillType());
+                List<BizPresetPoint> endpoints = this.getPrePointByPointMeter(dto.getEndPointId(),dto.getEndMeter(),entity.getDrillType());
+                if(startpoints != null && !startpoints.isEmpty()){
+                    bizPresetPoints.addAll(startpoints);
+                }
+                if(endpoints != null && !endpoints.isEmpty()){
+                    bizPresetPoints.addAll(endpoints);
+                }
             }
-            List<BizPresetPoint> startpoints = this.getPrePointByPointMeter(dto.getStartPointId(),dto.getStartMeter(),entity.getDrillType());
-            List<BizPresetPoint> endpoints = this.getPrePointByPointMeter(dto.getEndPointId(),dto.getEndMeter(),entity.getDrillType());
-            bizPresetPoints.addAll(startpoints);
-            bizPresetPoints.addAll(endpoints);
-        }
-        for (BizPresetPoint dto : bizPresetPoints) {
-            BizPlanPreset bizPlanPreset = new BizPlanPreset();
-            bizPlanPreset.setPlanId(planId)
-                    .setPresetPointId(dto.getPresetPointId())
-                    .setBottom(dto.getLongitude()+","+dto.getLatitude());
+            for (BizPresetPoint dto : bizPresetPoints) {
+                BizPlanPreset bizPlanPreset = new BizPlanPreset();
+                bizPlanPreset.setPlanId(planId)
+                        .setPresetPointId(dto.getPresetPointId())
+                        .setBottom(dto.getLongitude()+","+dto.getLatitude());
 //                    .setTop(String.join(dto.getLongitudet(),",",dto.getLongitudet()));
-            bizPlanPresetMapper.insert(bizPlanPreset);
+                bizPlanPresetMapper.insert(bizPlanPreset);
+            }
+            return true;
+        }catch (Exception e){
+            return true;
+        }finally {
+            return true;
         }
-        return true;
+
     }
 
 
