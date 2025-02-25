@@ -1,11 +1,15 @@
 package com.ruoyi.web.controller.map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
+import com.ruoyi.system.domain.vo.BizWorkfaceSvgVo;
 import com.ruoyi.system.mapper.BizPlanPresetMapper;
+import com.ruoyi.system.mapper.BizWorkfaceMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -56,6 +60,9 @@ public class BizMapController extends BaseController
     private IBizWorkfaceService bizWorkfaceService;
 
     @Resource
+    private BizWorkfaceMapper bizWorkfaceMapper;
+
+    @Resource
     private TunnelService tunnelService;
 
     @Resource
@@ -101,15 +108,20 @@ public class BizMapController extends BaseController
 
     @ApiOperation("查询工作面")
     @GetMapping("/getWorkface")
-    public R<List<BizWorkface>> getWorkface(@RequestParam(required = false) Long mineAreaId,
+    public R<List<BizWorkfaceSvgVo>> getWorkface(@RequestParam(required = false) Long mineAreaId,
                                             @RequestParam(required = false) Long mineId)
     {
-        QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda()
-                .select(BizWorkface::getWorkfaceId, BizWorkface::getWorkfaceName, BizWorkface::getSvg,BizWorkface::getCenter)
+        MPJLambdaWrapper<BizWorkface> queryWrapper = new MPJLambdaWrapper<>();
+        queryWrapper
+                .selectAs("t1",SysDictData::getDictLabel, BizWorkfaceSvgVo::getStatusName)
+                .selectAs("t2",SysDictData::getDictLabel, BizWorkfaceSvgVo::getTypeName)
+                .select(BizWorkface::getWorkfaceId, BizWorkface::getWorkfaceName, BizWorkface::getSvg,BizWorkface::getCenter,BizWorkface::getStatus,BizWorkface::getType)
+                .leftJoin(SysDictData.class,SysDictData::getDictValue,BizWorkface::getStatus)
+                .leftJoin(SysDictData.class,SysDictData::getDictValue,BizWorkface::getType)
+                .in(SysDictData::getDictType,"workface_status","workface_type")
                 .eq(mineAreaId != null, BizWorkface::getMiningAreaId, mineAreaId)
                 .eq(mineId != null, BizWorkface::getMineId, mineId);
-        return R.ok(bizWorkfaceService.list(queryWrapper));
+        return R.ok(bizWorkfaceMapper.selectJoinList(BizWorkfaceSvgVo.class,queryWrapper));
     }
 
     @ApiOperation("查询工作面详情")

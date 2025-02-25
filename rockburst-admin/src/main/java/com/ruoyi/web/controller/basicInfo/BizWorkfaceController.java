@@ -15,10 +15,10 @@ import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.BizMiningArea;
 import com.ruoyi.system.domain.BizWorkface;
-import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.dto.BizWorkfaceSchemeDto;
+import com.ruoyi.system.domain.dto.BizWorkfaceSvg;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
 import com.ruoyi.system.domain.vo.JsonVo;
 import com.ruoyi.system.mapper.TunnelMapper;
@@ -227,6 +227,17 @@ public class BizWorkfaceController extends BaseController
         return R.ok(bizWorkfaceService.updateById(entity));
     }
 
+    @ApiOperation("修改工作面地图")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:editSvg')")
+    @Log(title = "修改工作面地图", businessType = BusinessType.UPDATE)
+    @PutMapping("/editSvg")
+    public R editSvg(@RequestBody BizWorkfaceSvg svg)
+    {
+        BizWorkface entity = new BizWorkface();
+        BeanUtil.copyProperties(svg, entity);
+        return R.ok(bizWorkfaceService.updateById(entity));
+    }
+
     /**
      * 删除工作面管理
      */
@@ -236,11 +247,7 @@ public class BizWorkfaceController extends BaseController
     @DeleteMapping("/one/{workfaceId}")
     public R removeOne(@PathVariable Long workfaceId)
     {
-        QueryWrapper<SurveyAreaEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(SurveyAreaEntity::getWorkFaceId, workfaceId)
-                .eq(SurveyAreaEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
-        Long count = surveyAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count == 0, "选择的工作面下还有测区");
+
 
         QueryWrapper<TunnelEntity> tunnelQueryWrapper = new QueryWrapper<>();
         tunnelQueryWrapper.lambda().eq(TunnelEntity::getWorkFaceId, workfaceId);
@@ -261,12 +268,10 @@ public class BizWorkfaceController extends BaseController
 	@DeleteMapping("/{workfaceIds}")
     public R remove(@PathVariable Long[] workfaceIds)
     {
+        QueryWrapper<TunnelEntity> tunnelQueryWrapper = new QueryWrapper<>();
+        tunnelQueryWrapper.lambda().in(TunnelEntity::getWorkFaceId, workfaceIds);
+        long count = tunnelMapper.selectCount(tunnelQueryWrapper);
 
-        QueryWrapper<SurveyAreaEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().in(SurveyAreaEntity::getWorkFaceId, workfaceIds)
-                .eq(SurveyAreaEntity::getDelFlag, BizBaseConstant.DELFLAG_N);
-        Long count = surveyAreaService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count == 0, "选择的工作面下还有测区");
         //todo 巷道 还没有基础接口
         Assert.isTrue(count == 0, "选择的工作面下还有巷道");
         UpdateWrapper<BizWorkface> updateWrapper = new UpdateWrapper<>();
