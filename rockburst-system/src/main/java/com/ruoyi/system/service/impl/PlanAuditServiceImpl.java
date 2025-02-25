@@ -224,7 +224,7 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         if (ObjectUtil.isNull(planAuditEntity)) {
             throw new RuntimeException("未找到此计划，计划ID: " + planId);
         }
-        return planAuditEntity.getAuditResult();
+        return planAuditEntity.getRejectionReason();
     }
 
     /**
