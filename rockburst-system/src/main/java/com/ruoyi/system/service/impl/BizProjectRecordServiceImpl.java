@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -35,6 +36,7 @@ import com.ruoyi.system.domain.excel.ChartDataAll;
 import com.ruoyi.system.domain.vo.*;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizProjectRecordService;
+import com.ruoyi.system.service.IBizTravePointService;
 import com.ruoyi.system.service.PlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -48,6 +50,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -99,7 +102,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Autowired
     private MiningFootageMapper miningFootageMapper;
     @Autowired
-    private BizTravePointMapper bizTravePointMapper;
+    private IBizTravePointService bizTravePointService;
 
     @Autowired
     RelatesInfoMapper relatesInfoMapper;
@@ -112,10 +115,10 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Autowired
     PlanService planService;
-
-
-
-
+    @Autowired
+    private BizTunnelBarMapper bizTunnelBarMapper;
+    @Autowired
+    private BizPresetPointMapper bizPresetPointMapper;
 
 
     @DataScopeSelf
@@ -378,54 +381,29 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public int saveRecord(BizProjectRecordAddDto dto) {
+        BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
 
-//        try{
-//            log.info("开始查询任务id:{},{}", dto.getTravePointId(),dto.getConstructRange());
-//            List<Long> playIds = new ArrayList<>();
-//            if (StrUtil.isNotEmpty(dto.getConstructRange()) ){
-//                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
-//            }else {
-//                playIds = planService.getPlanByPoint(dto.getTravePointId()+"",dto.getConstructRange());
-//            }
-//
-//            BigDecimal result = null;
-//            Long pointid = 0l;
-//            if(playIds == null || playIds.size()==0){
-//                String symbol =  dto.getConstructRange().substring(0, 1);
-//                if(symbol.equals("+")){
-//                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
-//                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-//                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()+1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
-//                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
-//                    if(bizTravePoints != null && bizTravePoints.size() > 0){
-//                        pointid = bizTravePoints.get(0).getPointId();
-//                        result = new BigDecimal(bizTravePoints.get(0).getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
-//                        log.info("入参:{},{}", pointid,"-"+result);
-//                        playIds = planService.getPlanByPoint(pointid+"","-"+result);
-//                    }
-//                }else if(symbol.equals("-")){
-//                    BizTravePoint ent = bizTravePointMapper.selectById(dto.getTravePointId());
-//                    QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-//                    queryWrapper.lambda().eq(BizTravePoint::getNo,ent.getNo()-1).eq(BizTravePoint::getTunnelId,ent.getTunnelId());
-//                    List<BizTravePoint> bizTravePoints = bizTravePointMapper.selectList(queryWrapper);
-//                    if(bizTravePoints != null && bizTravePoints.size() > 0){
-//                        pointid = bizTravePoints.get(0).getPointId();
-//                        result = new BigDecimal(ent.getPrePointDistance()).subtract(new BigDecimal(dto.getConstructRange().substring(1)));
-//                        log.info("入参:{},{}", pointid,"+"+result);
-//                        playIds = planService.getPlanByPoint(pointid+"","+"+result);
-//
-//                    }
-//                }
-//            }
-//            log.info("结果:{}", playIds);
-//            if(playIds != null && playIds.size()==1){
-//                log.info("结果:{}", playIds);
-//                dto.setPlanId(playIds.get(0));
-//            }
-//
-//        }catch (Exception e){
-//
-//        }
+        String detailJson = dto.getDrillRecords().get(0).getDetailJson();
+        Integer barAngle = 0;
+        if(detailJson != null && StrUtil.isNotBlank(detailJson) && !detailJson.equals("[]")){
+            JSONArray array = JSONUtil.parseArray(detailJson);
+            Integer bear_angle = JSONUtil.parseObj(array.get(0)).getInt("bear_angle");
+            barAngle = bar.getDirectAngle() + 90 - bear_angle;
+        }
+
+        BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getRange()));
+        Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
+        if(point != null && point.getPointId() != null){
+            BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLatitude(),dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectAngle())).doubleValue(),barAngle);
+            point.setLongitudet(projectPoint.getLongitudet())
+                    .setLatitudet(projectPoint.getLatitudet())
+                    .setDrillType(dto.getDrillType())
+                    .setTunnelId(dto.getTunnelId())
+                    .setDangerAreaId(dangerAreaId)
+                    .setTunnelBarId(bar.getBarId());
+            bizPresetPointMapper.insert(point);
+        }
+
 
 
         LoginUser loginUser = SecurityUtils.getLoginUser();
@@ -520,6 +498,31 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public int updateRecord(BizProjectRecordAddDto dto) {
+
+        BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
+
+        String detailJson = dto.getDrillRecords().get(0).getDetailJson();
+        Integer barAngle = 0;
+        if(detailJson != null && StrUtil.isNotBlank(detailJson) && !detailJson.equals("[]")){
+            JSONArray array = JSONUtil.parseArray(detailJson);
+            Integer bear_angle = JSONUtil.parseObj(array.get(0)).getInt("bear_angle");
+            barAngle = bar.getDirectAngle() + 90 - bear_angle;
+        }
+
+        BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getRange()));
+        Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
+        if(point != null && point.getPointId() != null){
+            BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLatitude(),dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectAngle())).doubleValue(),barAngle);
+            point.setLongitudet(projectPoint.getLongitudet())
+                    .setLatitudet(projectPoint.getLatitudet())
+                    .setDrillType(dto.getDrillType())
+                    .setTunnelId(dto.getTunnelId())
+                    .setDangerAreaId(dangerAreaId)
+                    .setTunnelBarId(bar.getBarId());
+            bizPresetPointMapper.insert(point);
+        }
+
+
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
 
@@ -710,7 +713,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .eq(TunnelEntity::getDelFlag,BizBaseConstant.DELFLAG_N);
         List<TunnelEntity> tunnelList = tunnelMapper.selectList(tunnelQueryWrapper);
         List<Long> tunnelIds = new ArrayList<>();
-        Assert.isTrue(tunnelList != null && tunnelList.size() > 0, "没有巷道");
+//        Assert.isTrue(tunnelList != null && tunnelList.size() > 0, "没有巷道");
         tunnelIds = tunnelList.stream().map(TunnelEntity::getTunnelId).collect(Collectors.toList());
 
         //todo 预警值还没有表 设为
