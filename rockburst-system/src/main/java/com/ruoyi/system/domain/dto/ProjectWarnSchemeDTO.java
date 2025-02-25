@@ -18,6 +18,4 @@ public class ProjectWarnSchemeDTO extends ProjectWarnSchemeEntity {
     @ApiModelProperty(value = "工作量规则")
     private List<WorkloadRuleDTO> workloadRuleDTOS;
 
-    @ApiModelProperty(value = "距离规则")
-    private DistanceRuleDTO distanceRuleDTO;
 }

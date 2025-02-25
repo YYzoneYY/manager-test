@@ -9,7 +9,6 @@
             pws.scheme_name as schemeName,
             pws.plan_type as planType,
             pws.workload_rule as workloadRule,
-            pws.distance_rule as distanceRule,
             pws.status as status
         from project_warn_scheme as pws
         <where>

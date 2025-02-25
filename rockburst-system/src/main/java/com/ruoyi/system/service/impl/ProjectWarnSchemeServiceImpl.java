@@ -60,9 +60,6 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
         if (ListUtils.isNotNull(projectWarnSchemeDTO.getWorkloadRuleDTOS())) {
             checkWorkloadRule(projectWarnSchemeDTO.getWorkloadRuleDTOS(), projectWarnSchemeDTO.getPlanType());
         }
-        if (ObjectUtil.isNotNull(projectWarnSchemeDTO.getDistanceRuleDTO())) {
-            checkDistanceRule(projectWarnSchemeDTO.getDistanceRuleDTO(), projectWarnSchemeDTO.getPlanType());
-        }
         Long selectCount = projectWarnSchemeMapper.selectCount(new LambdaQueryWrapper<ProjectWarnSchemeEntity>()
                 .eq(ProjectWarnSchemeEntity::getSchemeName, projectWarnSchemeDTO.getSchemeName())
                 .eq(ProjectWarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
@@ -73,9 +70,7 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
         BeanUtils.copyProperties(projectWarnSchemeDTO, projectWarnSchemeEntity);
         try {
             String workloadRule = objectMapper.writeValueAsString(projectWarnSchemeDTO.getWorkloadRuleDTOS()).trim();
-            String distanceRule = objectMapper.writeValueAsString(projectWarnSchemeDTO.getDistanceRuleDTO()).trim();
             projectWarnSchemeEntity.setWorkloadRule(workloadRule);
-            projectWarnSchemeEntity.setDistanceRule(distanceRule);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -125,21 +120,10 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
             if (count > 0) {
                 throw new RuntimeException("已存在相同工作量规则的预警方案!!");
             }
-            String distanceRule = objectMapper.writeValueAsString(projectWarnSchemeDTO.getDistanceRuleDTO()).trim();
-            Long selectedCount = projectWarnSchemeMapper.selectCount(new LambdaQueryWrapper<ProjectWarnSchemeEntity>()
-                    .eq(ProjectWarnSchemeEntity::getDistanceRule, distanceRule)
-                    .eq(ProjectWarnSchemeEntity::getPlanType, projectWarnSchemeDTO.getPlanType())
-                    .ne(ProjectWarnSchemeEntity::getProjectWarnSchemeId, projectWarnSchemeDTO.getProjectWarnSchemeId())
-                    .eq(ProjectWarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-            if (selectedCount > 0) {
-                throw new RuntimeException("已存在相同距离规则的预警方案!!");
-            }
-
             Long projectWarnSchemeId = projectWarnSchemeEntity.getProjectWarnSchemeId();
             BeanUtils.copyProperties(projectWarnSchemeDTO, projectWarnSchemeEntity);
             projectWarnSchemeEntity.setProjectWarnSchemeId(projectWarnSchemeId);
             projectWarnSchemeEntity.setWorkloadRule(workloadRule);
-            projectWarnSchemeEntity.setDistanceRule(distanceRule);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -171,12 +155,9 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
         }
         ProjectWarnSchemeDTO projectWarnSchemeDTO = new ProjectWarnSchemeDTO();
         BeanUtils.copyProperties(projectWarnSchemeEntity, projectWarnSchemeDTO);
-        String distanceRule = projectWarnSchemeEntity.getDistanceRule().trim();
         String workloadRule = projectWarnSchemeEntity.getWorkloadRule().trim();
         try {
-            DistanceRuleDTO distanceRuleDTO = objectMapper.readValue(distanceRule, DistanceRuleDTO.class);
             List<WorkloadRuleDTO> workloadRuleDTOS = objectMapper.readValue(workloadRule, new TypeReference<List<WorkloadRuleDTO>>() {});
-            projectWarnSchemeDTO.setDistanceRuleDTO(distanceRuleDTO);
             projectWarnSchemeDTO.setWorkloadRuleDTOS(workloadRuleDTOS);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -205,15 +186,12 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
         PageHelper.startPage(pageNum, pageSize);
         Page<ProjectWarnSchemeVO> page = projectWarnSchemeMapper.selectQueryByPage(selectProjectWarnDTO);
         if (ListUtils.isNotNull(page.getResult())) {
-            page.getResult().forEach(projectWarnSchemeVO -> {
-                String distanceRule= projectWarnSchemeVO.getDistanceRule().trim();
+            page.getResult().forEach(projectWarnSchemeVO -> {;
                 String workloadRule = projectWarnSchemeVO.getWorkloadRule().trim();
-                String warnType = getWarnType(distanceRule, workloadRule);
+                String warnType = getWarnType(workloadRule);
                 projectWarnSchemeVO.setWarnType(warnType);
                 try {
-                    DistanceRuleDTO distanceRuleDTO = objectMapper.readValue(distanceRule, DistanceRuleDTO.class);
                     List<WorkloadRuleDTO> workloadRuleDTOS = objectMapper.readValue(workloadRule, new TypeReference<List<WorkloadRuleDTO>>() {});
-                    projectWarnSchemeVO.setDistanceRuleDTO(distanceRuleDTO);
                     projectWarnSchemeVO.setWorkloadRuleDTOS(workloadRuleDTOS);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -320,36 +298,30 @@ public class ProjectWarnSchemeServiceImpl extends ServiceImpl<ProjectWarnSchemeM
     /**
      * 校验距离规则
      */
-    private void checkDistanceRule(DistanceRuleDTO distanceRuleDTO, String planType) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            String distanceRule = objectMapper.writeValueAsString(distanceRuleDTO);
-            String distanceRuleTrim = distanceRule.trim();
-            Long count = projectWarnSchemeMapper.selectCount(new LambdaQueryWrapper<ProjectWarnSchemeEntity>()
-                    .eq(ProjectWarnSchemeEntity::getDistanceRule, distanceRuleTrim)
-                    .eq(ProjectWarnSchemeEntity::getPlanType, planType)
-                    .eq(ProjectWarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-            if (count > 0) {
-                throw new RuntimeException("已存在相同距离规则的预警方案!!");
-            }
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    private void checkDistanceRule(DistanceRuleDTO distanceRuleDTO, String planType) {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            String distanceRule = objectMapper.writeValueAsString(distanceRuleDTO);
+//            String distanceRuleTrim = distanceRule.trim();
+//            Long count = projectWarnSchemeMapper.selectCount(new LambdaQueryWrapper<ProjectWarnSchemeEntity>()
+//                    .eq(ProjectWarnSchemeEntity::getDistanceRule, distanceRuleTrim)
+//                    .eq(ProjectWarnSchemeEntity::getPlanType, planType)
+//                    .eq(ProjectWarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+//            if (count > 0) {
+//                throw new RuntimeException("已存在相同距离规则的预警方案!!");
+//            }
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     /**
      * 获取预警类型
      */
-    private String getWarnType(String distanceRule, String workloadRule) {
+    private String getWarnType(String workloadRule) {
         String warnType = "";
-        if (!distanceRule.trim().equals("null") && !workloadRule.trim().equals("null")) {
-            warnType = ConstantsInfo.WORKLOAD_DISTANCE;
-        }
-        if (distanceRule.trim().equals("null") && !workloadRule.trim().equals("null")) {
+        if (!workloadRule.trim().equals("null")) {
             warnType = ConstantsInfo.WORKLOAD;
-        }
-        if (!distanceRule.trim().equals("null") && workloadRule.trim().equals("null")) {
-            warnType = ConstantsInfo.DISTANCE;
         }
         return warnType;
     }

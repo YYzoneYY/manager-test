@@ -41,10 +41,6 @@ public class ProjectWarnSchemeEntity extends BusinessBaseEntity implements Seria
     @TableField(value = "workload_rule")
     private String workloadRule;
 
-    @ApiModelProperty("距离规则")
-    @TableField(value = "distance_rule")
-    private String distanceRule;
-
     @ApiModelProperty("状态(0:启用,1:禁用)")
     @TableField(value = "status")
     private String status;
