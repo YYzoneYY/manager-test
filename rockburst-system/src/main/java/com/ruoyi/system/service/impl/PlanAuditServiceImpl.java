@@ -178,12 +178,10 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-            Page<PlanVO> page = planAuditMapper.auditHistoryPage(selectNewPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
-            Page<PlanVO> planVOPage = getPlanListFmt(page);
-            result.setTotal(planVOPage.getTotal());
-            result.setRows(planVOPage.getResult());
-            result.setTotal(0L);
-            result.setRows(new ArrayList<>());
+        Page<PlanVO> page = planAuditMapper.auditHistoryPage(selectNewPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
+        Page<PlanVO> planVOPage = getPlanListFmt(page);
+        result.setTotal(planVOPage.getTotal());
+        result.setRows(planVOPage.getResult());
         return result;
     }
 
