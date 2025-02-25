@@ -48,6 +48,23 @@ public interface IBizTravePointService extends IService<BizTravePoint>
      */
     BizPresetPoint getPointPre(Long pointId,Double meter);
 
+
+    /**
+     * 给定 导线点加距离, 转换 坐标
+     * @param pointId
+     * @param meter
+     * @return
+     */
+    BizPresetPoint getPointLatLon(Long pointId,Double meter);
+
+    /**
+     * 给定  经纬度坐标,打孔深度,打孔角度 获取  顶点坐标
+     * @param x
+     * @param jio
+     * @return
+     */
+    BizPresetPoint getLatLontop(String lat, String lon ,Double x,Integer jio);
+
     /**
      * 给定起始结束  加距离 获取 区间内导线点
      * @param startPointId

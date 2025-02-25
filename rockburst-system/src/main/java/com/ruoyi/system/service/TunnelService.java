@@ -60,4 +60,11 @@ public interface TunnelService extends IService<TunnelEntity> {
      * @return 返回结果
      */
     List<TunnelChoiceListDTO> getTunnelChoiceList(Long faceId);
+
+    /**
+     * 获取巷道下拉框二
+     * @param faceId 工作面id
+     * @return 返回结果
+     */
+    List<TunnelChoiceListDTO> getTunnelChoiceListTwo(Long faceId);
 }
