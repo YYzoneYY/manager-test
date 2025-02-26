@@ -1,11 +1,13 @@
 package com.ruoyi.web.controller.business;
 
+import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.dto.PressureHoleImportDTO;
 import com.ruoyi.system.service.PressureHoleFormsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,6 +47,15 @@ public class PressureHoleFormsController {
         response.reset();
         response.setHeader("Content-disposition", "attachment;filename="+fileName+";"+"filename*=utf-8''"+fileName);
         excelUtil.exportExcel(response, list, "卸压孔数据报表", "卸压孔施工台账");
+    }
+
+    @ApiOperation(value = "分页查询", notes = "分页查询")
+    @GetMapping("/queryPage")
+    public R<Object> queryPage(@RequestParam Long startTime,
+                               @RequestParam Long endTime,
+                               @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
+                               @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
+        return R.ok(pressureHoleFormsService.queryPage(new Date(startTime), new Date(endTime), pageNum, pageSize));
     }
 
 }

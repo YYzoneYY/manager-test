@@ -2,8 +2,12 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.domain.entity.SysDictData;
+import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.system.domain.BizDrillRecord;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
@@ -12,6 +16,7 @@ import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.PressureHoleImportDTO;
+import com.ruoyi.system.domain.dto.ReportFormsDTO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.PressureHoleFormsService;
 import org.springframework.stereotype.Service;
@@ -88,8 +93,9 @@ public class PressureHoleFormsServiceImpl implements PressureHoleFormsService {
                     .eq(ConstructionUnitEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
             if (ObjectUtil.isNull(constructionUnitEntity)) {
                 throw new RuntimeException("未找到施工单位信息,无法进行导出");
+            } else {
+                pressureHoleImportDTO.setConstructUnit(constructionUnitEntity.getConstructionUnitName());
             }
-            pressureHoleImportDTO.setConstructUnit(constructionUnitEntity.getConstructionUnitName());
             ClassesEntity classesEntity = classesMapper.selectOne(new LambdaQueryWrapper<ClassesEntity>()
                     .eq(ClassesEntity::getClassesId, bizProjectRecord.getConstructShiftId())
                     .eq(ClassesEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
@@ -124,6 +130,95 @@ public class PressureHoleFormsServiceImpl implements PressureHoleFormsService {
         return importDTOList;
     }
 
+    /**
+     * 分页查询卸压孔报表
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param pageNum 页码
+     * @param pageSize 页大小
+     * @return 返回结果
+     */
+    @Override
+    public TableData queryPage(Date startTime, Date endTime, Integer pageNum, Integer pageSize) {
+        TableData result = new TableData();
+        if (null == pageNum || pageNum < 1) {
+            pageNum = 1;
+        }
+        if (null == pageSize || pageSize < 1) {
+            pageSize = 10;
+        }
+        List<String> drillTypes = sysDictDataMapper.selectDictDataByType(ConstantsInfo.DRILL_TYPE_DICT_TYPE)
+                .stream().map(SysDictData::getDictValue)
+                .collect(Collectors.toList());
+        drillTypes.removeIf(c -> c.equals("CD"));
+        PageHelper.startPage(pageNum, pageSize);
+        Page<ReportFormsDTO> page = bizProjectRecordMapper.queryDateByPage(startTime, endTime, drillTypes);
+        if (ListUtils.isNotNull(page.getResult())) {
+            page.getResult().forEach(reportFormsDTO -> {
+                String constructionPersonnel = "";
+                String inspector = "";
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                reportFormsDTO.setConstructTimeFmt(dateFormat.format(reportFormsDTO.getConstructTime()));
+                reportFormsDTO.setDrillHoleTypeFmt(sysDictDataMapper.selectDictLabel(ConstantsInfo.DRILL_TYPE_DICT_TYPE, reportFormsDTO.getDrillType())); // 钻孔类型
+                reportFormsDTO.setConstructUnitFmt(getUnitName(reportFormsDTO.getConstructUnitId())); // 施工单位
+                reportFormsDTO.setConstructShiftFmt(getClassesName(reportFormsDTO.getConstructShiftId())); // 班次
+                reportFormsDTO.setConstructTypeFmt(sysDictDataMapper.selectDictLabel(ConstantsInfo.TYPE_DICT_TYPE, reportFormsDTO.getConstructType())); // 施工类型
+                reportFormsDTO.setLocationFmt(getLocationT(reportFormsDTO.getConstructType(), reportFormsDTO.getLocationId()));
+                // 钻孔信息
+                BizDrillRecord bizDrillRecord = bizDrillRecordMapper.selectOne(new LambdaQueryWrapper<BizDrillRecord>()
+                        .eq(BizDrillRecord::getProjectId, reportFormsDTO.getProjectId())
+                        .eq(BizDrillRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                if (ObjectUtil.isNotNull(bizDrillRecord)) {
+                    reportFormsDTO.setHeight(bizDrillRecord.getHeight());
+                    reportFormsDTO.setRealDeep(bizDrillRecord.getRealDeep());
+                    reportFormsDTO.setDiameter(bizDrillRecord.getDiameter());
+                }
+                if (ObjectUtil.isNotNull(reportFormsDTO.getWorker())){
+                    constructionPersonnel = getPersonalNameT("1", reportFormsDTO.getWorker());
+                }
+                reportFormsDTO.setWorkerFmt(constructionPersonnel); // 施工人员名称
+                if (ObjectUtil.isNotNull(reportFormsDTO.getAccepter())) {
+                    inspector = getPersonalNameT("2", reportFormsDTO.getAccepter());
+                }
+                reportFormsDTO.setAccepterFmt(inspector); // 验收人员名称
+                reportFormsDTO.setBorer(sysDictDataMapper.selectDictLabel(ConstantsInfo.DRILL_DEVICE_DICT_TYPE, bizDrillRecord.getBorer())); // 钻孔设备(施工工具)
+            });
+        }
+        result.setTotal(page.getTotal());
+        result.setRows(page.getResult());
+        return result;
+    }
+
+    /**
+     * 获取施工单位名称
+     */
+    private String getUnitName(Long constructUnitId) {
+        String unitName = "";
+        ConstructionUnitEntity constructionUnitEntity = constructionUnitMapper.selectOne(new LambdaQueryWrapper<ConstructionUnitEntity>()
+                .eq(ConstructionUnitEntity::getConstructionUnitId, constructUnitId)
+                .eq(ConstructionUnitEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(constructionUnitEntity)) {
+            return unitName;
+        }
+        unitName = constructionUnitEntity.getConstructionUnitName();
+        return unitName;
+    }
+
+    /**
+     * 获取班次名称
+     */
+    private String getClassesName(Long classesId) {
+        String classesName = "";
+        ClassesEntity classesEntity = classesMapper.selectOne(new LambdaQueryWrapper<ClassesEntity>()
+                .eq(ClassesEntity::getClassesId, classesId)
+                .eq(ClassesEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(classesEntity)) {
+            return classesName;
+        }
+        classesName = classesEntity.getClassesName();
+        return classesName;
+    }
+
     private String getPersonalName(String tag, Long personalId) {
         String personalName = "";
         if (tag.equals(ConstantsInfo.CONSTRUCTION_WORKER)) {
@@ -131,7 +226,7 @@ public class PressureHoleFormsServiceImpl implements PressureHoleFormsService {
                     .eq(ConstructionPersonnelEntity::getConstructionPersonnelId, personalId)
                     .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
             if (ObjectUtil.isNull(constructionPersonnelEntity)) {
-                throw new RuntimeException("施工人员转化异常，导出失败");
+                throw new RuntimeException("施工人员转化异常，导出失败！");
             }
             personalName = constructionPersonnelEntity.getName();
         }
@@ -142,6 +237,33 @@ public class PressureHoleFormsServiceImpl implements PressureHoleFormsService {
                         .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
                 if (ObjectUtil.isNull(constructionPersonnelEntity)) {
                     throw new RuntimeException("验收员转化异常，导出失败");
+                }
+                personalName = constructionPersonnelEntity.getName();
+            } else {
+                personalName = "";
+            }
+        }
+        return personalName;
+    }
+
+    private String getPersonalNameT(String tag, Long personalId) {
+        String personalName = "";
+        if (tag.equals(ConstantsInfo.CONSTRUCTION_WORKER)) {
+            ConstructionPersonnelEntity constructionPersonnelEntity = constructionPersonnelMapper.selectOne(new LambdaQueryWrapper<ConstructionPersonnelEntity>()
+                    .eq(ConstructionPersonnelEntity::getConstructionPersonnelId, personalId)
+                    .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNull(constructionPersonnelEntity)) {
+                return personalName;
+            }
+            personalName = constructionPersonnelEntity.getName();
+        }
+        if (tag.equals(ConstantsInfo.INSPECTOR)) {
+            if (ObjectUtil.isNotNull(personalId)) {
+                ConstructionPersonnelEntity constructionPersonnelEntity = constructionPersonnelMapper.selectOne(new LambdaQueryWrapper<ConstructionPersonnelEntity>()
+                        .eq(ConstructionPersonnelEntity::getConstructionPersonnelId, personalId)
+                        .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                if (ObjectUtil.isNull(constructionPersonnelEntity)) {
+                    return personalName;
                 }
                 personalName = constructionPersonnelEntity.getName();
             } else {
@@ -172,6 +294,33 @@ public class PressureHoleFormsServiceImpl implements PressureHoleFormsService {
                     .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
             if (ObjectUtil.isNull(bizWorkface)) {
                 throw new RuntimeException("工作面转化异常，导出失败");
+            }
+            location = bizWorkface.getWorkfaceName();
+        }
+        return location;
+    }
+
+    /**
+     * 获取施工位置T
+     */
+    private String getLocationT(String type, Long locationId) {
+        String location = "";
+        // 判断施工类型 回采or掘进
+        if (type.equals(ConstantsInfo.TUNNELING)) {
+            TunnelEntity tunnelEntity = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                    .eq(TunnelEntity::getTunnelId, locationId)
+                    .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNull(tunnelEntity)) {
+                return location;
+            }
+            location = tunnelEntity.getTunnelName();
+        }
+        if (type.equals(ConstantsInfo.STOPE)) {
+            BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                    .eq(BizWorkface::getWorkfaceId, locationId)
+                    .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (ObjectUtil.isNull(bizWorkface)) {
+                return location;
             }
             location = bizWorkface.getWorkfaceName();
         }

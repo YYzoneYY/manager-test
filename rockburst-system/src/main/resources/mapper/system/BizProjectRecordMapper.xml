@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.BizProjectRecordMapper">
+
+
+    <select id="queryDateByPage" resultType="com.ruoyi.system.domain.dto.ReportFormsDTO">
+        select
+            bpr.project_id as projectId,
+            bpr.construct_time as constructTime,
+            bpr.drill_type as drillType,
+            bpr.construct_unit_id as constructUnitId,
+            bpr.construct_shift_id as constructShiftId,
+            bpr.construct_type as constructType,
+            bpr.location_id as locationId,
+            bpr.drill_num as drillNum,
+            bpr.worker as worker,
+            bpr.accepter as accepter,
+            bpr.create_time as createTime,
+        from biz_project_record as bpr
+        where bpr.drill_type in
+        <foreach collection="drillTypes" item="drillType" index="index" open="(" close=")" separator=",">
+            #{drillType}
+        </foreach>
+        <if test="startTime != null and endTime != null">
+          and bpr.construct_time between #{startTime} and #{endTime}
+        </if>
+        and bpr.del_flag = '0'
+        order by bpr.construct_time desc
+    </select>
+
+</mapper>

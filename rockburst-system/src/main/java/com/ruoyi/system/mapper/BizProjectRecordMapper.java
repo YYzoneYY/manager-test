@@ -1,8 +1,14 @@
 package com.ruoyi.system.mapper;
 
+import com.github.pagehelper.Page;
 import com.github.yulichang.base.MPJBaseMapper;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.dto.ReportFormsDTO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * 工程填报记录Mapper接口
@@ -60,4 +66,14 @@ public interface BizProjectRecordMapper extends MPJBaseMapper<BizProjectRecord>
      * @return 结果
      */
 //    public int deleteBizProjectRecordByProjectIds(Long[] projectIds);
+
+    /**
+     * 用于卸压孔报表列表查询
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param drillTypes 钻孔类型
+     */
+    Page<ReportFormsDTO> queryDateByPage(@Param("startTime") Date startTime,
+                                         @Param("endTime") Date endTime,
+                                         @Param("drillTypes") List<String> drillTypes);
 }
