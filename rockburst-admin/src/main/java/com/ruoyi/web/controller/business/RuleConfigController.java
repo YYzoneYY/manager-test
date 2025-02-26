@@ -31,14 +31,14 @@ public class RuleConfigController {
 
     @ApiOperation(value = "新增规则配置", notes = "新增规则配置")
     @PostMapping(value = "/insert")
-    public R<Object> insert(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) AddRuleConfigDTO addRuleConfigDTO) {
-        return R.ok(this.ruleConfigService.insert(addRuleConfigDTO));
+    public R<Object> insert(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) RuleConfigDTO ruleConfigDTO) {
+        return R.ok(this.ruleConfigService.insert(ruleConfigDTO));
     }
 
     @ApiOperation(value = "修改规则配置", notes = "修改规则配置")
     @PutMapping(value = "/update")
-    public R<Object> update(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) AddRuleConfigDTO addRuleConfigDTO) {
-        return R.ok(this.ruleConfigService.update(addRuleConfigDTO));
+    public R<Object> update(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) RuleConfigDTO ruleConfigDTO) {
+        return R.ok(this.ruleConfigService.update(ruleConfigDTO));
     }
 
     @ApiOperation(value = "获取规则配置列表", notes = "获取规则配置列表")

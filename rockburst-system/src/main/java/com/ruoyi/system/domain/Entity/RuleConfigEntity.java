@@ -33,20 +33,20 @@ public class RuleConfigEntity extends BusinessBaseEntity implements Serializable
     @TableId(value = "rule_config_id", type = IdType.AUTO)
     private Long ruleConfigId;
 
-    @ApiModelProperty("规则标签")
-    @NotBlank(groups = {ParameterValidationOther.class}, message = "规则标签不能为空")
-    @TableField("rule_tag")
-    private String ruleTag;
+    @ApiModelProperty("起始时间")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "起始时间不能为空")
+    @TableField("start_time")
+    private String startTime;
 
-    @ApiModelProperty("规则名称")
-    @NotBlank(groups = {ParameterValidationOther.class}, message = "规则名称不能为空")
-    @TableField("rule_name")
-    private String ruleName;
+    @ApiModelProperty("回采进尺选择")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "回采进尺选择不能为空")
+    @TableField("stope_footage_choice")
+    private Long stopeFootageChoice;
 
-    @ApiModelProperty("规则值")
-    @NotBlank(groups = {ParameterValidationOther.class}, message = "规则值不能为空")
-    @TableField("rule_value")
-    private String ruleValue;
+    @ApiModelProperty("掘进进尺选择")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "掘进进尺选择不能为空")
+    @TableField("tunnel_footage_choice")
+    private Long tunnelFootageChoice;
 
     @ApiModelProperty(value = "删除标志(0存在2删除)")
     @TableLogic(value = "0", delval = "2")

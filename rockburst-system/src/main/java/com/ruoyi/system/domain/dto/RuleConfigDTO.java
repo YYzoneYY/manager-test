@@ -1,7 +1,10 @@
 package com.ruoyi.system.domain.dto;
 
+import com.ruoyi.system.domain.Entity.RuleConfigEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -10,18 +13,9 @@ import lombok.Data;
  */
 
 @Data
-public class RuleConfigDTO {
+public class RuleConfigDTO extends RuleConfigEntity {
 
-    @ApiModelProperty("规则配置id")
-    private Long ruleConfigId;
-
-    @ApiModelProperty("规则标签 计算时间-1,回采进尺-2，掘进进尺-3")
-    private String ruleTag;
-
-    @ApiModelProperty("规则名称")
-    private String ruleName;
-
-    @ApiModelProperty("规则值")
-    private String ruleValue;
+    @ApiModelProperty(value = "孔距")
+    private List<RulePicthDTO> rulePicthDTOS;
 
 }

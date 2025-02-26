@@ -16,18 +16,14 @@ public interface RuleConfigService extends IService<RuleConfigEntity> {
 
 
     /**
-     * 批量插入规则配置
-     * @param addRuleConfigDTO 参数DTO
+     * 添加规则配置
+     * @param ruleConfigDTO 规则配置信息DTO
      * @return 返回结果
      */
-    boolean insert(AddRuleConfigDTO addRuleConfigDTO);
+    int insert(RuleConfigDTO ruleConfigDTO);
 
-    /**
-     * 批量更新规则配置
-     * @param addRuleConfigDTO 参数DTO
-     * @return 返回结果
-     */
-    boolean update(AddRuleConfigDTO addRuleConfigDTO);
+
+    int update(RuleConfigDTO ruleConfigDTO);
 
     /**
      * 获取规则配置列表
