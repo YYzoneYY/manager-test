@@ -11,6 +11,7 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
 import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
@@ -53,6 +54,9 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
 
     @Resource
     private SurveyAreaMapper surveyAreaMapper;
+
+    @Resource
+    private BizProjectRecordMapper bizProjectRecordMapper;
 
     /**
      * 新增巷道
@@ -194,17 +198,24 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
         }
         List<Long> tunnelIdList = Arrays.asList(tunnelIds);
         tunnelIdList.forEach(tunnelId -> {
-            RelatesInfoEntity relatesInfoEntity = relatesInfoMapper.selectOne(new LambdaQueryWrapper<RelatesInfoEntity>()
+            Long selectCount = relatesInfoMapper.selectCount(new LambdaQueryWrapper<RelatesInfoEntity>()
                     .eq(RelatesInfoEntity::getPositionId, tunnelId)
                     .eq(RelatesInfoEntity::getType, ConstantsInfo.TUNNELING));
-            if (ObjectUtil.isNotNull(relatesInfoEntity)) {
+            if (selectCount > 0) {
                 throw new RuntimeException("此巷道已关联到计划，无法删除!");
             }
-            SurveyAreaEntity surveyAreaEntity = surveyAreaMapper.selectOne(new LambdaQueryWrapper<SurveyAreaEntity>()
+            Long count = surveyAreaMapper.selectCount(new LambdaQueryWrapper<SurveyAreaEntity>()
                     .eq(SurveyAreaEntity::getTunnelId, tunnelId)
                     .eq(SurveyAreaEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-            if (ObjectUtil.isNotNull(surveyAreaEntity)) {
+            if (count > 0) {
                 throw new RuntimeException("此巷道已关联到测区，无法删除!");
+            }
+
+            Long aLong = bizProjectRecordMapper.selectCount(new LambdaQueryWrapper<BizProjectRecord>()
+                    .eq(BizProjectRecord::getConstructType, ConstantsInfo.TUNNELING)
+                    .eq(BizProjectRecord::getLocationId, tunnelId));
+            if (aLong > 0) {
+                throw new RuntimeException("此巷道已关联到工程填报，无法删除!");
             }
             // TODO 关联顶板离层测点信息，巷道位移信息，后续追加
         });

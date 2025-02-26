@@ -13,10 +13,12 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.vo.ConstructionUnitVO;
+import com.ruoyi.system.mapper.BizProjectRecordMapper;
 import com.ruoyi.system.mapper.ConstructionPersonnelMapper;
 import com.ruoyi.system.mapper.ConstructionUnitMapper;
 import com.ruoyi.system.service.ConstructionUnitService;
@@ -50,6 +52,10 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
 
     @Resource
     private ConstructionPersonnelMapper constructionPersonnelMapper;
+
+    @Resource
+    private BizProjectRecordMapper bizProjectRecordMapper;
+
 
     /**
      * 新增施工单位
@@ -163,6 +169,14 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
             throw new ServiceException("请选择要删除的数据!");
         }
         List<Long> ids = Arrays.asList(constructionUnitIds);
+        ids.forEach(constructionUnitId -> {
+            Long selectCount = bizProjectRecordMapper.selectCount(new LambdaQueryWrapper<BizProjectRecord>()
+                    .eq(BizProjectRecord::getConstructionUnitId, constructionUnitId)
+                    .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (selectCount > 0) {
+                throw new ServiceException("该施工单位在工程填报中存在数据，无法删除！" + "施工单位id为:" + constructionUnitId);
+            }
+        });
         flag = this.removeBatchByIds(ids);
         return flag;
     }
