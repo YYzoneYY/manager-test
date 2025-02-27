@@ -22,10 +22,7 @@ import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.*;
-import com.ruoyi.system.service.ContentsService;
-import com.ruoyi.system.service.PlanAreaService;
-import com.ruoyi.system.service.PlanAuditService;
-import com.ruoyi.system.service.RelatesInfoService;
+import com.ruoyi.system.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +54,12 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
 
     @Resource
     private BizWorkfaceMapper bizWorkfaceMapper;
+
+    @Resource
+    private PlanAreaService planAreaService;
+
+    @Resource
+    private IBizPresetPointService bizPresetPointService;
 
     @Override
     public PlanDTO audit(Long planId) {
@@ -115,7 +118,16 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         if (flag <= 0) {
             throw new RuntimeException("审核失败,请联系管理员");
         } else {
+            List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
             if (ConstantsInfo.AUDIT_SUCCESS.equals(planAuditDTO.getAuditResult())) {
+                // 设置计划预设点(调用其他模块)
+                List<PlanAreaDTO> planAreaDTOS = planAreaService.getByPlanId(planAuditDTO.getPlanId());
+                planAreaDTOS.forEach(planAreaDTO -> {
+                    BizPlanPrePointDto bizPlanPrePointDto = getBizPlanPrePointDto(planAreaDTO);
+                    bizPlanPrePointDtos.add(bizPlanPrePointDto);
+                });
+                bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
+
                 planEntity.setState(ConstantsInfo.AUDITED_DICT_VALUE);
             } else {
                 planEntity.setState(ConstantsInfo.REJECTED);
@@ -240,5 +252,16 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         }
         workFaceName =  bizWorkface.getWorkfaceName();
         return workFaceName;
+    }
+
+
+    private BizPlanPrePointDto getBizPlanPrePointDto(PlanAreaDTO planAreaDTO) {
+        BizPlanPrePointDto bizPlanPrePointDto = new BizPlanPrePointDto();
+        bizPlanPrePointDto.setTunnelId(planAreaDTO.getTunnelId());
+        bizPlanPrePointDto.setStartPointId(planAreaDTO.getStartTraversePointId());
+        bizPlanPrePointDto.setEndPointId(planAreaDTO.getEndTraversePointId());
+        bizPlanPrePointDto.setStartMeter(Double.valueOf(planAreaDTO.getStartDistance()));
+        bizPlanPrePointDto.setEndMeter(Double.valueOf(planAreaDTO.getEndDistance()));
+        return bizPlanPrePointDto;
     }
 }

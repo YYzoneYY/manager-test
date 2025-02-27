@@ -87,9 +87,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     private BizWorkfaceMapper bizWorkfaceMapper;
 
     @Resource
-    private IBizPresetPointService bizPresetPointService;
-
-    @Resource
     IBizProjectRecordService iBizProjectRecordService;
 
     @Resource
@@ -136,10 +133,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             // 区域信息
             if (ObjectUtil.isNotNull(planDTO.getPlanAreaDTOS()) && !planDTO.getPlanAreaDTOS().isEmpty()) {
                 List<TraversePointGatherDTO> traversePointGatherDTOS = new ArrayList<>();
-                List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
                 planDTO.getPlanAreaDTOS().forEach(planAreaDTO -> {
-                    BizPlanPrePointDto bizPlanPrePointDto = getBizPlanPrePointDto(planAreaDTO);
-                    bizPlanPrePointDtos.add(bizPlanPrePointDto);
                     // 获取计划区域内所有的导线点
                     List<Long> pointList = bizTravePointService.getInPointList(planAreaDTO.getStartTraversePointId(), Double.valueOf(planAreaDTO.getStartDistance()),
                             planAreaDTO.getEndTraversePointId(), Double.valueOf(planAreaDTO.getEndDistance()));
@@ -153,8 +147,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                 });
                 boolean insert = planAreaService.insert(planEntity.getPlanId(), planEntity.getType(),
                         planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
-                if (insert) {
-                    bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
+                if (!insert) {
+                    throw new RuntimeException("发生未知异常,计划添加失败！！");
                 }
             }
         } else {
@@ -206,10 +200,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             planAreaService.deleteById(planIdList);
             if (ObjectUtil.isNotNull(planDTO.getPlanAreaDTOS()) && !planDTO.getPlanAreaDTOS().isEmpty()) {
                 List<TraversePointGatherDTO> traversePointGatherDTOS = new ArrayList<>();
-                List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
                 planDTO.getPlanAreaDTOS().forEach(planAreaDTO -> {
-                    BizPlanPrePointDto bizPlanPrePointDto = getBizPlanPrePointDto(planAreaDTO);
-                    bizPlanPrePointDtos.add(bizPlanPrePointDto);
                     // 获取计划区域内所有的导线点
                     List<Long> pointList = bizTravePointService.getInPointList(planAreaDTO.getStartTraversePointId(), Double.valueOf(planAreaDTO.getStartDistance()),
                             planAreaDTO.getEndTraversePointId(), Double.valueOf(planAreaDTO.getEndDistance()));
@@ -223,8 +214,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                 });
                 boolean insert = planAreaService.insert(planDTO.getPlanId(), planDTO.getType(),
                         planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
-                if (insert) {
-                    bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
+                if (!insert) {
+                    throw new RuntimeException("发生未知异常,计划修改失败！！");
                 }
             }
         }
@@ -838,16 +829,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         }
         workFaceName =  bizWorkface.getWorkfaceName();
         return workFaceName;
-    }
-
-    private BizPlanPrePointDto getBizPlanPrePointDto(PlanAreaDTO planAreaDTO) {
-        BizPlanPrePointDto bizPlanPrePointDto = new BizPlanPrePointDto();
-        bizPlanPrePointDto.setTunnelId(planAreaDTO.getTunnelId());
-        bizPlanPrePointDto.setStartPointId(planAreaDTO.getStartTraversePointId());
-        bizPlanPrePointDto.setEndPointId(planAreaDTO.getEndTraversePointId());
-        bizPlanPrePointDto.setStartMeter(Double.valueOf(planAreaDTO.getStartDistance()));
-        bizPlanPrePointDto.setEndMeter(Double.valueOf(planAreaDTO.getEndDistance()));
-        return bizPlanPrePointDto;
     }
 
     /**

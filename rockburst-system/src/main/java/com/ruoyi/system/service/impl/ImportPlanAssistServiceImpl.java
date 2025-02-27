@@ -94,14 +94,11 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
         if (flag > 0) {
             List<PlanAreaDTO> planAreaDTOS = new ArrayList<>();
             List<TraversePointGatherDTO> traversePointGatherDTOS = new ArrayList<>();
-            List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
             Long tunnelId = getTunnelId(planEntity.getWorkFaceId(), importPlanDTO.getTunnelName());
             PlanAreaDTO planAreaDTO = assembleDTO(tunnelId, getPointId(tunnelId, importPlanDTO.getStartPoint()),
                     importPlanDTO.getStartDistance(),
                     getPointId(tunnelId, importPlanDTO.getEndPoint()), importPlanDTO.getEndDistance());
             planAreaDTOS.add(planAreaDTO);
-            BizPlanPrePointDto bizPlanPrePointDto = getBizPlanPrePointDto(planAreaDTO);
-            bizPlanPrePointDtos.add(bizPlanPrePointDto);
             // 获取计划区域内所有的导线点
             List<Long> pointList = bizTravePointService.getInPointList(planAreaDTO.getStartTraversePointId(),
                     Double.valueOf(planAreaDTO.getStartDistance()),
@@ -114,8 +111,8 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
                 }
             }
             boolean insert = planAreaService.insert(planEntity.getPlanId(), planEntity.getType(), planAreaDTOS, traversePointGatherDTOS);
-            if (insert) {
-                bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
+            if (!insert) {
+                throw new RuntimeException("发生未知异常,计划添加失败！！");
             }
         } else {
             throw new ServiceException("保存数据失败！！");
@@ -146,7 +143,6 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = planMapper.insert(planEntity);
         if (flag > 0) {
-            List<BizPlanPrePointDto> bizPlanPrePointDtos = new ArrayList<>();
             List<PlanAreaBatchDTO> planAreaBatchDTOS = new ArrayList<>();
             Long tunnelId = getTunnelId(planEntity.getWorkFaceId(), importPlanTwoDTO.getTunnelName());
             Long tunnelIdT = getTunnelId(planEntity.getWorkFaceId(), importPlanTwoDTO.getTunnelNameTwo());
@@ -160,16 +156,10 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
                     planAreaBatchDTOS.add(planAreaBatchDTO);
                 });
             }
-            List<PlanAreaDTO> planAreaDTOS = assembleAreaDTOs(addDTOS);
-            if (ObjectUtil.isNotNull(planAreaDTOS) && !planAreaDTOS.isEmpty()) {
-                planAreaDTOS.forEach(planAreaDTO -> {
-                    BizPlanPrePointDto bizPlanPrePointDto = getBizPlanPrePointDto(planAreaDTO);
-                    bizPlanPrePointDtos.add(bizPlanPrePointDto);
-                });
-            }
+//            List<PlanAreaDTO> planAreaDTOS = assembleAreaDTOs(addDTOS);
             boolean batchInsert = planAreaService.batchInsert(planAreaBatchDTOS);
-            if (batchInsert) {
-                bizPresetPointService.setPlanPrePoint(planEntity.getPlanId(),bizPlanPrePointDtos);
+            if (!batchInsert) {
+                throw new RuntimeException("发生未知异常,计划添加失败！！");
             }
         } else {
             throw new ServiceException("保存数据失败！！");
