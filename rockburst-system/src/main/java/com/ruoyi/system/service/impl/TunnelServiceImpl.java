@@ -272,6 +272,22 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
         return tunnelChoiceListDTOS;
     }
 
+    @Override
+    public List<TunnelChoiceListDTO> getChoiceListFitterRule() {
+        List<TunnelChoiceListDTO> tunnelChoiceListDTOS = new ArrayList<>();
+        List<TunnelEntity> tunnelEntities = tunnelMapper.selectList(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ListUtils.isNotNull(tunnelEntities)) {
+            tunnelChoiceListDTOS = tunnelEntities.stream().map(tunnelEntity -> {
+                TunnelChoiceListDTO tunnelChoiceListDTO = new TunnelChoiceListDTO();
+                tunnelChoiceListDTO.setLabel(tunnelEntity.getTunnelName());
+                tunnelChoiceListDTO.setValue(tunnelEntity.getTunnelId());
+                return tunnelChoiceListDTO;
+            }).collect(Collectors.toList());
+        }
+        return tunnelChoiceListDTOS;
+    }
+
     /**
      * 获取工作面名称
      */

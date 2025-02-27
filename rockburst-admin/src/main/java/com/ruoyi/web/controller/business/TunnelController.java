@@ -73,4 +73,10 @@ public class TunnelController {
                                                             @RequestParam Long faceId){
         return R.ok(tunnelService.getTunnelChoiceList(faceId));
     }
+
+    @ApiOperation(value = "获取所有巷道列表", notes = "获取所有巷道列表")
+    @GetMapping(value = "/getAllTunnelList")
+    public R<List<TunnelChoiceListDTO>> getChoiceListFitterRule(){
+        return R.ok(tunnelService.getChoiceListFitterRule());
+    }
 }
