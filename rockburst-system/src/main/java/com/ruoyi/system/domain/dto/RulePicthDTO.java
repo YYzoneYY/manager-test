@@ -14,8 +14,8 @@ import java.math.BigDecimal;
 @Data
 public class RulePicthDTO {
 
-    @ApiModelProperty(value = "危险区域id")
-    private Long dangerAreaId;
+    @ApiModelProperty(value = "危险区域等级(字典)")
+    private String dangerAreaLevel;
 
     @ApiModelProperty(value = " 米数")
     private BigDecimal meterCount;

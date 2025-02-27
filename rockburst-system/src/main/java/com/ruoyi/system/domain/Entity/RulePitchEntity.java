@@ -38,8 +38,8 @@ public class RulePitchEntity implements Serializable {
     private Long ruleConfigId;
 
     @ApiModelProperty(value = "危险区id")
-    @TableField(value = "danger_area_id")
-    private Long dangerAreaId;
+    @TableField(value = "danger_area_level")
+    private String dangerAreaLevel;
 
     @ApiModelProperty(value = "米数")
     @JsonSerialize(using = ToStringSerializer.class)
