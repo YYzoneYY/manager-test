@@ -78,7 +78,7 @@ public class MiningFootageController {
         return R.ok(miningService.queryByTime(miningTime,tunnelId));
     }
 
-    @ApiOperation(value = "获取剩余工作面长度", notes = "获取剩余工作面长度")
+    @ApiOperation(value = "获取剩余巷道长度", notes = "获取剩余巷道长度")
     @GetMapping(value = "/getSurplusLength")
     public R<Object> getSurplusLength(@RequestParam(value = "workfaceId") Long workfaceId,
                                       @RequestParam(value = "tunnelId") Long tunnelId){

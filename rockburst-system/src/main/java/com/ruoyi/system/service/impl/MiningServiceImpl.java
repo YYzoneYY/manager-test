@@ -33,8 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,11 +58,13 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
     @Resource
     private TunnelMapper tunnelMapper;
 
-    @Resource
-    private ListPageSimple listPageSimple;
-
     private static final BigDecimal TWO = new BigDecimal("2");
 
+    /**
+     * 新增回采进尺
+     * @param miningFootageNewDTO 参数实体类
+     * @return 返回结果
+     */
     @Override
     public int insertMiningFootage(MiningFootageNewDTO miningFootageNewDTO) {
         int flag = 0;
@@ -105,6 +106,11 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         return flag;
     }
 
+    /**
+     * 修改回采进尺
+     * @param miningFootageNewDTO 参数实体类
+     * @return 返回结果
+     */
     @Override
     public boolean updateMiningFootage(MiningFootageNewDTO miningFootageNewDTO) {
         boolean flag = false;
@@ -122,7 +128,7 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
                 .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         BigDecimal surplusTunnelTotal = surplusTunnelTotal(miningFootageNewDTO.getWorkFaceId(), miningFootageNewDTO.getTunnelId(),
                 tunnelEntity.getTunnelLength(), BigDecimal.ZERO);
-        if (miningFootageNewDTO.getMiningPace().compareTo(surplusTunnelTotal) > 0) {
+        if (miningFootageNewDTO.getMiningPaceEdit().compareTo(surplusTunnelTotal) > 0) {
             throw new RuntimeException("回采进尺不能大于剩余巷道长度" + surplusTunnelTotal + "米");
         }
         miningEntity.setMiningPace(miningFootageNewDTO.getMiningPaceEdit());
@@ -142,6 +148,11 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         return flag;
     }
 
+    /**
+     * 擦除
+     * @param miningFootageNewDTO 参数DTO
+     * @return 返回结果
+     */
     @Override
     public int clear(MiningFootageNewDTO miningFootageNewDTO) {
         int flag = 0;
@@ -171,6 +182,13 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         return flag;
     }
 
+    /**
+     * 分页查询
+     * @param miningSelectNewDTO 参数DTO
+     * @param pageNum 页数
+     * @param pageSize 条数
+     * @return 返回结果
+     */
     @Override
     public TableData pageQueryList(MiningSelectNewDTO miningSelectNewDTO, String displayForm, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
@@ -183,17 +201,12 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         if (ObjectUtil.isNull(displayForm)) {
             throw new RuntimeException("展示方式不能为空,，请选择合理的展示方式");
         }
-        List<MiningEntity> miningEntities = miningMapper.selectList(new LambdaQueryWrapper<MiningEntity>()
-                .eq(MiningEntity::getWorkFaceId, miningSelectNewDTO.getWorkFaceId())
-                .eq(MiningEntity::getTunnelId, Long.valueOf(displayForm)));
-        if (miningEntities.isEmpty()){
-            return null;
-        }
-        PageHelper.startPage(pageNum, pageSize);
-        Page<MiningFootageNewDTO> page;
+        long total = 0;
+        List<?> rows = new ArrayList<>();
         if (!displayForm.equals("average")) {
-            page = miningMapper.selectMiningFootageByPage(miningSelectNewDTO, Long.valueOf(displayForm));
-            if (ListUtils.isNotNull(page.getResult())) {
+            PageHelper.startPage(pageNum, pageSize);
+            Page<MiningFootageNewDTO> page = miningMapper.selectMiningFootageByPage(miningSelectNewDTO, Long.valueOf(displayForm));
+            if (page.getResult().isEmpty()) {
                 List<Long> collect = page.getResult().stream()
                         .collect(Collectors.groupingBy(MiningFootageNewDTO::getMiningTime, Collectors.counting()))
                         .entrySet()
@@ -212,39 +225,82 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
                     });
                 });
             }
+            total = page.getTotal();
+            rows = page.getResult();
         } else {
-            page = getList(miningSelectNewDTO);
+            TableData list = getList(miningSelectNewDTO, pageNum, pageSize);
+            total = list.getTotal();
+            rows = list.getRows();
         }
-        result.setTotal(page.getTotal());
-        result.setRows(page.getResult());
+        result.setTotal(total);
+        result.setRows(rows);
         return result;
     }
 
-    private Page<MiningFootageNewDTO> getList(MiningSelectNewDTO miningSelectNewDTO) {
-        Page<MiningFootageNewDTO> page = new Page<>();
-        Page<MiningFootageNewDTO> footageNewDTOS = miningMapper.selectMining(miningSelectNewDTO);
-        if (ObjectUtil.isNull(footageNewDTOS.getResult())) {
-            return page;
+    private TableData getList(MiningSelectNewDTO miningSelectNewDTO, Integer pageNum, Integer pageSize) {
+        TableData result = new TableData();
+        // 设置默认分页参数
+        if (pageNum == null || pageNum < 1) {
+            pageNum = 1;
         }
-        List<Long> tunnelIds = footageNewDTOS.getResult().stream().map(MiningFootageNewDTO::getTunnelId).collect(Collectors.toList());
-        List<Long> time = footageNewDTOS.getResult().stream().map(MiningEntity::getMiningTime).collect(Collectors.toList());
-        time.stream().distinct().forEach(t -> {
-            MiningFootageNewDTO miningFootageNewDTO = new MiningFootageNewDTO();
-            List<MiningEntity> miningEntities = miningMapper.selectList(new LambdaQueryWrapper<MiningEntity>()
-                    .in(MiningEntity::getTunnelId, tunnelIds)
-                    .eq(MiningEntity::getMiningTime, t)
-                    .eq(MiningEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-            double sum = miningEntities.stream().map(MiningEntity::getMiningPace).mapToDouble(BigDecimal::doubleValue).sum();
-            double avg = sum / 2;
-            BigDecimal paceSum = miningMapper.miningPaceSumT(tunnelIds, t);
-            BigDecimal paceSumAvg = paceSum.divide(TWO, 2, RoundingMode.HALF_UP);
-            miningFootageNewDTO.setMiningTime(t);
-            miningFootageNewDTO.setMiningPace(new BigDecimal(avg));
-            miningFootageNewDTO.setMiningPaceSum(paceSumAvg);
-            page.getResult().add(miningFootageNewDTO);
-        });
-        return page;
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10;
+        }
+        try {
+            PageHelper.startPage(pageNum, pageSize);
+            Page<MiningFootageNewDTO> page = new Page<>();
+            Page<MiningFootageNewDTO> footageNewDTOS = miningMapper.selectMining(miningSelectNewDTO);
+            if (footageNewDTOS.isEmpty()) {
+                result.setTotal(0);
+                result.setRows(new ArrayList<>());
+                return result;
+            } else {
+                Set<Long> tunnelIdSet = footageNewDTOS.getResult().stream()
+                        .map(MiningFootageNewDTO::getTunnelId)
+                        .collect(Collectors.toSet());// 将 List<Long> 转换为 Set<Long>
+
+                Set<Long> times = footageNewDTOS.getResult().stream()
+                        .map(MiningEntity::getMiningTime)
+                        .collect(Collectors.toSet());
+
+                // 批量查询所有需要的数据
+                Map<Long, List<MiningEntity>> entitiesByTime = miningMapper.selectList(
+                                new LambdaQueryWrapper<MiningEntity>()
+                                        .in(MiningEntity::getTunnelId, tunnelIdSet) // 使用 Set<Long>
+                                        .in(MiningEntity::getMiningTime, times)
+                                        .eq(MiningEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                        ).stream()
+                        .collect(Collectors.groupingBy(MiningEntity::getMiningTime));
+                for (Long t : times) {
+                    List<MiningEntity> miningEntities = entitiesByTime.getOrDefault(t, Collections.emptyList());
+                    if (!miningEntities.isEmpty()) {
+                        double sum = miningEntities.stream()
+                                .map(MiningEntity::getMiningPace)
+                                .mapToDouble(BigDecimal::doubleValue)
+                                .sum();
+                        double avg = sum / miningEntities.size();
+                        BigDecimal paceSum = miningEntities.stream()
+                                .map(MiningEntity::getMiningPace)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        BigDecimal paceSumAvg = paceSum.divide(TWO, 2, RoundingMode.HALF_UP);
+                        MiningFootageNewDTO miningFootageNewDTO = new MiningFootageNewDTO();
+                        miningFootageNewDTO.setMiningTime(t);
+                        miningFootageNewDTO.setMiningPace(new BigDecimal(avg));
+                        miningFootageNewDTO.setMiningPaceSum(paceSumAvg);
+                        page.getResult().add(miningFootageNewDTO);
+                    }
+                }
+                page.setTotal(times.size());
+                result.setTotal(page.getTotal());
+                result.setRows(page.getResult());
+            }
+        } catch (Exception e) {
+            log.error("查询平均回采进尺失败", e);
+        }
+        return result;
     }
+
+
 
     @Override
     public String queryByTime(Long miningTime, Long tunnelId) {

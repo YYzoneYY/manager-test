@@ -30,7 +30,7 @@ import java.math.BigDecimal;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("mining_record")
+@TableName("mining_record_new")
 public class MiningRecordNewEntity extends BusinessBaseEntity implements Serializable {
 
     @ApiModelProperty("回采进尺记录id")
