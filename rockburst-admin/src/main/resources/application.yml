@@ -90,9 +90,9 @@ spring:
     restart:
       # 热部署开关
       enabled: true
-#  elasticsearch:
-#    rest:
-#      uris: localhost:9200
+  elasticsearch:
+    rest:
+      uris: localhost:9200
 
 # token配置
 token:
