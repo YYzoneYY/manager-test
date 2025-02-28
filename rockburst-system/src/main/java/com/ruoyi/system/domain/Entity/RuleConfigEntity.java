@@ -39,12 +39,12 @@ public class RuleConfigEntity extends BusinessBaseEntity implements Serializable
     private String startTime;
 
     @ApiModelProperty("回采进尺选择")
-    @NotBlank(groups = {ParameterValidationOther.class}, message = "回采进尺选择不能为空")
+    @NotNull(groups = {ParameterValidationOther.class}, message = "回采进尺选择不能为空")
     @TableField("stope_footage_choice")
     private Long stopeFootageChoice;
 
     @ApiModelProperty("掘进进尺选择")
-    @NotBlank(groups = {ParameterValidationOther.class}, message = "掘进进尺选择不能为空")
+    @NotNull(groups = {ParameterValidationOther.class}, message = "掘进进尺选择不能为空")
     @TableField("tunnel_footage_choice")
     private Long tunnelFootageChoice;
 
