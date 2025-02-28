@@ -123,9 +123,13 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
     public BizPresetPoint getPointPre(Long pointId, Double meter) {
         if(meter > 0){
             BizTravePoint point = this.getNextPoint(pointId);
-            meter = meter - point.getPrePointDistance();
+            BigDecimal meterBigDecimal = new BigDecimal(meter).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal prePointDistanceBigDecimal = new BigDecimal(point.getPrePointDistance()).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal mmBigDecimal = meterBigDecimal.subtract(prePointDistanceBigDecimal).setScale(2, RoundingMode.HALF_UP);
+//            Double mm =  meter - point.getPrePointDistance();
             BizPresetPoint presetPoint = new BizPresetPoint();
-            presetPoint.setPointId(pointId).setMeter(meter);
+            presetPoint.setPointId(point.getPointId()).setMeter(mmBigDecimal.doubleValue());
+            return presetPoint;
         }
         BizPresetPoint presetPoint = new BizPresetPoint();
         presetPoint.setPointId(pointId).setMeter(meter);
@@ -145,7 +149,7 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
     public BizPresetPoint getPointLatLon(Long pointId, Double meter) {
         BizPresetPoint p = getPointPre(pointId,meter);
         QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId).eq(BizPresetPoint::getMeter,meter);
+        queryWrapper.lambda().eq(BizPresetPoint::getPointId,p.getPointId()).eq(BizPresetPoint::getMeter,p.getMeter());
         List<BizPresetPoint> list = bizPresetPointMapper.selectList(queryWrapper);
         if(list != null && list.size() > 0){
             p.setPointId(p.getPointId()).setLongitude(list.get(0).getLongitude()).setLatitude(list.get(0).getLatitude());
@@ -159,20 +163,20 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         //大于
         BizPresetPoint min =new BizPresetPoint();
         queryWrapper.clear();
-        queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId).gt(BizPresetPoint::getMeter,meter);
+        queryWrapper.lambda().eq(BizPresetPoint::getPointId,p.getPointId()).gt(BizPresetPoint::getMeter,p.getMeter());
         List<BizPresetPoint> gtlist = bizPresetPointMapper.selectList(queryWrapper);
         if(gtlist != null && gtlist.size() > 0){
             min =  gtlist.stream().min(Comparator.comparingDouble(BizPresetPoint::getMeter)).get();
         }else {
             //没有的话 取当前导线点的点
             min =  new BizPresetPoint();
-            min.setLatitude(currentPoint.getLatitude()).setLongitude(currentPoint.getLongitude());
+            min.setLatitude(currentPoint.getLatitude()).setLongitude(currentPoint.getLongitude()).setMeter(0.0);
         }
 
         //小于
         BizPresetPoint max =new BizPresetPoint();
         queryWrapper.clear();
-        queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId).lt(BizPresetPoint::getMeter,meter);
+        queryWrapper.lambda().eq(BizPresetPoint::getPointId,p.getPointId()).lt(BizPresetPoint::getMeter,p.getMeter());
         List<BizPresetPoint> ltlist = bizPresetPointMapper.selectList(queryWrapper);
         if(ltlist != null && ltlist.size() > 0){
             max =  ltlist.stream().max(Comparator.comparingDouble(BizPresetPoint::getMeter)).get();
@@ -180,14 +184,34 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
             //没有的话 取前一个导线点的点
             BizTravePoint prePoint =  this.getPrePoint(p.getPointId());
             max =  new BizPresetPoint();
-            max.setLatitude(prePoint.getLatitude()).setLongitude(prePoint.getLongitude());
+            max.setLatitude(prePoint.getLatitude()).setLongitude(prePoint.getLongitude()).setMeter(0.0);
         }
-        BigDecimal bili = new BigDecimal(min.getMeter()-meter).divide(new BigDecimal(min.getMeter()-max.getMeter())).setScale(8, RoundingMode.HALF_UP);
-        BigDecimal movelat = new BigDecimal(min.getLatitude()).subtract(new BigDecimal(max.getLatitude()));
+        BigDecimal divide = new BigDecimal(0.0);
+        if(max.getPointId() == null || !max.getPointId().equals(p.getPointId())){
+            Double di = min.getMeter() - currentPoint.getPrePointDistance();
+            divide = new BigDecimal(di);
+        }else {
+            Double di  = min.getMeter() - max.getMeter();
+            divide = new BigDecimal(di);
+        }
+        BigDecimal bili = new BigDecimal(min.getMeter()-p.getMeter()).divide(divide,RoundingMode.HALF_UP).setScale(4, RoundingMode.HALF_UP);
+        BigDecimal movelat = new BigDecimal(min.getLatitude()).subtract(new BigDecimal(max.getLatitude())).abs();
+        BigDecimal movelon = new BigDecimal(min.getLongitude()).subtract(new BigDecimal(max.getLongitude())).abs();
         BigDecimal lat =  new BigDecimal(min.getLatitude()).subtract(bili.multiply(movelat));
 
-        BigDecimal movelon = new BigDecimal(min.getLongitude()).subtract(new BigDecimal(max.getLongitude()));
         BigDecimal lon =  new BigDecimal(min.getLongitude()).subtract(bili.multiply(movelon));
+        if(new BigDecimal(min.getLatitude()).compareTo(new BigDecimal(max.getLatitude())) == 1 ){
+            lat =  new BigDecimal(min.getLatitude()).add(bili.multiply(movelat));
+        }else{
+            lat =  new BigDecimal(min.getLatitude()).subtract(bili.multiply(movelat));
+        }
+        if(new BigDecimal(min.getLongitude()).compareTo(new BigDecimal(max.getLongitude())) == 1 ){
+            lon =  new BigDecimal(min.getLongitude()).add(bili.multiply(movelon));
+        }else{
+            lon =  new BigDecimal(min.getLongitude()).subtract(bili.multiply(movelon));
+        }
+
+
 
         p.setLongitude(lon+"").setLatitude(lat+"");
 

@@ -109,6 +109,7 @@ public class BizDangerAreaController extends BaseController
             List<BizDangerArea> areas = getAreaSort(tunnelEntity.getTunnelId());
             if(areas != null && areas.size() > 0){
                 for (BizDangerArea area : areas) {
+                    System.out.println("area.getDangerAreaId() = " + area.getDangerAreaId());
                     initAreaPrePoint1(area.getDangerAreaId(),area.getTunnelId(),drillType);
                 }
             }
@@ -184,16 +185,18 @@ public class BizDangerAreaController extends BaseController
 
     public BizPresetPoint ooo(Long  areaId , Long id, Double meter, Double spaced ,String drillType){
         BizPresetPoint point = bizTravePointService.getPresetPoint(id,meter,spaced);
+        if(  point == null){
+            return null;
+        }
         Long inAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
         //超出危险区 或者 后面没有导线点了
         if( inAreaId == null || inAreaId != areaId){
             return null;
         }
-        if(  point == null){
-            return null;
-        }
-        point.setDrillType(drillType);
+
+
         point = setAxis(areaId,point.getPointId(),point.getMeter());
+        point.setDrillType(drillType);
 //        sssss(x,jio,point);
         bizPresetPointService.savebarPresetPoint(point);
 
@@ -206,7 +209,8 @@ public class BizDangerAreaController extends BaseController
     public BizPresetPoint setAxis(Long  areaId  , Long currentPointId, Double meter) {
 
         BizPresetPoint point = new BizPresetPoint();
-        point.setPointId(currentPointId).setMeter(meter).setDangerAreaId(areaId);
+
+        point.setPointId(currentPointId).setMeter(new BigDecimal(meter).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue()).setDangerAreaId(areaId);
 
         BizTravePoint currentPoint = bizTravePointService.getById(currentPointId);
 
@@ -219,8 +223,8 @@ public class BizDangerAreaController extends BaseController
             BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()));
             BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()));
 
-            BigDecimal latMove = latSum.divide(new BigDecimal(currentPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-            BigDecimal lonMove = lonSum.divide(new BigDecimal(currentPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
+            BigDecimal latMove = latSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),BigDecimal.ROUND_HALF_UP).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
+            BigDecimal lonMove = lonSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),BigDecimal.ROUND_HALF_UP).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
 
 
             BigDecimal lat = getAxis(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
@@ -235,8 +239,8 @@ public class BizDangerAreaController extends BaseController
             BigDecimal latMove = latSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
             BigDecimal lonMove = lonSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
 
-            BigDecimal lat = getAxis1(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()),latMove);
-            BigDecimal lon = getAxis1(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()),lonMove);
+            BigDecimal lat = getAxis1(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()),latMove).setScale(8, BigDecimal.ROUND_HALF_UP);
+            BigDecimal lon = getAxis1(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()),lonMove).setScale(8, BigDecimal.ROUND_HALF_UP);
 
             point.setLatitude(lat+"").setLongitude(lon+"");
         }
@@ -264,13 +268,13 @@ public class BizDangerAreaController extends BaseController
 
     public BigDecimal getAxis(BigDecimal axisCurrent, BigDecimal axisPre, BigDecimal move){
         if(axisCurrent.compareTo(axisPre) == 1){
-            return axisCurrent.subtract(move);
+            return axisCurrent.subtract(move).setScale(8, BigDecimal.ROUND_HALF_UP);
         }
         if(axisCurrent.compareTo(axisPre) == -1){
-            return axisCurrent.add(move);
+            return axisCurrent.add(move).setScale(8, BigDecimal.ROUND_HALF_UP);
         }
 
-        return axisCurrent;
+        return axisCurrent.setScale(8, BigDecimal.ROUND_HALF_UP);
     }
 
     public BigDecimal getAxis1(BigDecimal axisCurrent, BigDecimal axisAfter, BigDecimal move){
