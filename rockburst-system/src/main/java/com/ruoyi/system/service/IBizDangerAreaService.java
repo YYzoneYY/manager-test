@@ -28,6 +28,9 @@ public interface IBizDangerAreaService extends MPJDeepService<BizDangerArea>
     public List<BizDangerAreaVo> selectEntityCheckList(BizDangerAreaDto dto);
 
 
+    public List<BizDangerAreaVo> selectEntityListVo(List<Long> areaIdList);
+
+
     public int insertEntity(BizDangerAreaDto dto);
 
 

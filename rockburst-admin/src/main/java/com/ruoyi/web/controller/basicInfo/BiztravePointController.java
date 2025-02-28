@@ -437,6 +437,7 @@ public class BiztravePointController extends BaseController
 
         BizTravePoint entity = new BizTravePoint();
         entity.setPointId(dto.getPointId())
+                .setNo(dto.getNo())
 //                .setDistance(dto.getDistance())
                 .setPrePointDistance(dto.getPrePointDistance());
         QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
@@ -556,7 +557,7 @@ public class BiztravePointController extends BaseController
     {
         //todo 需要校验 是否在计划内
         QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().in(BizProjectRecord::getTravePoint,pointIds);
+        queryWrapper.lambda().in(BizProjectRecord::getTravePointId,pointIds);
         long count = bizProjectRecordService.getBaseMapper().selectCount(queryWrapper);
         Assert.isTrue(count<=0,"已经填报过,不能删除");
         UpdateWrapper<BizTravePoint> updateWrapper = new UpdateWrapper<>();
@@ -576,7 +577,7 @@ public class BiztravePointController extends BaseController
     {
         //todo 需要校验 是否在计划内
         QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(BizProjectRecord::getTravePoint,pointId);
+        queryWrapper.lambda().eq(BizProjectRecord::getTravePointId,pointId);
         long count = bizProjectRecordService.getBaseMapper().selectCount(queryWrapper);
         Assert.isTrue(count<=0,"已经填报过,不能删除");
         BizTravePoint entity = new BizTravePoint();

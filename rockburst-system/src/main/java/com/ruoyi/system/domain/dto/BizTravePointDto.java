@@ -60,9 +60,9 @@ public class BizTravePointDto
     private String axisz;
 
 
-    @ApiModelProperty(value = "状态")
-    @TableField()
-    private Integer status;
+//    @ApiModelProperty(value = "状态")
+//    @TableField()
+//    private Integer status;
 
     @ApiModelProperty(value = "编号")
     @TableField()

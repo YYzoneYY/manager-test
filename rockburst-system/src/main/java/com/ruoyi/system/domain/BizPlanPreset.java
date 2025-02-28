@@ -39,6 +39,9 @@ public class BizPlanPreset extends BaseSelfEntity
     @ApiModelProperty(value = "顶部 预设点位置")
     private String top;
 
+    @ApiModelProperty(value = "危险区id")
+    private Long dangerAreaId;
+
 
 
 }
