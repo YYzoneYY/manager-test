@@ -44,19 +44,22 @@
         mfn.mining_pace as miningPace
         from mining_footage_new mfn
         <where>
-            <if test="startTime != null and endTime == null">
+            <if test="startTime != null">
                 and mfn.mining_time &gt;= #{startTime}
             </if>
-            <if test="startTime == null and endTime != null">
+            <if test="endTime != null">
                 and mfn.mining_time &lt;= #{endTime}
             </if>
             <choose>
-                <when test="pace != null and pace == '0'">
+                <when test="pace == '0'.toString()">
                     and mfn.mining_pace = '0'
                 </when>
-                <when test="pace != null and pace == '1'">
+                <when test="pace == '1'.toString()">
                     and mfn.mining_pace <![CDATA[ <> ]]>'0'
                 </when>
+                <otherwise>
+                    and mfn.del_flag = '0'
+                </otherwise>
             </choose>
             and mfn.del_flag = '0'
             and mfn.workface_id = #{workFaceId}
