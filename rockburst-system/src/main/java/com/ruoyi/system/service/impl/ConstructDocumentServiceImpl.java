@@ -52,6 +52,9 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
      */
     @Override
     public int insertLevel(LevelDTO levelDTO) {
+        if (ObjectUtil.isNull(levelDTO)) {
+            throw new RuntimeException("新增层级失败,参数不能为空！！");
+        }
         Long selectCount = constructDocumentMapper.selectCount(new LambdaQueryWrapper<ConstructDocumentEntity>()
                 .eq(ConstructDocumentEntity::getDocumentName, levelDTO.getLevelName())
                 .ne(ConstructDocumentEntity::getDelFlag, ConstantsInfo.TWO_DEL_FLAG));
@@ -94,6 +97,9 @@ public class ConstructDocumentServiceImpl extends ServiceImpl<ConstructDocumentM
      */
     @Override
     public int updateLevel(LevelDTO levelDTO) {
+        if (ObjectUtil.isNull(levelDTO)) {
+            throw new RuntimeException("修改层级失败,参数不能为空！！");
+        }
         if (ObjectUtil.isEmpty(levelDTO.getDataId())) {
             throw new RuntimeException("主键id不能为空");
         }

@@ -7,4 +7,11 @@
         from biz_trave_point as btp
         where btp.tunnel_id = #{tunnelId} and btp.del_flag = '0'
     </select>
+
+    <!--获取同一巷道，最小的导线点编号-->
+    <select id="selectMinNo" resultType="java.lang.Integer">
+        select ifnull(min(no), 0)
+        from biz_trave_point as btp
+        where btp.tunnel_id = #{tunnelId} and btp.del_flag = '0'
+    </select>
 </mapper>

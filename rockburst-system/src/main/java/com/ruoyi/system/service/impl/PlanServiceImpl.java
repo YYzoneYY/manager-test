@@ -325,7 +325,13 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         PlanEntity entity = new PlanEntity();
         BeanUtils.copyProperties(planEntity, entity);
         entity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
-        flag = planMapper.updateById(entity) > 0 ? "撤回成功" :  "撤回失败,请联系管理员";
+        int update = planMapper.updateById(entity);
+        if (update > 0) {
+            iBizProjectRecordService.deletePlan(planId);
+            flag = "撤回成功";
+        } else {
+            flag = "撤回失败,请联系管理员";
+        }
         return flag;
     }
 
@@ -337,6 +343,15 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         }
         List<Long > planIdList = Arrays.asList(planIds);
         planIdList.forEach(planId -> {
+            PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
+                    .eq(PlanEntity::getPlanId, planId)
+                    .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (planEntity.getState().equals(ConstantsInfo.IN_REVIEW_DICT_VALUE)) {
+                throw new RuntimeException("该计划正在审核中,不能删除");
+            }
+            if (planEntity.getState().equals(ConstantsInfo.AUDITED_DICT_VALUE)) {
+                throw new RuntimeException("该计划已审核通过,不能删除");
+            }
             iBizProjectRecordService.deletePlan(planId);
 //            List<BizProjectRecord> bizProjectRecords = bizProjectRecordMapper.selectList(new LambdaQueryWrapper<BizProjectRecord>()
 //                    .eq(BizProjectRecord::getPlanId, planId)

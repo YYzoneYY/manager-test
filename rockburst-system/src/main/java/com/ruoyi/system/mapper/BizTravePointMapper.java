@@ -21,4 +21,9 @@ public interface BizTravePointMapper extends MPJBaseMapper<BizTravePoint>
      */
     Integer selectMaxNo(@Param("tunnelId") Long tunnelId);
 
+    /**
+     * 获取同一巷道，最小的导线点编号
+     */
+    Integer selectMinNo(@Param("tunnelId") Long tunnelId);
+
 }
