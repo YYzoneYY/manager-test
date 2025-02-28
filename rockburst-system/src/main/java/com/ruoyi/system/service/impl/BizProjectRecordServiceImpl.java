@@ -384,8 +384,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
 
         String detailJson = dto.getDrillRecords().get(0).getDetailJson();
-        dto.getRange();
-        dto.setConstructRange(dto.getRange());
+//        dto.getRange();
+//        dto.setConstructRange(dto.getRange());
         Integer barAngle = 0;
         if(detailJson != null && StrUtil.isNotBlank(detailJson) && !detailJson.equals("[]")){
             JSONArray array = JSONUtil.parseArray(detailJson);
@@ -523,7 +523,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             barAngle = bar.getDirectAngle() + 90 - bear_angle;
         }
 
-        BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getRange()));
+        BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getConstructRange()));
         Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
         if(point != null && point.getPointId() != null){
             BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLatitude(),dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectAngle())).doubleValue(),barAngle);
