@@ -91,6 +91,15 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                 if(dto.getStartPointId() == null || dto.getEndPointId() == null){
                     continue;
                 }
+                List<BizTravePoint> points =  bizTravePointService.getPointByRange(dto.getStartPointId(), dto.getEndPointId());
+                if(points != null && points.size() > 0){
+                    List<Long> pointIds =  points.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
+                    QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.lambda().in(BizPresetPoint::getPointId,pointIds).isNull(BizPresetPoint::getProjectId);
+                    List<BizPresetPoint> xxs = this.getBaseMapper().selectList(queryWrapper);
+                    bizPresetPoints.addAll(xxs);
+                }
+
                 List<BizPresetPoint> startpoints = this.getPrePointByPointMeter(dto.getStartPointId(),dto.getStartMeter(),entity.getDrillType());
                 List<BizPresetPoint> endpoints = this.getPrePointByPointMeter(dto.getEndPointId(),dto.getEndMeter(),entity.getDrillType());
                 if(startpoints != null && !startpoints.isEmpty()){
@@ -106,7 +115,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                         .setDangerAreaId(dto.getDangerAreaId())
                         .setPresetPointId(dto.getPresetPointId())
                         .setBottom(dto.getLongitude()+","+dto.getLatitude())
-                    .setTop(String.join(dto.getLongitudet(),",",dto.getLongitudet()));
+                    .setTop(dto.getLongitudet()+","+dto.getLatitudet());
                 bizPlanPresetMapper.insert(bizPlanPreset);
             }
             return true;
@@ -156,6 +165,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
             QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId)
                     .eq(BizPresetPoint::getMeter,0)
+                    .isNull(BizPresetPoint::getProjectId)
                     .eq(BizPresetPoint::getDrillType,drillType);
             List<BizPresetPoint> list = bizPresetPointMapper.selectList(queryWrapper);
             return list;
@@ -179,6 +189,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
         QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId)
                 .ge(BizPresetPoint::getMeter,meter)
+                .isNull(BizPresetPoint::getProjectId)
                 .eq(BizPresetPoint::getDrillType,drillType);
         List<BizPresetPoint> list = bizPresetPointMapper.selectList(queryWrapper);
         return list;
@@ -198,6 +209,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
             BizPresetPoint point = sssss(tunnelBar.getDirectRange(),tunnelBar.getDirectAngle(),dto);
             point.setTunnelBarId(tunnelBar.getBarId());
             point.setDrillType(dto.getDrillType());
+            point.setWorkfaceId(tunnelBar.getWorkfaceId());
             point.setPresetPointId(null);
             this.save(point);
         }
@@ -206,8 +218,10 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
 
 
     public BizPresetPoint sssss(Double x,Integer jio,BizPresetPoint point){
-        BigDecimal lonMove =  new BigDecimal(Math.sin(Math.toRadians(jio))).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
-        BigDecimal latMove =  new BigDecimal(Math.cos(Math.toRadians(jio))).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
+        double aa = Math.sin(Math.toRadians(jio));
+        double bb = Math.cos(Math.toRadians(jio));
+        BigDecimal lonMove =  new BigDecimal(aa).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
+        BigDecimal latMove =  new BigDecimal(bb).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
         BigDecimal lat =  new BigDecimal(point.getLatitude()).setScale(8, BigDecimal.ROUND_HALF_UP);
         point.setLatitudet(lat.add(latMove)+"");
         point.setLongitudet(new BigDecimal(point.getLongitude()).setScale(8, BigDecimal.ROUND_HALF_UP).add(lonMove)+"");

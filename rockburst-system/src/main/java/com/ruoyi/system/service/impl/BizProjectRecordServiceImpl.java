@@ -393,22 +393,6 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             barAngle = bar.getDirectAngle() + 90 - bear_angle;
         }
 
-        try{
-            BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getConstructRange()));
-            if(point != null && point.getPointId() != null){
-                Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
-                BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLongitude(),dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectAngle())).doubleValue(),barAngle);
-                point.setLongitudet(projectPoint.getLongitudet())
-                        .setLatitudet(projectPoint.getLatitudet())
-                        .setDrillType(dto.getDrillType())
-                        .setTunnelId(dto.getTunnelId())
-                        .setDangerAreaId(dangerAreaId)
-                        .setTunnelBarId(bar.getBarId());
-                bizPresetPointMapper.insert(point);
-            }
-        }catch (Exception e){
-            log.error(e.getMessage());
-        }
 
 
 
@@ -426,6 +410,29 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());
          this.getBaseMapper().insert(entity);
+
+
+
+        try{
+            BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getConstructRange()));
+            if(point != null && point.getPointId() != null){
+                Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
+                Double ddd = dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectRange())).doubleValue();
+                BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLongitude(),ddd,barAngle);
+                point.setLongitudet(projectPoint.getLongitudet())
+                        .setLatitudet(projectPoint.getLatitudet())
+                        .setDrillType(dto.getDrillType())
+                        .setTunnelId(dto.getTunnelId())
+                        .setWorkfaceId(dto.getWorkfaceId())
+                        .setProjectId(entity.getProjectId())
+                        .setDangerAreaId(dangerAreaId)
+                        .setTunnelBarId(bar.getBarId());
+                bizPresetPointMapper.insert(point);
+            }
+        }catch (Exception e){
+            log.error(e.getMessage());
+        }
+
 
         if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
             IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {

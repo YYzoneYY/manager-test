@@ -114,7 +114,7 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
                 .selectAll(BizDangerArea.class)
                 .selectAssociation(BizDangerLevel.class, BizDangerAreaVo::getBizDangerLevel)
                 .leftJoin(BizDangerLevel.class,BizDangerLevel::getLevel,BizDangerArea::getLevel)
-                .in(BizDangerArea::getDangerAreaId,areaIdList);
+                .in(areaIdList != null && areaIdList.size() > 0 , BizDangerArea::getDangerAreaId,areaIdList);
         List<BizDangerAreaVo> list = bizDangerAreaMapper.selectJoinList(BizDangerAreaVo.class,queryWrapper2);
         return list;
     }

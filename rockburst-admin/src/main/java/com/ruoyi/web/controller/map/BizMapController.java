@@ -13,9 +13,7 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
 import com.ruoyi.system.domain.vo.BizDangerAreaVo;
 import com.ruoyi.system.domain.vo.BizWorkfaceSvgVo;
-import com.ruoyi.system.mapper.BizPlanPresetMapper;
-import com.ruoyi.system.mapper.BizPresetPointMapper;
-import com.ruoyi.system.mapper.BizWorkfaceMapper;
+import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,9 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -87,7 +83,41 @@ public class BizMapController extends BaseController
     private TunnelService tunnelService;
 
     @Resource
+    private IBizTravePointService bizTravePointService;
+
+    @Resource
     private IBizTunnelBarService bizTunnelBarService;
+    @Autowired
+    private BizTravePointMapper bizTravePointMapper;
+    @Autowired
+    private BizDangerLevelMapper bizDangerLevelMapper;
+
+    @ApiOperation("给起始和结束")
+    @GetMapping("/xxxxxx")
+    public R<?> xxxxxx(@RequestParam(required = false) Long startPointId,
+                                     @RequestParam(required = false) Double startMeter,
+                                     @RequestParam(required = false) Long endPointId,
+                                     @RequestParam(required = false) Double endMeter)
+    {
+        BizPresetPoint points =  bizTravePointService.getPointLatLon(startPointId,startMeter);
+        BizPresetPoint pointe = bizTravePointService.getPointLatLon(endPointId,endMeter);
+        Map<String, Object> map = new HashMap<>();
+        map.put("points", points);
+        map.put("pointe", pointe);
+        return R.ok(map);
+    }
+
+
+
+
+    @ApiOperation("查询字典")
+    @GetMapping("/dictDataList")
+    public R<List<SysDictData>> list(SysDictData dictData)
+    {
+
+        List<SysDictData> list = sysDictDataService.selectDictDataList(dictData);
+        return R.ok(list);
+    }
 
 
 
@@ -105,6 +135,14 @@ public class BizMapController extends BaseController
     public R<BizMine> getMineDetail(@PathVariable("mineId") Long mineId)
     {
         return R.ok(bizMineService.getById(mineId));
+    }
+
+    @ApiOperation("查询危险等级")
+    @GetMapping("/getLevel")
+    public R<List<BizDangerLevel>> getLevel()
+    {
+        QueryWrapper<BizDangerLevel> queryWrapper = new QueryWrapper<>();
+        return R.ok(bizDangerLevelMapper.selectList(new QueryWrapper<BizDangerLevel>().lambda()));
     }
 
     @ApiOperation("查询采区")
@@ -238,11 +276,91 @@ public class BizMapController extends BaseController
     }
 
 
+    @ApiOperation("三合一")
+    @GetMapping("/getshy")
+    public R<Map<String,Object>> getshy(@RequestParam( required = false) String year,
+                                        @RequestParam( required = false) String month,
+                                        @RequestParam( required = false) Long workfaceId,
+                                        @RequestParam(required = false) String drillType)
+    {
+
+        Map<String,Object> map = new HashMap<>();
+
+        Date start = null;
+        Date end = null;
+        if( StrUtil.isNotBlank(month)){
+            start = getStart(year, month);
+            end = getEnd(year, month);
+        }
+        QueryWrapper<BizPresetPoint> queryWrapperPro = new QueryWrapper<>();
+        queryWrapperPro.lambda().eq(BizPresetPoint::getDrillType,drillType)
+                .eq(BizPresetPoint::getWorkfaceId,workfaceId)
+                .isNotNull(BizPresetPoint::getProjectId)
+                .between(end != null, BizPresetPoint::getCreateTime,start,end);
+        List<BizPresetPoint> points = bizPresetPointMapper.selectList(queryWrapperPro);
+
+        map.put("ProjectPoints",points);
+        Long startc;
+        Long endc;
+        if( StrUtil.isNotBlank(month)){
+            startc = getStart(year, month).getTime();
+            endc = getEnd(year, month).getTime();
+        } else {
+            endc = 0l;
+            startc = 0l;
+        }
+
+        QueryWrapper<PlanEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().select(PlanEntity::getPlanId,PlanEntity::getPlanName,PlanEntity::getType)
+                .eq(StrUtil.isNotEmpty(year),PlanEntity::getAnnual,year)
+                .eq(PlanEntity::getWorkFaceId,workfaceId)
+                .eq(StrUtil.isNotEmpty(drillType),PlanEntity::getDrillType,drillType)
+                .and(StrUtil.isNotBlank(month),i->i.ge(PlanEntity::getStartTime,startc).or().le(PlanEntity::getStartTime,endc))
+                .and(StrUtil.isNotBlank(month),i->i.ge(PlanEntity::getEndTime,startc).or().le(PlanEntity::getEndTime,endc));
+        List<PlanEntity> planEntities = planService.list(queryWrapper);
+        List<Long> dangerAreaIds = new ArrayList<>();
+        if(planEntities != null && planEntities.size() > 0) {
+            for (PlanEntity planEntity : planEntities) {
+                QueryWrapper<BizPlanPreset> queryWrapper1 = new QueryWrapper<>();
+                queryWrapper1.lambda().eq(BizPlanPreset::getPlanId, planEntity.getPlanId());
+                List<BizPlanPreset> planPresets = bizPlanPresetMapper.selectList(queryWrapper1);
+                List<Long> areaIds = new ArrayList<>();
+                if (planPresets != null && planPresets.size() > 0) {
+                    areaIds = planPresets.stream().map(BizPlanPreset::getDangerAreaId).collect(Collectors.toList());
+                    areaIds = areaIds.stream().distinct().collect(Collectors.toList());
+                    dangerAreaIds.addAll(areaIds);
+                }
+            }
+            dangerAreaIds.stream().distinct().collect(Collectors.toList());
+            QueryWrapper<BizDangerArea> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.lambda().in(dangerAreaIds != null && dangerAreaIds.size() >0, BizDangerArea::getDangerAreaId, dangerAreaIds);
+            List<BizDangerAreaVo> areas = bizDangerAreaService.selectEntityListVo(dangerAreaIds);
+            map.put("areas",areas);
+        }
+
+
+        List<BizPlanPreset> vo1s = new ArrayList<>();
+        //循环计划
+        if(planEntities != null && planEntities.size() > 0){
+            for (PlanEntity planEntity : planEntities) {
+                QueryWrapper<BizPlanPreset> queryWrapper1 = new QueryWrapper<>();
+                queryWrapper1.lambda().eq(BizPlanPreset::getPlanId,planEntity.getPlanId());
+                List<BizPlanPreset> planPresets = bizPlanPresetMapper.selectList(queryWrapper1);
+                vo1s.addAll(planPresets);
+            }
+            map.put("planPrePoint",vo1s);
+        }
+
+
+        return R.ok(map);
+    }
+
+
     @ApiOperation("根据条件查询填报孔")
     @GetMapping("/getProjectByWorkface")
-    public R<List<BizPresetPoint>> getProjectBy(@RequestParam(value = "年份", required = false) String year,
-                                                @RequestParam(value = "月度", required = false) String month,
-                                                @RequestParam(value = "施工钻孔类型", required = false) String drillType)
+    public R<List<BizPresetPoint>> getProjectBy(@RequestParam( required = false) String year,
+                                                @RequestParam( required = false) String month,
+                                                @RequestParam( required = false) String drillType)
     {
         Date start = null;
         Date end = null;
@@ -258,9 +376,9 @@ public class BizMapController extends BaseController
 
     @ApiOperation("根据危险等级和工作面id查询危险区域")
     @GetMapping("/getAreaByWorkface")
-    public R<List<BizDangerAreaVo>> getAreaByWorkface(@RequestParam(value = "年份", required = false) String year,
-                                                      @RequestParam(value = "月度", required = false) String month,
-                                                      @RequestParam(value = "施工钻孔类型", required = false) String drillType)
+    public R<List<BizDangerAreaVo>> getAreaByWorkface(@RequestParam( required = false) String year,
+                                                      @RequestParam( required = false) String month,
+                                                      @RequestParam(required = false) String drillType)
     {
         Long start;
         Long end;
@@ -303,9 +421,9 @@ public class BizMapController extends BaseController
 
     @ApiOperation("根据计划筛选预设点")
     @GetMapping("/getPrePointByPlan")
-    public R getPrePointByPlan(@RequestParam(value = "年份", required = false) String year,
-                               @RequestParam(value = "月度", required = false) String month,
-                               @RequestParam(value = "施工钻孔类型", required = false) String drillType)
+    public R getPrePointByPlan(@RequestParam( required = false) String year,
+                               @RequestParam( required = false) String month,
+                               @RequestParam( required = false) String drillType)
     {
 
         Long start;

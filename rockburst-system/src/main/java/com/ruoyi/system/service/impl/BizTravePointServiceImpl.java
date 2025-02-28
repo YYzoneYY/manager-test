@@ -74,7 +74,7 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
     @Override
     public List<BizTravePoint> getPointByRange(Long startPointId, Long endPoinId) {
        BizTravePoint start =  this.getById(startPointId);
-       BizTravePoint end =  this.getById(startPointId);
+       BizTravePoint end =  this.getById(endPoinId);
         QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .eq(BizTravePoint::getTunnelId,start.getTunnelId())

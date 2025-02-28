@@ -37,6 +37,10 @@ public class BizPresetPoint extends BaseSelfEntity
     private Long dangerAreaId;
 
 
+    @ApiModelProperty(value = "工作面id")
+    private Long workfaceId;
+
+
     @ApiModelProperty(value = "实际位置 导线点")
     private Long pointId;
 
@@ -54,6 +58,10 @@ public class BizPresetPoint extends BaseSelfEntity
 
     @ApiModelProperty(value = "经度")
     private String longitude;
+
+    @ApiModelProperty(value = "工程id")
+    private Long projectId;
+
 
 
 
