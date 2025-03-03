@@ -37,10 +37,16 @@ logging:
     com.ruoyi: debug
     org.springframework: warn
 # Minio配置
+#minio:
+#  endpoint: ${miniourl:http://47.92.215.128:19000}
+#  accessKey: ${minioakey:9nLLPYeJs3CX1jj3GC1r}
+#  secretKey: ${minioskey:finms5hOxZXwc6ZfUfVV5qPpfazIRNibN7PH1erG}
+#  defaultBucketName: ${miniobname:bust-dev} #存储桶名称
+# Minio配置
 minio:
-  endpoint: ${miniourl:http://47.92.215.128:19000}
-  accessKey: ${minioakey:9nLLPYeJs3CX1jj3GC1r}
-  secretKey: ${minioskey:finms5hOxZXwc6ZfUfVV5qPpfazIRNibN7PH1erG}
+  endpoint: ${miniourl:http://192.168.31.156:19000}
+  accessKey: ${minioakey:7j3Lp24xhAH4zyldjV7J}
+  secretKey: ${minioskey:vEl3H4Ekld96ZHWYu2wVzOOIGSnCHIGWpL4fpVOW}
   defaultBucketName: ${miniobname:bust-dev} #存储桶名称
 
 #MQTT配置信息
@@ -76,7 +82,7 @@ spring:
     # 国际化资源文件路径
     basename: i18n/messages
   profiles:
-    active: druid
+    active: ys
   # 文件上传
   servlet:
     multipart:

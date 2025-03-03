@@ -130,50 +130,57 @@ public class BizDangerAreaController extends BaseController
 
     public void initAreaPrePoint1(Long areaId,Long tunnelId,String drillType){
         BizDangerArea dangerArea =  bizDangerAreaService.getByIdDeep(areaId);
+
+        BizPresetPoint pointstart = new BizPresetPoint();
+        pointstart = setAxis(areaId,dangerArea.getStartPointId(),dangerArea.getStartMeter());
+        pointstart.setDrillType(drillType);
+//        sssss(x,jio,point);
+        bizPresetPointService.savebarPresetPoint(pointstart);
+
         BizPresetPoint point = ooo(areaId,dangerArea.getStartPointId(),dangerArea.getStartMeter(),dangerArea.getDangerLevel().getSpaced(),drillType);
     }
 
-    public void initAreaPrePoint(Long areaId,Long tunnelId){
-        //获取当前区域
-        //获取当前区域的起始导线点 加 距离  ( 规定规则, 一定为 导线点 前 n 米)
-        BizDangerArea dangerArea =  bizDangerAreaService.getByIdDeep(areaId);
-        BizPresetPoint point = bizTravePointService.getPresetPoint(dangerArea.getStartPointId(),dangerArea.getStartMeter(),dangerArea.getDangerLevel().getSpaced());
-        point.setDangerAreaId(areaId).setTunnelId(tunnelId);
-
-        BizTravePoint currentPoint = bizTravePointService.getById(point.getPointId());
-
-        BizTravePoint prePoint = bizTravePointService.getPrePoint(point.getPointId());
-        BizTravePoint afterPoint = bizTravePointService.getNextPoint(point.getPointId());
-
-        //存在前一个导线点的情况
-        if(prePoint != null && prePoint.getPointId() != null){
-            //计算 坐标
-            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()));
-            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()));
-
-            BigDecimal latMove = latSum.divide(new BigDecimal(currentPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-            BigDecimal lonMove = lonSum.divide(new BigDecimal(currentPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-
-
-            BigDecimal lat = getAxis(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
-            BigDecimal lon = getAxis(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()),lonMove);
-
-            point.setLatitude(lat+"").setLongitude(lon+"");
-        }else if(afterPoint != null && afterPoint.getPointId() != null){
-
-            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()));
-            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()));
-
-            BigDecimal latMove = latSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-            BigDecimal lonMove = lonSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-
-            BigDecimal lat = getAxis1(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
-            BigDecimal lon = getAxis1(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()),lonMove);
-
-            point.setLatitude(lat+"").setLongitude(lon+"");
-        }
-
-    }
+//    public void initAreaPrePoint(Long areaId,Long tunnelId){
+//        //获取当前区域
+//        //获取当前区域的起始导线点 加 距离  ( 规定规则, 一定为 导线点 前 n 米)
+//        BizDangerArea dangerArea =  bizDangerAreaService.getByIdDeep(areaId);
+//        BizPresetPoint point = bizTravePointService.getPresetPoint(dangerArea.getStartPointId(),dangerArea.getStartMeter(),dangerArea.getDangerLevel().getSpaced());
+//        point.setDangerAreaId(areaId).setTunnelId(tunnelId);
+//
+//        BizTravePoint currentPoint = bizTravePointService.getById(point.getPointId());
+//
+//        BizTravePoint prePoint = bizTravePointService.getPrePoint(point.getPointId());
+//        BizTravePoint afterPoint = bizTravePointService.getNextPoint(point.getPointId());
+//
+//        //存在前一个导线点的情况
+//        if(prePoint != null && prePoint.getPointId() != null){
+//            //计算 坐标
+//            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()));
+//            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()));
+//
+//            BigDecimal latMove = latSum.divide(new BigDecimal(currentPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
+//            BigDecimal lonMove = lonSum.divide(new BigDecimal(currentPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
+//
+//
+//            BigDecimal lat = getAxis(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
+//            BigDecimal lon = getAxis(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()),lonMove);
+//
+//            point.setLatitude(lat+"").setLongitude(lon+"");
+//        }else if(afterPoint != null && afterPoint.getPointId() != null){
+//
+//            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()));
+//            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()));
+//
+//            BigDecimal latMove = latSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
+//            BigDecimal lonMove = lonSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
+//
+//            BigDecimal lat = getAxis1(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
+//            BigDecimal lon = getAxis1(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()),lonMove);
+//
+//            point.setLatitude(lat+"").setLongitude(lon+"");
+//        }
+//
+//    }
 
     public void init(Long areaId,Long tunnelId){
 
@@ -187,6 +194,9 @@ public class BizDangerAreaController extends BaseController
         BizPresetPoint point = bizTravePointService.getPresetPoint(id,meter,spaced);
         if(  point == null){
             return null;
+        }
+        if(point.getPointId() == 113){
+            System.out.println("point = " + point);
         }
         Long inAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
         //超出危险区 或者 后面没有导线点了
@@ -223,26 +233,32 @@ public class BizDangerAreaController extends BaseController
             BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()));
             BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()));
 
-            BigDecimal latMove = latSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),BigDecimal.ROUND_HALF_UP).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-            BigDecimal lonMove = lonSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),BigDecimal.ROUND_HALF_UP).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
+
+            BigDecimal latshang = latSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
+            BigDecimal lonshang = lonSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
+            BigDecimal latMove = latshang.multiply(new BigDecimal(point.getMeter()).abs());
+            BigDecimal lonMove = lonshang.multiply(new BigDecimal(point.getMeter()).abs());
 
 
             BigDecimal lat = getAxis(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
             BigDecimal lon = getAxis(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()),lonMove);
 
             point.setLatitude(lat+"").setLongitude(lon+"");
+            return point;
         }else if(afterPoint != null && afterPoint.getPointId() != null){
 
             BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()));
             BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()));
+            BigDecimal latshang = latSum.divide(new BigDecimal(afterPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
+            BigDecimal lonshang = lonSum.divide(new BigDecimal(afterPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
+            BigDecimal latMove = latshang.multiply(new BigDecimal(point.getMeter()).abs());
+            BigDecimal lonMove = lonshang.multiply(new BigDecimal(point.getMeter()).abs());
 
-            BigDecimal latMove = latSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-            BigDecimal lonMove = lonSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-
-            BigDecimal lat = getAxis1(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()),latMove).setScale(8, BigDecimal.ROUND_HALF_UP);
-            BigDecimal lon = getAxis1(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()),lonMove).setScale(8, BigDecimal.ROUND_HALF_UP);
+            BigDecimal lat = getAxis1(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()),latMove).setScale(10, BigDecimal.ROUND_DOWN);
+            BigDecimal lon = getAxis1(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()),lonMove).setScale(10, BigDecimal.ROUND_DOWN);
 
             point.setLatitude(lat+"").setLongitude(lon+"");
+            return point;
         }
         return point;
     }
@@ -268,21 +284,21 @@ public class BizDangerAreaController extends BaseController
 
     public BigDecimal getAxis(BigDecimal axisCurrent, BigDecimal axisPre, BigDecimal move){
         if(axisCurrent.compareTo(axisPre) == 1){
-            return axisCurrent.subtract(move).setScale(8, BigDecimal.ROUND_HALF_UP);
+            return axisCurrent.subtract(move).setScale(10, BigDecimal.ROUND_DOWN);
         }
         if(axisCurrent.compareTo(axisPre) == -1){
-            return axisCurrent.add(move).setScale(8, BigDecimal.ROUND_HALF_UP);
+            return axisCurrent.add(move).setScale(10, BigDecimal.ROUND_DOWN);
         }
 
-        return axisCurrent.setScale(8, BigDecimal.ROUND_HALF_UP);
+        return axisCurrent.setScale(10, BigDecimal.ROUND_DOWN);
     }
 
     public BigDecimal getAxis1(BigDecimal axisCurrent, BigDecimal axisAfter, BigDecimal move){
         if(axisAfter.compareTo(axisCurrent) == 1){
-            return axisCurrent.subtract(move);
+            return axisCurrent.subtract(move).setScale(10, BigDecimal.ROUND_DOWN);
         }
         if(axisAfter.compareTo(axisCurrent) == -1){
-            return axisCurrent.add(move);
+            return axisCurrent.add(move).setScale(10, BigDecimal.ROUND_DOWN);
         }
 
         return axisCurrent;

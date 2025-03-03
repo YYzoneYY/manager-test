@@ -288,27 +288,24 @@ public class BizMapController extends BaseController
 
         Date start = null;
         Date end = null;
-        if( StrUtil.isNotBlank(month)){
-            start = getStart(year, month);
-            end = getEnd(year, month);
-        }
+
+        start = getStart(year, month);
+        end = getEnd(year, month);
+
         QueryWrapper<BizPresetPoint> queryWrapperPro = new QueryWrapper<>();
         queryWrapperPro.lambda().eq(BizPresetPoint::getDrillType,drillType)
                 .eq(BizPresetPoint::getWorkfaceId,workfaceId)
                 .isNotNull(BizPresetPoint::getProjectId)
-                .between(end != null, BizPresetPoint::getCreateTime,start,end);
+                .between(end != null, BizPresetPoint::getConstructTime,start,end);
         List<BizPresetPoint> points = bizPresetPointMapper.selectList(queryWrapperPro);
 
         map.put("ProjectPoints",points);
         Long startc;
         Long endc;
-        if( StrUtil.isNotBlank(month)){
-            startc = getStart(year, month).getTime();
-            endc = getEnd(year, month).getTime();
-        } else {
-            endc = 0l;
-            startc = 0l;
-        }
+
+        startc = getStart(year, month).getTime();
+        endc = getEnd(year, month).getTime();
+
 
         QueryWrapper<PlanEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().select(PlanEntity::getPlanId,PlanEntity::getPlanName,PlanEntity::getType)
@@ -459,17 +456,25 @@ public class BizMapController extends BaseController
 
     Date getStart(String year,String month){
         String label = sysDictDataService.selectDictLabel("year",year);
-        Date startDate = DateUtil.beginOfMonth(DateUtil.parse(label + "-" + month + "-01"));
-        return startDate;
-        // 获取指定年份和月份的结束时间（当月的最后一天）
+
+        if (month == null) {
+            Date startDate = DateUtil.beginOfYear(DateUtil.parse(label + "-01-01"));
+            return startDate;
+        } else {
+            Date startDate = DateUtil.beginOfMonth(DateUtil.parse(label + "-" + month + "-01"));
+            return startDate;
+        }
     }
 
-    Date getEnd(String year,String month){
-        String label = sysDictDataService.selectDictLabel("year",year);
-
-        Date endDate = DateUtil.endOfMonth(DateUtil.parse(label + "-" + month + "-01"));
-        return endDate;
-        // 获取指定年份和月份的结束时间（当月的最后一天）
+    Date getEnd(String year, String month) {
+        String label = sysDictDataService.selectDictLabel("year", year);
+        if (month == null) {
+            Date endDate = DateUtil.endOfYear(DateUtil.parse(label + "-12-31"));
+            return endDate;
+        } else {
+            Date endDate = DateUtil.endOfMonth(DateUtil.parse(label + "-" + month + "-01"));
+            return endDate;
+        }
     }
 
 

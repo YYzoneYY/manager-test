@@ -1,5 +1,6 @@
 package com.ruoyi.system.domain;
 
+import com.alibaba.fastjson2.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
@@ -8,6 +9,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+
+import java.util.Date;
 
 /**
  * 矿井危险区对象 BizDangerArea
@@ -63,7 +66,10 @@ public class BizPresetPoint extends BaseSelfEntity
     private Long projectId;
 
 
-
+    @JSONField(
+            format = "yyyy-MM-dd"
+    )
+    private Date constructTime;
 
     @ApiModelProperty(value = "纬度T")
     private String latitudet;

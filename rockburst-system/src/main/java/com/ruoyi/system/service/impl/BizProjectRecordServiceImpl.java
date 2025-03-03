@@ -409,7 +409,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             entity.setConstructionUnitId(sysDepts.get(0).getConstructionUnitId());
         }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());
+        if(entity.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_J)){
+            entity.setLocationId(entity.getTunnelId());
+        }
+        if(entity.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
+            entity.setLocationId(entity.getWorkfaceId());
+        }
          this.getBaseMapper().insert(entity);
+
 
 
 
@@ -420,6 +427,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 Double ddd = dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectRange())).doubleValue();
                 BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLongitude(),ddd,barAngle);
                 point.setLongitudet(projectPoint.getLongitudet())
+                        .setConstructTime(dto.getConstructTime())
                         .setLatitudet(projectPoint.getLatitudet())
                         .setDrillType(dto.getDrillType())
                         .setTunnelId(dto.getTunnelId())
@@ -744,7 +752,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .in(BizProjectRecord::getTunnelId,tunnelIds)
                 .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
                 .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
-                .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_J)
+//                .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_J)
                 .innerJoin(BizDrillRecord.class, BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId);
         List<BizProjectCDMAP> cdmaps = bizProjectRecordMapper.selectJoinList(BizProjectCDMAP.class,projectRecordQueryWrapper);
