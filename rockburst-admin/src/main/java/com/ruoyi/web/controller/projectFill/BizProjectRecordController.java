@@ -2,6 +2,7 @@ package com.ruoyi.web.controller.projectFill;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.annotation.Anonymous;
@@ -12,6 +13,8 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.system.constant.BizBaseConstant;
+import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
@@ -20,16 +23,14 @@ import com.ruoyi.system.domain.dto.BizProjectRecordDto;
 import com.ruoyi.system.domain.dto.project.BizProjectPlanDto;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
-import com.ruoyi.system.service.IBizDrillRecordService;
-import com.ruoyi.system.service.IBizProjectRecordService;
-import com.ruoyi.system.service.IBizVideoService;
-import com.ruoyi.system.service.PlanService;
+import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -53,6 +54,9 @@ public class BizProjectRecordController extends BaseController
 
     @Autowired
     private PlanService planService;
+
+    @Autowired
+    private IBizPresetPointService bizPresetPointService;
 
     /**
      * 查询工程填报记录列表
@@ -165,6 +169,12 @@ public class BizProjectRecordController extends BaseController
     @DeleteMapping("/one/{projectId}")
     public R<?> removeById(@PathVariable Long projectId)
     {
+        BizProjectRecord record =  bizProjectRecordService.getById(projectId);
+        Assert.isTrue(record.getStatus() == 1 || record.getStatus() == 4, "该状态下不能删除");
+        UpdateWrapper<BizPresetPoint> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(BizPresetPoint::getDelFlag, BizBaseConstant.DELFLAG_Y)
+                .eq(BizPresetPoint::getProjectId,projectId);
+        bizPresetPointService.update(updateWrapper);
         return R.ok(bizProjectRecordService.removeByProId(projectId));
     }
 
@@ -178,7 +188,14 @@ public class BizProjectRecordController extends BaseController
 	@DeleteMapping("/{projectIds}")
     public R<?> remove(@PathVariable Long[] projectIds)
     {
-
+        for (Long projectId : projectIds) {
+            BizProjectRecord record =  bizProjectRecordService.getById(projectId);
+            Assert.isTrue(record.getStatus() == 1 || record.getStatus() == 4, "该状态下不能删除");
+        }
+        UpdateWrapper<BizPresetPoint> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(BizPresetPoint::getDelFlag, BizBaseConstant.DELFLAG_Y)
+                        .in(BizPresetPoint::getProjectId,projectIds);
+        bizPresetPointService.update(updateWrapper);
         return R.ok(bizProjectRecordService.removeByProIds(projectIds));
     }
 
