@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.map;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -12,6 +13,7 @@ import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
 import com.ruoyi.system.domain.vo.BizDangerAreaVo;
+import com.ruoyi.system.domain.vo.BizPresetPointVo;
 import com.ruoyi.system.domain.vo.BizWorkfaceSvgVo;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
@@ -293,13 +295,44 @@ public class BizMapController extends BaseController
         end = getEnd(year, month);
 
         QueryWrapper<BizPresetPoint> queryWrapperPro = new QueryWrapper<>();
-        queryWrapperPro.lambda().eq(BizPresetPoint::getDrillType,drillType)
+        queryWrapperPro.lambda()
+                .eq(BizPresetPoint::getDrillType,drillType)
                 .eq(BizPresetPoint::getWorkfaceId,workfaceId)
                 .isNotNull(BizPresetPoint::getProjectId)
                 .between(end != null, BizPresetPoint::getConstructTime,start,end);
         List<BizPresetPoint> points = bizPresetPointMapper.selectList(queryWrapperPro);
+        List<BizPresetPointVo> vos = new ArrayList<>();
 
-        map.put("ProjectPoints",points);
+        if(points != null && points.size() > 0){
+            List<Long> projectIds = points.stream().map(BizPresetPoint::getProjectId).collect(Collectors.toList());
+            QueryWrapper<BizProjectRecord> projectRecordQueryWrapper = new QueryWrapper<>();
+            List<BizProjectRecord> records = bizProjectRecordService.listByIdsDeep(projectIds);
+
+            final Map<Long, List<BizProjectRecord>>[] groupedByProjectId = new Map[]{records.stream()
+                    .collect(Collectors.groupingBy(BizProjectRecord::getProjectId))};
+            for (BizPresetPoint point : points) {
+                BizPresetPointVo pointVo = new BizPresetPointVo();
+                BeanUtil.copyProperties(point,pointVo);
+                List<BizProjectRecord> projectRecords =  groupedByProjectId[0].get(point.getProjectId());
+                if(projectRecords != null && projectRecords.size() > 0){
+                    BizProjectRecord projectRecord = projectRecords.get(0);
+                    pointVo.setAccepter(projectRecord.getAccepterEntity() == null ? "" : projectRecord.getAccepterEntity().getName())
+                            .setBigbanger(projectRecord.getBigbangerEntity() == null ? "" : projectRecord.getBigbangerEntity().getName())
+                            .setProjecrHeader(projectRecord.getProjecrHeaderEntity() == null ? "" : projectRecord.getProjecrHeaderEntity().getName())
+                            .setSecurityer(projectRecord.getSecurityerEntity() == null ? "" : projectRecord.getSecurityerEntity().getName())
+                            .setWorker(projectRecord.getWorkerEntity() == null ? "" : projectRecord.getWorkerEntity().getName())
+                            .setConstructionUnit(projectRecord.getConstructionUnit() == null ? "" : projectRecord.getConstructionUnit().getConstructionUnitName())
+                            .setWorkfaceName(projectRecord.getWorkfaceName())
+                            .setTunnelName(projectRecord.getTunnelName())
+                            .setPointName(projectRecord.getTravePoint() == null ? "" : projectRecord.getTravePoint().getPointName())
+                            .setDrillNum(projectRecord.getDrillNum());
+                    vos.add(pointVo);
+                }
+
+            }
+        }
+
+        map.put("ProjectPoints",vos);
         Long startc;
         Long endc;
 
@@ -312,8 +345,7 @@ public class BizMapController extends BaseController
                 .eq(StrUtil.isNotEmpty(year),PlanEntity::getAnnual,year)
                 .eq(PlanEntity::getWorkFaceId,workfaceId)
                 .eq(StrUtil.isNotEmpty(drillType),PlanEntity::getDrillType,drillType)
-                .and(StrUtil.isNotBlank(month),i->i.ge(PlanEntity::getStartTime,startc).or().le(PlanEntity::getStartTime,endc))
-                .and(StrUtil.isNotBlank(month),i->i.ge(PlanEntity::getEndTime,startc).or().le(PlanEntity::getEndTime,endc));
+                .and(StrUtil.isNotBlank(month),i->i.le(PlanEntity::getStartTime,endc).ge(PlanEntity::getEndTime,startc));
         List<PlanEntity> planEntities = planService.list(queryWrapper);
         List<Long> dangerAreaIds = new ArrayList<>();
         if(planEntities != null && planEntities.size() > 0) {

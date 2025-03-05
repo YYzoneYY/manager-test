@@ -1,7 +1,6 @@
 package com.ruoyi.system.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
 import io.swagger.annotations.ApiModel;
@@ -20,25 +19,21 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @Accessors(chain = true)
-@ApiModel("矿井危险区对象")
-public class BizTunnelBar extends BaseSelfEntity
+@ApiModel("云图影响因素")
+public class YtFactor extends BaseSelfEntity
 {
     private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
-    private Long barId;
+    private Long factorId;
 
-    @ApiModelProperty(value = "类型")
-    private String type;
 
     @ApiModelProperty(value = "名称")
-    private String barName;
+    private String name;
 
-    @ApiModelProperty(value = "工作面id")
-    private Long workfaceId;
+    @ApiModelProperty(value = "类型")
+    private String factorType;
 
-    @ApiModelProperty(value = "巷道id")
-    private Long tunnelId;
 
     @ApiModelProperty(value = "开始导线点")
     private Long startPointId;
@@ -52,25 +47,9 @@ public class BizTunnelBar extends BaseSelfEntity
     @ApiModelProperty(value = "结束导线点前后距离")
     private Double endMeter;
 
-    @ApiModelProperty(value = "预设孔方向角度")
-    private Integer directAngle;
 
-    @ApiModelProperty(value = "钻孔孔方向距离")
-    private Double directRange;
-
-    @ApiModelProperty(value = "预设孔方向距离")
-    private Double directRangePre;
-
-    @ApiModelProperty(value = "svg")
-    @TableField()
-    private String svg;
-
-    @ApiModelProperty(value = "中心点")
-    @TableField()
-    private String center;
-
-    @ApiModelProperty(value = "原始位置")
-    private String source;
+    @ApiModelProperty(value = "值")
+    private Integer value;
 
 
 
