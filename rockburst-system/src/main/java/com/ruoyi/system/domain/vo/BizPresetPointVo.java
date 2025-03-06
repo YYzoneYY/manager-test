@@ -1,4 +1,4 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.system.domain.vo;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -22,8 +22,8 @@ import java.util.Date;
 @Getter
 @Setter
 @Accessors(chain = true)
-@ApiModel("矿井危险区对象")
-public class BizPresetPoint extends BaseSelfEntity
+@ApiModel("导线点悬浮")
+public class BizPresetPointVo extends BaseSelfEntity
 {
     private static final long serialVersionUID = 1L;
 
@@ -79,5 +79,45 @@ public class BizPresetPoint extends BaseSelfEntity
 
 
 
+    @ApiModelProperty(value = "施工队")
+    private String constructionUnit;
+
+    @ApiModelProperty(value = "掘进回采")
+    private String constructType;
+
+
+
+
+
+    @ApiModelProperty(value = "工作面")
+    private String workfaceName;
+    @ApiModelProperty(value = "巷道")
+    private String tunnelName;
+    @ApiModelProperty(value = "导线点")
+    private String pointName;
+
+    @ApiModelProperty(value = "钻孔编号")
+    private String drillNum;
+
+    @ApiModelProperty(value = "实际深度")
+    private String realDeep;
+
+    @ApiModelProperty(value = "计划深度")
+    private String planDeep;
+
+    @ApiModelProperty(value = "施工员")
+    private String worker;
+
+    @ApiModelProperty(value = "施工负责人")
+    private String projecrHeader;
+
+    @ApiModelProperty(value = "安检员")
+    private String securityer;
+
+    @ApiModelProperty(value = "爆破员")
+    private String bigbanger;
+
+    @ApiModelProperty(value = "验收员")
+    private String accepter;
 
 }

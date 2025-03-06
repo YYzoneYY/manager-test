@@ -204,15 +204,10 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
             List<Long> pointIds = new ArrayList<>();
             if (list2 != null && list2.size() > 0) {
                 pointIds = list2.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
-            }
-
-            if (dto.getStartMeter() >= 0) {
                 pointIds.remove(dto.getStartPointId());
-            }
-
-            if (dto.getStartMeter() <= 0) {
                 pointIds.remove(dto.getEndPointId());
             }
+
 
             bizDangerArea.setPointlist(String.join(",", pointIds.stream()
                     .map(Object::toString)

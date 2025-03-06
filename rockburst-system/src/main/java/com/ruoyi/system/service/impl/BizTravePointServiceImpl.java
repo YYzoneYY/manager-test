@@ -95,24 +95,50 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
             return points.get(0).getDangerAreaId();
         }
         queryWrapper.clear();
+
+        queryWrapper.lambda().eq(BizDangerArea::getEndPointId,pointId);
+        List<BizDangerArea> endPoints = bizDangerAreaMapper.selectList(queryWrapper);
+
+        BigDecimal meterBigDecimal = new BigDecimal(meter);
+        if(endPoints != null && endPoints.size() > 0){
+            for (BizDangerArea endPoint : endPoints) {
+                BizTravePoint currentPoint =  this.getById(endPoint.getEndPointId());
+                if(endPoint.getStartPointId() == endPoint.getEndPointId()){
+                    BigDecimal start = new BigDecimal(endPoint.getStartMeter()) ;
+                    BigDecimal end = new BigDecimal(endPoint.getEndMeter()) ;
+                    if(meterBigDecimal.compareTo(end) == -1 && meterBigDecimal.compareTo(start) == 1){
+                        return endPoint.getDangerAreaId();
+                    }
+                }else{
+                    currentPoint.getPrePointDistance();
+                    BigDecimal start = new BigDecimal(currentPoint.getPrePointDistance()).negate() ;
+                    BigDecimal end = new BigDecimal(endPoint.getEndMeter()) ;
+                    if(meterBigDecimal.compareTo(start) == 1 && meterBigDecimal.compareTo(end) == -1){
+                        return endPoint.getDangerAreaId();
+                    }
+                }
+
+            }
+        }
+
+        queryWrapper.clear();
         queryWrapper.lambda().eq(BizDangerArea::getStartPointId,pointId);
         List<BizDangerArea> startPoints = bizDangerAreaMapper.selectList(queryWrapper);
         if(startPoints != null && startPoints.size() > 0){
             for (BizDangerArea startPoint : startPoints) {
-                if(meter >= startPoint.getStartMeter()){
-                    return startPoint.getDangerAreaId();
+                if(startPoint.getStartPointId() == startPoint.getEndPointId()){
+                    BigDecimal start = new BigDecimal(startPoint.getStartMeter()) ;
+                    BigDecimal end = new BigDecimal(startPoint.getEndMeter()) ;
+                    if(meterBigDecimal.compareTo(end) == -1 && meterBigDecimal.compareTo(start) == 1){
+                        return startPoint.getDangerAreaId();
+                    }
+                }else{
+                    BigDecimal start = new BigDecimal(startPoint.getStartMeter()) ;
+                    if(meterBigDecimal.compareTo(start) == 1 || meterBigDecimal.compareTo(start) == 0){
+                        return startPoint.getDangerAreaId();
+                    }
                 }
-            }
-        }
-        queryWrapper.clear();
-        queryWrapper.lambda().eq(BizDangerArea::getEndPointId,pointId);
-        List<BizDangerArea> endPoints = bizDangerAreaMapper.selectList(queryWrapper);
 
-        if(endPoints != null && endPoints.size() > 0){
-            for (BizDangerArea endPoint : endPoints) {
-                if(meter <= endPoint.getStartMeter()){
-                    return endPoint.getDangerAreaId();
-                }
             }
         }
 
@@ -160,66 +186,104 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
             p.setLatitude(currentPoint.getLatitude()).setLongitude(currentPoint.getLongitude());
             return p;
         }
-        //大于
-        BizPresetPoint min =new BizPresetPoint();
-        queryWrapper.clear();
-        queryWrapper.lambda().eq(BizPresetPoint::getPointId,p.getPointId()).gt(BizPresetPoint::getMeter,p.getMeter());
-        List<BizPresetPoint> gtlist = bizPresetPointMapper.selectList(queryWrapper);
-        if(gtlist != null && gtlist.size() > 0){
-            min =  gtlist.stream().min(Comparator.comparingDouble(BizPresetPoint::getMeter)).get();
-        }else {
-            //没有的话 取当前导线点的点
-            min =  new BizPresetPoint();
-            min.setLatitude(currentPoint.getLatitude()).setLongitude(currentPoint.getLongitude()).setMeter(0.0);
-        }
 
-        //小于
-        BizPresetPoint max =new BizPresetPoint();
-        queryWrapper.clear();
-        queryWrapper.lambda().eq(BizPresetPoint::getPointId,p.getPointId()).lt(BizPresetPoint::getMeter,p.getMeter());
-        List<BizPresetPoint> ltlist = bizPresetPointMapper.selectList(queryWrapper);
-        if(ltlist != null && ltlist.size() > 0){
-            max =  ltlist.stream().max(Comparator.comparingDouble(BizPresetPoint::getMeter)).get();
-        }else {
-            //没有的话 取前一个导线点的点
-            BizTravePoint prePoint =  this.getPrePoint(p.getPointId());
-            max =  new BizPresetPoint();
-            max.setLatitude(prePoint.getLatitude()).setLongitude(prePoint.getLongitude()).setMeter(0.0);
-        }
-        BigDecimal divide = new BigDecimal(0.0);
-        if(max.getPointId() == null || !max.getPointId().equals(p.getPointId())){
-            Double di = min.getMeter() - currentPoint.getPrePointDistance();
-            divide = new BigDecimal(di);
-        }else {
-            Double di  = min.getMeter() - max.getMeter();
-            divide = new BigDecimal(di);
-        }
-        BigDecimal bili = new BigDecimal(min.getMeter()-p.getMeter()).divide(divide,RoundingMode.HALF_UP).setScale(4, RoundingMode.HALF_UP);
-        BigDecimal movelat = new BigDecimal(min.getLatitude()).subtract(new BigDecimal(max.getLatitude())).abs();
-        BigDecimal movelon = new BigDecimal(min.getLongitude()).subtract(new BigDecimal(max.getLongitude())).abs();
-        BigDecimal lat =  new BigDecimal(min.getLatitude()).subtract(bili.multiply(movelat));
-
-        BigDecimal lon =  new BigDecimal(min.getLongitude()).subtract(bili.multiply(movelon));
-        if(new BigDecimal(min.getLatitude()).compareTo(new BigDecimal(max.getLatitude())) == 1 ){
-            lat =  new BigDecimal(min.getLatitude()).add(bili.multiply(movelat));
-        }else{
-            lat =  new BigDecimal(min.getLatitude()).subtract(bili.multiply(movelat));
-        }
-        if(new BigDecimal(min.getLongitude()).compareTo(new BigDecimal(max.getLongitude())) == 1 ){
-            lon =  new BigDecimal(min.getLongitude()).add(bili.multiply(movelon));
-        }else{
-            lon =  new BigDecimal(min.getLongitude()).subtract(bili.multiply(movelon));
-        }
-
-
-
-        p.setLongitude(lon+"").setLatitude(lat+"");
-
-
+        BizPresetPoint point = setAxis(pointId,meter);
+        p.setLongitude(point.getLongitude()+"").setLatitude(point.getLatitude()+"");
         return p;
     }
 
 
+
+
+    public BizPresetPoint setAxis( Long currentPointId, Double meter) {
+
+        BizPresetPoint point = new BizPresetPoint();
+
+        point.setPointId(currentPointId).setMeter(new BigDecimal(meter).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue());
+
+        BizTravePoint currentPoint = this.getById(currentPointId);
+
+        BizTravePoint prePoint = this.getPrePoint(currentPointId);
+        BizTravePoint afterPoint = this.getNextPoint(currentPointId);
+
+        //存在前一个导线点的情况
+        if(prePoint != null && prePoint.getPointId() != null){
+            //计算 坐标
+            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()));
+            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()));
+
+
+            BigDecimal latshang = latSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
+            BigDecimal lonshang = lonSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
+            BigDecimal latMove = latshang.multiply(new BigDecimal(point.getMeter()).abs());
+            BigDecimal lonMove = lonshang.multiply(new BigDecimal(point.getMeter()).abs());
+
+
+            BigDecimal lat = getAxis(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
+            BigDecimal lon = getAxis(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()),lonMove);
+
+            point.setLatitude(lat+"").setLongitude(lon+"");
+            return point;
+        }else if(afterPoint != null && afterPoint.getPointId() != null){
+
+            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()));
+            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()));
+            BigDecimal latshang = latSum.divide(new BigDecimal(afterPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
+            BigDecimal lonshang = lonSum.divide(new BigDecimal(afterPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
+            BigDecimal latMove = latshang.multiply(new BigDecimal(point.getMeter()).abs());
+            BigDecimal lonMove = lonshang.multiply(new BigDecimal(point.getMeter()).abs());
+
+            BigDecimal lat = getAxis1(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()),latMove).setScale(10, BigDecimal.ROUND_DOWN);
+            BigDecimal lon = getAxis1(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()),lonMove).setScale(10, BigDecimal.ROUND_DOWN);
+
+            point.setLatitude(lat+"").setLongitude(lon+"");
+            return point;
+        }
+        return point;
+    }
+
+
+    /**
+     * 坐标求和
+     * @return
+     */
+    public BigDecimal axisSum(BigDecimal axis1, BigDecimal axis2){
+//        if(axis2.signum() == 1 && axis1.signum() == 1){
+//            return axis2.add(axis1);
+//        }
+//        if(axis2.signum() == -1 && axis1.signum() == -1){
+//            return axis2.add(axis1).abs();
+//        }
+//        if(axis2.signum() == -1 && axis1.signum() == 1){
+//            return axis2.abs().add(axis1);
+//        }
+//        if(axis2.signum() == 1 && axis1.signum() == -1){
+//            return axis2.add(axis1.abs());
+//        }
+        return axis2.subtract(axis1).abs();
+    }
+
+    public BigDecimal getAxis(BigDecimal axisCurrent, BigDecimal axisPre, BigDecimal move){
+        if(axisCurrent.compareTo(axisPre) == 1){
+            return axisCurrent.subtract(move).setScale(10, BigDecimal.ROUND_DOWN);
+        }
+        if(axisCurrent.compareTo(axisPre) == -1){
+            return axisCurrent.add(move).setScale(10, BigDecimal.ROUND_DOWN);
+        }
+
+        return axisCurrent.setScale(10, BigDecimal.ROUND_DOWN);
+    }
+
+    public BigDecimal getAxis1(BigDecimal axisCurrent, BigDecimal axisAfter, BigDecimal move){
+        if(axisAfter.compareTo(axisCurrent) == 1){
+            return axisCurrent.subtract(move).setScale(10, BigDecimal.ROUND_DOWN);
+        }
+        if(axisAfter.compareTo(axisCurrent) == -1){
+            return axisCurrent.add(move).setScale(10, BigDecimal.ROUND_DOWN);
+        }
+
+        return axisCurrent;
+    }
     @Override
     public BizPresetPoint getLatLontop(String lat, String lon, Double x, Integer jio) {
 

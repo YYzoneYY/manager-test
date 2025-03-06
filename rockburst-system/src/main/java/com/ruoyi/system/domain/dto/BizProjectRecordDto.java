@@ -37,8 +37,8 @@ public class BizProjectRecordDto {
     @ApiModelProperty(value = "search -- 班次id")
     private Long constructShiftId;
 
-    @ApiModelProperty(value = "search -- 计划类型")
-    private String planType;
+    @ApiModelProperty(value = "掘进回采")
+    private String constructType;
 
     @ApiModelProperty(value = "search -- 状态")
     private Integer status;

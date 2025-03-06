@@ -135,9 +135,11 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .eq(dto.getConstructUnitId()!=null,BizProjectRecord::getConstructUnitId,dto.getConstructUnitId())
                 .eq(dto.getLocationId() != null,BizProjectRecord::getTunnelId,dto.getLocationId())
                 .eq(dto.getDrillType() !=null,BizProjectRecord::getDrillType,dto.getDrillType())
+                .eq(dto.getConstructType() !=null,BizProjectRecord::getConstructType,dto.getConstructType())
                 .eq(dto.getConstructShiftId()!=null,BizProjectRecord::getConstructShiftId,dto.getConstructShiftId())
                 .between(StrUtil.isNotEmpty(dto.getStartTime()),BizProjectRecord::getConstructTime,DateUtils.parseDate(dto.getStartTime()),DateUtils.parseDate(dto.getEndTime()))
-                .eq(dto.getStatus()!=null,BizProjectRecord::getStatus,dto.getStatus());
+                .eq(dto.getStatus()!=null,BizProjectRecord::getStatus,dto.getStatus())
+                .orderByDesc(BizProjectRecord::getConstructTime);
         IPage<BizProjectRecordListVo> sss = this.pageDeep(pagination , queryWrapper);
         List<BizProjectRecordListVo> vos =  sss.getRecords();
         List<BizProjectRecordListVo> vv = new ArrayList<>();
@@ -409,7 +411,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             entity.setConstructionUnitId(sysDepts.get(0).getConstructionUnitId());
         }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());
+        if(entity.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_J)){
+            entity.setLocationId(entity.getTunnelId());
+        }
+        if(entity.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
+            entity.setLocationId(entity.getWorkfaceId());
+        }
          this.getBaseMapper().insert(entity);
+
 
 
 
@@ -420,6 +429,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 Double ddd = dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectRange())).doubleValue();
                 BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLongitude(),ddd,barAngle);
                 point.setLongitudet(projectPoint.getLongitudet())
+                        .setConstructTime(dto.getConstructTime())
                         .setLatitudet(projectPoint.getLatitudet())
                         .setDrillType(dto.getDrillType())
                         .setTunnelId(dto.getTunnelId())
@@ -719,6 +729,9 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     @Override
     public void get444(BizProjectRecordDto1 dto,HttpServletResponse response) throws IOException {
         AtomicReference<XSSFWorkbook> wb = new AtomicReference<>();
+
+        BizWorkface workface = bizWorkfaceMapper.selectById(dto.getWorkfaceId());
+
         //查询工作面 下的 巷道
         QueryWrapper<TunnelEntity> tunnelQueryWrapper = new QueryWrapper<>();
         tunnelQueryWrapper.lambda()
@@ -745,6 +758,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
                 .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
                 .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_J)
+                .between(BizProjectRecord::getConstructTime,dto.getStartTime(),dto.getEndTime())
                 .innerJoin(BizDrillRecord.class, BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId);
         List<BizProjectCDMAP> cdmaps = bizProjectRecordMapper.selectJoinList(BizProjectCDMAP.class,projectRecordQueryWrapper);
@@ -809,6 +823,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
                 .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
                 .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_H)
+                .between(BizProjectRecord::getConstructTime,dto.getStartTime(),dto.getEndTime())
                 .innerJoin(BizDrillRecord.class, BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId);
         List<BizProjectCDMAP> cdmaps1 = bizProjectRecordMapper.selectJoinList(BizProjectCDMAP.class,projectRecordQueryWrapper1);
@@ -865,7 +880,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         // 生成 Excel 并写入响应流
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=example.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=" +workface.getWorkfaceName()+"~煤粉量报表.xlsx");
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             wb.get().write(byteArrayOutputStream);
             byte[] excelData = byteArrayOutputStream.toByteArray();

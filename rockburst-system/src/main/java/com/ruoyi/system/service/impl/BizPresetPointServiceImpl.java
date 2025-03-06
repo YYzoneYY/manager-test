@@ -206,7 +206,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
         queryWrapper.lambda().eq(BizTunnelBar::getTunnelId, point11.getTunnelId());
         List<BizTunnelBar> tunnelBars = bizTunnelBarMapper.selectList(queryWrapper);
         for (BizTunnelBar tunnelBar : tunnelBars) {
-            BizPresetPoint point = sssss(tunnelBar.getDirectRange(),tunnelBar.getDirectAngle(),dto);
+            BizPresetPoint point = sssss(tunnelBar.getDirectRangePre(),tunnelBar.getDirectAngle(),dto);
             point.setTunnelBarId(tunnelBar.getBarId());
             point.setDrillType(dto.getDrillType());
             point.setWorkfaceId(tunnelBar.getWorkfaceId());
