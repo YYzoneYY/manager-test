@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.domain.BasePermission;
@@ -25,6 +27,7 @@ import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.SysFileInfo;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.utils.AreaAlgorithmUtils;
+import com.ruoyi.system.domain.utils.DataJudgeUtils;
 import com.ruoyi.system.domain.utils.TrimUtils;
 import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.*;
@@ -37,9 +40,6 @@ import javax.annotation.Resource;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.io.InputStream;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -579,7 +579,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         if (planType.equals(ConstantsInfo.Month_PLAN) ||
                 planType.equals(ConstantsInfo.TEMPORARY_PLAN)) {
             // 区域校验
-            importCheckArea(planAreaDTO, planAreaEntities);
+            importCheckArea(importPlanDTO.getType(), planAreaDTO, planAreaEntities);
         }
     }
 
@@ -640,17 +640,17 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         if (planType.equals(ConstantsInfo.Month_PLAN) ||
                 planType.equals(ConstantsInfo.TEMPORARY_PLAN)) {
             // 区域校验
-            importCheckAreaT(planAreaDTOS, planAreaEntities);
+            importCheckAreaT(importPlanTwoDTO.getType(), planAreaDTOS, planAreaEntities);
         }
     }
 
     /**
      * 导入时区域校验（掘进）
      */
-    private void importCheckArea(PlanAreaDTO planAreaDTO, List<PlanAreaEntity> planAreaEntities) {
+    private void importCheckArea(String type, PlanAreaDTO planAreaDTO, List<PlanAreaEntity> planAreaEntities) {
         planAreaEntities.forEach(planAreaEntity -> {
             try {
-                AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
+                AreaAlgorithmUtils.areaCheck(type, planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage());
             }
@@ -660,11 +660,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     /**
      * 导入时区域校验（回采）
      */
-    private void importCheckAreaT(List<PlanAreaDTO> planAreaDTOS, List<PlanAreaEntity> planAreaEntities) {
+    private void importCheckAreaT(String type, List<PlanAreaDTO> planAreaDTOS, List<PlanAreaEntity> planAreaEntities) {
         planAreaDTOS.forEach(planAreaDTO -> {
             planAreaEntities.forEach(planAreaEntity -> {
                 try {
-                    AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
+                    AreaAlgorithmUtils.areaCheck(type, planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage());
                 }
@@ -770,7 +770,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             if (ListUtils.isNotNull(planAreaEntities)) {
                 planAreaEntities.forEach(planAreaEntity -> {
                     try {
-                        AreaAlgorithmUtils.areaCheck(planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
+                        // 检查距离字符串是否为空或长度不足
+                        if (planAreaDTO.getStartDistance() == null || planAreaDTO.getStartDistance().isEmpty()) {
+                            throw new IllegalArgumentException("StartDistance 不能为空");
+                        }
+                        if (planAreaDTO.getEndDistance() == null || planAreaDTO.getEndDistance().isEmpty()) {
+                            throw new IllegalArgumentException("EndDistance 不能为空");
+                        }
+                        AreaAlgorithmUtils.areaCheck(type, planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
                     } catch (Exception e) {
                         throw new RuntimeException(e.getMessage());
                     }

@@ -84,7 +84,7 @@ public class DataJudgeUtils {
     }
 
     /**
-     * 两数绝对值比较（>=）
+     * 两数绝对值比较（>）
      */
     public static boolean absoluteValueCompareTwo(double s, String min) {
         boolean flag = false;
