@@ -6,7 +6,7 @@ spring:
         druid:
             # 主库数据源
             master:
-                url: jdbc:mysql://47.92.215.128:3306/cjdy-ys?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+                url: jdbc:mysql://192.168.31.156:3306/cjdy-ys?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
                 username: cjdy-ys
                 password: 123456
             # 从库数据源
@@ -62,7 +62,7 @@ spring:
     # redis 配置
     redis:
         # 地址
-        host: 47.92.215.128
+        host: 192.168.31.156
         # 端口，默认为6379
         port: 6379
         # 数据库索引
