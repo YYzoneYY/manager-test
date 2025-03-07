@@ -44,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
@@ -382,7 +381,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     }
 
     @Override
-    public int saveRecord(BizProjectRecordAddDto dto) {
+    public Long saveRecord(BizProjectRecordAddDto dto) {
         BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
 
         String detailJson = dto.getDrillRecords().get(0).getDetailJson();
@@ -465,7 +464,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
 
 
-        return 1;
+        return entity.getProjectId();
     }
 
     @Override
@@ -533,7 +532,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             barAngle = bar.getDirectAngle() + 90 - bear_angle;
         }
 
+        QueryWrapper<BizPresetPoint> pointQueryWrapper = new QueryWrapper<>();
+        pointQueryWrapper.lambda().eq(BizPresetPoint::getProjectId,dto.getProjectId());
+        List<BizPresetPoint> bizProjectRecords = bizPresetPointMapper.selectList(pointQueryWrapper);
+
         BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getConstructRange()));
+        if(bizProjectRecords != null && bizProjectRecords.size() > 0){
+            point.setPresetPointId(bizProjectRecords.get(0).getPresetPointId());
+        }
         Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
         if(point != null && point.getPointId() != null){
             BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLatitude(),dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectAngle())).doubleValue(),barAngle);
@@ -543,7 +549,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                     .setTunnelId(dto.getTunnelId())
                     .setDangerAreaId(dangerAreaId)
                     .setTunnelBarId(bar.getBarId());
-            bizPresetPointMapper.insert(point);
+            bizPresetPointMapper.updateById(point);
         }
 
 
@@ -758,11 +764,11 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
                 .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
                 .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_J)
-                .between(BizProjectRecord::getConstructTime,dto.getStartTime(),dto.getEndTime())
+                .between(StrUtil.isNotEmpty(dto.getEndTime()),BizProjectRecord::getConstructTime,dto.getStartTime(),dto.getEndTime())
                 .innerJoin(BizDrillRecord.class, BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId);
         List<BizProjectCDMAP> cdmaps = bizProjectRecordMapper.selectJoinList(BizProjectCDMAP.class,projectRecordQueryWrapper);
-        Assert.isTrue(cdmaps != null && cdmaps.size() > 0, "没有记录");
+//        Assert.isTrue(cdmaps != null && cdmaps.size() > 0, "没有记录");
 
         //先根据 巷道分组
         final Map<Long, List<BizProjectCDMAP>>[] groupedByTunnelId = new Map[]{cdmaps.stream()
@@ -823,11 +829,11 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 .eq(BizProjectRecord::getDrillType,BizBaseConstant.FILL_TYPE_CD)
                 .eq(BizProjectRecord::getDelFlag,BizBaseConstant.DELFLAG_N)
                 .eq(BizProjectRecord::getConstructType,BizBaseConstant.CONSTRUCT_TYPE_H)
-                .between(BizProjectRecord::getConstructTime,dto.getStartTime(),dto.getEndTime())
+                .between(StrUtil.isNotEmpty(dto.getEndTime()),BizProjectRecord::getConstructTime,dto.getStartTime(),dto.getEndTime())
                 .innerJoin(BizDrillRecord.class, BizDrillRecord::getProjectId,BizProjectRecord::getProjectId)
                 .leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizProjectRecord::getTunnelId);
         List<BizProjectCDMAP> cdmaps1 = bizProjectRecordMapper.selectJoinList(BizProjectCDMAP.class,projectRecordQueryWrapper1);
-        Assert.isTrue(cdmaps != null && cdmaps.size() > 0, "没有记录");
+//        Assert.isTrue(cdmaps != null && cdmaps.size() > 0, "没有记录");
 
         //先根据 巷道分组
         final Map<Long, List<BizProjectCDMAP>>[] groupedByTunnelId1 = new Map[]{cdmaps1.stream()

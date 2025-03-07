@@ -32,7 +32,7 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
     MPage<BizProjectRecordListVo> getlist(BasePermission permission, BizProjectRecordDto dto , Pagination pagination);
 
 
-    int saveRecord(BizProjectRecordAddDto dto);
+    Long saveRecord(BizProjectRecordAddDto dto);
 
     int saveRecordApp(BizProjectRecordAddDto dto);
 
