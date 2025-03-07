@@ -296,8 +296,8 @@ public class BizMapController extends BaseController
 
         QueryWrapper<BizPresetPoint> queryWrapperPro = new QueryWrapper<>();
         queryWrapperPro.lambda()
-                .eq(BizPresetPoint::getDrillType,drillType)
-                .eq(BizPresetPoint::getWorkfaceId,workfaceId)
+                .eq(StrUtil.isNotEmpty(drillType), BizPresetPoint::getDrillType,drillType)
+                .eq(workfaceId != null, BizPresetPoint::getWorkfaceId,workfaceId)
                 .isNotNull(BizPresetPoint::getProjectId)
                 .between(end != null, BizPresetPoint::getConstructTime,start,end);
         List<BizPresetPoint> points = bizPresetPointMapper.selectList(queryWrapperPro);
@@ -335,17 +335,22 @@ public class BizMapController extends BaseController
         map.put("ProjectPoints",vos);
         Long startc;
         Long endc;
+        if(end == null){
+            endc = null;
+            startc = null;
+        }else {
+            startc = start.getTime();
+            endc = end.getTime();
+        }
 
-        startc = getStart(year, month).getTime();
-        endc = getEnd(year, month).getTime();
 
 
         QueryWrapper<PlanEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().select(PlanEntity::getPlanId,PlanEntity::getPlanName,PlanEntity::getType)
                 .eq(StrUtil.isNotEmpty(year),PlanEntity::getAnnual,year)
-                .eq(PlanEntity::getWorkFaceId,workfaceId)
+                .eq(workfaceId != null, PlanEntity::getWorkFaceId,workfaceId)
                 .eq(StrUtil.isNotEmpty(drillType),PlanEntity::getDrillType,drillType)
-                .and(StrUtil.isNotBlank(month),i->i.le(PlanEntity::getStartTime,endc).ge(PlanEntity::getEndTime,startc));
+                .and(startc != null,i->i.le(PlanEntity::getStartTime,endc).ge(PlanEntity::getEndTime,startc));
         List<PlanEntity> planEntities = planService.list(queryWrapper);
         List<Long> dangerAreaIds = new ArrayList<>();
         if(planEntities != null && planEntities.size() > 0) {
@@ -487,6 +492,10 @@ public class BizMapController extends BaseController
 
 
     Date getStart(String year,String month){
+        if(StrUtil.isEmpty(year)){
+            return null;
+        }
+
         String label = sysDictDataService.selectDictLabel("year",year);
 
         if (month == null) {
@@ -499,6 +508,9 @@ public class BizMapController extends BaseController
     }
 
     Date getEnd(String year, String month) {
+        if(StrUtil.isEmpty(year)){
+            return null;
+        }
         String label = sysDictDataService.selectDictLabel("year", year);
         if (month == null) {
             Date endDate = DateUtil.endOfYear(DateUtil.parse(label + "-12-31"));
