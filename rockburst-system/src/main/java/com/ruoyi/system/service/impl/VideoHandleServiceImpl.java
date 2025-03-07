@@ -42,6 +42,27 @@ public class VideoHandleServiceImpl extends ServiceImpl<VideoHandleMapper, Video
     }
 
     @Override
+    public boolean update(Long projectId, List<String> beforeVideoUrls) {
+        boolean flag = false;
+        ArrayList<VideoHandleEntity> videoHandleEntities = new ArrayList<>();
+        int delete = videoHandleMapper.delete(new LambdaQueryWrapper<VideoHandleEntity>()
+                .eq(VideoHandleEntity::getProjectId, projectId));
+        if (delete > 0) {
+            beforeVideoUrls.forEach(beforeVideoUrl -> {
+                VideoHandleEntity videoHandleEntity = new VideoHandleEntity();
+                videoHandleEntity.setProjectId(projectId);
+                videoHandleEntity.setBeforeVideoUrl(beforeVideoUrl);
+                videoHandleEntity.setStatus(ConstantsInfo.ZERO_IDENTIFY_STATUS);
+                videoHandleEntities.add(videoHandleEntity);
+            });
+            flag = this.saveBatch(videoHandleEntities);
+        } else {
+            return flag;
+        }
+        return flag;
+    }
+
+    @Override
     public boolean deleteById(List<Long> projectIdList) {
         boolean flag = false;
         flag = this.remove(new LambdaQueryWrapper<VideoHandleEntity>().in(VideoHandleEntity::getProjectId, projectIdList));
