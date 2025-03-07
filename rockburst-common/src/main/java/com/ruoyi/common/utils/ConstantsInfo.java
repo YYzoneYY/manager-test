@@ -112,6 +112,9 @@ public class ConstantsInfo {
     public static final String TEAM_AUDIT = "1"; // 区队审核
     public static final String DEPART_AUDIT = "2"; // 科室审核
 
+    public static final String ZERO_IDENTIFY_STATUS = "0"; //未识别
+    public static final String ONE_IDENTIFY_STATUS = "1"; //已识别
+
     // 不明确是否分层
     public static final String UNKNOWN = "0";
 
