@@ -14,6 +14,8 @@ public interface VideoHandleService extends IService<VideoHandleEntity> {
 
     boolean insert(Long projectId, List<String> beforeVideoUrls);
 
+    int insertT(String beforeVideoUrl, String afterVideoUrl);
+
     boolean update(Long projectId, List<String> beforeVideoUrls);
 
     boolean deleteById(List<Long> projectIdList);

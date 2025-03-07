@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.utils.ConstantsInfo;
@@ -38,6 +39,19 @@ public class VideoHandleServiceImpl extends ServiceImpl<VideoHandleMapper, Video
             videoHandleEntities.add(videoHandleEntity);
         });
         flag = this.saveBatch(videoHandleEntities);
+        return flag;
+    }
+
+    @Override
+    public int insertT(String beforeVideoUrl, String afterVideoUrl) {
+        int flag = 0;
+        VideoHandleEntity videoHandleEntity = videoHandleMapper.selectOne(new LambdaQueryWrapper<VideoHandleEntity>()
+                .eq(VideoHandleEntity::getBeforeVideoUrl, beforeVideoUrl));
+        if (ObjectUtil.isNotNull(videoHandleEntity)) {
+            videoHandleEntity.setAfterVideoUrl(afterVideoUrl);
+            videoHandleEntity.setStatus(ConstantsInfo.ONE_IDENTIFY_STATUS);
+        }
+        flag = videoHandleMapper.updateById(videoHandleEntity);
         return flag;
     }
 
