@@ -1,6 +1,8 @@
 package com.ruoyi.web.controller.projectFill;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -20,7 +22,9 @@ import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.RelatesInfoEntity;
 import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
+import com.ruoyi.system.domain.dto.BizVideoDto;
 import com.ruoyi.system.domain.dto.project.BizProjectPlanDto;
+import com.ruoyi.system.domain.vo.BizPresetPointVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.BizProjectRecordListVo;
 import com.ruoyi.system.service.*;
@@ -32,6 +36,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.ruoyi.framework.datasource.DynamicDataSourceContextHolder.log;
 
 /**
  * 工程填报记录Controller
@@ -51,6 +60,10 @@ public class BizProjectRecordController extends BaseController
     private IBizDrillRecordService bizDrillRecordService;
     @Autowired
     private IBizVideoService bizVideoService;
+
+    @Autowired
+    private VideoHandleService videoHandleService;
+
 
     @Autowired
     private PlanService planService;
@@ -113,6 +126,35 @@ public class BizProjectRecordController extends BaseController
         return R.ok(bizProjectRecordService.selectById(projectId));
     }
 
+//    @Anonymous
+    @ApiOperation("获取工程填报记录地图信息")
+    @PreAuthorize("@ss.hasPermi('project:record:map')")
+    @GetMapping(value = "/map/{projectId}")
+    public R<BizPresetPointVo> getmapInfo(@PathVariable("projectId") Long projectId)
+    {
+        QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizPresetPoint::getProjectId, projectId);
+        List<BizPresetPoint> bizPresetPoints = bizPresetPointService.list(queryWrapper);
+        if(bizPresetPoints != null && bizPresetPoints.size() > 0){
+            BizPresetPoint p = bizPresetPoints.get(0);
+            BizPresetPointVo vo = new BizPresetPointVo();
+            BeanUtil.copyProperties(p,vo);
+            BizProjectRecord record = bizProjectRecordService.getByIdDeep(projectId);
+            vo.setAccepter(record.getAccepterEntity() == null ? "" : record.getAccepterEntity().getName())
+                    .setBigbanger(record.getBigbangerEntity() == null ? "" : record.getBigbangerEntity().getName())
+                    .setProjecrHeader(record.getProjecrHeaderEntity() == null ? "" : record.getProjecrHeaderEntity().getName())
+                    .setSecurityer(record.getSecurityerEntity() == null ? "" : record.getSecurityerEntity().getName())
+                    .setWorker(record.getWorkerEntity() == null ? "" : record.getWorkerEntity().getName())
+                    .setConstructionUnit(record.getConstructionUnit() == null ? "" : record.getConstructionUnit().getConstructionUnitName())
+                    .setWorkfaceName(record.getWorkfaceName())
+                    .setTunnelName(record.getTunnelName())
+                    .setPointName(record.getTravePoint() == null ? "" : record.getTravePoint().getPointName())
+                    .setDrillNum(record.getDrillNum());
+            return R.ok(vo);
+        }
+        return R.ok(null);
+    }
+
 
     @Anonymous
     @ApiOperation("查询导线点是否已经被填报")
@@ -145,7 +187,21 @@ public class BizProjectRecordController extends BaseController
     @PostMapping
     public R<?> add(@RequestBody BizProjectRecordAddDto dto)
     {
-        return R.ok(bizProjectRecordService.saveRecord(dto));
+
+        Long id= bizProjectRecordService.saveRecord(dto);
+        try{
+            if(dto.getVideos() != null && dto.getVideos().size() > 0){
+                List<String> strings = new ArrayList<>();
+                for (BizVideoDto video : dto.getVideos()) {
+                    strings.add(video.getFileUrl());
+                }
+                log.info("新增调用视频识别入参id:{},urls:{}",id, JSONUtil.parse(strings));
+                videoHandleService.insert(id,strings);
+            }
+        }catch (Exception e){
+            log.error(e.getMessage());
+        }
+        return R.ok();
     }
 
     /**
@@ -157,6 +213,18 @@ public class BizProjectRecordController extends BaseController
     @PutMapping
     public R<?> edit(@RequestBody BizProjectRecordAddDto bizProjectRecord)
     {
+        try{
+            List<String> strings = new ArrayList<>();
+            if(bizProjectRecord.getVideos() != null && bizProjectRecord.getVideos().size() > 0){
+                for (BizVideoDto video : bizProjectRecord.getVideos()) {
+                    strings.add(video.getFileUrl());
+                }
+                log.info("修改调用视频识别入参id:{},urls:{}",bizProjectRecord.getProjectId(), JSONUtil.parse(strings));
+            }
+            videoHandleService.update(bizProjectRecord.getProjectId(),strings);
+        }catch (Exception e){
+            log.error(e.getMessage());
+        }
         return R.ok(bizProjectRecordService.updateRecord(bizProjectRecord));
     }
 
