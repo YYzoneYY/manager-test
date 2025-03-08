@@ -47,6 +47,8 @@ public class AreaAlgorithmUtils {
 
     public static void areaCheck(String type, PlanAreaDTO planAreaDTO, PlanAreaEntity planAreaEntity,
                                  List<PlanAreaEntity> planAreaEntities, PlanAreaMapper planAreaMapper, BizTravePointMapper bizTravePointMapper) {
+        // 校验距离
+        checkDistance(planAreaDTO.getTunnelId(), planAreaDTO, bizTravePointMapper);
         // 判断输入起始导线点与对照体起始导线点是否相同
         if (ObjectUtil.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getStartTraversePointId())) {
             validateStartDistance(planAreaDTO, planAreaEntity, bizTravePointMapper);
@@ -621,5 +623,46 @@ public class AreaAlgorithmUtils {
             throw new RuntimeException("获取导线点异常(2)！");
         }
         return bizTravePoint;
+    }
+
+    private static void checkDistance(Long tunnelId, PlanAreaDTO planAreaDTO, BizTravePointMapper bizTravePointMapper) {
+        if (planAreaDTO.getStartDistance().charAt(0) == '-') {
+            BizTravePoint sTraPoint = getBizTravePoint(planAreaDTO.getStartTraversePointId(), bizTravePointMapper);
+            Double prePointDistance = sTraPoint.getPrePointDistance();
+            boolean b = DataJudgeUtils.absoluteValueCompareTwo(prePointDistance, planAreaDTO.getStartDistance());
+            if (!b) {
+                throw new AreaAlgorithmUtils.AreaAlgorithmException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
+            }
+        }
+        if (planAreaDTO.getEndDistance().charAt(0) == '-') {
+            BizTravePoint eTraPoint = getBizTravePoint(planAreaDTO.getEndTraversePointId(), bizTravePointMapper);
+            Double endPointDistance = eTraPoint.getPrePointDistance();
+            boolean b1 = DataJudgeUtils.absoluteValueCompareTwo(endPointDistance, planAreaDTO.getEndDistance());
+            if (!b1) {
+                throw new AreaAlgorithmUtils.AreaAlgorithmException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
+            }
+        }
+        if (planAreaDTO.getStartDistance().charAt(0) != '-') {
+            BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
+                    .eq(BizTravePoint::getPointId, planAreaDTO.getStartTraversePointId()));
+            Long no = bizTravePoint.getNo();
+            BizTravePoint bizTraPointTwo = getBizTraPointTwo(tunnelId, no, bizTravePointMapper);
+            Double prePointDistance = bizTraPointTwo.getPrePointDistance();
+            boolean b = DataJudgeUtils.absoluteValueCompareTwo(prePointDistance, planAreaDTO.getStartDistance());
+            if (!b) {
+                throw new AreaAlgorithmUtils.AreaAlgorithmException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
+            }
+        }
+        if (planAreaDTO.getEndDistance().charAt(0) != '-') {
+            BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
+                    .eq(BizTravePoint::getPointId, planAreaDTO.getEndTraversePointId()));
+            Long no = bizTravePoint.getNo();
+            BizTravePoint bizTraPointTwo = getBizTraPointTwo(tunnelId, no, bizTravePointMapper);
+            Double endPointDistance = bizTraPointTwo.getPrePointDistance();
+            boolean b1 = DataJudgeUtils.absoluteValueCompareTwo(endPointDistance, planAreaDTO.getEndDistance());
+            if (!b1) {
+                throw new AreaAlgorithmUtils.AreaAlgorithmException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
+            }
+        }
     }
 }

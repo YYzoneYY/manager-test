@@ -353,12 +353,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                 throw new RuntimeException("该计划已审核通过,不能删除");
             }
             iBizProjectRecordService.deletePlan(planId);
-//            List<BizProjectRecord> bizProjectRecords = bizProjectRecordMapper.selectList(new LambdaQueryWrapper<BizProjectRecord>()
-//                    .eq(BizProjectRecord::getPlanId, planId)
-//                    .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-//            if (ListUtils.isNotNull(bizProjectRecords)) {
-//                throw new RuntimeException("该计划下有填报信息,不能删除");
-//            }
         });
         flag = this.removeBatchByIds(planIdList);
         if (flag) {
