@@ -65,11 +65,16 @@ public class BizPresetPointController extends BaseController
     }
 
     @ApiOperation("sssssss")
-    @GetMapping(value = "ssss/{planId}")
-    public R sssssss(@PathVariable("planId") Long planId)
+    @GetMapping(value = "ssss")
+    public R sssssss(@RequestParam(required = false) Long planId,
+                     @RequestParam(required = false) Long startId,
+                     @RequestParam(required = false) Long tunnelId,
+                     @RequestParam(required = false) Long endId,
+                     @RequestParam(required = false) Double startMeter,
+                     @RequestParam(required = false) Double endMeter)
     {
         BizPlanPrePointDto dto = new BizPlanPrePointDto();
-        dto.setTunnelId(15l).setStartPointId(71l).setStartMeter(-10.0).setEndPointId(77l).setEndMeter(-9.0);
+        dto.setTunnelId(tunnelId).setStartPointId(startId).setStartMeter(startMeter).setEndPointId(endId).setEndMeter(endMeter);
         List<BizPlanPrePointDto> dtos = new ArrayList<>();
         dtos.add(dto);
         return R.ok(bizPresetPointService.setPlanPrePoint(planId,dtos));

@@ -1,6 +1,7 @@
 package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -16,6 +17,7 @@ import com.ruoyi.system.domain.dto.BizPresetPointDto;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizPresetPointService;
 import com.ruoyi.system.service.IBizTravePointService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
  * @author ruoyi
  * @date 2024-11-11
  */
+@Slf4j
 @Service
 public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper, BizPresetPoint> implements IBizPresetPointService
 {
@@ -81,6 +84,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
 
     @Override
     public boolean setPlanPrePoint(Long planId, List<BizPlanPrePointDto> dtos) {
+        log.info("计划id:{},计划参数:{}",planId, JSONUtil.parse(dtos));
 
         try {
             PlanEntity entity =  planMapper.selectById(planId);
@@ -92,16 +96,27 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                     continue;
                 }
                 List<BizTravePoint> points =  bizTravePointService.getPointByRange(dto.getStartPointId(), dto.getEndPointId());
+                BizPresetPoint start = bizTravePointService.getPointPre(dto.getStartPointId(),dto.getStartMeter());
+                BizPresetPoint end = bizTravePointService.getPointPre(dto.getEndPointId(),dto.getEndMeter());
+
                 if(points != null && points.size() > 0){
                     List<Long> pointIds =  points.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
                     QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+                    if(start != null ){
+                        pointIds.remove(start.getPointId());
+
+                    }
+                    if( end != null){
+                        pointIds.remove(end.getPointId());
+                    }
+
                     queryWrapper.lambda().in(BizPresetPoint::getPointId,pointIds).isNull(BizPresetPoint::getProjectId);
                     List<BizPresetPoint> xxs = this.getBaseMapper().selectList(queryWrapper);
                     bizPresetPoints.addAll(xxs);
                 }
 
-                List<BizPresetPoint> startpoints = this.getPrePointByPointMeter(dto.getStartPointId(),dto.getStartMeter(),entity.getDrillType());
-                List<BizPresetPoint> endpoints = this.getPrePointByPointMeter(dto.getEndPointId(),dto.getEndMeter(),entity.getDrillType());
+                List<BizPresetPoint> startpoints = this.getPrePointByPointMeterstart(dto.getStartPointId(),dto.getStartMeter(),entity.getDrillType());
+                List<BizPresetPoint> endpoints = this.getPrePointByPointMeterend(dto.getEndPointId(),dto.getEndMeter(),entity.getDrillType());
                 if(startpoints != null && !startpoints.isEmpty()){
                     bizPresetPoints.addAll(startpoints);
                 }
@@ -160,7 +175,44 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
     }
 
     @Override
-    public List<BizPresetPoint> getPrePointByPointMeter(Long pointId, Double meter, String drillType) {
+    public List<BizPresetPoint> getPrePointByPointMeterstart(Long pointId, Double meter, String drillType) {
+        if(meter == 0.0){
+            QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId)
+                    .eq(BizPresetPoint::getMeter,0)
+                    .isNull(BizPresetPoint::getProjectId)
+                    .eq(BizPresetPoint::getDrillType,drillType);
+            List<BizPresetPoint> list = bizPresetPointMapper.selectList(queryWrapper);
+            return list;
+        }
+        //判断前后
+        if(meter > 0){
+            BizTravePoint aftePoint = bizTravePointService.getNextPoint(pointId);
+            //后一个导线点不存在
+            if(aftePoint == null || aftePoint.getPointId() == null){
+                return null;
+            }
+            Double distance = aftePoint.getPrePointDistance();
+            //两导线点间距离 不足 传入的距离
+            if(distance - meter < 0){
+                return null;
+            }
+            meter = meter - distance;
+            pointId = aftePoint.getPointId();
+        }
+
+        QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId)
+                .ge(BizPresetPoint::getMeter,meter)
+                .isNull(BizPresetPoint::getProjectId)
+                .eq(BizPresetPoint::getDrillType,drillType);
+        List<BizPresetPoint> list = bizPresetPointMapper.selectList(queryWrapper);
+        return list;
+
+    }
+
+    @Override
+    public List<BizPresetPoint> getPrePointByPointMeterend(Long pointId, Double meter, String drillType) {
         if(meter == 0.0){
             QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId)
@@ -188,7 +240,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
 
         QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(BizPresetPoint::getPointId,pointId)
-                .ge(BizPresetPoint::getMeter,meter)
+                .le(BizPresetPoint::getMeter,meter)
                 .isNull(BizPresetPoint::getProjectId)
                 .eq(BizPresetPoint::getDrillType,drillType);
         List<BizPresetPoint> list = bizPresetPointMapper.selectList(queryWrapper);

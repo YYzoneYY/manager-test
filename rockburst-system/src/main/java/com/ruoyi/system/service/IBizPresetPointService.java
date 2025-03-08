@@ -55,7 +55,11 @@ public interface IBizPresetPointService extends IService<BizPresetPoint>
      * @param meter
      * @return
      */
-    public List<BizPresetPoint> getPrePointByPointMeter(Long pointId,Double meter,String drillType);
+    public List<BizPresetPoint> getPrePointByPointMeterstart(Long pointId,Double meter,String drillType);
+
+
+    public List<BizPresetPoint> getPrePointByPointMeterend(Long pointId,Double meter,String drillType);
+
 
 
 
