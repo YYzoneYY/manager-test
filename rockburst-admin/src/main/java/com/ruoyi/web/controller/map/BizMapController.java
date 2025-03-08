@@ -365,11 +365,14 @@ public class BizMapController extends BaseController
                     dangerAreaIds.addAll(areaIds);
                 }
             }
-            dangerAreaIds.stream().distinct().collect(Collectors.toList());
-            QueryWrapper<BizDangerArea> queryWrapper2 = new QueryWrapper<>();
-            queryWrapper2.lambda().in(dangerAreaIds != null && dangerAreaIds.size() >0, BizDangerArea::getDangerAreaId, dangerAreaIds);
-            List<BizDangerAreaVo> areas = bizDangerAreaService.selectEntityListVo(dangerAreaIds);
-            map.put("areas",areas);
+            if(dangerAreaIds != null && dangerAreaIds.size() > 0){
+                dangerAreaIds.stream().distinct().collect(Collectors.toList());
+                QueryWrapper<BizDangerArea> queryWrapper2 = new QueryWrapper<>();
+                queryWrapper2.lambda().in(dangerAreaIds != null && dangerAreaIds.size() >0, BizDangerArea::getDangerAreaId, dangerAreaIds);
+                List<BizDangerAreaVo> areas = bizDangerAreaService.selectEntityListVo(dangerAreaIds);
+                map.put("areas",areas);
+            }
+
         }
 
 

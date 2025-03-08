@@ -118,6 +118,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     private BizTunnelBarMapper bizTunnelBarMapper;
     @Autowired
     private BizPresetPointMapper bizPresetPointMapper;
+    @Autowired
+    private BizPlanPresetMapper bizPlanPresetMapper;
 
 
     @DataScopeSelf
@@ -976,10 +978,10 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Override
     public void deletePlan(Long planId) {
-        UpdateWrapper<PlanEntity> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.lambda().set(PlanEntity::getDelFlag, BizBaseConstant.DELFLAG_Y)
-                .eq(PlanEntity::getPlanId, planId);
-        planMapper.delete(updateWrapper);
+        UpdateWrapper<BizPlanPreset> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(BizPlanPreset::getDelFlag, BizBaseConstant.DELFLAG_Y)
+                .eq(BizPlanPreset::getPlanId, planId);
+        bizPlanPresetMapper.delete(updateWrapper);
     }
 
     @Override
