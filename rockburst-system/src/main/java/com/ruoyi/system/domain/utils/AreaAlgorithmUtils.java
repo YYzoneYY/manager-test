@@ -64,17 +64,21 @@ public class AreaAlgorithmUtils {
      * 主算法逻辑一
      */
     private static void validateStartDistance(PlanAreaDTO planAreaDTO, PlanAreaEntity planAreaEntity, BizTravePointMapper bizTravePointMapper) {
-            char firstChar = planAreaEntity.getStartDistance().charAt(0);
-            char dtoFirstChar = planAreaDTO.getStartDistance().charAt(0);
-            // 判断输入的起始距离与对照体的起始距离方向是否一致
-            if (dtoFirstChar != firstChar) {
+        char firstChar = planAreaEntity.getStartDistance().charAt(0);
+        char dtoFirstChar = planAreaDTO.getStartDistance().charAt(0);
+        // 判断输入的起始距离与对照体的起始距离方向是否一致
+        if (dtoFirstChar != firstChar) {
+            if (!planAreaDTO.getStartTraversePointId().equals(planAreaEntity.getEndTraversePointId())) {
                 throw new AreaAlgorithmUtils.AreaAlgorithmException("输入的区域与之前计划区域有重叠,请重新输入");
             }
+        }
+        if (planAreaEntity.getStartDistance().charAt(0) == '-') {
             // 判断是否 输入的起始距离 < 对照体的起始距离
             if (!DataJudgeUtils.compare(planAreaDTO.getStartDistance(), planAreaEntity.getStartDistance())) {
                 throw new AreaAlgorithmUtils.AreaAlgorithmException("输入的区域与之前计划区域有重叠,请重新输入");
             }
-            validateTraversalPoints(planAreaDTO, planAreaEntity, firstChar, bizTravePointMapper);
+        }
+        validateTraversalPoints(planAreaDTO, planAreaEntity, firstChar, bizTravePointMapper);
     }
 
     /**
