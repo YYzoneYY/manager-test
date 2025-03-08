@@ -777,6 +777,15 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                         if (planAreaDTO.getEndDistance() == null || planAreaDTO.getEndDistance().isEmpty()) {
                             throw new IllegalArgumentException("EndDistance 不能为空");
                         }
+                        Long startTraversePointId = planAreaDTO.getStartTraversePointId();
+                        Long endTraversePointId = planAreaDTO.getEndTraversePointId();
+                        if (startTraversePointId.equals(endTraversePointId)) {
+                            if (planAreaDTO.getStartDistance().charAt(0) != '-') {
+                                if (planAreaDTO.getEndDistance().charAt(0) == '-') {
+                                    throw new IllegalArgumentException("起始导线点与终始导线点相同，起始距离为正数，终始距离不能为负");
+                                }
+                            }
+                        }
                         AreaAlgorithmUtils.areaCheck(type, planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
                     } catch (Exception e) {
                         throw new RuntimeException(e.getMessage());

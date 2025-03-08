@@ -47,23 +47,15 @@ public class AreaAlgorithmUtils {
 
     public static void areaCheck(String type, PlanAreaDTO planAreaDTO, PlanAreaEntity planAreaEntity,
                                  List<PlanAreaEntity> planAreaEntities, PlanAreaMapper planAreaMapper, BizTravePointMapper bizTravePointMapper) {
-        if (planAreaDTO.getStartTraversePointId().equals(planAreaEntity.getStartTraversePointId())) {
-            if (planAreaDTO.getStartDistance().charAt(0) != '-') {
-                if (planAreaDTO.getEndDistance().charAt(0) == '-') {
-                    throw new AreaAlgorithmUtils.AreaAlgorithmException(INVALID_INPUT);
-                }
-                // 判断输入起始导线点与对照体起始导线点是否相同
-                if (ObjectUtil.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getStartTraversePointId())) {
-                    validateStartDistance(planAreaDTO, planAreaEntity, bizTravePointMapper);
-                }
-                // 判断输入起始导线点与对照体终始导线点是否相同
-                if (ObjectUtil.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getEndTraversePointId())) {
-                    validatePlanArea(planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
-                }
-                validatePoint(type, planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
-            }
+        // 判断输入起始导线点与对照体起始导线点是否相同
+        if (ObjectUtil.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getStartTraversePointId())) {
+            validateStartDistance(planAreaDTO, planAreaEntity, bizTravePointMapper);
         }
-
+        // 判断输入起始导线点与对照体终始导线点是否相同
+        if (ObjectUtil.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getEndTraversePointId())) {
+            validatePlanArea(planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
+        }
+        validatePoint(type, planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
     }
 
     /**
