@@ -324,7 +324,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         checkStatus(planEntity.getState());
         PlanEntity entity = new PlanEntity();
         BeanUtils.copyProperties(planEntity, entity);
-        entity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
+        entity.setState(ConstantsInfo.TO_BE_SUBMITTED);
         int update = planMapper.updateById(entity);
         if (update > 0) {
             iBizProjectRecordService.deletePlan(planId);
