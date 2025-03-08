@@ -44,9 +44,9 @@ logging:
 #  defaultBucketName: ${miniobname:bust-dev} #存储桶名称
 # Minio配置
 minio:
-  endpoint: ${miniourl:http://192.168.31.156:19000}
-  accessKey: ${minioakey:7j3Lp24xhAH4zyldjV7J}
-  secretKey: ${minioskey:vEl3H4Ekld96ZHWYu2wVzOOIGSnCHIGWpL4fpVOW}
+  endpoint: ${miniourl:http://124.221.117.118:19000}
+  accessKey: ${minioakey:jh1wTyqzqWQ8KxsvtTIi}
+  secretKey: ${minioskey:4LAQfrsrAhgYVhMrmWgL5c25jZWT9rcPQxNBvoOG}
   defaultBucketName: ${miniobname:bust-dev} #存储桶名称
 
 #MQTT配置信息

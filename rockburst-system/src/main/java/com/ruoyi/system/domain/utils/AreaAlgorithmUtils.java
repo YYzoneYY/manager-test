@@ -9,6 +9,7 @@ import com.google.common.collect.Sets;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.Entity.PlanAreaEntity;
+import com.ruoyi.system.domain.dto.AreaDTO;
 import com.ruoyi.system.domain.dto.PlanAreaDTO;
 import com.ruoyi.system.domain.dto.TraversePointGatherDTO;
 import com.ruoyi.system.mapper.BizTravePointMapper;
@@ -46,15 +47,23 @@ public class AreaAlgorithmUtils {
 
     public static void areaCheck(String type, PlanAreaDTO planAreaDTO, PlanAreaEntity planAreaEntity,
                                  List<PlanAreaEntity> planAreaEntities, PlanAreaMapper planAreaMapper, BizTravePointMapper bizTravePointMapper) {
-        // 判断输入起始导线点与对照体起始导线点是否相同
-        if (ObjectUtil.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getStartTraversePointId())) {
-            validateStartDistance(planAreaDTO, planAreaEntity, bizTravePointMapper);
+        if (planAreaDTO.getStartTraversePointId().equals(planAreaEntity.getStartTraversePointId())) {
+            if (planAreaDTO.getStartDistance().charAt(0) != '-') {
+                if (planAreaDTO.getEndDistance().charAt(0) == '-') {
+                    throw new AreaAlgorithmUtils.AreaAlgorithmException(INVALID_INPUT);
+                }
+                // 判断输入起始导线点与对照体起始导线点是否相同
+                if (ObjectUtil.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getStartTraversePointId())) {
+                    validateStartDistance(planAreaDTO, planAreaEntity, bizTravePointMapper);
+                }
+                // 判断输入起始导线点与对照体终始导线点是否相同
+                if (ObjectUtil.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getEndTraversePointId())) {
+                    validatePlanArea(planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
+                }
+                validatePoint(type, planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
+            }
         }
-        // 判断输入起始导线点与对照体终始导线点是否相同
-        if (ObjectUtil.equals(planAreaDTO.getStartTraversePointId(), planAreaEntity.getEndTraversePointId())) {
-            validatePlanArea(planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
-        }
-        validatePoint(type, planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
+
     }
 
     /**
@@ -147,10 +156,10 @@ public class AreaAlgorithmUtils {
             char firstChar = planAreaEntity.getEndDistance().charAt(0);
             char charAt = planAreaDTO.getStartDistance().charAt(0);
             // 判断输入的起始距离与对照体的终始距离方向是否一致
-            if (charAt == firstChar) {
+            if (firstChar == '-' && charAt == '-' || firstChar != '-' && charAt != '-') {
                 boolean compare = DataJudgeUtils.compare(planAreaDTO.getStartDistance(), planAreaEntity.getEndDistance());
                 // 判断输入的起始距离 > 对照体终始距离
-                if (!compare) {
+                if (compare) {
                     throw new AreaAlgorithmUtils.AreaAlgorithmException("输入的区域与之前计划区域有重叠,请重新输入");
                 }
                 validateTraversalPointsTwo(planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
@@ -257,13 +266,15 @@ public class AreaAlgorithmUtils {
      * 【拿到符合条件的计划区域之后的】算法逻辑
      */
     private static void validateConditionDistance(PlanAreaDTO planAreaDTO, PlanAreaEntity planArea, BizTravePointMapper bizTravePointMapper) {
-        String conditionDistance = planArea.getStartDistance();
-        char symbol = conditionDistance.charAt(0);
-        // 判断标志点起始距离方向是否为'-'
-        if (symbol == '-') {
-            validateNegativeSymbol(planAreaDTO, planArea, symbol, bizTravePointMapper);
-        } else {
-            validatePositiveSymbol(planAreaDTO, planArea, symbol, bizTravePointMapper);
+        if (ObjectUtil.isNotNull(planArea)) {
+            String conditionDistance = planArea.getStartDistance();
+            char symbol = conditionDistance.charAt(0);
+            // 判断标志点起始距离方向是否为'-'
+            if (symbol == '-') {
+                validateNegativeSymbol(planAreaDTO, planArea, symbol, bizTravePointMapper);
+            } else {
+                validatePositiveSymbol(planAreaDTO, planArea, symbol, bizTravePointMapper);
+            }
         }
     }
 
@@ -375,10 +386,16 @@ public class AreaAlgorithmUtils {
                 .map(PlanAreaEntity::getTraversePointGather)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        List<TraversePointGatherDTO> tPointGatherDTOS = traversePointGather.stream()
-                .map(jsonStr -> parseJsonToDto(jsonStr))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<TraversePointGatherDTO> tPointGatherDTOS = new ArrayList<>();
+        for (String jsonStr : traversePointGather) {
+            try {
+                List<TraversePointGatherDTO> traversePointGatherDTOS = objectMapper
+                        .readValue(jsonStr, new TypeReference<List<TraversePointGatherDTO>>() {});
+                tPointGatherDTOS.addAll(traversePointGatherDTOS);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("JSON 解析失败: " + e.getMessage(), e);
+            }
+        }
         if (!tPointGatherDTOS.isEmpty()) {
             boolean sExists = tPointGatherDTOS.stream().anyMatch(tpg -> tpg.getTraversePointId().equals(planAreaDTO.getStartTraversePointId()));
             boolean eExists = tPointGatherDTOS.stream().anyMatch(tpg -> tpg.getTraversePointId().equals(planAreaDTO.getEndTraversePointId()));
@@ -403,14 +420,6 @@ public class AreaAlgorithmUtils {
             } else {
                 throw new AreaAlgorithmUtils.AreaAlgorithmException("输入的区域与之前计划区域有重叠,请重新输入");
             }
-        }
-    }
-
-    private static TraversePointGatherDTO parseJsonToDto(String jsonStr) {
-        try {
-            return objectMapper.readValue(jsonStr, TraversePointGatherDTO.class);
-        } catch (IOException e) {
-            throw new RuntimeException("JSON 解析失败: " + e.getMessage(), e);
         }
     }
 
