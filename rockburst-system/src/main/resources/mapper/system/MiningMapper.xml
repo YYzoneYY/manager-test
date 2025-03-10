@@ -20,7 +20,6 @@
                 <when test="miningSelectNewDTO.pace == '0'.toString()">
                     and mfn.mining_pace='0'
                 </when>
-
                 <when test="miningSelectNewDTO.pace == '1'.toString()">
                     and mfn.mining_pace <![CDATA[ <> ]]>'0'
                 </when>

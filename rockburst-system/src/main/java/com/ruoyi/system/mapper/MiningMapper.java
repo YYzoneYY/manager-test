@@ -25,7 +25,10 @@ public interface MiningMapper extends BaseMapper<MiningEntity> {
     Page<MiningFootageNewDTO> selectMiningFootageByPage(@Param("miningSelectNewDTO") MiningSelectNewDTO miningSelectNewDTO,
                                                         @Param("displayForm") Long displayForm);
 
-   Page<MiningFootageNewDTO> selectMining(MiningSelectNewDTO miningSelectNewDTO);
+   Page<MiningFootageNewDTO> selectMining(@Param("startTime") Long startTime,
+                                          @Param("endTime") Long endTime,
+                                          @Param("pace") String pace,
+                                          @Param("workFaceId")  Long workFaceId);
 
     /**
      * 统计某条巷道的回采总长度
