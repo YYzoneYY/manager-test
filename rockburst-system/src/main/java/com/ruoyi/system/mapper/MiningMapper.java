@@ -25,7 +25,7 @@ public interface MiningMapper extends BaseMapper<MiningEntity> {
     Page<MiningFootageNewDTO> selectMiningFootageByPage(@Param("miningSelectNewDTO") MiningSelectNewDTO miningSelectNewDTO,
                                                         @Param("displayForm") Long displayForm);
 
-   Page<MiningFootageNewDTO> selectMining(@Param("startTime") Long startTime,
+   List<MiningFootageNewDTO> selectMining(@Param("startTime") Long startTime,
                                           @Param("endTime") Long endTime,
                                           @Param("pace") String pace,
                                           @Param("workFaceId")  Long workFaceId);
@@ -46,4 +46,16 @@ public interface MiningMapper extends BaseMapper<MiningEntity> {
     BigDecimal miningPaceSum(@Param("tunnelId") Long tunnelId, @Param("time")Long time);
 
     BigDecimal miningPaceSumT(@Param("tunnelIds") List<Long> tunnelIds, @Param("time")Long time);
+
+
+    /**
+     * 查询最晚的回采进尺时间
+     */
+    Long selectMaxMiningTime(@Param("workFaceId") Long workFaceId);
+
+    /**
+     * 查询最早的回采进尺时间
+     */
+    Long selectMinMiningTime(@Param("workFaceId") Long workFaceId);
+
 }

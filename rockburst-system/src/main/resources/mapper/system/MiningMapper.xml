@@ -96,4 +96,18 @@
           and mfn.mining_time <![CDATA[ <= ]]> #{time} and mfn.del_flag='0'
     </select>
 
+    <!--查询最晚的回采进尺时间-->
+    <select id="selectMaxMiningTime" resultType="java.lang.Long">
+        select max(mfn.mining_time)
+        from mining_footage_new mfn
+        where mfn.workface_id = #{workFaceId} and mfn.del_flag = '0'
+    </select>
+
+    <!--查询最早的回采进尺时间-->
+    <select id="selectMinMiningTime" resultType="java.lang.Long">
+        select min(mfn.mining_time)
+        from mining_footage_new mfn
+        where mfn.workface_id = #{workFaceId} and mfn.del_flag = '0'
+    </select>
+
 </mapper>

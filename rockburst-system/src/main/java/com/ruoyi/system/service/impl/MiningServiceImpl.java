@@ -248,40 +248,52 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
             pageSize = 10;
         }
         try {
-            List<TimeDTO> timeList = getTimeList(miningSelectNewDTO.getStartTime(), miningSelectNewDTO.getEndTime());
-            PageHelper.startPage(pageNum, pageSize);
-            Page<MiningFootageNewDTO> page = new Page<>();
-                for (TimeDTO timeDTO : timeList) {
-                    Page<MiningFootageNewDTO> footageNewDTOS = miningMapper.selectMining(timeDTO.startOfDayTimestamp, timeDTO.endOfDayTimestamp,
-                            miningSelectNewDTO.getPace(), miningSelectNewDTO.getWorkFaceId());
-                    Set<Long> tunnelIdSet = footageNewDTOS.getResult().stream()
+            Long startTime = 0L;
+            Long endTime = 0L;
+            if (ObjectUtil.isNull(miningSelectNewDTO.getStartTime()) || ObjectUtil.isNull(miningSelectNewDTO.getEndTime())) {
+                startTime =  miningMapper.selectMinMiningTime(miningSelectNewDTO.getWorkFaceId());
+                endTime = miningMapper.selectMaxMiningTime(miningSelectNewDTO.getWorkFaceId());
+            } else {
+                startTime = miningSelectNewDTO.getStartTime();
+                endTime = miningSelectNewDTO.getEndTime();
+            }
+            List<MiningFootageNewDTO> aggregatedResults = new ArrayList<>();
+            List<TimeDTO> timeList = getTimeList(startTime, endTime);
+            for (TimeDTO timeDTO : timeList) {
+                List<MiningFootageNewDTO> footageNewDTOS = miningMapper.selectMining(timeDTO.startOfDayTimestamp, timeDTO.endOfDayTimestamp,
+                        miningSelectNewDTO.getPace(), miningSelectNewDTO.getWorkFaceId());
+
+                if (ObjectUtil.isNotEmpty(footageNewDTOS)) {
+                    Set<Long> tunnelIdSet = footageNewDTOS.stream()
                             .map(MiningFootageNewDTO::getTunnelId)
-                            .collect(Collectors.toSet());// 将 List<Long> 转换为 Set<Long>
-                    BigDecimal num = new BigDecimal(tunnelIdSet.size());
-                    MiningFootageNewDTO miningFootageNewDTO = new MiningFootageNewDTO();
-                    if (ObjectUtil.isNotEmpty(footageNewDTOS.getResult())) {
-                        BigDecimal paceSum = footageNewDTOS.getResult().stream()
+                            .collect(Collectors.toSet());
+
+                    if (!tunnelIdSet.isEmpty()) {
+                        List<Long> tunnelIds = new ArrayList<>(tunnelIdSet);
+                        BigDecimal num = BigDecimal.valueOf(tunnelIdSet.size());
+                        BigDecimal paceSum = footageNewDTOS.stream()
                                 .map(MiningEntity::getMiningPace)
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-                        List<Long> tunnelIds = new ArrayList<>(tunnelIdSet);
                         BigDecimal paceSumFmt = paceSum.divide(num, 2, RoundingMode.HALF_UP);  // 平均回采进尺
-                        BigDecimal cumulativePace = miningMapper.miningPaceSumT(tunnelIds, timeDTO.endOfDayTimestamp); // 平均累计回采进尺
-                        miningFootageNewDTO.setMiningTime(timeDTO.startOfDayTimestamp);
-                        miningFootageNewDTO.setMiningPace(paceSumFmt);
-                        miningFootageNewDTO.setMiningPaceSum(cumulativePace);
-                        page.getResult().add(miningFootageNewDTO);
-                        System.out.println(page.getResult());
+                        BigDecimal cumulativePace = getBatchCumulativePace(tunnelIds, timeDTO.endOfDayTimestamp);
+                        BigDecimal cumulativePaceFmt  = cumulativePace.divide(num, 2, RoundingMode.HALF_UP); //平均累计回采进尺
+                        MiningFootageNewDTO miningFootageNewDTO = createMiningFootageNewDTO(timeDTO.startOfDayTimestamp, paceSumFmt, cumulativePaceFmt);
+                        aggregatedResults.add(miningFootageNewDTO);
                     }
                 }
-                result.setTotal(page.size());
-                result.setRows(page.getResult());
+            }
+            aggregatedResults.sort(Comparator.comparingLong(MiningFootageNewDTO::getMiningTime).reversed());
+            int total = aggregatedResults.size();
+            int fromIndex = (pageNum - 1) * pageSize;
+            int toIndex = Math.min(fromIndex + pageSize, total);
+            List<MiningFootageNewDTO> pagedList = fromIndex >= total ? Collections.emptyList() : aggregatedResults.subList(fromIndex, toIndex);
+            result.setTotal(total);
+            result.setRows(pagedList);
         } catch (Exception e) {
             log.error("查询平均回采进尺失败", e);
         }
         return result;
     }
-
-
 
     @Override
     public String queryByTime(Long miningTime, Long tunnelId) {
@@ -350,7 +362,6 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         return showWayChoiceListDTOS;
     }
 
-
     /**
      *按照时间查询每次开采进度之和
      * @param tunnelId 工作面id
@@ -360,7 +371,6 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
     public BigDecimal miningPaceSum(Long tunnelId, Long time) {
         return miningMapper.miningPaceSum(tunnelId, time);
     }
-
 
     /**
      *
@@ -383,6 +393,10 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         return subtractTunnelLength;
     }
 
+
+    /**
+     * 通过一段时间获取其包含的日期
+     */
     private List<TimeDTO> getTimeList(Long startTime, Long endTime) {
         ZonedDateTime startDate = Instant.ofEpochMilli(startTime).atZone(ZoneId.systemDefault());
         ZonedDateTime endDate = Instant.ofEpochMilli(endTime).atZone(ZoneId.systemDefault());
@@ -394,10 +408,8 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         for (LocalDate date = startDateLocal; !date.isAfter(endDateLocal); date = date.plusDays(1)) {
             ZonedDateTime startOfDay = date.atStartOfDay(ZoneId.systemDefault());
             ZonedDateTime endOfDay = date.atTime(23, 59, 59, 999999999).atZone(ZoneId.systemDefault());
-
             long startOfDayTimestamp = startOfDay.toInstant().toEpochMilli();
             long endOfDayTimestamp = endOfDay.toInstant().toEpochMilli();
-
             TimeDTO timeDTO = new TimeDTO();
             timeDTO.setStartOfDayTimestamp(startOfDayTimestamp);
             timeDTO.setEndOfDayTimestamp(endOfDayTimestamp);
@@ -406,5 +418,21 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         return timeList;
     }
 
+    /**
+     * 根据工作面查询改工作面下所有巷道累计回采进尺之和
+     */
+    private BigDecimal getBatchCumulativePace(List<Long> tunnelIds, long endOfDayTimestamp) {
+        return miningMapper.miningPaceSumT(tunnelIds, endOfDayTimestamp);
+    }
 
+    /**
+     * 组装 MiningFootageNewDTO
+     */
+    private MiningFootageNewDTO createMiningFootageNewDTO(long miningTime, BigDecimal miningPace, BigDecimal miningPaceSum) {
+        MiningFootageNewDTO dto = new MiningFootageNewDTO();
+        dto.setMiningTime(miningTime);
+        dto.setMiningPace(miningPace);
+        dto.setMiningPaceSum(miningPaceSum);
+        return dto;
+    }
 }
