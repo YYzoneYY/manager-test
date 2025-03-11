@@ -920,6 +920,14 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(workface.getWorkfaceName()+"~煤粉量报表.xlsx","UTF-8"));
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            if(wb.get() == null){
+                wb.set(new XSSFWorkbook());
+                byte[] excelData = byteArrayOutputStream.toByteArray();
+                response.setContentLength(excelData.length);
+                response.getOutputStream().write(excelData);
+                wb.get().close();
+                return;
+            }
             wb.get().write(byteArrayOutputStream);
             byte[] excelData = byteArrayOutputStream.toByteArray();
             response.setContentLength(excelData.length);
