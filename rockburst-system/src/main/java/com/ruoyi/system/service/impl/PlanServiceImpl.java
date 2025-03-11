@@ -768,6 +768,10 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                         throw new RuntimeException("起始导线点与终始导线点相同，起始距离为正数，终始距离不能为负");
                     }
                 }
+                boolean greaterThanT = DataJudgeUtils.greaterThanT(planAreaDTO.getEndDistance(), planAreaDTO.getStartDistance());
+                if (!greaterThanT) {
+                    throw new RuntimeException("起始导线点与终始导线点相同，起始距离不能大于终始距离");
+                }
             }
             LambdaQueryWrapper<PlanAreaEntity> queryWrapper = new LambdaQueryWrapper<PlanAreaEntity>()
                     .eq(PlanAreaEntity::getTunnelId, planAreaDTO.getTunnelId())
@@ -868,6 +872,16 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         }
         if (status.equals(ConstantsInfo.REJECTED)) {
             throw new RuntimeException("此计划已驳回,无法撤回");
+        }
+    }
+
+    public static void main(String[] args) {
+        double a = Double.parseDouble("1");
+        double b = Double.parseDouble("-1");
+        if (b > a) {
+            System.out.println("dddd");
+        } else {
+            System.out.println("cccc");
         }
     }
 }

@@ -38,9 +38,9 @@ public class PressureHoleFormsController {
     @ApiOperation(value = "导出卸压孔报表", notes = "导出卸压孔报表")
     @GetMapping("/exportForms")
     public void exportPressureHoleForms(HttpServletResponse response,
-                                        @RequestParam(value = "startTime") Long startTime,
-                                        @RequestParam(value = "endTime") Long endTime) throws UnsupportedEncodingException {
-        List<PressureHoleImportDTO> list = pressureHoleFormsService.ExportPressureHoleForms(new java.util.Date(startTime), new java.util.Date(endTime));
+                                        @RequestParam(value = "startTime", required = false) Date startTime,
+                                        @RequestParam(value = "endTime", required = false) Date endTime) throws UnsupportedEncodingException {
+        List<PressureHoleImportDTO> list = pressureHoleFormsService.ExportPressureHoleForms(startTime, endTime);
         ExcelUtil<PressureHoleImportDTO> excelUtil = new ExcelUtil<>(PressureHoleImportDTO.class);
         String fileName = "卸压孔报表" + ".xlsx";
         fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
@@ -51,11 +51,11 @@ public class PressureHoleFormsController {
 
     @ApiOperation(value = "分页查询", notes = "分页查询")
     @GetMapping("/queryPage")
-    public R<Object> queryPage(@ApiParam(name = "startTime", value = "开始时间") @RequestParam(required = false) Long startTime,
-                               @ApiParam(name = "endTime", value = "结束时间") @RequestParam(required = false) Long endTime,
+    public R<Object> queryPage(@ApiParam(name = "startTime", value = "开始时间") @RequestParam(required = false) Date startTime,
+                               @ApiParam(name = "endTime", value = "结束时间") @RequestParam(required = false) Date endTime,
                                @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
-        return R.ok(pressureHoleFormsService.queryPage(new Date(startTime), new Date(endTime), pageNum, pageSize));
+        return R.ok(pressureHoleFormsService.queryPage(startTime, endTime, pageNum, pageSize));
     }
 
 }

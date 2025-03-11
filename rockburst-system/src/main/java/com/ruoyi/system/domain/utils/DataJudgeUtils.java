@@ -24,6 +24,16 @@ public class DataJudgeUtils {
         return flag;
     }
 
+    public static boolean greaterThanT(String s, String min) {
+        boolean flag = false;
+        double s1 = Double.parseDouble(s);
+        double main1 = Double.parseDouble(min);
+        if (s1 > main1) {
+            flag = true;
+        }
+        return flag;
+    }
+
     public static boolean lessThan(String s, String max) {
         boolean flag = false;
         double s1 = 0.0;
