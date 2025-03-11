@@ -288,8 +288,15 @@ public class BizProjectRecordController extends BaseController
     @ApiOperation(value = "撤回", notes = "撤回")
     @PreAuthorize("@ss.hasPermi('project:record:withdraw')")
     @GetMapping(value = "/withdraw")
-    public R<Object> withdraw(@ApiParam(name = "projectId", value = "计划id", required = true) @RequestParam Long projectId){
+    public R<Object> withdraw(@ApiParam(name = "projectId", value = "填报id", required = true) @RequestParam Long projectId){
         return R.ok(bizProjectRecordService.withdraw(projectId));
+    }
+
+    @ApiOperation(value = "获取驳回原因", notes = "获取驳回原因")
+    @PreAuthorize("@ss.hasPermi('project:record:getReason')")
+    @GetMapping(value = "/getReason")
+    public R<Object> getReason(@ApiParam(name = "projectId", value = "填报id", required = true) @RequestParam Long projectId) {
+        return R.ok(bizProjectRecordService.getReason(projectId));
     }
 
 //    @PreAuthorize("@ss.hasPermi('project:record:edit')")

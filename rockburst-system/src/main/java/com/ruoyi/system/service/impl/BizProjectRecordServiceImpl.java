@@ -45,6 +45,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -120,6 +121,10 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     private BizPresetPointMapper bizPresetPointMapper;
     @Autowired
     private BizPlanPresetMapper bizPlanPresetMapper;
+    @Resource
+    private DepartmentAuditMapper departmentAuditMapper;
+    @Resource
+    private TeamAuditMapper teamAuditMapper;
 
 
     @DataScopeSelf
@@ -1023,6 +1028,41 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         bizProject.setTag(ConstantsInfo.INITIAL_TAG);
         flag = bizProjectRecordMapper.updateById(bizProject) > 0 ? "撤回成功" : "撤回失败,请联系管理员";
         return flag;
+    }
+
+    /**
+     * 获取驳回原因
+     * @param projectId 工程填报id
+     * @return 返回结果
+     */
+    @Override
+    public ReturnReasonDTO getReason(Long projectId) {
+        ReturnReasonDTO returnReasonDTO = new ReturnReasonDTO();
+        TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
+                .eq(TeamAuditEntity::getProjectId, projectId)
+                .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .orderByDesc(TeamAuditEntity::getCreateTime)
+                .last("LIMIT 1"));
+        if (ObjectUtil.isNotNull(teamAuditEntity)) {
+            if (teamAuditEntity.getAuditResult().equals(ConstantsInfo.AUDIT_REJECT)) {
+                returnReasonDTO.setRejectTag("区队审核");
+                returnReasonDTO.setRejectReason(teamAuditEntity.getRejectionReason());
+            }
+            if (teamAuditEntity.getAuditResult().equals(ConstantsInfo.AUDIT_SUCCESS)) {
+                DepartmentAuditEntity departmentAuditEntity = departmentAuditMapper.selectOne(new LambdaQueryWrapper<DepartmentAuditEntity>()
+                        .eq(DepartmentAuditEntity::getProjectId, projectId)
+                        .eq(DepartmentAuditEntity::getTeamAuditId, teamAuditEntity.getTeamAuditId())
+                        .orderByDesc(DepartmentAuditEntity::getCreateTime)
+                        .last("LIMIT 1"));
+                if (ObjectUtil.isNotNull(departmentAuditEntity)) {
+                    if (departmentAuditEntity.getAuditResult().equals(ConstantsInfo.AUDIT_REJECT)) {
+                        returnReasonDTO.setRejectTag("科室审核");
+                        returnReasonDTO.setRejectReason(departmentAuditEntity.getRejectionReason());
+                    }
+                }
+            }
+        }
+        return returnReasonDTO;
     }
 
     private ChartData setAlarm(List<Double> alarms){

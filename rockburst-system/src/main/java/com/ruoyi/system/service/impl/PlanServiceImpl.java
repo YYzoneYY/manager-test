@@ -753,6 +753,22 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             throw new RuntimeException("区域信息不能为空");
         }
         planAreaDTOS.forEach(planAreaDTO -> {
+            // 检查距离字符串是否为空或长度不足
+            if (planAreaDTO.getStartDistance() == null || planAreaDTO.getStartDistance().isEmpty()) {
+                throw new RuntimeException("StartDistance 不能为空");
+            }
+            if (planAreaDTO.getEndDistance() == null || planAreaDTO.getEndDistance().isEmpty()) {
+                throw new RuntimeException("EndDistance 不能为空");
+            }
+            Long startTraversePointId = planAreaDTO.getStartTraversePointId();
+            Long endTraversePointId = planAreaDTO.getEndTraversePointId();
+            if (startTraversePointId.equals(endTraversePointId)) {
+                if (planAreaDTO.getStartDistance().charAt(0) != '-') {
+                    if (planAreaDTO.getEndDistance().charAt(0) == '-') {
+                        throw new RuntimeException("起始导线点与终始导线点相同，起始距离为正数，终始距离不能为负");
+                    }
+                }
+            }
             LambdaQueryWrapper<PlanAreaEntity> queryWrapper = new LambdaQueryWrapper<PlanAreaEntity>()
                     .eq(PlanAreaEntity::getTunnelId, planAreaDTO.getTunnelId())
                     .eq(PlanAreaEntity::getType, type);
@@ -764,22 +780,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             if (ListUtils.isNotNull(planAreaEntities)) {
                 planAreaEntities.forEach(planAreaEntity -> {
                     try {
-                        // 检查距离字符串是否为空或长度不足
-                        if (planAreaDTO.getStartDistance() == null || planAreaDTO.getStartDistance().isEmpty()) {
-                            throw new IllegalArgumentException("StartDistance 不能为空");
-                        }
-                        if (planAreaDTO.getEndDistance() == null || planAreaDTO.getEndDistance().isEmpty()) {
-                            throw new IllegalArgumentException("EndDistance 不能为空");
-                        }
-                        Long startTraversePointId = planAreaDTO.getStartTraversePointId();
-                        Long endTraversePointId = planAreaDTO.getEndTraversePointId();
-                        if (startTraversePointId.equals(endTraversePointId)) {
-                            if (planAreaDTO.getStartDistance().charAt(0) != '-') {
-                                if (planAreaDTO.getEndDistance().charAt(0) == '-') {
-                                    throw new IllegalArgumentException("起始导线点与终始导线点相同，起始距离为正数，终始距离不能为负");
-                                }
-                            }
-                        }
                         AreaAlgorithmUtils.areaCheck(type, planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
                     } catch (Exception e) {
                         throw new RuntimeException(e.getMessage());

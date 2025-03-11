@@ -51,8 +51,8 @@ public class PressureHoleFormsController {
 
     @ApiOperation(value = "分页查询", notes = "分页查询")
     @GetMapping("/queryPage")
-    public R<Object> queryPage(@RequestParam Long startTime,
-                               @RequestParam Long endTime,
+    public R<Object> queryPage(@ApiParam(name = "startTime", value = "开始时间") @RequestParam(required = false) Long startTime,
+                               @ApiParam(name = "endTime", value = "结束时间") @RequestParam(required = false) Long endTime,
                                @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {
         return R.ok(pressureHoleFormsService.queryPage(new Date(startTime), new Date(endTime), pageNum, pageSize));

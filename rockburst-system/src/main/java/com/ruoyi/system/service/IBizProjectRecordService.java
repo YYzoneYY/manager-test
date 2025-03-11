@@ -5,10 +5,7 @@ import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizProjectRecord;
-import com.ruoyi.system.domain.dto.BizPlanDto;
-import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
-import com.ruoyi.system.domain.dto.BizProjectRecordDto;
-import com.ruoyi.system.domain.dto.BizProjectRecordDto1;
+import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.dto.project.BizCardVDto;
 import com.ruoyi.system.domain.dto.project.BizWashProofDto;
 import com.ruoyi.system.domain.vo.*;
@@ -121,4 +118,11 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
      * @return 返回结果
      */
     String withdraw(Long projectId);
+
+    /**
+     * 获取驳回原因
+     * @param projectId 工程填报id
+     * @return 返回结果
+     */
+    ReturnReasonDTO getReason(Long projectId);
 }
