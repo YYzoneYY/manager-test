@@ -773,6 +773,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                     throw new RuntimeException("起始导线点与终始导线点相同，起始距离不能大于终始距离");
                 }
             }
+            checkDistance(planAreaDTO.getTunnelId(), planAreaDTO);
             LambdaQueryWrapper<PlanAreaEntity> queryWrapper = new LambdaQueryWrapper<PlanAreaEntity>()
                     .eq(PlanAreaEntity::getTunnelId, planAreaDTO.getTunnelId())
                     .eq(PlanAreaEntity::getType, type);
@@ -791,6 +792,78 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                 });
             }
         });
+    }
+
+    /**
+     * 校验距离
+     */
+    private void checkDistance(Long tunnelId, PlanAreaDTO planAreaDTO) {
+        if (planAreaDTO.getStartDistance().charAt(0) == '-') {
+            BizTravePoint sTraPoint = obtainBizTravePoint(planAreaDTO.getStartTraversePointId());
+            Double prePointDistance = sTraPoint.getPrePointDistance();
+            boolean b = DataJudgeUtils.absoluteValueCompareTwo(prePointDistance, planAreaDTO.getStartDistance());
+            if (!b) {
+                throw new RuntimeException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
+            }
+        }
+        if (planAreaDTO.getEndDistance().charAt(0) == '-') {
+            BizTravePoint eTraPoint = obtainBizTravePoint(planAreaDTO.getEndTraversePointId());
+            Double endPointDistance = eTraPoint.getPrePointDistance();
+            boolean b1 = DataJudgeUtils.absoluteValueCompareTwo(endPointDistance, planAreaDTO.getEndDistance());
+            if (!b1) {
+                throw new RuntimeException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
+            }
+        }
+        if (planAreaDTO.getStartDistance().charAt(0) != '-') {
+            BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
+                    .eq(BizTravePoint::getPointId, planAreaDTO.getStartTraversePointId()));
+            Long no = bizTravePoint.getNo();
+            BizTravePoint bizTraPointTwo = obtainBizTravePointT(tunnelId, no);
+            Double prePointDistance = bizTraPointTwo.getPrePointDistance();
+            boolean b = DataJudgeUtils.absoluteValueCompareTwo(prePointDistance, planAreaDTO.getStartDistance());
+            if (!b) {
+                throw new RuntimeException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
+            }
+        }
+        if (planAreaDTO.getEndDistance().charAt(0) != '-') {
+            BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
+                    .eq(BizTravePoint::getPointId, planAreaDTO.getEndTraversePointId()));
+            Long no = bizTravePoint.getNo();
+            BizTravePoint bizTraPointTwo = obtainBizTravePointT(tunnelId, no);
+            Double endPointDistance = bizTraPointTwo.getPrePointDistance();
+            boolean b1 = DataJudgeUtils.absoluteValueCompareTwo(endPointDistance, planAreaDTO.getEndDistance());
+            if (!b1) {
+                throw new RuntimeException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
+            }
+        }
+    }
+
+    /**
+     * 获取导线点
+     */
+    private BizTravePoint obtainBizTravePoint(Long pointId) {
+        BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
+                .eq(BizTravePoint::getPointId, pointId)
+                .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(bizTravePoint)) {
+            throw new RuntimeException("发生未知异常，请联系管理员!");
+        }
+        return bizTravePoint;
+    }
+
+    /**
+     * 获取导线点二
+     */
+    private BizTravePoint obtainBizTravePointT(Long tunnelId, Long no) {
+        BizTravePoint bizTravePoint = new BizTravePoint();
+        bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
+                .eq(BizTravePoint::getTunnelId, tunnelId)
+                .eq(BizTravePoint::getNo, no + 1)
+                .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(bizTravePoint)) {
+            throw new RuntimeException("获取导线点异常(2)！");
+        }
+        return bizTravePoint;
     }
 
 
@@ -872,16 +945,6 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         }
         if (status.equals(ConstantsInfo.REJECTED)) {
             throw new RuntimeException("此计划已驳回,无法撤回");
-        }
-    }
-
-    public static void main(String[] args) {
-        double a = Double.parseDouble("1");
-        double b = Double.parseDouble("-1");
-        if (b > a) {
-            System.out.println("dddd");
-        } else {
-            System.out.println("cccc");
         }
     }
 }
