@@ -820,6 +820,15 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             Long no = bizTravePoint.getNo();
             BizTravePoint bizTraPointTwo = obtainBizTravePointT(tunnelId, no);
             Double prePointDistance = bizTraPointTwo.getPrePointDistance();
+            if (planAreaDTO.getEndTraversePointId().equals(bizTraPointTwo.getPointId())) {
+                double sd = Double.parseDouble(planAreaDTO.getStartDistance());
+                double ed = Double.parseDouble(planAreaDTO.getEndDistance());
+                double abs = Math.abs(ed);
+                double td = sd + abs;
+                if (td > prePointDistance) {
+                    throw new RuntimeException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
+                }
+            }
             boolean b = DataJudgeUtils.absoluteValueCompareTwo(prePointDistance, planAreaDTO.getStartDistance());
             if (!b) {
                 throw new RuntimeException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
