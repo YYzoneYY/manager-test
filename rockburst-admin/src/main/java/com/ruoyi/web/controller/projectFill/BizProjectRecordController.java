@@ -190,9 +190,9 @@ public class BizProjectRecordController extends BaseController
 
         Long id= bizProjectRecordService.saveRecord(dto);
         try{
-            if(dto.getVideos() != null && dto.getVideos().size() > 0){
+            if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
                 List<String> strings = new ArrayList<>();
-                for (BizVideoDto video : dto.getVideos()) {
+                for (BizVideoDto video : dto.getVideoList()) {
                     strings.add(video.getFileUrl());
                 }
                 log.info("新增调用视频识别入参id:{},urls:{}",id, JSONUtil.parse(strings));
@@ -215,8 +215,8 @@ public class BizProjectRecordController extends BaseController
     {
         try{
             List<String> strings = new ArrayList<>();
-            if(bizProjectRecord.getVideos() != null && bizProjectRecord.getVideos().size() > 0){
-                for (BizVideoDto video : bizProjectRecord.getVideos()) {
+            if(bizProjectRecord.getVideoList() != null && bizProjectRecord.getVideoList().size() > 0){
+                for (BizVideoDto video : bizProjectRecord.getVideoList()) {
                     strings.add(video.getFileUrl());
                 }
                 log.info("修改调用视频识别入参id:{},urls:{}",bizProjectRecord.getProjectId(), JSONUtil.parse(strings));

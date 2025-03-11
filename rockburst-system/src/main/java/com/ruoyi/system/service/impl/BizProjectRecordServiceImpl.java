@@ -51,6 +51,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -460,8 +461,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             });
         }
 
-        if(dto.getVideos() != null && dto.getVideos().size() > 0){
-            dto.getVideos().forEach(bizVideo -> {
+        if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
+            dto.getVideoList().forEach(bizVideo -> {
                 BizVideo video = new BizVideo();
                 BeanUtil.copyProperties(bizVideo, video);
                 video.setProjectId(entity.getProjectId());
@@ -515,8 +516,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             });
         }
 
-        if(dto.getVideos() != null && dto.getVideos().size() > 0){
-            dto.getVideos().forEach(bizVideo -> {
+        if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
+            dto.getVideoList().forEach(bizVideo -> {
                 BizVideo video = new BizVideo();
                 BeanUtil.copyProperties(bizVideo, video);
                 video.setProjectId(entity.getProjectId());
@@ -593,8 +594,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 bizDrillRecordMapper.insert(bizDrillRecord);
             });
         }
-        if(dto.getVideos() != null && dto.getVideos().size() > 0){
-            dto.getVideos().forEach(bizVideo -> {
+        if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
+            dto.getVideoList().forEach(bizVideo -> {
                 BizVideo video = new BizVideo();
                 BeanUtil.copyProperties(bizVideo, video);
                 video.setVideoId(null);
@@ -765,6 +766,20 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         List<Long> tunnelIds = new ArrayList<>();
 //        Assert.isTrue(tunnelList != null && tunnelList.size() > 0, "没有巷道");
         tunnelIds = tunnelList.stream().map(TunnelEntity::getTunnelId).collect(Collectors.toList());
+        if(tunnelIds == null || tunnelIds.size() == 0){
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(workface.getWorkfaceName()+"~煤粉量报表.xlsx","UTF-8"));
+            try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+                wb.set(new XSSFWorkbook());
+
+//                wb.get().write(byteArrayOutputStream);
+                byte[] excelData = byteArrayOutputStream.toByteArray();
+                response.setContentLength(excelData.length);
+                response.getOutputStream().write(excelData);
+                wb.get().close();
+            }
+            return;
+        }
 
         //todo 预警值还没有表 设为
         List<String>  alarmLabels = Arrays.asList("1m","2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m","10m","11m","12m","13m","14m");
@@ -903,7 +918,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         // 生成 Excel 并写入响应流
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=" +workface.getWorkfaceName()+"~煤粉量报表.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(workface.getWorkfaceName()+"~煤粉量报表.xlsx","UTF-8"));
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             wb.get().write(byteArrayOutputStream);
             byte[] excelData = byteArrayOutputStream.toByteArray();
