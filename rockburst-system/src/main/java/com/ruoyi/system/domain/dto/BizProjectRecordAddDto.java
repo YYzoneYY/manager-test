@@ -124,6 +124,6 @@ public class BizProjectRecordAddDto  {
 
     List<BizDrillRecordDto> drillRecords;
 
-    List<BizVideoDto>  videos;
+    List<BizVideoDto> videoList;
 
 }

@@ -1,6 +1,8 @@
 package com.ruoyi.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.YtFactor;
 
 /**
@@ -11,6 +13,7 @@ import com.ruoyi.system.domain.YtFactor;
  */
 public interface IYtFactorService extends IService<YtFactor>
 {
+    public MPage<YtFactor> selectEntityList(YtFactor dto, Pagination pagination);
 
 
 
