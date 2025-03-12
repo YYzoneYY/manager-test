@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.projectFill;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -68,6 +69,15 @@ public class BizStatisticsController extends BaseController
         return R.ok(bizProjectRecordService.selectproList(new BasePermission(), dto,pagination));
     }
 
+    @Anonymous
+    @ApiOperation("防冲工程查询11111")
+//    @PreAuthorize("@ss.hasPermi('project:record:auditList')")
+    @GetMapping("/selectproList1111")
+    public R selectproList1111(Date sss)
+    {
+        return R.ok(sss);
+    }
+
 
     @ApiOperation("获取防冲工程查询详细信息")
 //    @PreAuthorize("@ss.hasPermi('project:record:query')")
@@ -122,6 +132,12 @@ public class BizStatisticsController extends BaseController
     @ApiOperation("煤粉量日报表")
     @GetMapping("get666")
     public void get666(BizProjectRecordDto1 dto , HttpServletResponse response) throws IOException {
+        if(dto.getStartTime().length() == 13){
+            String  start = DateUtil.formatDateTime(DateUtil.date(Long.parseLong(dto.getStartTime())));
+            String  end = DateUtil.formatDateTime(DateUtil.date(Long.parseLong(dto.getEndTime())));
+            dto.setStartTime(start);
+            dto.setEndTime(end);
+        }
         bizProjectRecordService.get444(dto,response);
     }
 
