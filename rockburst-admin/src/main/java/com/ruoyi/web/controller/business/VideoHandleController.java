@@ -16,7 +16,7 @@ import javax.annotation.Resource;
  * @description:
  */
 
-@Api(tags = "视频视频相关")
+@Api(tags = "视频识别相关")
 @RestController
 @RequestMapping("/videoIdentify")
 public class VideoHandleController {
