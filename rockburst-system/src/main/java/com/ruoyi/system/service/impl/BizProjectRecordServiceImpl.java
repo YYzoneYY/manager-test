@@ -388,35 +388,22 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         return null;
     }
 
+
+
+    public int getAngle(Integer barAngle, Integer bearAngle){
+        return barAngle + 90 - bearAngle;
+    }
+
     @Override
     public Long saveRecord(BizProjectRecordAddDto dto) {
-        BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
-
-        String detailJson = dto.getDrillRecords().get(0).getDetailJson();
-//        dto.getRange();
-//        dto.setConstructRange(dto.getRange());
-        Integer barAngle = 0;
-        if(detailJson != null && StrUtil.isNotBlank(detailJson) && !detailJson.equals("[]")){
-            JSONArray array = JSONUtil.parseArray(detailJson);
-            Integer bear_angle = JSONUtil.parseObj(array.get(0)).getInt("bear_angle");
-            barAngle = bar.getDirectAngle() + 90 - bear_angle;
-        }
-
-
-
-
 
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
-        QueryWrapper<SysDept> deptQueryWrapper = new QueryWrapper<>();
-        deptQueryWrapper.lambda().select(SysDept::getConstructionUnitId).eq(SysDept::getDeptId,currentUser.getDeptId());
-        List<SysDept> sysDepts = sysDeptMapper.selectList(deptQueryWrapper);
+
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
         entity.setTag(ConstantsInfo.INITIAL_TAG);
-        if(sysDepts != null && sysDepts.size() > 0){
-            entity.setConstructionUnitId(sysDepts.get(0).getConstructionUnitId());
-        }
+
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());
         if(entity.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_J)){
             entity.setLocationId(entity.getTunnelId());
@@ -426,63 +413,101 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         }
          this.getBaseMapper().insert(entity);
 
+        insertPresetPoint(dto,entity.getProjectId());
 
+        insterDrills(dto,entity.getProjectId());
 
-
-        try{
-            BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getConstructRange()));
-            if(point != null && point.getPointId() != null){
-                Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
-                Double ddd = dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectRange())).doubleValue();
-                BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLongitude(),ddd,barAngle);
-                point.setLongitudet(projectPoint.getLongitudet())
-                        .setConstructTime(dto.getConstructTime())
-                        .setLatitudet(projectPoint.getLatitudet())
-                        .setDrillType(dto.getDrillType())
-                        .setTunnelId(dto.getTunnelId())
-                        .setWorkfaceId(dto.getWorkfaceId())
-                        .setProjectId(entity.getProjectId())
-                        .setDangerAreaId(dangerAreaId)
-                        .setTunnelBarId(bar.getBarId());
-                bizPresetPointMapper.insert(point);
-            }
-        }catch (Exception e){
-            log.error(e.getMessage());
-        }
-
-
-        if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
-            IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
-                BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
-                BizDrillRecord bizDrillRecord  = new BizDrillRecord();
-                BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
-                bizDrillRecord.setStatus(0).setTravePointId(dto.getTravePointId()).setProjectId(entity.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
-                bizDrillRecordMapper.insert(bizDrillRecord);
-            });
-        }
-
-        if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
-            dto.getVideoList().forEach(bizVideo -> {
-                BizVideo video = new BizVideo();
-                BeanUtil.copyProperties(bizVideo, video);
-                video.setProjectId(entity.getProjectId());
-                bizVideoMapper.insert(video);
-            });
-        }
+        insertVideos(dto,entity.getProjectId());
 
 
 
         return entity.getProjectId();
     }
 
+    private int insertVideos(BizProjectRecordAddDto dto,Long projectId){
+        if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
+            dto.getVideoList().forEach(bizVideo -> {
+                BizVideo video = new BizVideo();
+                BeanUtil.copyProperties(bizVideo, video);
+                video.setProjectId(projectId);
+                bizVideoMapper.insert(video);
+            });
+        }
+        return 1;
+    }
+
+    private int insterDrills(BizProjectRecordAddDto dto,Long projectId){
+        if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
+            IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
+                BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
+                BizDrillRecord bizDrillRecord  = new BizDrillRecord();
+                BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
+                bizDrillRecord.setStatus(0).setTravePointId(dto.getTravePointId()).setProjectId(projectId).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
+                bizDrillRecordMapper.insert(bizDrillRecord);
+            });
+        }
+        return 1;
+    }
+
+
+    private void insertPresetPoint(BizProjectRecordAddDto dto,Long projectId){
+        try{
+            BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
+
+            BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getConstructRange()));
+
+            //新版本,曲折一一对应
+            if(point != null && point.getPointId() != null){
+                Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
+                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
+                if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
+                    String details = dto.getDrillRecords().get(0).getDetailJson();
+                    if(details != null && StrUtil.isNotBlank(details) && !details.equals("[]")){
+                        JSONArray array = JSONUtil.parseArray(details);
+                        List<Map<String,Object>> list = new ArrayList<>();
+                        String lat = point.getLatitude();
+                        String lon = point.getLongitude();
+                        Map<String, Object> map1 = new HashMap<>();
+                        map1.put("lat", lat);
+                        map1.put("lng", lon);
+                        list.add(map1);
+                        for (Object o : array) {
+                            Integer bear_angle = JSONUtil.parseObj(o).getInt("bear_angle");
+                            bear_angle = getAngle(bar.getDirectAngle(),bear_angle);
+                            BizPresetPoint projectPoint = bizTravePointService.getLatLontop(lat,lon,ddd,bear_angle);
+                            lat = projectPoint.getLatitudet();
+                            lon = projectPoint.getLongitudet();
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("lat", lat);
+                            map.put("lng", lon);
+                            list.add(map);
+                        }
+                        String str = JSONUtil.parseArray(list).toString();
+                        point.setLatlngs(str);
+                    }
+                }
+                point.setConstructTime(dto.getConstructTime())
+                        .setDrillType(dto.getDrillType())
+                        .setTunnelId(dto.getTunnelId())
+                        .setWorkfaceId(dto.getWorkfaceId())
+                        .setProjectId(projectId)
+                        .setDangerAreaId(dangerAreaId)
+                        .setTunnelBarId(bar.getBarId());
+                bizPresetPointMapper.insert(point);
+            }
+
+        }catch (Exception e){
+            log.error(e.getMessage());
+        }
+
+    }
+
     @Override
     public int saveRecordApp(BizProjectRecordAddDto dto) {
 
-//        dto.setConstructUnitId(dto.getConstructionUnitId());
         QueryWrapper<SysDept> deptQueryWrapper = new QueryWrapper<>();
         deptQueryWrapper.lambda().select(SysDept::getDeptId).eq(SysDept::getConstructionUnitId,dto.getConstructUnitId());
         List<SysDept> sysDepts = sysDeptMapper.selectList(deptQueryWrapper);
-
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
@@ -496,36 +521,21 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         }
         //掘进回采id
         if(dto.getConstructType().equals(BizBaseConstant.CONSTRUCT_TYPE_H)){
-//            entity.setWorkfaceId(dto.getLocationId());
             entity.setLocationId(dto.getWorkfaceId());
         }else {
-//            entity.setTunnelId(dto.getLocationId());
             entity.setLocationId(dto.getTunnelId());
         }
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0);
-//                .setDeptId(currentUser.getDeptId());
         this.getBaseMapper().insert(entity);
 
-        if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
-            IntStream.range(0, dto.getDrillRecords().size()).forEach(i -> {
-                BizDrillRecordDto drillRecordDto = dto.getDrillRecords().get(i);
-                BizDrillRecord bizDrillRecord  = new BizDrillRecord();
-                BeanUtil.copyProperties(drillRecordDto, bizDrillRecord);
-                bizDrillRecord.setStatus(0).setTravePointId(dto.getTravePointId()).setProjectId(entity.getProjectId()).setNo(i + 1); // i + 1 表示当前是第几个 drillRecord
-                bizDrillRecordMapper.insert(bizDrillRecord);
-            });
-        }
+        insertPresetPoint(dto,entity.getProjectId());
 
-        if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
-            dto.getVideoList().forEach(bizVideo -> {
-                BizVideo video = new BizVideo();
-                BeanUtil.copyProperties(bizVideo, video);
-                video.setProjectId(entity.getProjectId());
-                bizVideoMapper.insert(video);
-            });
-        }
+        insterDrills(dto,entity.getProjectId());
 
-        return 1;    }
+        insertVideos(dto,entity.getProjectId());
+
+        return 1;
+    }
 
     @Override
     public int updateRecord(BizProjectRecordAddDto dto) {
@@ -552,13 +562,39 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getConstructRange()));
             if(bizProjectRecords != null && bizProjectRecords.size() > 0){
                 point.setPresetPointId(bizProjectRecords.get(0).getPresetPointId());
+
+
                 if(point != null && point.getPointId() != null){
                     Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
-                    Double ddd = dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectRange())).doubleValue();
-                    BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLongitude(),ddd,barAngle);
-                    point.setLongitudet(projectPoint.getLongitudet())
-                            .setConstructTime(dto.getConstructTime())
-                            .setLatitudet(projectPoint.getLatitudet())
+                    Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
+                    if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
+                        String details = dto.getDrillRecords().get(0).getDetailJson();
+                        if(details != null && StrUtil.isNotBlank(details) && !details.equals("[]")){
+                            JSONArray array = JSONUtil.parseArray(details);
+                            List<Map<String,Object>> list = new ArrayList<>();
+                            String lat = point.getLatitude();
+                            String lon = point.getLongitude();
+                            Map<String, Object> map1 = new HashMap<>();
+                            map1.put("lat", lat);
+                            map1.put("lng", lon);
+                            list.add(map1);
+                            for (Object o : array) {
+                                Integer bear_angle = JSONUtil.parseObj(o).getInt("bear_angle");
+                                bear_angle = getAngle(bar.getDirectAngle(),bear_angle);
+                                BizPresetPoint projectPoint = bizTravePointService.getLatLontop(lat,lon,ddd,bear_angle);
+                                lat = projectPoint.getLatitudet();
+                                lon = projectPoint.getLatitudet();
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("lat", lat);
+                                map.put("lng", lon);
+                                list.add(map);
+                            }
+                            String str = JSONUtil.parseArray(list).toString();
+                            point.setLatlngs(str);
+                        }
+                    }
+
+                    point.setConstructTime(dto.getConstructTime())
                             .setDrillType(dto.getDrillType())
                             .setTunnelId(dto.getTunnelId())
                             .setWorkfaceId(dto.getWorkfaceId())
@@ -566,7 +602,29 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                             .setDangerAreaId(dangerAreaId)
                             .setTunnelBarId(bar.getBarId());
                     bizPresetPointMapper.updateById(point);
+
                 }
+
+
+
+
+
+
+//                if(point != null && point.getPointId() != null){
+//                    Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
+//                    Double ddd = dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectRange())).doubleValue();
+//                    BizPresetPoint projectPoint = bizTravePointService.getLatLontop(point.getLatitude(),point.getLongitude(),ddd,barAngle);
+//                    point.setLongitudet(projectPoint.getLongitudet())
+//                            .setConstructTime(dto.getConstructTime())
+//                            .setLatitudet(projectPoint.getLatitudet())
+//                            .setDrillType(dto.getDrillType())
+//                            .setTunnelId(dto.getTunnelId())
+//                            .setWorkfaceId(dto.getWorkfaceId())
+//                            .setProjectId(entity.getProjectId())
+//                            .setDangerAreaId(dangerAreaId)
+//                            .setTunnelBarId(bar.getBarId());
+//                    bizPresetPointMapper.updateById(point);
+//                }
             }
 
         }catch (Exception e){

@@ -34,6 +34,11 @@ public class YtFactor extends BaseSelfEntity
     @ApiModelProperty(value = "类型")
     private String factorType;
 
+    @ApiModelProperty(value = "工作面")
+    private Long workfaceId;
+
+    @ApiModelProperty(value = "巷道")
+    private Long tunnelId;
 
     @ApiModelProperty(value = "开始导线点")
     private Long startPointId;
@@ -51,6 +56,7 @@ public class YtFactor extends BaseSelfEntity
     @ApiModelProperty(value = "值")
     private Integer value;
 
-
+    @ApiModelProperty(value = "坐标")
+    private String latlngs;
 
 }

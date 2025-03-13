@@ -19,6 +19,7 @@ import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,6 +94,8 @@ public class BizMapController extends BaseController
     private BizTravePointMapper bizTravePointMapper;
     @Autowired
     private BizDangerLevelMapper bizDangerLevelMapper;
+    @Autowired
+    private IYtFactorService ytFactorService;
 
     @ApiOperation("给起始和结束")
     @GetMapping("/xxxxxx")
@@ -120,6 +123,23 @@ public class BizMapController extends BaseController
         List<SysDictData> list = sysDictDataService.selectDictDataList(dictData);
         return R.ok(list);
     }
+
+    @ApiOperation("获取云图能量值")
+    @GetMapping("/getyt")
+    public R getyt(@ParameterObject YtFactor dto)
+    {
+        QueryWrapper<YtFactor> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(StrUtil.isNotEmpty(dto.getFactorType()),YtFactor::getFactorType, dto.getFactorType())
+                .like(StrUtil.isNotEmpty(dto.getName()),YtFactor::getFactorType, dto.getName())
+                .eq(dto.getWorkfaceId() != null,YtFactor::getWorkfaceId, dto.getWorkfaceId())
+                .eq(dto.getTunnelId() != null,YtFactor::getTunnelId, dto.getTunnelId());
+        List<YtFactor>  yt  =  ytFactorService.list(queryWrapper);
+        return R.ok(yt);
+    }
+
+
+
 
 
 

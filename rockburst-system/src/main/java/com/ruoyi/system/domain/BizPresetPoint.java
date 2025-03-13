@@ -78,6 +78,8 @@ public class BizPresetPoint extends BaseSelfEntity
     private String longitudet;
 
 
+    @ApiModelProperty(value = "组")
+    private String latlngs;
 
 
 }
