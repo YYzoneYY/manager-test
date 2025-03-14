@@ -85,6 +85,9 @@ public class BizPresetPointVo extends BaseSelfEntity
     @ApiModelProperty(value = "掘进回采")
     private String constructType;
 
+    @ApiModelProperty(value = "组")
+    private String latlngs;
+
 
 
 
