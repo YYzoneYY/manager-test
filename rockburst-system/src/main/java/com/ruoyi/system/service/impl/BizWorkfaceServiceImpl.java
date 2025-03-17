@@ -9,10 +9,7 @@ import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
-import com.ruoyi.system.domain.BizMine;
-import com.ruoyi.system.domain.BizMiningArea;
-import com.ruoyi.system.domain.BizTravePoint;
-import com.ruoyi.system.domain.BizWorkface;
+import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.vo.BizTunnelVo;
@@ -70,6 +67,8 @@ public class BizWorkfaceServiceImpl  extends MPJBaseServiceImpl<BizWorkfaceMappe
         MPJLambdaWrapper<TunnelEntity> queryWrapper = new MPJLambdaWrapper<TunnelEntity>();
         queryWrapper.selectAll(TunnelEntity.class)
                 .selectCollection(BizTravePoint.class, BizTunnelVo::getBizTravePoints)
+                .selectCollection(BizTunnelBar.class, BizTunnelVo::getBizTunnelBars)
+                .leftJoin(BizTunnelBar.class,BizTunnelBar::getTunnelId,TunnelEntity::getTunnelId)
                 .leftJoin(BizTravePoint.class,BizTravePoint::getTunnelId,TunnelEntity::getTunnelId);
         List<BizTunnelVo> tunnelVos =  tunnelMapper.selectJoinList(BizTunnelVo.class,queryWrapper);
         Map<Long, List<BizTunnelVo>> groupedByFaceId = tunnelVos.stream()

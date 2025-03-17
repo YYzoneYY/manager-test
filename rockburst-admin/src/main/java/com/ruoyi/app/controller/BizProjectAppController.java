@@ -10,6 +10,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.BizTravePoint;
+import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.SysProjectType;
@@ -56,6 +57,9 @@ public class BizProjectAppController extends BaseController
     private IBizDrillRecordService bizDrillRecordService;
     @Autowired
     private IBizVideoService bizVideoService;
+    @Autowired
+    private IBizTunnelBarService bizTunnelBarService;
+
 
 
 
@@ -122,6 +126,11 @@ public class BizProjectAppController extends BaseController
         for (TunnelEntity tunnelEntity : list) {
             BizTunnelVo vo = new BizTunnelVo();
             BeanUtil.copyProperties(tunnelEntity,vo);
+            QueryWrapper<BizTunnelBar> queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.lambda()
+                    .eq(BizTunnelBar::getTunnelId,tunnelEntity.getTunnelId());
+            List<BizTunnelBar> bars = bizTunnelBarService.list(queryWrapper1);
+            vo.setBizTunnelBars(bars);
             QueryWrapper<BizTravePoint> pointQueryWrapper = new QueryWrapper<>();
             pointQueryWrapper.lambda()
                     .eq(BizTravePoint::getTunnelId,tunnelEntity.getTunnelId())

@@ -78,9 +78,17 @@ public interface IBizProjectRecordService  extends MPJDeepService<BizProjectReco
     List<BizProjectRecordListVo> auditList(BizProjectRecord bizProjectRecord);
 
 
-     int firstAudit(BizProjectRecordDto projectRecordDto);
+    /**
+     * 根据 帮偏移量和给定角度 获取  实际地图偏移量
+     * @param barAngle   帮偏移量
+     * @param bearAngle  填写角度
+     * @return
+     */
+    int getAngle(Integer barAngle, Integer bearAngle);
 
-     int secondAudit(BizProjectRecordDto projectRecordDto);
+    int firstAudit(BizProjectRecordDto projectRecordDto);
+
+    int secondAudit(BizProjectRecordDto projectRecordDto);
 
 
 
