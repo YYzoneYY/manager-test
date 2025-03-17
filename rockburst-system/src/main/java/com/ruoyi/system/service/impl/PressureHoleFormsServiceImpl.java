@@ -111,10 +111,26 @@ public class PressureHoleFormsServiceImpl implements PressureHoleFormsService {
             if (ObjectUtil.isNull(bizDrillRecord)) {
                 throw new RuntimeException("未找到钻孔信息,无法进行导出");
             }
-            pressureHoleImportDTO.setDrillNum(bizProjectRecord.getDrillNum());
-            pressureHoleImportDTO.setHeight(String.valueOf(bizDrillRecord.getHeight()));
-            pressureHoleImportDTO.setRealDeep(String.valueOf(bizDrillRecord.getRealDeep()));
-            pressureHoleImportDTO.setDiameter(String.valueOf(bizDrillRecord.getDiameter()));
+            if (ObjectUtil.isNull(bizProjectRecord.getDrillNum())) {
+                pressureHoleImportDTO.setDrillNum("");
+            } else {
+                pressureHoleImportDTO.setDrillNum(bizProjectRecord.getDrillNum());
+            }
+            if (ObjectUtil.isNull(bizDrillRecord.getHeight())) {
+                pressureHoleImportDTO.setHeight("");
+            } else {
+                pressureHoleImportDTO.setHeight(String.valueOf(bizDrillRecord.getHeight()));
+            }
+            if (ObjectUtil.isNull(bizDrillRecord.getRealDeep())) {
+                pressureHoleImportDTO.setRealDeep("");
+            } else {
+                pressureHoleImportDTO.setRealDeep(String.valueOf(bizDrillRecord.getRealDeep()));
+            }
+            if (ObjectUtil.isNull(bizDrillRecord.getDiameter())) {
+                pressureHoleImportDTO.setDiameter("");
+            } else {
+                pressureHoleImportDTO.setDiameter(String.valueOf(bizDrillRecord.getDiameter()));
+            }
             if (ObjectUtil.isNotNull(bizProjectRecord.getWorker())){
                 constructionPersonnel = getPersonalName("1", bizProjectRecord.getWorker());
             }
