@@ -7,13 +7,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
-import org.springframework.security.core.parameters.P;
-
-import java.io.Serializable;
 
 /**
  * 工程填报审核记录对象 biz_project_audit
@@ -30,26 +23,27 @@ public class BizProjectAudit extends BaseSelfEntity
 
     /** $column.columnComment */
     @TableId( type = IdType.AUTO)
-    private Long projectAuditId;
+    private Long auditId;
 
     /** 工程填报id */
     @ApiModelProperty(name = "工程填报id")
     private Long projectId;
 
-    /** 审核状态 */
-    @ApiModelProperty(name = "审核状态")
-    private Integer status;
-
-
-    @ApiModelProperty(name = "审核状态")
-    private String msg;
-
-    @ApiModelProperty(name = "审核状态")
-    private String level;
-
     /** 序号 */
     @ApiModelProperty(name = "序号")
-    private Long no;
+    private Integer no;
+
+    /** 审核状态 */
+    @ApiModelProperty(name = "审核状态 通过 1 不通过 0")
+    private Integer status;
+
+    @ApiModelProperty(name = "标识")
+    private String tag;
+
+    @ApiModelProperty(name = "驳回原因")
+    private String rejectionReason;
+
+
 
 
 }

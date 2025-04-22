@@ -13,7 +13,6 @@ import com.ruoyi.system.domain.Entity.DepartmentAuditEntity;
 import com.ruoyi.system.domain.Entity.TeamAuditEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.AppAuditDetailDTO;
-import com.ruoyi.system.domain.dto.DepartAuditHistoryDTO;
 import com.ruoyi.system.domain.dto.SelectDTO;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.ProjectVO;
@@ -84,67 +83,60 @@ public class AppAuditServiceImpl implements AppAuditService {
         return result;
     }
 
-    /**
-     * 已审批-分页查询(区队审核)
-     * @param selectDTO 查询参数DTO
-     * @param userId 用户id
-     * @param pageNum 当前页码
-     * @param pageSize 每页显示条数
-     * @return 返回结果
-     */
-    @Override
-    public TableData teamApprovedByPage(SelectDTO selectDTO, Long userId, Integer pageNum, Integer pageSize) {
-        TableData result = new TableData();
-        if (null == pageNum || pageNum < 1) {
-            pageNum = 1;
-        }
-        if (null == pageSize || pageSize < 1) {
-            pageSize = 10;
-        }
-        if (ObjectUtil.isNull(userId)) {
-            throw new RuntimeException("用户id不能为空!");
-        }
-        List<Long> projectIds = teamAuditMapper.selectList(new LambdaQueryWrapper<TeamAuditEntity>()
-                        .eq(TeamAuditEntity::getCreateBy, userId)
-                        .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG))
-                .stream()
-                .map(TeamAuditEntity::getProjectId)
-                .distinct()
-                .collect(Collectors.toList());
-        PageHelper.startPage(pageNum, pageSize);
-        Page<ProjectVO> page = teamAuditMapper.approvedQueryByPageForApp(projectIds, selectDTO.getFillingType(), selectDTO.getConstructionUnitId());
-        if (ListUtils.isNotNull(page.getResult())) {
-            page.getResult().forEach(projectVO -> {
-                projectVO.setConstructionUnitName(getConstructionUnitName(projectVO.getConstructUnitId()));
-                projectVO.setConstructSiteFmt(getConstructSite(projectVO.getConstructSiteId(), projectVO.getConstructType()));
-                // 根据区队审核结果，动态模拟审核状态
-                TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
-                        .eq(TeamAuditEntity::getProjectId, projectVO.getProjectId())
-                        .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
-                        .orderByDesc(TeamAuditEntity::getCreateTime)
-                        .last("LIMIT 1"));
-                if (ObjectUtil.isNotNull(teamAuditEntity)) {
-                    if (teamAuditEntity.getAuditResult().equals(ConstantsInfo.AUDIT_SUCCESS)) {
-                        if (teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.AUDITED_DICT_VALUE)) { //科室审批通过则通过
-                            projectVO.setStatusFmt("已通过");
-                        } else if (teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.REJECTED)) { //科室审批驳回则驳回
-                            projectVO.setStatusFmt("已驳回");
-                        } else if (teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.AUDIT_STATUS_DICT_VALUE) ||
-                                teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.IN_REVIEW_DICT_VALUE)) { //科室审批为待审核/审核中时则为已提交
-                            projectVO.setStatusFmt("已提交");
-                        }
-                    }
-                    if (teamAuditEntity.getAuditResult().equals(ConstantsInfo.AUDIT_REJECT)) {
-                        projectVO.setStatusFmt("已驳回");
-                        projectVO.setRejectReason(teamAuditEntity.getRejectionReason()); //驳回原因
-                    }
-                }
-            });
-        }
-        result.setTotal(page.getTotal());
-        result.setRows(page.getResult());
-        return result;
-    }
+//    /**
+//     * 已审批-分页查询(区队审核)
+//     * @param selectDTO 查询参数DTO
+//     * @param userId 用户id
+//     * @param pageNum 当前页码
+//     * @param pageSize 每页显示条数
+//     * @return 返回结果
+//     */
+//    @Override
+//    public TableData teamApprovedByPage(SelectDTO selectDTO, Long userId, Pagination pagination) {
+//
+//        if (ObjectUtil.isNull(userId)) {
+//            throw new RuntimeException("用户id不能为空!");
+//        }
+//        List<Long> projectIds = teamAuditMapper.selectList(new LambdaQueryWrapper<TeamAuditEntity>()
+//                        .eq(TeamAuditEntity::getCreateBy, userId)
+//                        .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG))
+//                .stream()
+//                .map(TeamAuditEntity::getProjectId)
+//                .distinct()
+//                .collect(Collectors.toList());
+//        MPJLambdaWrapper<BizProjectRecord> queryWrapper = new MPJLambdaWrapper<>();
+//        queryWrapper.in(BizProjectRecordListVo::getProjectId, projectIds);
+//        IPage<BizProjectRecordListVo> page = bizProjectRecordService.pageDeep(pagination , queryWrapper);
+//        if (ListUtils.isNotNull(page.getRecords())) {
+//            page.getResult().forEach(projectVO -> {
+//                // 根据区队审核结果，动态模拟审核状态
+//                TeamAuditEntity teamAuditEntity = teamAuditMapper.selectOne(new LambdaQueryWrapper<TeamAuditEntity>()
+//                        .eq(TeamAuditEntity::getProjectId, projectVO.getProjectId())
+//                        .eq(TeamAuditEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+//                        .orderByDesc(TeamAuditEntity::getCreateTime)
+//                        .last("LIMIT 1"));
+//                if (ObjectUtil.isNotNull(teamAuditEntity)) {
+//                    if (teamAuditEntity.getAuditResult().equals(ConstantsInfo.AUDIT_SUCCESS)) {
+//                        if (teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.AUDITED_DICT_VALUE)) { //科室审批通过则通过
+//                            projectVO.setStatusFmt("已通过");
+//                        } else if (teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.REJECTED)) { //科室审批驳回则驳回
+//                            projectVO.setStatusFmt("已驳回");
+//                        } else if (teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.AUDIT_STATUS_DICT_VALUE) ||
+//                                teamAuditEntity.getDepartAuditState().equals(ConstantsInfo.IN_REVIEW_DICT_VALUE)) { //科室审批为待审核/审核中时则为已提交
+//                            projectVO.setStatusFmt("已提交");
+//                        }
+//                    }
+//                    if (teamAuditEntity.getAuditResult().equals(ConstantsInfo.AUDIT_REJECT)) {
+//                        projectVO.setStatusFmt("已驳回");
+//                        projectVO.setRejectReason(teamAuditEntity.getRejectionReason()); //驳回原因
+//                    }
+//                }
+//            });
+//        }
+//        result.setTotal(page.getTotal());
+//        result.setRows(page.getResult());
+//        return result;
+//    }
 
     /**
      * 待审批-分页查询(科室审核)

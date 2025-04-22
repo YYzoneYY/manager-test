@@ -8,6 +8,7 @@ import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.domain.entity.SysDictData;
+import com.ruoyi.push.GeTuiUtils;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
@@ -50,8 +51,8 @@ public class BizMapController extends BaseController
 
 
 
-
-
+    @Resource
+    private IBizPresetPointService bizPresetPointService;
 
     @Resource
     private ISysDictDataService sysDictDataService;
@@ -97,6 +98,17 @@ public class BizMapController extends BaseController
     @Autowired
     private IYtFactorService ytFactorService;
 
+    @Resource
+    private GeTuiUtils geTuiUtils;
+
+
+    @ApiOperation("测试推送")
+    @GetMapping("/sssscc")
+    public void pushOne(String cid, String title, String content) {
+        geTuiUtils.pushMsg(cid, title, content);
+    }
+
+
     @ApiOperation("给起始和结束")
     @GetMapping("/xxxxxx")
     public R<?> xxxxxx(@RequestParam(required = false) Long startPointId,
@@ -131,14 +143,24 @@ public class BizMapController extends BaseController
         QueryWrapper<YtFactor> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .eq(StrUtil.isNotEmpty(dto.getFactorType()),YtFactor::getFactorType, dto.getFactorType())
-                .like(StrUtil.isNotEmpty(dto.getName()),YtFactor::getFactorType, dto.getName())
-                .eq(dto.getWorkfaceId() != null,YtFactor::getWorkfaceId, dto.getWorkfaceId())
-                .eq(dto.getTunnelId() != null,YtFactor::getTunnelId, dto.getTunnelId());
+                .like(StrUtil.isNotEmpty(dto.getName()),YtFactor::getFactorType, dto.getName());
         List<YtFactor>  yt  =  ytFactorService.list(queryWrapper);
         return R.ok(yt);
     }
 
 
+    @ApiOperation("查询影响因素列表")
+//    @PreAuthorize("@ss.hasPermi('yt:factor:list')")
+    @GetMapping("/ytList")
+    public R<List<YtFactor>> list(@ParameterObject YtFactor dto)
+    {
+        QueryWrapper<YtFactor> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(StrUtil.isNotEmpty(dto.getFactorType()),YtFactor::getFactorType, dto.getFactorType())
+                .like(StrUtil.isNotEmpty(dto.getName()),YtFactor::getFactorType, dto.getName());
+        List<YtFactor> list = ytFactorService.list(queryWrapper);
+        return R.ok(list);
+    }
 
 
 
@@ -310,7 +332,6 @@ public class BizMapController extends BaseController
 
         Date start = null;
         Date end = null;
-
         start = getStart(year, month);
         end = getEnd(year, month);
 
@@ -322,7 +343,6 @@ public class BizMapController extends BaseController
                 .between(end != null, BizPresetPoint::getConstructTime,start,end);
         List<BizPresetPoint> points = bizPresetPointMapper.selectList(queryWrapperPro);
         List<BizPresetPointVo> vos = new ArrayList<>();
-
         if(points != null && points.size() > 0){
             List<Long> projectIds = points.stream().map(BizPresetPoint::getProjectId).collect(Collectors.toList());
             QueryWrapper<BizProjectRecord> projectRecordQueryWrapper = new QueryWrapper<>();
@@ -351,8 +371,50 @@ public class BizMapController extends BaseController
 
             }
         }
-
         map.put("ProjectPoints",vos);
+
+        QueryWrapper<BizPresetPoint> queryWrapperProYt = new QueryWrapper<>();
+        queryWrapperProYt.lambda()
+                .isNotNull( BizPresetPoint::getCrosLatlngs)
+                .eq( StrUtil.isNotEmpty(drillType), BizPresetPoint::getDrillType,drillType )
+                .eq(workfaceId != null, BizPresetPoint::getWorkfaceId,workfaceId)
+                .isNotNull(BizPresetPoint::getProjectId)
+                .between(end != null, BizPresetPoint::getConstructTime,start,end)
+                .orderByDesc(BizPresetPoint::getConstructTime);
+        List<BizPresetPoint> pointYts = bizPresetPointMapper.selectList(queryWrapperProYt);
+        List<BizPresetPointVo> ytvos = new ArrayList<>();
+        if(pointYts != null && pointYts.size() > 0){
+            pointYts = pointYts.size() > 3 ? pointYts.subList(0, 3) : pointYts;
+            List<Long> projectIds = pointYts.stream().map(BizPresetPoint::getProjectId).collect(Collectors.toList());
+            QueryWrapper<BizProjectRecord> projectRecordQueryWrapper = new QueryWrapper<>();
+            List<BizProjectRecord> records = bizProjectRecordService.listByIdsDeep(projectIds);
+
+            final Map<Long, List<BizProjectRecord>>[] groupedByProjectId = new Map[]{records.stream()
+                    .collect(Collectors.groupingBy(BizProjectRecord::getProjectId))};
+            for (BizPresetPoint point : pointYts) {
+                BizPresetPointVo pointVo = new BizPresetPointVo();
+                BeanUtil.copyProperties(point,pointVo);
+                List<BizProjectRecord> projectRecords =  groupedByProjectId[0].get(point.getProjectId());
+                if(projectRecords != null && projectRecords.size() > 0){
+                    BizProjectRecord projectRecord = projectRecords.get(0);
+                    pointVo
+                            .setAccepter(projectRecord.getAccepterEntity() == null ? "" : projectRecord.getAccepterEntity().getName())
+                            .setBigbanger(projectRecord.getBigbangerEntity() == null ? "" : projectRecord.getBigbangerEntity().getName())
+                            .setProjecrHeader(projectRecord.getProjecrHeaderEntity() == null ? "" : projectRecord.getProjecrHeaderEntity().getName())
+                            .setSecurityer(projectRecord.getSecurityerEntity() == null ? "" : projectRecord.getSecurityerEntity().getName())
+                            .setWorker(projectRecord.getWorkerEntity() == null ? "" : projectRecord.getWorkerEntity().getName())
+                            .setConstructionUnit(projectRecord.getConstructionUnit() == null ? "" : projectRecord.getConstructionUnit().getConstructionUnitName())
+                            .setWorkfaceName(projectRecord.getWorkfaceName())
+                            .setTunnelName(projectRecord.getTunnelName())
+                            .setPointName(projectRecord.getTravePoint() == null ? "" : projectRecord.getTravePoint().getPointName())
+                            .setDrillNum(projectRecord.getDrillNum());
+                    ytvos.add(pointVo);
+                }
+
+            }
+        }
+        map.put("ProjectPointYts",ytvos);
+
         Long startc;
         Long endc;
         if(end == null){
@@ -473,6 +535,36 @@ public class BizMapController extends BaseController
         }
         return null;
 
+    }
+
+    @ApiOperation("获取工程填报记录地图信息")
+//    @PreAuthorize("@ss.hasPermi('project:record:map')")
+    @GetMapping(value = "/map/{projectId}")
+    public R<BizPresetPointVo> getmapInfo(@PathVariable("projectId") Long projectId)
+    {
+        QueryWrapper<BizPresetPoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizPresetPoint::getProjectId, projectId);
+        List<BizPresetPoint> bizPresetPoints = bizPresetPointService.list(queryWrapper);
+        if(bizPresetPoints != null && bizPresetPoints.size() > 0){
+            BizPresetPoint p = bizPresetPoints.get(0);
+            BizPresetPointVo vo = new BizPresetPointVo();
+            BeanUtil.copyProperties(p,vo);
+            BizProjectRecord record = bizProjectRecordService.getByIdDeep(projectId);
+            vo.setAccepter(record.getAccepterEntity() == null ? "" : record.getAccepterEntity().getName())
+                    .setConstructType(record.getConstructTypeName())
+                    .setBigbanger(record.getBigbangerEntity() == null ? "" : record.getBigbangerEntity().getName())
+                    .setProjecrHeader(record.getProjecrHeaderEntity() == null ? "" : record.getProjecrHeaderEntity().getName())
+                    .setSecurityer(record.getSecurityerEntity() == null ? "" : record.getSecurityerEntity().getName())
+                    .setWorker(record.getWorkerEntity() == null ? "" : record.getWorkerEntity().getName())
+                    .setConstructionUnit(record.getConstructionUnit() == null ? "" : record.getConstructionUnit().getConstructionUnitName())
+                    .setWorkfaceName(record.getWorkfaceName())
+                    .setTunnelName(record.getTunnelName())
+                    .setDrillType(record.getDrillTypeName())
+                    .setPointName(record.getTravePoint() == null ? "" : record.getTravePoint().getPointName())
+                    .setDrillNum(record.getDrillNum());
+            return R.ok(vo);
+        }
+        return R.ok(null);
     }
 
 

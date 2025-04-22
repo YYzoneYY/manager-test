@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.github.yulichang.annotation.Condition;
 import com.github.yulichang.annotation.EntityMapping;
 import com.github.yulichang.annotation.FieldMapping;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
+import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.system.domain.Entity.ClassesEntity;
 import com.ruoyi.system.domain.Entity.ConstructionPersonnelEntity;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
@@ -51,6 +53,14 @@ public class BizProjectRecord extends BaseSelfEntity
 
     @ApiModelProperty(value = "帮id")
     private Long barId;
+
+
+    @ApiModelProperty(value = "是否是迎头钻孔")
+    private Boolean isHead;
+
+    /** 距离 */
+    @ApiModelProperty(value = "帮距离")
+    private String barRange;
 
     /** 距离 */
     @ApiModelProperty(value = "距离")
@@ -136,6 +146,7 @@ public class BizProjectRecord extends BaseSelfEntity
     @ApiModelProperty(value = "验收视频源文件")
     private String originalFile;
 
+
 //    /** 进钻参数 */
 //    @ApiModelProperty(value = "进钻参数")
 //    private String drillParam;
@@ -158,6 +169,11 @@ public class BizProjectRecord extends BaseSelfEntity
     private Integer isRead;
 
 
+    @ApiModelProperty(value = "帮")
+    @TableField(exist = false)
+    @FieldMapping(tag = BizTunnelBar.class ,thisField = "barId" , joinField = "barId" , select = "barName")
+    private String barName;
+
     @ApiModelProperty(value = "工作面")
     @TableField(exist = false)
     @FieldMapping(tag = BizWorkface.class ,thisField = "workfaceId" , joinField = "workfaceId" , select = "workfaceName")
@@ -168,11 +184,17 @@ public class BizProjectRecord extends BaseSelfEntity
     @FieldMapping(tag = TunnelEntity.class ,thisField = "tunnelId" , joinField = "tunnelId" , select = "tunnelName")
     private String tunnelName;
 
-    @ApiModelProperty(value = "帮")
+    @ApiModelProperty(value = "施工类型name")
     @TableField(exist = false)
-    @FieldMapping(tag = BizTunnelBar.class ,thisField = "barId" , joinField = "barId" , select = "barName")
-    private String barName;
+    @FieldMapping(tag = SysDictData.class ,thisField = "constructType" , joinField = "dictValue" , condition = {
+            @Condition(column = "dictType", value = "type")} ,select = "dictLabel")
+    private String constructTypeName;
 
+    @ApiModelProperty(value = "钻孔类型name")
+    @TableField(exist = false)
+    @FieldMapping(tag = SysDictData.class ,thisField = "drillType" , joinField = "dictValue" , condition = {
+            @Condition(column = "dictType", value = "drill_type")} ,select = "dictLabel")
+    private String drillTypeName;
 
     @ApiModelProperty(value = "施工单位实例")
     @TableField(exist = false)

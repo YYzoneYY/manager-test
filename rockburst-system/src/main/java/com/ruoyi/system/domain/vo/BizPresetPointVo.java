@@ -88,7 +88,8 @@ public class BizPresetPointVo extends BaseSelfEntity
     @ApiModelProperty(value = "组")
     private String latlngs;
 
-
+    @ApiModelProperty(value = "迎头组")
+    private String crosLatlngs;
 
 
 

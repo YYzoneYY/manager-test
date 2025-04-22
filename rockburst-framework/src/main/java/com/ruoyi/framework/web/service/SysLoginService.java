@@ -1,5 +1,6 @@
 package com.ruoyi.framework.web.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.constant.UserConstants;
@@ -58,7 +59,7 @@ public class SysLoginService
      * @param uuid 唯一标识
      * @return 结果
      */
-    public String login(String username, String password, String code, String uuid)
+    public String login(String username, String password, String code, String uuid, String cid)
     {
         // 验证码校验
 //        validateCaptcha(username, code, uuid);
@@ -93,9 +94,15 @@ public class SysLoginService
         AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success")));
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         recordLoginInfo(loginUser.getUserId());
+        if(StrUtil.isNotEmpty(cid)){
+            userService.updateCid(username,cid);
+
+        }
         // 生成token
         return tokenService.createToken(loginUser);
     }
+
+
 
     /**
      * 校验验证码

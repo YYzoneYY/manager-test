@@ -1,8 +1,6 @@
 package com.ruoyi.system.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.TableData;
-import com.ruoyi.system.domain.Entity.TeamAuditEntity;
 import com.ruoyi.system.domain.dto.AppAuditDetailDTO;
 import com.ruoyi.system.domain.dto.SelectDTO;
 
@@ -30,7 +28,7 @@ public interface AppAuditService {
      * @param pageSize 每页显示条数
      * @return 返回结果
      */
-    TableData teamApprovedByPage(SelectDTO selectDTO, Long userId, Integer pageNum, Integer pageSize);
+//    TableData teamApprovedByPage(SelectDTO selectDTO, Long userId, Pagination pagination);
 
     /**
      * 待审批-分页查询(科室审核)

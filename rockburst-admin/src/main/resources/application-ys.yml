@@ -81,3 +81,15 @@ spring:
                 max-active: 8
                 # #连接池最大阻塞等待时间（使用负值表示没有限制）
                 max-wait: -1ms
+getui:
+    appId: yPXr2vMwQL9u1vd0qgrq44
+    appKey: 3UPJkVCuXY6yKG4GiTrO65
+    appSecret: yRcMEw5azt9O9tf9NDAQQ2
+    masterSecret: j8u4bvV2Kd7sVD4U5usZF6
+    # Url前缀
+    baseUrl: https://restapi.getui.com/v2/
+# UniPush相关配置
+unipush:
+    appkey: 你的AppKey
+    appsecret: 你的AppSecret
+    host: https://api.unipush.me/rest/

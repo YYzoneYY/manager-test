@@ -27,36 +27,24 @@ public class YtFactor extends BaseSelfEntity
     @TableId(type = IdType.AUTO)
     private Long factorId;
 
-
     @ApiModelProperty(value = "名称")
     private String name;
 
     @ApiModelProperty(value = "类型")
     private String factorType;
 
-    @ApiModelProperty(value = "工作面")
-    private Long workfaceId;
+//    @ApiModelProperty(value = "值")
+//    private Integer value;
 
-    @ApiModelProperty(value = "巷道")
-    private Long tunnelId;
-
-    @ApiModelProperty(value = "开始导线点")
-    private Long startPointId;
-
-    @ApiModelProperty(value = "结束导线点")
-    private Long endPointId;
-
-    @ApiModelProperty(value = "开始导线点前后距离")
-    private Double startMeter;
-
-    @ApiModelProperty(value = "结束导线点前后距离")
-    private Double endMeter;
-
-
-    @ApiModelProperty(value = "值")
-    private Integer value;
-
-    @ApiModelProperty(value = "坐标")
+    @ApiModelProperty(value = "坐标组")
     private String latlngs;
+
+    @ApiModelProperty(value = "角度/米数组")
+    private String angles;
+
+    @ApiModelProperty(value = "是否为主数据 1 主 2 衍生")
+    private Integer master;
+
+    private Long masterId;
 
 }

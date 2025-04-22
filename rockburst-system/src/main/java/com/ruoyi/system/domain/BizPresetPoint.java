@@ -82,4 +82,9 @@ public class BizPresetPoint extends BaseSelfEntity
     private String latlngs;
 
 
+
+    @ApiModelProperty(value = "截面坐标")
+    private String crosLatlngs;
+
+
 }

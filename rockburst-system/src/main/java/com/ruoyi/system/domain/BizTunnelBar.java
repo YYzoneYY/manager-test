@@ -55,8 +55,14 @@ public class BizTunnelBar extends BaseSelfEntity
     @ApiModelProperty(value = "预设孔方向角度")
     private Integer directAngle;
 
+    @ApiModelProperty(value = "迎头孔方向角度")
+    private Integer ytAngle;
+
     @ApiModelProperty(value = "钻孔孔方向距离")
     private Double directRange;
+
+    @ApiModelProperty(value = "迎头孔方向距离")
+    private Double prpo;
 
     @ApiModelProperty(value = "预设孔方向距离")
     private Double directRangePre;
@@ -64,6 +70,18 @@ public class BizTunnelBar extends BaseSelfEntity
     @ApiModelProperty(value = "svg")
     @TableField()
     private String svg;
+
+    @ApiModelProperty(value = "a")
+    @TableField()
+    private Double a;
+
+    @ApiModelProperty(value = "b")
+    @TableField()
+    private Double b;
+
+    @ApiModelProperty(value = "c")
+    @TableField()
+    private Double c;
 
     @ApiModelProperty(value = "中心点")
     @TableField()

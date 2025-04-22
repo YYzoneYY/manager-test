@@ -7,7 +7,7 @@ ruoyi:
   # 版权年份
   copyrightYear: 2024
   # 文件路径 示例（ Windows配置D:/ruoyi/uploadPath，Linux配置 /home/ruoyi/uploadPath）
-  profile: D:/ruoyi/uploadPath
+  profile: /home/ruoyi/uploadPath
   # 获取ip地址开关
   addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证
@@ -49,15 +49,15 @@ minio:
   secretKey: ${minioskey:4LAQfrsrAhgYVhMrmWgL5c25jZWT9rcPQxNBvoOG}
   defaultBucketName: ${miniobname:bust-dev} #存储桶名称
 
-#MQTT配置信息
-mqtt:
-  host: tcp://47.104.160.255:1883
-  clientid: mqttjs_cloud
-  username: dingyue
-  password: 123456
-  timeout: 1000
-  keepalive: 10
-  topic: /iot/data
+##MQTT配置信息
+#mqtt:
+#  host: tcp://47.104.160.255:1883
+#  clientid: mqttjs_cloud
+#  username: dingyue
+#  password: 123456
+#  timeout: 1000
+#  keepalive: 10
+#  topic: /iot/data
 
 
 
@@ -82,7 +82,7 @@ spring:
     # 国际化资源文件路径
     basename: i18n/messages
   profiles:
-    active: ys
+    active: druid
   # 文件上传
   servlet:
     multipart:
@@ -107,7 +107,7 @@ token:
   # 令牌密钥
   secret: abcdefghijklmnopqrstuvwxyz
   # 令牌有效期（默认30分钟）
-  expireTime: 900
+  expireTime: 7200
 
 # MyBatis Plus配置
 mybatis-plus:

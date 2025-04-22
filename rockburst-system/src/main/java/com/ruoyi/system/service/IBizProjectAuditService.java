@@ -11,45 +11,10 @@ import com.ruoyi.system.domain.BizProjectAudit;
  */
 public interface IBizProjectAuditService   extends IService<BizProjectAudit>
 {
-    /**
-     * 查询工程填报审核记录
-     * 
-     * @param projectAuditId 工程填报审核记录主键
-     * @return 工程填报审核记录
-     */
+    int audit(Long projectId);
 
-    /**
-     * 查询工程填报审核记录列表
-     * 
-     * @param bizProjectAudit 工程填报审核记录
-     * @return 工程填报审核记录集合
-     */
+    int addAudittEAM(BizProjectAudit teamAuditDTO);
 
-    /**
-     * 新增工程填报审核记录
-     * 
-     * @param bizProjectAudit 工程填报审核记录
-     * @return 结果
-     */
+    int addAuditDeart(BizProjectAudit teamAuditDTO);
 
-    /**
-     * 修改工程填报审核记录
-     * 
-     * @param bizProjectAudit 工程填报审核记录
-     * @return 结果
-     */
-
-    /**
-     * 批量删除工程填报审核记录
-     * 
-     * @param projectAuditIds 需要删除的工程填报审核记录主键集合
-     * @return 结果
-     */
-
-    /**
-     * 删除工程填报审核记录信息
-     * 
-     * @param projectAuditId 工程填报审核记录主键
-     * @return 结果
-     */
 }

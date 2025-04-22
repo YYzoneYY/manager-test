@@ -5,16 +5,24 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
-import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.dto.PlanDTO;
+import com.ruoyi.system.domain.dto.ProjectWarnChoiceListDTO;
+import com.ruoyi.system.domain.dto.SelectNewPlanDTO;
 import com.ruoyi.system.service.PlanService;
-import com.ruoyi.system.service.RelatesInfoService;
 import io.swagger.annotations.*;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -90,9 +98,37 @@ public class PlanController {
 
     @ApiOperation(value = "获取文件URL", notes = "获取文件URL")
     @GetMapping("/getFileUrl")
-    public R<Object> downloadFile(@ApiParam(name = "fileId", value = "文件id", required = true) @RequestParam String fileId,
-                                  @ApiParam(name = "type", value = "文件类型", required = true) @RequestParam String type) {
-        return R.ok(this.planService.getFileUrl(fileId, type));
+    public ResponseEntity downloadFile(@ApiParam(name = "type", value = "文件类型", required = true) @RequestParam String type) throws IOException {
+        ClassPathResource resource = null;
+        String fileName = "计划导入模板(回采).xlsx";
+        if("1".equals(type)){
+            resource = new ClassPathResource("excel/计划导入模板(掘进).xlsx");
+            fileName = "计划导入模板(掘进).xlsx";
+        }else if("2".equals(type)){
+            resource = new ClassPathResource("excel/计划导入模板(回采).xlsx");
+            fileName = "计划导入模板(回采).xlsx";
+        }else {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        String encodedFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName);
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentLength(resource.getFile().length());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(resource.contentLength())
+                .body(new InputStreamResource(resource.getInputStream()));
+
     }
 
     @ApiOperation(value = "计划导入", notes = "计划导入")
@@ -105,9 +141,11 @@ public class PlanController {
     @ApiOperation(value = "获取区域缩略图数据", notes = "获取区域缩略图数据")
     @GetMapping(value = "/getSketchMap")
     public R<Object> getSketchMap(@ApiParam(name = "tunnelIds", value = "巷道id数组", required = true) @RequestParam List<Long> tunnelIds,
-                                  @ApiParam(name = "type", value = "类型", required = true) @RequestParam String type) {
+                               @ApiParam(name = "type", value = "类型", required = true) @RequestParam String type) {
         return R.ok(this.planService.getSketchMap(tunnelIds, type));
     }
+
+//    }
 
 //    @ApiOperation(value = "获取计划中已使用的导线点", notes = "获取计划中已使用的导线点")
 //    @ApiImplicitParams(value = {

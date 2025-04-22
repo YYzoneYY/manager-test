@@ -53,5 +53,16 @@ public class BizTunnelBarDto
     @ApiModelProperty(value = "原始位置", required = false)
     private String source;
 
+    @ApiModelProperty(value = "开始坐标lat", required = false)
+    private String startLat;
+
+    @ApiModelProperty(value = "开始坐标lon", required = false)
+    private String startLon;
+
+    @ApiModelProperty(value = "结束坐标lat", required = false)
+    private String endLat;
+
+    @ApiModelProperty(value = "结束坐标lon", required = false)
+    private String endLon;
 
 }

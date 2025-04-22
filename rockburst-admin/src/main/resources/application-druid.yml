@@ -6,8 +6,8 @@ spring:
         druid:
             # 主库数据源
             master:
-                url: jdbc:mysql://47.92.215.128:3306/ry-plus?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-                username: ry-plus
+                url: jdbc:mysql://192.168.31.156:3306/cjdy-kf?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+                username: cjdy-kf
                 password: 123456
             # 从库数据源
             slave:
@@ -62,11 +62,11 @@ spring:
     # redis 配置
     redis:
         # 地址
-        host: 47.92.215.128
+        host: 192.168.31.156
         # 端口，默认为6379
         port: 6379
         # 数据库索引
-        database: 0
+        database: 1
         # 密码
         password: 123456
         # 连接超时时间
@@ -81,3 +81,24 @@ spring:
                 max-active: 8
                 # #连接池最大阻塞等待时间（使用负值表示没有限制）
                 max-wait: -1ms
+# 个推相关配置
+#getui:
+#    appId: ojgkZ3JPFNAyeEwkfMtSD6
+#    appKey: wEq1GMagY57xGV8VFwLYu4
+#    appSecret: T2UHVUtHVs5SbB5guMZCN4
+#    masterSecret: 7WTWRuzjzN8ysisr2CCZT7
+#    # Url前缀
+#    baseUrl: https://restapi.getui.com/v2/
+
+getui:
+    appId: yPXr2vMwQL9u1vd0qgrq44
+    appKey: 3UPJkVCuXY6yKG4GiTrO65
+    appSecret: yRcMEw5azt9O9tf9NDAQQ2
+    masterSecret: j8u4bvV2Kd7sVD4U5usZF6
+    # Url前缀
+    baseUrl: https://restapi.getui.com/v2/
+# UniPush相关配置
+unipush:
+    appkey: 你的AppKey
+    appsecret: 你的AppSecret
+    host: https://api.unipush.me/rest/

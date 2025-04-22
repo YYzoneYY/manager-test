@@ -21,6 +21,10 @@ public class PlanDTO extends PlanEntity {
     @ApiModelProperty(value = "计划开始时间格式化")
     private String startTimeFmt;
 
+
+    @ApiModelProperty(value = "计划开始时间格式化")
+    private String alarmCaptimeFmt;
+
     @ApiModelProperty(value = "计划结束时间格式化")
     private String endTimeFmt;
 

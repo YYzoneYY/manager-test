@@ -16,9 +16,24 @@
     </description>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.alibaba/dashscope-sdk-java -->
+<!--        <dependency>-->
+<!--            <groupId>com.alibaba</groupId>-->
+<!--            <artifactId>dashscope-sdk-java</artifactId>-->
+<!--            <version>2.18.2</version>-->
+<!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/com.alibaba/easyexcel -->
         <!-- https://mvnrepository.com/artifact/com.alibaba/easyexcel -->
+
+        <!-- https://mvnrepository.com/artifact/com.getui.push/restful-sdk -->
+
+
+        <dependency>
+            <groupId>com.getui.push</groupId>
+            <artifactId>restful-sdk</artifactId>
+            <version>1.0.6.0</version>
+        </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>easyexcel</artifactId>

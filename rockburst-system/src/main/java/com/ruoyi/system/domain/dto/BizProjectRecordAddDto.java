@@ -27,6 +27,9 @@ public class BizProjectRecordAddDto  {
     @ApiModelProperty(value = "帮id")
     private Long barId;
 
+    @ApiModelProperty(value = "是否是迎头钻孔")
+    private Boolean isHead;
+
     @ApiModelProperty(value = "施工类型 回踩 掘进",required = true)
     private String constructType;
 
@@ -66,6 +69,10 @@ public class BizProjectRecordAddDto  {
     /** 距离 */
     @ApiModelProperty(value = "距离",required = true)
     private String constructRange;
+
+    /** 距离 */
+    @ApiModelProperty(value = "距帮距离",required = true)
+    private String barRange;
 
 
     /** 定位方式 */

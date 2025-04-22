@@ -34,6 +34,10 @@
             <groupId>com.ruoyi</groupId>
             <artifactId>rockburst-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>rockburst-system</artifactId>
+        </dependency>
 
     </dependencies>
 

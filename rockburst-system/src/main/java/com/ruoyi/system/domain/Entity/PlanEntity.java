@@ -83,9 +83,15 @@ public class PlanEntity extends BusinessBaseEntity implements Serializable {
     @TableField("end_time")
     private Long endTime;
 
+    @ApiModelProperty(value = "报警时间上限")
+    @TableField()
+    private Long alarmCaptime;
+
     @ApiModelProperty(value = "状态")
     @TableField("state")
     private String state;
+
+
 
     @ApiModelProperty(value = "工程预警方案id")
     @TableField("project_warn_scheme_id")

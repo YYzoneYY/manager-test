@@ -43,7 +43,17 @@ public class BizTunnelBarController extends BaseController
     private IBizTunnelBarService bizTunnelBarService;
 
 
-    @ApiOperation("调整比例")
+    /**
+     * 钻孔信息 比例
+     * 传入两个点 ,和距离 计算实际距离与坐标的比例保存在所有帮内
+     * @param startLat
+     * @param startLon
+     * @param endLat
+     * @param endLon
+     * @param drillrange
+     * @return
+     */
+    @ApiOperation("调整钻孔信息比例")
 //    @PreAuthorize("@ss.hasPermi('basicInfo:bar:list')")
     @PostMapping("/barRange")
     public R barRange(@RequestParam(required = false) String startLat,
@@ -75,6 +85,54 @@ public class BizTunnelBarController extends BaseController
         for (BizTunnelBar bizTunnelBar : bizTunnelBars) {
             UpdateWrapper<BizTunnelBar> updateWrapper = new UpdateWrapper<>();
             updateWrapper.lambda().set(BizTunnelBar::getDirectRange,bili).eq(BizTunnelBar::getBarId,bizTunnelBar.getBarId()).eq(BizTunnelBar::getDelFlag,BizBaseConstant.DELFLAG_N);
+            bizTunnelBarService.update(updateWrapper);
+        }
+
+        return R.ok();
+    }
+
+    /**
+     * 钻孔信息 比例
+     * 传入两个点 ,和距离 计算实际距离与坐标的比例保存在所有帮内
+     * @param startLat
+     * @param startLon
+     * @param endLat
+     * @param endLon
+     * @param drillrange
+     * @return
+     */
+    @ApiOperation("调整迎头钻孔帮间距信息比例")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:bar:list')")
+    @PostMapping("/barPrpoRange")
+    public R barPrpoRange(@RequestParam(required = false) String startLat,
+                      @RequestParam(required = false) String startLon,
+                      @RequestParam(required = false) String endLat,
+                      @RequestParam(required = false) String endLon,
+                      @RequestParam(required = false) String drillrange)
+    {
+        BigDecimal startLatBd = new BigDecimal(startLat);
+        BigDecimal startLonBd = new BigDecimal(startLon);
+        BigDecimal endLatBd = new BigDecimal(endLat);
+        BigDecimal endLonBd = new BigDecimal(endLon);
+        BigDecimal drillrangeBd = new BigDecimal(drillrange);
+        BigDecimal latMove = startLatBd.subtract(endLatBd).abs();
+        BigDecimal lonMove = startLonBd.subtract(endLonBd).abs();
+
+        // dx^2
+        BigDecimal dxSquare = latMove.pow(2);
+        // dy^2
+        BigDecimal dySquare = lonMove.pow(2);
+        // dx^2 + dy^2
+        BigDecimal sum = dxSquare.add(dySquare);
+
+        BigDecimal lonlatrange = new BigDecimal(Math.sqrt(sum.doubleValue())).abs().setScale(10, RoundingMode.HALF_DOWN);
+
+        BigDecimal bili = lonlatrange.divide(drillrangeBd, 10, RoundingMode.HALF_DOWN);
+
+        List<BizTunnelBar> bizTunnelBars =  bizTunnelBarService.list();
+        for (BizTunnelBar bizTunnelBar : bizTunnelBars) {
+            UpdateWrapper<BizTunnelBar> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda().set(BizTunnelBar::getPrpo,bili).eq(BizTunnelBar::getBarId,bizTunnelBar.getBarId()).eq(BizTunnelBar::getDelFlag,BizBaseConstant.DELFLAG_N);
             bizTunnelBarService.update(updateWrapper);
         }
 

@@ -26,6 +26,8 @@ public class BizProjectRecordDetailVo extends BizProjectRecord {
     @ApiModelProperty(value = "施工地点")
     private String constructLocation;
 
+    @ApiModelProperty(value = "最后审批人")
+    private String auditLastName;
 
     public String getConstructLocation() {
         if(BizBaseConstant.CONSTRUCT_TYPE_J.equals(super.getConstructType())){

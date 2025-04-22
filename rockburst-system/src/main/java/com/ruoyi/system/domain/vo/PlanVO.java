@@ -27,6 +27,9 @@ public class PlanVO extends PlanEntity {
     @ApiModelProperty(value = "计划结束时间格式化")
     private String endTimeFmt;
 
+    @ApiModelProperty(value = "计划结束时间格式化")
+    private String alarmCaptimeFmt;
+
     @ApiModelProperty(value = "所属工作面")
     private String workFaceName;
 
@@ -35,4 +38,8 @@ public class PlanVO extends PlanEntity {
 
     @ApiModelProperty(value = "驳回原因")
     private String rejectReason;
+
+
+    @ApiModelProperty(value = "计划进度")
+    private String schedule;
 }

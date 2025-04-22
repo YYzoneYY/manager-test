@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.annotation.DataScope;
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.core.domain.entity.SysRole;
@@ -76,6 +77,23 @@ public class SysUserServiceImpl implements ISysUserService
     public List<SysUser> selectUserList(SysUser user)
     {
         return userMapper.selectUserList(user);
+    }
+
+    @Override
+    public void updateCid(String username, String cid) {
+        SysUser user = new SysUser();
+        UpdateWrapper<SysUser> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("user_name", username).set("cid",cid);
+        userMapper.update(user,updateWrapper);
+    }
+
+    @Override
+    public void backCid(String username ) {
+        SysUser user = new SysUser();
+        UpdateWrapper<SysUser> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("user_name", username).set("cid",null);
+        userMapper.update(user,updateWrapper);
+
     }
 
     /**

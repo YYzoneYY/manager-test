@@ -1,24 +1,27 @@
 package com.ruoyi.web.controller.yt;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
-import com.ruoyi.common.core.page.MPage;
-import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.YtFactor;
 import com.ruoyi.system.service.IBizTravePointService;
+import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.system.service.IYtFactorService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,18 +44,22 @@ public class YtFactorRecordController extends BaseController
     @Autowired
     private IBizTravePointService bizTravePointService;
 
+    @Autowired
+    private ISysConfigService configService;
+
+
 
     /**
      * 查询巷道帮管理列表
      */
-    @ApiOperation("查询影响因素列表")
-    @PreAuthorize("@ss.hasPermi('yt:factor:list')")
-    @GetMapping("/list")
-    public R<MPage<YtFactor>> list(@ParameterObject YtFactor dto, @ParameterObject Pagination pagination)
-    {
-        MPage<YtFactor> list = ytFactorService.selectEntityList(dto,pagination);
-        return R.ok(list);
-    }
+//    @ApiOperation("查询影响因素列表")
+//    @PreAuthorize("@ss.hasPermi('yt:factor:list')")
+//    @GetMapping("/list")
+//    public R<MPage<YtFactor>> list(@ParameterObject YtFactor dto, @ParameterObject Pagination pagination)
+//    {
+//        MPage<YtFactor> list = ytFactorService.selectEntityList(dto,pagination);
+//        return R.ok(list);
+//    }
 
 
 //
@@ -89,23 +96,69 @@ public class YtFactorRecordController extends BaseController
     @PostMapping
     public R add(@RequestBody  YtFactor dto)
     {
-        BizPresetPoint presetstart =  bizTravePointService.getPointLatLon(dto.getStartPointId(),dto.getStartMeter());
-        BizPresetPoint presetend = bizTravePointService.getPointLatLon(dto.getEndPointId(),dto.getEndMeter());
-        Map<String,Object> map = new HashMap<>();
-        map.put("lat",presetstart.getLatitude());
-        map.put("lng",presetstart.getLongitude());
-        map.put("count",dto.getValue());
+        dto.setMaster(1);
+        ytFactorService.save(dto);
+        JSONArray latlngs = null;
+        if(StrUtil.isNotEmpty(dto.getLatlngs())){
+            latlngs = JSONUtil.parseArray(dto.getLatlngs());
+        }
+        JSONArray angles = null;
+        if(StrUtil.isNotEmpty(dto.getAngles())){
+            angles = JSONUtil.parseArray(dto.getAngles());
+        }
+        if(latlngs != null && angles != null){
+            String bil = configService.selectConfigByKey("ytbil");
+            List<List<Map<String,Object>>> all = new ArrayList<>();
+            for (Object angle_o : angles) {
+                JSONObject angle = JSONUtil.parseObj(angle_o);
+                Integer meter = angle.getInt("meter");
 
-        Map<String,Object> map1 = new HashMap<>();
-        map1.put("lat",presetend.getLatitude());
-        map1.put("lng",presetend.getLongitude());
-        map1.put("count",dto.getValue());
-        List<Map<String,Object>> list = new ArrayList<>();
-        list.add(map);
-        list.add(map1);
-        dto.setLatlngs(JSONUtil.parseArray(list).toString());
-//        {lat: 35.3655868687,lng:108.8149548921,count:50},
-        return R.ok(ytFactorService.save(dto));
+                for (int i = 0; i <= meter; i++) {
+                    System.out.println("i = " + i);
+                    List<Map<String,Object>> list = new ArrayList<>();
+                    if(i == meter){
+                        for (Object latlng_o : latlngs) {
+                            Map<String,Object> map = new HashMap<>();
+                            JSONObject latlng = JSONUtil.parseObj(latlng_o);
+
+                            BigDecimal meter_decimal = new BigDecimal(bil).multiply(new BigDecimal(i));
+                            BizPresetPoint point = bizTravePointService.getLatLontop(latlng.getStr("lat"),latlng.getStr("lng"),meter_decimal.doubleValue(),angle.getInt("angle"));
+                            map.put("lat",Double.parseDouble(point.getLatitudet()));
+                            map.put("lng",Double.parseDouble(point.getLongitudet()));
+                            map.put("count",1);
+                            list.add(map);
+                        }
+                        YtFactor ytFactor = new YtFactor();
+                        ytFactor.setName(dto.getName()+"_")
+                                .setLatlngs(JSONUtil.toJsonStr(list))
+                                .setFactorType(dto.getFactorType())
+                                .setMaster(2);
+                        ytFactorService.save(ytFactor);
+                    }
+                    if(i%10 == 0 && i != 0 && i != meter){
+                        for (Object latlng_o : latlngs) {
+                            Map<String,Object> map = new HashMap<>();
+                            JSONObject latlng = JSONUtil.parseObj(latlng_o);
+                            Integer count_ =latlng.getInt("count");
+                            int rule = count_/(meter/10);
+                            BigDecimal meter_decimal = new BigDecimal(bil).multiply(new BigDecimal(i));
+                            BizPresetPoint point = bizTravePointService.getLatLontop(latlng.getStr("lat"),latlng.getStr("lng"),meter_decimal.doubleValue(),angle.getInt("angle"));
+                            map.put("lat",Double.parseDouble(point.getLatitudet()));
+                            map.put("lng",Double.parseDouble(point.getLongitudet()));
+                            map.put("count",count_ - rule*(i/10));
+                            list.add(map);
+                        }
+                        YtFactor ytFactor = new YtFactor();
+                        ytFactor.setName(dto.getName()+"_")
+                                .setLatlngs(JSONUtil.toJsonStr(list))
+                                .setFactorType(dto.getFactorType())
+                                .setMaster(2);
+                        ytFactorService.save(ytFactor);
+                    }
+                }
+            }
+        }
+        return R.ok();
     }
 
     /**
@@ -117,22 +170,70 @@ public class YtFactorRecordController extends BaseController
     @PutMapping
     public R edit(@RequestBody  YtFactor dto)
     {
-        BizPresetPoint presetstart =  bizTravePointService.getPointLatLon(dto.getStartPointId(),dto.getStartMeter());
-        BizPresetPoint presetend = bizTravePointService.getPointLatLon(dto.getEndPointId(),dto.getEndMeter());
-        Map<String,Object> map = new HashMap<>();
-        map.put("lat",presetstart.getLatitude());
-        map.put("lng",presetstart.getLongitude());
-        map.put("count",dto.getValue());
 
-        Map<String,Object> map1 = new HashMap<>();
-        map1.put("lat",presetend.getLatitude());
-        map1.put("lng",presetend.getLongitude());
-        map1.put("count",dto.getValue());
-        List<Map<String,Object>> list = new ArrayList<>();
-        list.add(map);
-        list.add(map1);
-        dto.setLatlngs(JSONUtil.parseArray(list).toString());
-        return R.ok(ytFactorService.updateById(dto));
+        ytFactorService.updateById(dto);
+        UpdateWrapper<YtFactor> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().eq(YtFactor::getMasterId,dto.getFactorId()).set(YtFactor::getDelFlag, BizBaseConstant.DELFLAG_Y);
+        ytFactorService.update(updateWrapper);
+        JSONArray latlngs = null;
+        if(StrUtil.isNotEmpty(dto.getLatlngs())){
+            latlngs = JSONUtil.parseArray(dto.getLatlngs());
+        }
+        JSONArray angles = null;
+        if(StrUtil.isNotEmpty(dto.getAngles())){
+            angles = JSONUtil.parseArray(dto.getAngles());
+        }
+        if(latlngs != null && angles != null){
+            String bil = configService.selectConfigByKey("ytbil");
+            List<List<Map<String,Object>>> all = new ArrayList<>();
+            for (Object angle_o : angles) {
+                JSONObject angle = JSONUtil.parseObj(angle_o);
+                Integer meter = angle.getInt("meter");
+                for (Integer i = 0; i <= meter; i++) {
+                    List<Map<String,Object>> list = new ArrayList<>();
+                    if(i == meter){
+                        for (Object latlng_o : latlngs) {
+                            Map<String,Object> map = new HashMap<>();
+                            JSONObject latlng = JSONUtil.parseObj(latlng_o);
+                            BigDecimal meter_decimal = new BigDecimal(bil).multiply(new BigDecimal(i));
+                            BizPresetPoint point = bizTravePointService.getLatLontop(latlng.getStr("lat"),latlng.getStr("lng"),meter_decimal.doubleValue(),angle.getInt("angle"));
+                            map.put("lat",Double.parseDouble(point.getLatitudet()));
+                            map.put("lng",Double.parseDouble(point.getLongitudet()));
+                            map.put("count",1);
+                            list.add(map);
+                        }
+                        YtFactor ytFactor = new YtFactor();
+                        ytFactor.setName(dto.getName()+"_")
+                                .setLatlngs(JSONUtil.toJsonStr(list))
+                                .setFactorType(dto.getFactorType())
+                                .setMaster(2);
+                        ytFactorService.save(ytFactor);
+                        continue;
+                    }
+                    if(i%10 == 0 && i != 0 && i != meter){
+                        for (Object latlng_o : latlngs) {
+                            Map<String,Object> map = new HashMap<>();
+                            JSONObject latlng = JSONUtil.parseObj(latlng_o);
+                            Integer count_ =latlng.getInt("count");
+                            int rule = count_/(meter/10);
+                            BigDecimal meter_decimal = new BigDecimal(bil).multiply(new BigDecimal(i));
+                            BizPresetPoint point = bizTravePointService.getLatLontop(latlng.getStr("lat"),latlng.getStr("lng"),meter_decimal.doubleValue(),angle.getInt("angle"));
+                            map.put("lat",Double.parseDouble(point.getLatitudet()));
+                            map.put("lng",Double.parseDouble(point.getLongitudet()));
+                            map.put("count",count_ - rule*(i/10));
+                            list.add(map);
+                        }
+                        YtFactor ytFactor = new YtFactor();
+                        ytFactor.setName(dto.getName()+"_")
+                                .setLatlngs(JSONUtil.toJsonStr(list))
+                                .setFactorType(dto.getFactorType())
+                                .setMaster(2);
+                        ytFactorService.save(ytFactor);
+                    }
+                }
+            }
+        }
+        return R.ok();
     }
 
 
@@ -147,9 +248,14 @@ public class YtFactorRecordController extends BaseController
     public R remove(@PathVariable("factorId") Long factorId)
     {
 
-        YtFactor entity = new YtFactor();
-        entity.setFactorId(factorId).setDelFlag(BizBaseConstant.DELFLAG_Y);
-        return R.ok(ytFactorService.updateById(entity));
+
+        UpdateWrapper<YtFactor> wrapper = new UpdateWrapper<>();
+        wrapper.lambda().eq(YtFactor::getFactorId, factorId).set(YtFactor::getDelFlag, 2);
+        ytFactorService.update(wrapper);
+        wrapper.clear();
+        wrapper.lambda().eq(YtFactor::getMasterId, factorId).set(YtFactor::getDelFlag, 2);
+        ytFactorService.update(wrapper);
+        return R.ok();
     }
 
 

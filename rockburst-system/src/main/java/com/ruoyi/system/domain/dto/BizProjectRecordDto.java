@@ -14,12 +14,15 @@ public class BizProjectRecordDto {
     @Schema(description = "审核 主键")
     private Long projectId;
 
-//    @ApiModelProperty(value = "审核 填报0 通过 1 驳回 2")
-//    @Schema(description = "审核 填报0 通过 1 驳回 2")
-//    private Integer audit;
+    @ApiModelProperty(value = "科室 deart 区队 team")
+    @Schema(description = "科室 deart 区队 team")
+    private String audit;
 //
-//    @ApiModelProperty(value = "审核 退回原因")
-//    private String msg;
+    @ApiModelProperty(value = "工作面Id")
+    private Long workfaceId;
+
+    @ApiModelProperty(value = "巷道id")
+    private Long tunnelId;
 
     @ApiModelProperty(value = "search -- 查询天数")
     private Integer dayNum;

@@ -83,6 +83,10 @@ public class BizProjectRecordController extends BaseController
         return R.ok(llis);
     }
 
+
+
+
+
     /**
      * 查询工程填报记录列表
      */
@@ -114,21 +118,8 @@ public class BizProjectRecordController extends BaseController
     }
 
 
-    /**
-     * 获取工程填报记录详细信息
-     */
-    @Anonymous
-    @ApiOperation("获取工程填报记录详细信息")
-    @PreAuthorize("@ss.hasPermi('project:record:query')")
-    @GetMapping(value = "/{projectId}")
-    public R<BizProjectRecordDetailVo> getInfo(@PathVariable("projectId") Long projectId)
-    {
-        return R.ok(bizProjectRecordService.selectById(projectId));
-    }
-
-//    @Anonymous
     @ApiOperation("获取工程填报记录地图信息")
-    @PreAuthorize("@ss.hasPermi('project:record:map')")
+//    @PreAuthorize("@ss.hasPermi('project:record:map')")
     @GetMapping(value = "/map/{projectId}")
     public R<BizPresetPointVo> getmapInfo(@PathVariable("projectId") Long projectId)
     {
@@ -141,6 +132,7 @@ public class BizProjectRecordController extends BaseController
             BeanUtil.copyProperties(p,vo);
             BizProjectRecord record = bizProjectRecordService.getByIdDeep(projectId);
             vo.setAccepter(record.getAccepterEntity() == null ? "" : record.getAccepterEntity().getName())
+                    .setConstructType(record.getConstructTypeName())
                     .setBigbanger(record.getBigbangerEntity() == null ? "" : record.getBigbangerEntity().getName())
                     .setProjecrHeader(record.getProjecrHeaderEntity() == null ? "" : record.getProjecrHeaderEntity().getName())
                     .setSecurityer(record.getSecurityerEntity() == null ? "" : record.getSecurityerEntity().getName())
@@ -148,12 +140,27 @@ public class BizProjectRecordController extends BaseController
                     .setConstructionUnit(record.getConstructionUnit() == null ? "" : record.getConstructionUnit().getConstructionUnitName())
                     .setWorkfaceName(record.getWorkfaceName())
                     .setTunnelName(record.getTunnelName())
+                    .setDrillType(record.getDrillTypeName())
                     .setPointName(record.getTravePoint() == null ? "" : record.getTravePoint().getPointName())
                     .setDrillNum(record.getDrillNum());
             return R.ok(vo);
         }
         return R.ok(null);
     }
+    /**
+     * 获取工程填报记录详细信息
+     */
+
+    @ApiOperation("获取工程填报记录详细信息")
+    @PreAuthorize("@ss.hasPermi('project:record:query')")
+    @GetMapping(value = "/{projectId}")
+    public R<BizProjectRecordDetailVo> getInfo(@PathVariable("projectId") Long projectId)
+    {
+        return R.ok(bizProjectRecordService.selectById(projectId));
+    }
+
+//    @Anonymous
+
 
 
     @Anonymous

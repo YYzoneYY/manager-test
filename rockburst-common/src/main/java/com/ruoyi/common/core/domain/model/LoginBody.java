@@ -23,6 +23,16 @@ public class LoginBody
     private String code;
 
     /**
+     * cid
+     */
+    private String cid;
+
+    /**
+     * 登录代码
+     */
+    private String loginCode;
+
+    /**
      * 唯一标识
      */
     private String uuid;
@@ -65,5 +75,21 @@ public class LoginBody
     public void setUuid(String uuid)
     {
         this.uuid = uuid;
+    }
+
+    public String getLoginCode() {
+        return loginCode;
+    }
+
+    public void setLoginCode(String loginCode) {
+        this.loginCode = loginCode;
+    }
+
+    public String getCid() {
+        return cid;
+    }
+
+    public void setCid(String cid) {
+        this.cid = cid;
     }
 }

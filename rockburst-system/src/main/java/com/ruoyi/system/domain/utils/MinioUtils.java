@@ -112,7 +112,7 @@ public class MinioUtils {
             fileUploadInfo.setUploadId(uploadId);
 
             //redis保存文件信息
-            redisRepo.saveTimeout(fileUploadInfo.getFileMd5(), JSONObject.toJSONString(fileUploadInfo), 30, TimeUnit.MINUTES);
+            redisRepo.saveTimeout(fileUploadInfo.getFileMd5(), JSONObject.toJSONString(fileUploadInfo), 7, TimeUnit.DAYS);
 
             List<String> partList = getPartUploadUrls(uploadId, partCount, bucketName, objectName);
 

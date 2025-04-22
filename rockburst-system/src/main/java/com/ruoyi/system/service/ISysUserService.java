@@ -19,6 +19,11 @@ public interface ISysUserService
      */
     public List<SysUser> selectUserList(SysUser user);
 
+    public void updateCid(String username, String cid);
+
+    public void backCid(String username);
+
+
     /**
      * 根据条件分页查询已分配用户角色列表
      * 

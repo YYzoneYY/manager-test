@@ -18,6 +18,8 @@ import com.ruoyi.system.service.IBizTunnelBarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 /**
  *
  * 
@@ -61,14 +63,26 @@ public class BizTunnerlBarServiceImpl extends ServiceImpl<BizTunnelBarMapper, Bi
     public int insertEntity(BizTunnelBarDto dto) {
         BizTunnelBar BizTunnelBar = new BizTunnelBar();
         BeanUtil.copyProperties(dto, BizTunnelBar);
+        double A = new BigDecimal(dto.getEndLat()).subtract(new BigDecimal(dto.getStartLat())).doubleValue();
+        double B = new BigDecimal(dto.getStartLon()).subtract(new BigDecimal(dto.getEndLon())).doubleValue();
+        BigDecimal c1 = new BigDecimal(dto.getEndLon()).multiply(new BigDecimal(dto.getStartLat()));
+        BigDecimal c2 = new BigDecimal(dto.getStartLon()).multiply(new BigDecimal(dto.getEndLat()));
+        double C = c1.subtract(c2).doubleValue();
+        BizTunnelBar.setA(A).setB(B).setC(C);
         return bizTunnelBarMapper.insert(BizTunnelBar);
     }
 
     @Override
     public int updateEntity(BizTunnelBarDto dto) {
-        BizTunnelBar BizTunnelBar = new BizTunnelBar();
-        BeanUtil.copyProperties(dto, BizTunnelBar);
-        return bizTunnelBarMapper.updateById(BizTunnelBar);
+        BizTunnelBar bizTunnelBar = new BizTunnelBar();
+        BeanUtil.copyProperties(dto, bizTunnelBar);
+        double A = new BigDecimal(dto.getEndLat()).subtract(new BigDecimal(dto.getStartLat())).doubleValue();
+        double B = new BigDecimal(dto.getStartLon()).subtract(new BigDecimal(dto.getEndLon())).doubleValue();
+        BigDecimal c1 = new BigDecimal(dto.getEndLon()).multiply(new BigDecimal(dto.getStartLat()));
+        BigDecimal c2 = new BigDecimal(dto.getStartLon()).multiply(new BigDecimal(dto.getEndLat()));
+        double C = c1.subtract(c2).doubleValue();
+        bizTunnelBar.setA(A).setB(B).setC(C);
+        return bizTunnelBarMapper.updateById(bizTunnelBar);
     }
 
 

@@ -162,7 +162,26 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         return presetPoint;
     }
 
-    public BizPresetPoint sssss(Double x,Integer jio,BizPresetPoint point){
+    @Override
+    public BizPresetPoint getPointFront(Long pointId, Double meter) {
+        if(meter < 0){
+            BizTravePoint point = this.getById(pointId);
+            BigDecimal meterBigDecimal = new BigDecimal(meter).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal prePointDistanceBigDecimal = new BigDecimal(point.getPrePointDistance()).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal mmBigDecimal = prePointDistanceBigDecimal.subtract(meterBigDecimal).setScale(2, RoundingMode.HALF_UP);
+//            Double mm =  meter - point.getPrePointDistance();
+            BizPresetPoint presetPoint = new BizPresetPoint();
+            BizTravePoint pointpre = this.getPrePoint(pointId);
+
+            presetPoint.setPointId(pointpre.getPointId()).setMeter(mmBigDecimal.doubleValue());
+            return presetPoint;
+        }
+        BizPresetPoint presetPoint = new BizPresetPoint();
+        presetPoint.setPointId(pointId).setMeter(meter);
+        return presetPoint;
+    }
+
+    public BizPresetPoint sssss(Double x, Integer jio, BizPresetPoint point){
         BigDecimal lonMove =  new BigDecimal(Math.sin(Math.toRadians(jio))).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
         BigDecimal latMove =  new BigDecimal(Math.cos(Math.toRadians(jio))).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
         BigDecimal lat =  new BigDecimal(point.getLatitude());
@@ -187,7 +206,7 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
             return p;
         }
 
-        BizPresetPoint point = setAxis(pointId,meter);
+        BizPresetPoint point = setAxis(p.getPointId(),p.getMeter());
         p.setLongitude(point.getLongitude()+"").setLatitude(point.getLatitude()+"");
         return p;
     }
@@ -335,6 +354,27 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         if(endMeter < 0){
             pointIds.remove(endPointId);
         }
+
+        return pointIds;
+    }
+
+    @Override
+    public List<Long> getInPointListNoStartEnd(Long startPointId, Double startMeter, Long endPointId, Double endMeter) {
+        BizTravePoint startPoint = bizTravePointMapper.selectById(startPointId);
+        BizTravePoint endPoint = bizTravePointMapper.selectById(endPointId);
+        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizTravePoint::getTunnelId, startPoint.getTunnelId())
+                .between(BizTravePoint::getNo, startPoint.getNo(), endPoint.getNo());
+        List<BizTravePoint> points = bizTravePointMapper.selectList(queryWrapper);
+        List<Long> pointIds = new ArrayList<>();
+        if(points != null && points.size() > 0){
+            pointIds = points.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
+        }
+
+        pointIds.remove(startPointId);
+
+        pointIds.remove(endPointId);
+
 
         return pointIds;
     }
