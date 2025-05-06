@@ -51,4 +51,23 @@ public class BizVideoDto
     @ApiModelProperty(value = "工程id")
     private Long projectId;
 
+    /** 工程id */
+    @ApiModelProperty(name = "状态")
+    private String status;
+
+
+    /** 工程id */
+    @ApiModelProperty(name = "任务id")
+    private String taskId;
+
+
+    /** 工程id */
+    @ApiModelProperty(name = "类型")
+    private String type;
+
+
+    /** 工程id */
+    @ApiModelProperty(name = "子视频")
+    private Long childId;
+
 }

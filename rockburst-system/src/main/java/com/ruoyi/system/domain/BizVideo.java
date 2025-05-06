@@ -3,14 +3,11 @@ package com.ruoyi.system.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.io.Serializable;
+import lombok.experimental.Accessors;
 
 /**
  * 工程视频对象 biz_video
@@ -21,6 +18,7 @@ import java.io.Serializable;
 
 @Getter
 @Setter
+@Accessors(chain = true)
 public class BizVideo extends BaseSelfEntity
 {
     private static final long serialVersionUID = 1L;
@@ -52,5 +50,25 @@ public class BizVideo extends BaseSelfEntity
     /** 工程id */
     @ApiModelProperty(name = "工程id")
     private Long projectId;
+
+
+    /** 工程id */
+    @ApiModelProperty(name = "状态")
+    private String status;
+
+
+    /** 工程id */
+    @ApiModelProperty(name = "任务id")
+    private String taskId;
+
+
+    /** 工程id */
+    @ApiModelProperty(name = "类型")
+    private String type;
+
+
+    /** 工程id */
+    @ApiModelProperty(name = "子视频")
+    private String aiFileUrl;
 
 }

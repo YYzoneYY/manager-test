@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.InputStream;
 import java.util.Objects;
 
 import static com.ruoyi.system.domain.utils.ResultCode.ACCESS_PARAMETER_INVALID;
@@ -76,6 +77,11 @@ public class UploadServiceImpl implements UploadService {
         return fileService.getByFileMd5(fileUploadInfo.getFileName(), fileUploadInfo.getUploadId(), bucketName);
     }
 
+    @Override
+    public InputStream getFileInputStream(String fileName, String bucketName) {
+
+        return fileService.getFileInputStream(fileName,bucketName);
+    }
 
     /**
      * 文件分片上传

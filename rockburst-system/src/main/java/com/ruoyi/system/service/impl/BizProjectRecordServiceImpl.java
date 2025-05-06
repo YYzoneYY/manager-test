@@ -25,6 +25,7 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
+import com.ruoyi.system.constant.ModelFlaskConstant;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.*;
@@ -39,6 +40,7 @@ import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizProjectRecordService;
 import com.ruoyi.system.service.IBizTravePointService;
 import com.ruoyi.system.service.PlanService;
+import com.ruoyi.system.service.impl.handle.AiModelHandle;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +56,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -127,6 +130,9 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     private DepartmentAuditMapper departmentAuditMapper;
     @Resource
     private TeamAuditMapper teamAuditMapper;
+
+    @Autowired
+    private AiModelHandle aiModelHandle;
 
 
     @DataScopeSelf
@@ -493,13 +499,24 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         return entity.getProjectId();
     }
 
-    private int insertVideos(BizProjectRecordAddDto dto,Long projectId){
+    private int insertVideos(BizProjectRecordAddDto dto,Long projectId) {
         if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
             dto.getVideoList().forEach(bizVideo -> {
                 BizVideo video = new BizVideo();
                 BeanUtil.copyProperties(bizVideo, video);
                 video.setProjectId(projectId);
+                video.setStatus(ModelFlaskConstant.ai_model_pending);
                 bizVideoMapper.insert(video);
+
+                CompletableFuture.supplyAsync(()->{
+                    try {
+                        log.info("异步调用ai视频分析,视频名称:{}",bizVideo.getFileName());
+                        String taskId = aiModelHandle.modelAnalyByFileId(video.getVideoId(),bizVideo.getBucket(),bizVideo.getFileUrl(),bizVideo.getFileName());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return 1;
+                });
             });
         }
         return 1;

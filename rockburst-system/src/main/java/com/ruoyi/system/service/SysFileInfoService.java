@@ -31,4 +31,6 @@ public interface SysFileInfoService extends IService<SysFileInfo> {
     void batchLogicalDelete(Long[] fileIds);
 
     void batchDelete(Long[] fileIds);
+
+
 }

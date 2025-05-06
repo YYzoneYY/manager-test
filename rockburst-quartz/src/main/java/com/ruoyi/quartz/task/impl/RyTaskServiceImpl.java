@@ -1,23 +1,33 @@
 package com.ruoyi.quartz.task.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.quartz.task.IRyTask;
+import com.ruoyi.system.constant.ModelFlaskConstant;
 import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.BizVideo;
 import com.ruoyi.system.domain.Entity.PlanAlarm;
 import com.ruoyi.system.domain.Entity.PlanAreaEntity;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.ProjectWarnSchemeEntity;
+import com.ruoyi.system.domain.SysFileInfo;
+import com.ruoyi.system.domain.aimodel.TaskStatus;
+import com.ruoyi.system.domain.aimodel.TaskStatusResponse;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizTravePointService;
+import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.system.service.ISysDictTypeService;
+import com.ruoyi.system.service.impl.handle.AiModelHandle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -56,6 +66,21 @@ public class RyTaskServiceImpl implements IRyTask
 
     @Autowired
     IBizTravePointService bizTravePointService;
+
+    @Resource
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private RedisCache redisCache;
+
+    @Autowired
+    private BizVideoMapper bizVideoMapper;
+
+    @Autowired
+    AiModelHandle aiModelHandle;
+
+    @Autowired
+    private ISysConfigService configService;
 
 
     @Override
@@ -280,4 +305,23 @@ public class RyTaskServiceImpl implements IRyTask
     }
 
 
+    @Override
+    public void ai_model() {
+        //查询状态
+        TaskStatusResponse statusResponse =  aiModelHandle.getTaskList();
+        aiModelHandle.updateTaskRedis(statusResponse);
+        QueryWrapper<BizVideo> videoQueryWrapper = new QueryWrapper<>();
+        videoQueryWrapper.lambda().in(BizVideo::getStatus, ModelFlaskConstant.ai_model_pending,ModelFlaskConstant.ai_model_processing);
+        List<BizVideo> videos =  bizVideoMapper.selectList(videoQueryWrapper);
+        String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_url);
+        for (BizVideo video : videos) {
+            TaskStatus taskStatus = aiModelHandle.getRedisTaskIdStatus(video.getTaskId());
+            if(taskStatus != null && StrUtil.isNotEmpty(taskStatus.getStatus()) &&  taskStatus.getStatus().equals(ModelFlaskConstant.ai_model_done)){
+                SysFileInfo sysFileInfo = aiModelHandle.uploadVieoMinio(ModelFlaskConstant.bucket_name, uploadUrl+ModelFlaskConstant.static_video_url+taskStatus.getOutput_path());
+                video.setAiFileUrl(sysFileInfo.getFileUrl()).setStatus(ModelFlaskConstant.ai_model_done);
+                bizVideoMapper.updateById(video);
+            }
+        }
+
+    }
 }

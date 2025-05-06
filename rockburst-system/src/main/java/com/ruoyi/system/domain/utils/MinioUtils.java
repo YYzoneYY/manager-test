@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -367,6 +368,22 @@ public class MinioUtils {
             exist = false;
         }
         return exist;
+    }
+    /**
+     * 获取文件流
+     *
+     * @param fileName   文件名
+     * @param bucketName 桶名（文件夹）
+     * @return
+     */
+    public InputStream getFileInputStream(String fileName, String bucketName) {
+        try {
+            return customMinioClient.getObject(GetObjectArgs.builder().bucket(bucketName).object(fileName).build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+        }
+        return null;
     }
 
 

@@ -18,4 +18,9 @@ public interface IRyTask
      * 工程进度预警
      */
     public void alarmProject();
+
+    /**
+     * 视频识别
+     */
+    public void ai_model();
 }
