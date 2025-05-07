@@ -313,7 +313,7 @@ public class RyTaskServiceImpl implements IRyTask
         QueryWrapper<BizVideo> videoQueryWrapper = new QueryWrapper<>();
         videoQueryWrapper.lambda().in(BizVideo::getStatus, ModelFlaskConstant.ai_model_pending,ModelFlaskConstant.ai_model_processing);
         List<BizVideo> videos =  bizVideoMapper.selectList(videoQueryWrapper);
-        String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_url);
+        String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_file_url);
         for (BizVideo video : videos) {
             TaskStatus taskStatus = aiModelHandle.getRedisTaskIdStatus(video.getTaskId());
             if(taskStatus != null && StrUtil.isNotEmpty(taskStatus.getStatus()) &&  taskStatus.getStatus().equals(ModelFlaskConstant.ai_model_done)){

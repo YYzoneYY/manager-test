@@ -96,8 +96,13 @@ public class SysFileInfoServiceImpl extends ServiceImpl<SysFileInfoMapper, SysFi
         sysFileInfo.setCreateTime(ts);
         sysFileInfo.setUpdateTime(ts);
         // todo 最后统一鉴权 SecurityUtils.getUserId()
-        sysFileInfo.setCreateBy(SecurityUtils.getUserId());
-        sysFileInfo.setUpdateBy(SecurityUtils.getUserId());
+        try {
+            sysFileInfo.setCreateBy(SecurityUtils.getUserId());
+            sysFileInfo.setUpdateBy(SecurityUtils.getUserId());
+        }catch (Exception e){
+            log.error("未鉴权!" + e.getMessage(), e);
+        }
+
         if (sysFileInfoMapper.insert(sysFileInfo) < 1) {
             throw new RuntimeException("文件信息插入库失败!");
         }

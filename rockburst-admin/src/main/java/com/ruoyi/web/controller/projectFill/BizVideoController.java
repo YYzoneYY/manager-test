@@ -158,7 +158,7 @@ public class BizVideoController extends BaseController
     @Log(title = "视频分析接口-传文件", businessType = BusinessType.INSERT)
     @PostMapping("/modelAnalyFile")
     public R modelAnalyFile(@RequestPart("file") MultipartFile file) throws IOException {
-        String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_url);
+        String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_model_url);
         uploadUrl = uploadUrl + ModelFlaskConstant.process_video;
         Assert.isTrue(StrUtil.isNotEmpty(uploadUrl),"没有获取到视频分析网址地址,请检查参数配置:video.model.url");
 
@@ -220,7 +220,7 @@ public class BizVideoController extends BaseController
     public R modelAnaly(@ParameterObject BizVideoDto dto) throws IOException {
         BizVideo video = bizVideoService.getById(dto.getVideoId());
         if(video.getVideoId() != null && StrUtil.isNotEmpty(video.getBucket())&& StrUtil.isNotEmpty(video.getFileUrl())){
-            String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_url);
+            String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_model_url);
             uploadUrl = uploadUrl + ModelFlaskConstant.process_video;
             Assert.isTrue(StrUtil.isNotEmpty(uploadUrl),"没有获取到视频分析网址地址,请检查参数配置:video.model.url");
             InputStream inputStream = uploadService.getFileInputStream(video.getFileName(), video.getBucket());

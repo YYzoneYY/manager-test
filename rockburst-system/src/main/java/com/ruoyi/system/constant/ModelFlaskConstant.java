@@ -21,7 +21,9 @@ public class ModelFlaskConstant {
     /**
      * 参数配置前缀
      */
-    public static final String pre_url = "video.model.url";
+    public static final String pre_model_url = "video.model.url";
+
+    public static final String pre_file_url = "video.file.url";
 
     /**
      * 上传视频接口

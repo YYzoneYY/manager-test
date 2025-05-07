@@ -73,7 +73,7 @@ public class AiModelHandle  {
 	 */
 	public String modelAnalyByFileId(Long videoId , String bucketName, String url, String fileName) throws IOException {
 		if(StrUtil.isNotEmpty(bucketName)&& StrUtil.isNotEmpty(url)){
-			String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_url);
+			String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_model_url);
 			uploadUrl = uploadUrl + ModelFlaskConstant.process_video;
 			Assert.isTrue(StrUtil.isNotEmpty(uploadUrl),"没有获取到视频分析网址地址,请检查参数配置:video.model.url");
 			InputStream inputStream = uploadService.getFileInputStream(fileName, bucketName);
@@ -113,7 +113,7 @@ public class AiModelHandle  {
 	 * @return
 	 */
 	public TaskStatusResponse getTaskList() {
-		String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_url);
+		String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_model_url);
 		uploadUrl = uploadUrl + ModelFlaskConstant.task_status_list;
 		Assert.isTrue(StrUtil.isNotEmpty(uploadUrl),"没有获取到视频分析网址地址,请检查参数配置:video.model.url");
 		TaskStatusResponse response  = restTemplate.getForObject(uploadUrl, TaskStatusResponse.class);
