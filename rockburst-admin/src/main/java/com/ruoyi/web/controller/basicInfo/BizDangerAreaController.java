@@ -11,16 +11,14 @@ import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupUpdate;
-import com.ruoyi.system.domain.BizDangerArea;
-import com.ruoyi.system.domain.BizPresetPoint;
-import com.ruoyi.system.domain.BizTravePoint;
+import com.ruoyi.system.constant.MapConfigConstant;
+import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
+import com.ruoyi.system.domain.utils.GeometryUtil;
 import com.ruoyi.system.domain.vo.BizDangerAreaVo;
-import com.ruoyi.system.service.IBizDangerAreaService;
-import com.ruoyi.system.service.IBizPresetPointService;
-import com.ruoyi.system.service.IBizTravePointService;
-import com.ruoyi.system.service.TunnelService;
+import com.ruoyi.system.mapper.BizTunnelBarMapper;
+import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springdoc.api.annotations.ParameterObject;
@@ -29,10 +27,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.math.RoundingMode;
+import java.util.*;
 
 /**
  * 危险区管理Controller
@@ -49,6 +47,10 @@ public class BizDangerAreaController extends BaseController
     @Autowired
     private IBizDangerAreaService bizDangerAreaService;
 
+
+    @Autowired
+    private IBizDangerLevelService bizDangerLevelService;
+
     @Autowired
     private TunnelService tunnelService;
 
@@ -56,7 +58,10 @@ public class BizDangerAreaController extends BaseController
     private IBizTravePointService bizTravePointService;
     @Autowired
     private IBizPresetPointService bizPresetPointService;
-
+    @Autowired
+    private BizTunnelBarMapper bizTunnelBarMapper;
+    @Autowired
+    private ISysConfigService configService;
 
     /**
      *
@@ -106,203 +111,92 @@ public class BizDangerAreaController extends BaseController
         queryWrapper.lambda().eq(TunnelEntity::getWorkFaceId, workfaceId);
         List<TunnelEntity> tunnelEntities  =  tunnelService.list(queryWrapper);
         for (TunnelEntity tunnelEntity : tunnelEntities) {
-            List<BizDangerArea> areas = getAreaSort(tunnelEntity.getTunnelId());
-            if(areas != null && areas.size() > 0){
-                for (BizDangerArea area : areas) {
-                    System.out.println("area.getDangerAreaId() = " + area.getDangerAreaId());
-                    initAreaPrePoint1(area.getDangerAreaId(),area.getTunnelId(),drillType);
+            QueryWrapper<BizDangerArea> queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.lambda().eq(BizDangerArea::getTunnelId,tunnelEntity.getTunnelId()).orderByAsc(BizDangerArea::getNo);
+            List<BizDangerArea> areas = bizDangerAreaService.list(queryWrapper1);
+            List<BizDangerLevel> levels = bizDangerLevelService.list();
+            //非生产帮
+            List<Segment> fsegments = new ArrayList<>();
+            //生产帮
+            List<Segment> ssegments = new ArrayList<>();
+            for (BizDangerArea area : areas) {
+                Double spaced = new Double("1");
+                for (BizDangerLevel level : levels) {
+                    if(area.getLevel().equals(level.getLevel())){
+                        spaced = level.getSpaced();
+                    }
                 }
+                Segment segmentf = GeometryUtil.getSegment(area.getFscbStartx(),area.getFscbStarty(),area.getFscbEndx(),area.getFscbEndy(),spaced.toString(),area.getDangerAreaId());
+                fsegments.add(segmentf);
+
+                Segment segments = GeometryUtil.getSegment(area.getScbStartx(),area.getScbStarty(),area.getScbEndx(),area.getScbEndy(),spaced.toString(),area.getDangerAreaId());
+                ssegments.add(segments);
             }
+            List<Point2D> fpoint2DS =  samplePoints(fsegments);
+            QueryWrapper<BizTunnelBar> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.lambda().eq(BizTunnelBar::getTunnelId,tunnelEntity.getTunnelId()).eq(BizTunnelBar::getType,"scb");
+            List<BizTunnelBar> bars =  bizTunnelBarMapper.selectList(queryWrapper2);
+            BizTunnelBar scbbar = bars.get(0);
+            queryWrapper2.clear();
+            queryWrapper2.lambda().eq(BizTunnelBar::getTunnelId,tunnelEntity.getTunnelId()).eq(BizTunnelBar::getType,"fscb");
+            List<BizTunnelBar> bars1 =  bizTunnelBarMapper.selectList(queryWrapper2);
+            BizTunnelBar fsbbar = bars1.get(0);
+
+
+            String uploadUrl = configService.selectConfigByKey(MapConfigConstant.map_bili);
+
+            for (Point2D point2D : fpoint2DS) {
+                BigDecimal[] biaisai  =  GeometryUtil.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),fsbbar.getDirectAngle(),3,Double.parseDouble(uploadUrl));
+
+                List<Map<String,Object>> list = new ArrayList<>();
+                Map<String,Object> map = new HashMap<>();
+                map.put("x",point2D.getX());
+                map.put("y",point2D.getY());
+                Map<String,Object> map1 = new HashMap<>();
+                map1.put("x",biaisai[0]);
+                map1.put("y",biaisai[1]);
+                list.add(map);
+                list.add(map1);
+                BizPresetPoint bp = new BizPresetPoint();
+                bp.setTunnelId(tunnelEntity.getTunnelId())
+                        .setDangerAreaId(point2D.getAreaId())
+                        .setWorkfaceId(workfaceId)
+                        .setTunnelBarId(fsbbar.getBarId())
+                        .setDrillType(drillType)
+                        .setAxiss(list.toString());
+                bizPresetPointService.save(bp);
+            }
+
+            List<Point2D> spoint2DS =  samplePoints(ssegments);
+            for (Point2D point2D : spoint2DS) {
+                BigDecimal[] biaisai  =  GeometryUtil.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),scbbar.getDirectAngle(),3,Double.parseDouble(uploadUrl));
+
+                List<Map<String,Object>> list = new ArrayList<>();
+                Map<String,Object> map = new HashMap<>();
+                map.put("x",point2D.getX());
+                map.put("y",point2D.getY());
+                Map<String,Object> map1 = new HashMap<>();
+                map1.put("x",biaisai[0]);
+                map1.put("y",biaisai[1]);
+                list.add(map);
+                list.add(map1);
+                BizPresetPoint bp = new BizPresetPoint();
+                bp.setTunnelId(tunnelEntity.getTunnelId())
+                        .setDangerAreaId(point2D.getAreaId())
+                        .setWorkfaceId(workfaceId)
+                        .setTunnelBarId(scbbar.getBarId())
+                        .setDrillType(drillType)
+                        .setAxiss(list.toString());
+
+                bizPresetPointService.save(bp);
+            }
+            
         }
+
 
         return R.ok();
     }
 
-
-
-    public List<BizDangerArea> getAreaSort(Long tunnelId){
-        QueryWrapper<BizDangerArea> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(BizDangerArea::getTunnelId,tunnelId);
-        List<BizDangerArea> list = bizDangerAreaService.list(queryWrapper);
-        list.stream().sorted(Comparator.comparing(BizDangerArea::getNo)).collect(Collectors.toList());
-        return list;
-    }
-
-    public void initAreaPrePoint1(Long areaId,Long tunnelId,String drillType){
-        BizDangerArea dangerArea =  bizDangerAreaService.getByIdDeep(areaId);
-
-        BizPresetPoint pointstart = new BizPresetPoint();
-        pointstart = setAxis(areaId,dangerArea.getStartPointId(),dangerArea.getStartMeter());
-        pointstart.setDrillType(drillType);
-//        sssss(x,jio,point);
-        bizPresetPointService.savebarPresetPoint(pointstart);
-
-        BizPresetPoint point = ooo(areaId,dangerArea.getStartPointId(),dangerArea.getStartMeter(),dangerArea.getDangerLevel().getSpaced(),drillType);
-    }
-
-//    public void initAreaPrePoint(Long areaId,Long tunnelId){
-//        //获取当前区域
-//        //获取当前区域的起始导线点 加 距离  ( 规定规则, 一定为 导线点 前 n 米)
-//        BizDangerArea dangerArea =  bizDangerAreaService.getByIdDeep(areaId);
-//        BizPresetPoint point = bizTravePointService.getPresetPoint(dangerArea.getStartPointId(),dangerArea.getStartMeter(),dangerArea.getDangerLevel().getSpaced());
-//        point.setDangerAreaId(areaId).setTunnelId(tunnelId);
-//
-//        BizTravePoint currentPoint = bizTravePointService.getById(point.getPointId());
-//
-//        BizTravePoint prePoint = bizTravePointService.getPrePoint(point.getPointId());
-//        BizTravePoint afterPoint = bizTravePointService.getNextPoint(point.getPointId());
-//
-//        //存在前一个导线点的情况
-//        if(prePoint != null && prePoint.getPointId() != null){
-//            //计算 坐标
-//            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()));
-//            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()));
-//
-//            BigDecimal latMove = latSum.divide(new BigDecimal(currentPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-//            BigDecimal lonMove = lonSum.divide(new BigDecimal(currentPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-//
-//
-//            BigDecimal lat = getAxis(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
-//            BigDecimal lon = getAxis(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()),lonMove);
-//
-//            point.setLatitude(lat+"").setLongitude(lon+"");
-//        }else if(afterPoint != null && afterPoint.getPointId() != null){
-//
-//            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()));
-//            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()));
-//
-//            BigDecimal latMove = latSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-//            BigDecimal lonMove = lonSum.divide(new BigDecimal(afterPoint.getPrePointDistance())).setScale(8, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(point.getMeter()).abs());
-//
-//            BigDecimal lat = getAxis1(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
-//            BigDecimal lon = getAxis1(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()),lonMove);
-//
-//            point.setLatitude(lat+"").setLongitude(lon+"");
-//        }
-//
-//    }
-
-    public void init(Long areaId,Long tunnelId){
-
-        BizDangerArea dangerArea =  bizDangerAreaService.getByIdDeep(areaId);
-
-        BizPresetPoint point = bizTravePointService.getPresetPoint(dangerArea.getStartPointId(),dangerArea.getStartMeter(),dangerArea.getDangerLevel().getSpaced());
-
-    }
-
-    public BizPresetPoint ooo(Long  areaId , Long id, Double meter, Double spaced ,String drillType){
-        BizPresetPoint point = bizTravePointService.getPresetPoint(id,meter,spaced);
-        if(  point == null){
-            return null;
-        }
-        if(point.getPointId() == 113){
-            System.out.println("point = " + point);
-        }
-        Long inAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
-        //超出危险区 或者 后面没有导线点了
-        if( inAreaId == null || inAreaId != areaId){
-            return null;
-        }
-
-
-        point = setAxis(areaId,point.getPointId(),point.getMeter());
-        point.setDrillType(drillType);
-//        sssss(x,jio,point);
-        bizPresetPointService.savebarPresetPoint(point);
-
-
-        return ooo(areaId,point.getPointId(),point.getMeter(),spaced,drillType);
-    }
-
-
-
-    public BizPresetPoint setAxis(Long  areaId  , Long currentPointId, Double meter) {
-
-        BizPresetPoint point = new BizPresetPoint();
-
-        point.setPointId(currentPointId).setMeter(new BigDecimal(meter).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue()).setDangerAreaId(areaId);
-
-        BizTravePoint currentPoint = bizTravePointService.getById(currentPointId);
-
-        BizTravePoint prePoint = bizTravePointService.getPrePoint(currentPointId);
-        BizTravePoint afterPoint = bizTravePointService.getNextPoint(currentPointId);
-
-        //存在前一个导线点的情况
-        if(prePoint != null && prePoint.getPointId() != null){
-            //计算 坐标
-            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()));
-            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()));
-
-
-            BigDecimal latshang = latSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
-            BigDecimal lonshang = lonSum.divide(new BigDecimal(currentPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
-            BigDecimal latMove = latshang.multiply(new BigDecimal(point.getMeter()).abs());
-            BigDecimal lonMove = lonshang.multiply(new BigDecimal(point.getMeter()).abs());
-
-
-            BigDecimal lat = getAxis(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(prePoint.getLatitude()),latMove);
-            BigDecimal lon = getAxis(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(prePoint.getLongitude()),lonMove);
-
-            point.setLatitude(lat+"").setLongitude(lon+"");
-            return point;
-        }else if(afterPoint != null && afterPoint.getPointId() != null){
-
-            BigDecimal latSum =  axisSum(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()));
-            BigDecimal lonSum =  axisSum(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()));
-            BigDecimal latshang = latSum.divide(new BigDecimal(afterPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
-            BigDecimal lonshang = lonSum.divide(new BigDecimal(afterPoint.getPrePointDistance()),10,BigDecimal.ROUND_DOWN);
-            BigDecimal latMove = latshang.multiply(new BigDecimal(point.getMeter()).abs());
-            BigDecimal lonMove = lonshang.multiply(new BigDecimal(point.getMeter()).abs());
-
-            BigDecimal lat = getAxis1(new BigDecimal(currentPoint.getLatitude()),new BigDecimal(afterPoint.getLatitude()),latMove).setScale(10, BigDecimal.ROUND_DOWN);
-            BigDecimal lon = getAxis1(new BigDecimal(currentPoint.getLongitude()),new BigDecimal(afterPoint.getLongitude()),lonMove).setScale(10, BigDecimal.ROUND_DOWN);
-
-            point.setLatitude(lat+"").setLongitude(lon+"");
-            return point;
-        }
-        return point;
-    }
-    /**
-     * 坐标求和
-     * @return
-     */
-    public BigDecimal axisSum(BigDecimal axis1, BigDecimal axis2){
-//        if(axis2.signum() == 1 && axis1.signum() == 1){
-//            return axis2.add(axis1);
-//        }
-//        if(axis2.signum() == -1 && axis1.signum() == -1){
-//            return axis2.add(axis1).abs();
-//        }
-//        if(axis2.signum() == -1 && axis1.signum() == 1){
-//            return axis2.abs().add(axis1);
-//        }
-//        if(axis2.signum() == 1 && axis1.signum() == -1){
-//            return axis2.add(axis1.abs());
-//        }
-        return axis2.subtract(axis1).abs();
-    }
-
-    public BigDecimal getAxis(BigDecimal axisCurrent, BigDecimal axisPre, BigDecimal move){
-        if(axisCurrent.compareTo(axisPre) == 1){
-            return axisCurrent.subtract(move).setScale(10, BigDecimal.ROUND_DOWN);
-        }
-        if(axisCurrent.compareTo(axisPre) == -1){
-            return axisCurrent.add(move).setScale(10, BigDecimal.ROUND_DOWN);
-        }
-
-        return axisCurrent.setScale(10, BigDecimal.ROUND_DOWN);
-    }
-
-    public BigDecimal getAxis1(BigDecimal axisCurrent, BigDecimal axisAfter, BigDecimal move){
-        if(axisAfter.compareTo(axisCurrent) == 1){
-            return axisCurrent.subtract(move).setScale(10, BigDecimal.ROUND_DOWN);
-        }
-        if(axisAfter.compareTo(axisCurrent) == -1){
-            return axisCurrent.add(move).setScale(10, BigDecimal.ROUND_DOWN);
-        }
-
-        return axisCurrent;
-    }
 
     @Anonymous
     @ApiOperation("获取区域内,所有导线点")
@@ -360,19 +254,85 @@ public class BizDangerAreaController extends BaseController
     }
 
 
+    public List<Point2D> getPoint2Ds(List<Segment> segments){
+        List<Point2D> sampledPoints = samplePoints(segments);
+        // 输出所有点
+        return sampledPoints;
+    }
 
-    public BizPresetPoint sssss(Double x,Integer jio,BizPresetPoint point){
-        BigDecimal lonMove =  new BigDecimal(Math.sin(Math.toRadians(jio))).multiply(new BigDecimal(x));
-        BigDecimal latMove =  new BigDecimal(Math.cos(Math.toRadians(jio))).multiply(new BigDecimal(x));
-        point.setLatitudet(new BigDecimal(point.getLatitudet()).add(latMove)+"");
-        point.setLongitudet(new BigDecimal(point.getLongitudet()).add(lonMove)+"");
-        return point;
+
+
+//    static List<Point2D> samplePoints(List<Segment> segments) {
+//        List<Point2D> points = new ArrayList<>();
+//        for (int i = 0; i < segments.size(); i++) {
+//            Segment current = segments.get(i);
+//            Segment next = (i + 1 < segments.size()) ? segments.get(i + 1) : null;
+//
+//            BigDecimal dx = current.getEnd().getX().subtract(current.getStart().getX());
+//            BigDecimal dy = current.getEnd().getY().subtract(current.getStart().getY());
+//            BigDecimal length = hypot(dx, dy, 20); // 保留20位精度
+//
+//            BigDecimal interval = current.getInterval();
+//            if (next != null) {
+//                interval = Math.min(current.getInterval(), next.getInterval());
+//            }
+//
+//            int steps = (int) Math.floor(length / interval);
+//            for (int j = 0; j < steps; j++) {
+//                double ratio = (j * interval) / length;
+//                double x = current.getStart().getX() + dx * ratio;
+//                double y = current.getStart().getY() + dy * ratio;
+//                points.add(new Point2D.Double(x, y));
+//            }
+//        }
+//
+//        // 加上最后一个点
+//        points.add(segments.get(segments.size() - 1).getEnd());
+//        return points;
+//    }
+
+
+
+    static List<Point2D> samplePoints(List<Segment> segments) {
+        List<Point2D> points = new ArrayList<>();
+        int precision = 20;
+
+        for (int i = 0; i < segments.size(); i++) {
+            Segment current = segments.get(i);
+            Segment next = (i + 1 < segments.size()) ? segments.get(i + 1) : null;
+
+            BigDecimal dx = current.getEnd().getX().subtract(current.getStart().getX());
+            BigDecimal dy = current.getEnd().getY().subtract(current.getStart().getY());
+            BigDecimal length = GeometryUtil.hypot(dx, dy, precision);
+
+            BigDecimal interval = current.getInterval();
+            if (next != null) {
+                interval = interval.min(next.getInterval());
+            }
+
+            if (interval.compareTo(BigDecimal.ZERO) <= 0) continue;
+
+            int steps = length.divide(interval, RoundingMode.FLOOR).intValue();
+
+            for (int j = 0; j < steps; j++) {
+                BigDecimal ratio = interval.multiply(BigDecimal.valueOf(j))
+                        .divide(length, precision, RoundingMode.HALF_UP);
+                BigDecimal x = current.getStart().getX().add(dx.multiply(ratio));
+                BigDecimal y = current.getStart().getY().add(dy.multiply(ratio));
+                points.add(new Point2D(x, y,current.getAreaId()));
+            }
+        }
+
+        // 添加最后一个点
+        if (!segments.isEmpty()) {
+            Point2D end = segments.get(segments.size() - 1).getEnd();
+            end.setAreaId(segments.get(segments.size() - 1).getAreaId());
+            points.add(end);
+        }
+
+        return points;
     }
-    public static void main(String[] args) {
-        double radians = Math.toRadians(90);
-        Double a = Math.sin(radians);
-        System.out.println("args = " + a);
-    }
+
 
 
 }

@@ -41,6 +41,15 @@ public interface IBizTravePointService extends IService<BizTravePoint>
 
 
     /**
+     * 给定 导线点加距离,判断是在 哪个 危险区内
+     * @param pointId
+     * @param meter
+     * @return
+     */
+    Long judgeXYInArea(String x,String y,Long tunnelId);
+
+
+    /**
      * 给定 导线点加距离, 转换成 负方向距离
      * @param pointId
      * @param meter
@@ -64,7 +73,7 @@ public interface IBizTravePointService extends IService<BizTravePoint>
      * @param meter
      * @return
      */
-    BizPresetPoint getPointLatLon(Long pointId,Double meter);
+//    BizPresetPoint getPointLatLon(Long pointId,Double meter);
 
     /**
      * 给定  经纬度坐标,打孔深度,打孔角度 获取  顶点坐标

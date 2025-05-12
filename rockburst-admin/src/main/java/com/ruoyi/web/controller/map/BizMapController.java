@@ -108,21 +108,21 @@ public class BizMapController extends BaseController
         geTuiUtils.pushMsg(cid, title, content);
     }
 
-
-    @ApiOperation("给起始和结束")
-    @GetMapping("/xxxxxx")
-    public R<?> xxxxxx(@RequestParam(required = false) Long startPointId,
-                                     @RequestParam(required = false) Double startMeter,
-                                     @RequestParam(required = false) Long endPointId,
-                                     @RequestParam(required = false) Double endMeter)
-    {
-        BizPresetPoint points =  bizTravePointService.getPointLatLon(startPointId,startMeter);
-        BizPresetPoint pointe = bizTravePointService.getPointLatLon(endPointId,endMeter);
-        Map<String, Object> map = new HashMap<>();
-        map.put("points", points);
-        map.put("pointe", pointe);
-        return R.ok(map);
-    }
+//
+//    @ApiOperation("给起始和结束")
+//    @GetMapping("/xxxxxx")
+//    public R<?> xxxxxx(@RequestParam(required = false) Long startPointId,
+//                                     @RequestParam(required = false) Double startMeter,
+//                                     @RequestParam(required = false) Long endPointId,
+//                                     @RequestParam(required = false) Double endMeter)
+//    {
+//        BizPresetPoint points =  bizTravePointService.getPointLatLon(startPointId,startMeter);
+//        BizPresetPoint pointe = bizTravePointService.getPointLatLon(endPointId,endMeter);
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("points", points);
+//        map.put("pointe", pointe);
+//        return R.ok(map);
+//    }
 
 
 

@@ -1,5 +1,6 @@
 package com.ruoyi.system.domain.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -36,6 +37,7 @@ public class BizWorkfaceDto
     @ApiModelProperty(value = "工作面编号",required = true)
     @NotNull(groups = GroupAdd.class)
     private String workfaceNo;
+
 
 
     /** 工作面名称 */
@@ -149,5 +151,17 @@ public class BizWorkfaceDto
     @ApiModelProperty(value = "规划,逗号分隔")
     private String scheme;
 
+    @ApiModelProperty(value = "svg")
+    @TableField()
+    private String svg;
+
+    @ApiModelProperty(value = "中心点")
+    @TableField()
+    private String center;
+
+
+    @ApiModelProperty(value = "坐标")
+    @TableField()
+    private String pointList;
 
 }

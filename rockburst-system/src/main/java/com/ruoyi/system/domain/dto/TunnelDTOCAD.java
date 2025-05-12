@@ -1,33 +1,28 @@
-package com.ruoyi.system.domain.Entity;
+package com.ruoyi.system.domain.dto;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.ruoyi.system.domain.BusinessBaseEntity;
-import io.swagger.annotations.ApiModel;
+import com.ruoyi.system.domain.Entity.ParameterValidationOther;
+import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
+import com.ruoyi.system.domain.Entity.TunnelEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
  * @author: shikai
- * @date: 2024/11/19
+ * @date: 2024/11/21
  * @description:
  */
+
 @Data
-@ApiModel("巷道表")
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-@TableName("tunnel")
-public class TunnelEntity extends BusinessBaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class TunnelDTOCAD  {
+
 
     @ApiModelProperty(value = "巷道id")
     @NotNull(groups = {ParameterValidationUpdate.class}, message = "巷道id不能为空")
@@ -41,7 +36,6 @@ public class TunnelEntity extends BusinessBaseEntity implements Serializable {
     private String tunnelName;
 
     @ApiModelProperty(value = "工作面id")
-    @NotNull(groups = {ParameterValidationOther.class}, message = "工作面id不能为空")
     @TableField("work_face_id")
     private Long workFaceId;
 
@@ -95,4 +89,23 @@ public class TunnelEntity extends BusinessBaseEntity implements Serializable {
     @TableField("del_flag")
     @TableLogic(value = "0", delval = "2")
     private String delFlag;
+
+    @ApiModelProperty("工作面名称")
+    private String workFaceName;
+
+    @ApiModelProperty("创建时间格式化")
+    private String createTimeFrm;
+
+    @ApiModelProperty("更新时间格式化")
+    private String updateTimeFrm;
+
+    @ApiModelProperty("断面形状格式化")
+    private String sectionShapeFmt;
+
+    @ApiModelProperty("支护形式格式化")
+    private String supportFormFmt;
+
+    @ApiModelProperty("中心点")
+    private String workFaceCenter;
+
 }

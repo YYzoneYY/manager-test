@@ -52,6 +52,22 @@ public class BizTunnelBar extends BaseSelfEntity
     @ApiModelProperty(value = "结束导线点前后距离")
     private Double endMeter;
 
+
+    @ApiModelProperty(value = "开始导线点前后距离")
+    private String startx;
+
+
+    @ApiModelProperty(value = "开始导线点前后距离")
+    private String starty;
+
+    @ApiModelProperty(value = "结束导线点前后距离")
+    private String endx;
+
+
+    @ApiModelProperty(value = "结束导线点前后距离")
+    private String endy;
+
+
     @ApiModelProperty(value = "预设孔方向角度")
     private Integer directAngle;
 
@@ -90,6 +106,9 @@ public class BizTunnelBar extends BaseSelfEntity
     @ApiModelProperty(value = "原始位置")
     private String source;
 
+    @ApiModelProperty(value = "巷道走向")
+    @TableField()
+    private Double towardAngle;
 
 
 }

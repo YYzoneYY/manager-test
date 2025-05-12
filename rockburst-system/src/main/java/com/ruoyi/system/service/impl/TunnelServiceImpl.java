@@ -64,7 +64,7 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
      * @return 返回结果
      */
     @Override
-    public int insertTunnel(TunnelDTO tunnelDTO) {
+    public Long insertTunnel(TunnelDTO tunnelDTO) {
         int flag = 0;
         Long selectCount = tunnelMapper.selectCount(new LambdaQueryWrapper<TunnelEntity>()
                 .eq(TunnelEntity::getTunnelName, tunnelDTO.getTunnelName())
@@ -91,7 +91,7 @@ public class TunnelServiceImpl extends ServiceImpl<TunnelMapper, TunnelEntity> i
         if (flag <= 0) {
             throw new RuntimeException("新增巷道失败");
         }
-        return flag;
+        return tunnelEntity.getTunnelId();
     }
 
     /**
