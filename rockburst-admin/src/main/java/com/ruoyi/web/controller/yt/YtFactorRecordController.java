@@ -123,8 +123,8 @@ public class YtFactorRecordController extends BaseController
 
                             BigDecimal meter_decimal = new BigDecimal(bil).multiply(new BigDecimal(i));
                             BizPresetPoint point = bizTravePointService.getLatLontop(latlng.getStr("lat"),latlng.getStr("lng"),meter_decimal.doubleValue(),angle.getInt("angle"));
-                            map.put("lat",Double.parseDouble(point.getLatitudet()));
-                            map.put("lng",Double.parseDouble(point.getLongitudet()));
+//                            map.put("lat",Double.parseDouble(point.getLatitudet()));
+//                            map.put("lng",Double.parseDouble(point.getLongitudet()));
                             map.put("count",1);
                             list.add(map);
                         }
@@ -143,8 +143,8 @@ public class YtFactorRecordController extends BaseController
                             int rule = count_/(meter/10);
                             BigDecimal meter_decimal = new BigDecimal(bil).multiply(new BigDecimal(i));
                             BizPresetPoint point = bizTravePointService.getLatLontop(latlng.getStr("lat"),latlng.getStr("lng"),meter_decimal.doubleValue(),angle.getInt("angle"));
-                            map.put("lat",Double.parseDouble(point.getLatitudet()));
-                            map.put("lng",Double.parseDouble(point.getLongitudet()));
+//                            map.put("lat",Double.parseDouble(point.getLatitudet()));
+//                            map.put("lng",Double.parseDouble(point.getLongitudet()));
                             map.put("count",count_ - rule*(i/10));
                             list.add(map);
                         }
@@ -197,8 +197,8 @@ public class YtFactorRecordController extends BaseController
                             JSONObject latlng = JSONUtil.parseObj(latlng_o);
                             BigDecimal meter_decimal = new BigDecimal(bil).multiply(new BigDecimal(i));
                             BizPresetPoint point = bizTravePointService.getLatLontop(latlng.getStr("lat"),latlng.getStr("lng"),meter_decimal.doubleValue(),angle.getInt("angle"));
-                            map.put("lat",Double.parseDouble(point.getLatitudet()));
-                            map.put("lng",Double.parseDouble(point.getLongitudet()));
+//                            map.put("lat",Double.parseDouble(point.getLatitudet()));
+//                            map.put("lng",Double.parseDouble(point.getLongitudet()));
                             map.put("count",1);
                             list.add(map);
                         }
@@ -218,8 +218,8 @@ public class YtFactorRecordController extends BaseController
                             int rule = count_/(meter/10);
                             BigDecimal meter_decimal = new BigDecimal(bil).multiply(new BigDecimal(i));
                             BizPresetPoint point = bizTravePointService.getLatLontop(latlng.getStr("lat"),latlng.getStr("lng"),meter_decimal.doubleValue(),angle.getInt("angle"));
-                            map.put("lat",Double.parseDouble(point.getLatitudet()));
-                            map.put("lng",Double.parseDouble(point.getLongitudet()));
+//                            map.put("lat",Double.parseDouble(point.getLatitudet()));
+//                            map.put("lng",Double.parseDouble(point.getLongitudet()));
                             map.put("count",count_ - rule*(i/10));
                             list.add(map);
                         }

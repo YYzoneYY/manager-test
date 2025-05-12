@@ -56,11 +56,11 @@ public class BizPresetPoint extends BaseSelfEntity
     private Double meter;
 
 
-    @ApiModelProperty(value = "纬度")
-    private String latitude;
+    @ApiModelProperty(value = "x")
+    private String axisx;
 
-    @ApiModelProperty(value = "经度")
-    private String longitude;
+    @ApiModelProperty(value = "y")
+    private String axisy;
 
     @ApiModelProperty(value = "工程id")
     private Long projectId;
@@ -71,15 +71,15 @@ public class BizPresetPoint extends BaseSelfEntity
     )
     private Date constructTime;
 
-    @ApiModelProperty(value = "纬度T")
-    private String latitudet;
-
-    @ApiModelProperty(value = "经度T")
-    private String longitudet;
+//    @ApiModelProperty(value = "纬度T")
+//    private String latitudet;
+//
+//    @ApiModelProperty(value = "经度T")
+//    private String longitudet;
 
 
     @ApiModelProperty(value = "组")
-    private String latlngs;
+    private String axiss;
 
 
 

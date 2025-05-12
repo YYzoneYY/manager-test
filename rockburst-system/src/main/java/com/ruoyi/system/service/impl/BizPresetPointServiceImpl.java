@@ -12,6 +12,7 @@ import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.Entity.PlanEntity;
+import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizPlanPrePointDto;
 import com.ruoyi.system.domain.dto.BizPresetPointDto;
 import com.ruoyi.system.mapper.*;
@@ -54,6 +55,8 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
     private BizPlanPresetMapper bizPlanPresetMapper;
     @Autowired
     private BizTravePointMapper bizTravePointMapper;
+    @Autowired
+    private TunnelMapper tunnelMapper;
 
 
     @Override
@@ -96,6 +99,9 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                     continue;
                 }
                 List<BizTravePoint> points =  bizTravePointService.getPointByRange(dto.getStartPointId(), dto.getEndPointId());
+
+                TunnelEntity tunnel = tunnelMapper.selectById(dto.getTunnelId());
+
                 BizPresetPoint start = bizTravePointService.getPointPre(dto.getStartPointId(),dto.getStartMeter());
                 BizPresetPoint end = bizTravePointService.getPointPre(dto.getEndPointId(),dto.getEndMeter());
 
@@ -129,8 +135,8 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                 bizPlanPreset.setPlanId(planId)
                         .setDangerAreaId(dto.getDangerAreaId())
                         .setPresetPointId(dto.getPresetPointId())
-                        .setBottom(dto.getLongitude()+","+dto.getLatitude())
-                    .setTop(dto.getLongitudet()+","+dto.getLatitudet());
+                        .setBottom(dto.getAxisy()+","+dto.getAxisx());
+//                    .setTop(dto.getLongitudet()+","+dto.getLatitudet());
                 bizPlanPresetMapper.insert(bizPlanPreset);
             }
             return true;
@@ -272,11 +278,11 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
     public BizPresetPoint sssss(Double x,Integer jio,BizPresetPoint point){
         double aa = Math.sin(Math.toRadians(jio));
         double bb = Math.cos(Math.toRadians(jio));
-        BigDecimal lonMove =  new BigDecimal(aa).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
-        BigDecimal latMove =  new BigDecimal(bb).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
-        BigDecimal lat =  new BigDecimal(point.getLatitude()).setScale(8, BigDecimal.ROUND_HALF_UP);
-        point.setLatitudet(lat.add(latMove)+"");
-        point.setLongitudet(new BigDecimal(point.getLongitude()).setScale(8, BigDecimal.ROUND_HALF_UP).add(lonMove)+"");
+//        BigDecimal lonMove =  new BigDecimal(aa).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
+//        BigDecimal latMove =  new BigDecimal(bb).multiply(new BigDecimal(x)).setScale(8, RoundingMode.HALF_UP);
+//        BigDecimal lat =  new BigDecimal(point.getAxisx()).setScale(8, BigDecimal.ROUND_HALF_UP);
+//        point.setLatitudet(lat.add(latMove)+"");
+//        point.setLongitudet(new BigDecimal(point.getAxisy()).setScale(8, BigDecimal.ROUND_HALF_UP).add(lonMove)+"");
         return point;
     }
 }

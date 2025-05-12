@@ -21,6 +21,10 @@ import lombok.experimental.Accessors;
 @Setter
 @Accessors(chain = true)
 @ApiModel("导线点管理对象")
+/**
+ * 导向点序号：2,3,4
+ * 3 +10米 就是 ____2______3___*___4
+ */
 public class BizTravePoint extends BaseSelfEntity
 {
     private static final long serialVersionUID = 1L;
@@ -45,32 +49,22 @@ public class BizTravePoint extends BaseSelfEntity
     @TableField()
     private String pointName;
 
-//    /** 所属省份 */
-//    @ApiModelProperty(value = "坐标x")
-//    @TableField()
-//    private String axisx;
-//
-//    /** 所属省份 */
-//    @ApiModelProperty(value = "坐标y")
-//    @TableField()
-//    private String axisy;
-//
+    /** 所属省份 */
+    @ApiModelProperty(value = "坐标x")
+    @TableField()
+    private String axisx;
+
+    /** 所属省份 */
+    @ApiModelProperty(value = "坐标y")
+    @TableField()
+    private String axisy;
+
 //    /** 所属省份 */
 //    @ApiModelProperty(value = "坐标z")
 //    @TableField()
 //    private String axisz;
 
-    @ApiModelProperty(value = "经度")
-    @TableField()
-    private String longitude;
 
-    @ApiModelProperty(value = "纬度")
-    @TableField()
-    private String latitude;
-
-//    @ApiModelProperty(value = "状态")
-//    @TableField()
-//    private Integer status;
 
     @ApiModelProperty(value = "编号")
     @TableField()
@@ -84,17 +78,6 @@ public class BizTravePoint extends BaseSelfEntity
     @TableField()
     private Double prePointDistance;
 
-//    @ApiModelProperty(value = "顶点 1 是 0 否 距离切眼最近的点为顶点,需要记录距切眼距离")
-//    @TableField()
-//    private Boolean isVertex;
-
-//    @ApiModelProperty(value = "切眼标记点id")
-//    @TableField()
-//    private Long bestNearPointId;
-
-//    @ApiModelProperty(value = "距标记点距离")
-//    @TableField()
-//    private Double distance;
 
 
 

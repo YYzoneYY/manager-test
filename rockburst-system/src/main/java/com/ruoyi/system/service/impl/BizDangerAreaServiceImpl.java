@@ -59,7 +59,7 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
                 .selectAssociation(BizDangerLevel.class, BizDangerAreaVo::getBizDangerLevel)
                 .selectAssociation(BizWorkface.class, BizDangerAreaVo::getWorkface)
                 .selectAssociation(TunnelEntity.class, BizDangerAreaVo::getTunnel)
-                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizDangerArea::getStartPointId)
+                .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,    BizDangerArea::getStartPointId)
                 .leftJoin(BizTravePoint.class,BizTravePoint::getPointId,BizDangerArea::getEndPointId)
                 .leftJoin(BizDangerLevel.class,BizDangerLevel::getLevel,BizDangerArea::getLevel)
                 .leftJoin(BizWorkface.class,BizWorkface::getWorkfaceId,BizDangerArea::getWorkfaceId)
@@ -137,42 +137,42 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
             bizDangerArea.setNo(maxArea.get().getNo()+1) ;
         }
 //        Assert.isTrue(dto.getStartMeter()<=0,"必须在导线点前开始");
-        if(dto.getStartMeter() > 0 ){
-            BizPresetPoint startPoint = bizTravePointService.getPointPre(dto.getStartPointId(),dto.getStartMeter());
-            dto.setStartMeter(startPoint.getMeter()).setStartPointId(startPoint.getPointId());
-            bizDangerArea.setStartMeter(startPoint.getMeter()).setStartPointId(startPoint.getPointId());
-        }
-        if(dto.getEndMeter() > 0 ){
-            BizPresetPoint endPoint = bizTravePointService.getPointPre(dto.getEndPointId(),dto.getEndMeter());
-            dto.setEndMeter(endPoint.getMeter()).setEndPointId(endPoint.getPointId());
-            bizDangerArea.setEndMeter(endPoint.getMeter()).setEndPointId(endPoint.getPointId());
-        }
-
-        if(dto.getStartPointId() != dto.getEndPointId()){
-            BizTravePoint startPoint = bizTravePointMapper.selectById(dto.getStartPointId());
-            BizTravePoint endPoint = bizTravePointMapper.selectById(dto.getEndPointId());
-            QueryWrapper<BizTravePoint> queryWrapper2 = new QueryWrapper<>();
-            queryWrapper2.lambda()
-                    .eq(BizTravePoint::getTunnelId,startPoint.getTunnelId())
-                    .between(BizTravePoint::getNo,startPoint.getNo(),endPoint.getNo());
-            List<BizTravePoint> list2 = bizTravePointMapper.selectList(queryWrapper2);
-            List<Long> pointIds = new ArrayList<>();
-            if(list2 != null && list2.size()>0){
-                pointIds = list2.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
-            }
-
-            if(dto.getStartMeter() >= 0){
-                pointIds.remove(dto.getStartPointId());
-            }
-
-            if(dto.getStartMeter() <= 0){
-                pointIds.remove(dto.getEndPointId());
-            }
-
-            bizDangerArea.setPointlist(String.join(",", pointIds.stream()
-                    .map(Object::toString)
-                    .toArray(String[]::new)));
-        }
+//        if(dto.getStartMeter() > 0 ){
+//            BizPresetPoint startPoint = bizTravePointService.getPointPre(dto.getStartPointId(),dto.getStartMeter());
+//            dto.setStartMeter(startPoint.getMeter()).setStartPointId(startPoint.getPointId());
+//            bizDangerArea.setStartMeter(startPoint.getMeter()).setStartPointId(startPoint.getPointId());
+//        }
+//        if(dto.getEndMeter() > 0 ){
+//            BizPresetPoint endPoint = bizTravePointService.getPointPre(dto.getEndPointId(),dto.getEndMeter());
+//            dto.setEndMeter(endPoint.getMeter()).setEndPointId(endPoint.getPointId());
+//            bizDangerArea.setEndMeter(endPoint.getMeter()).setEndPointId(endPoint.getPointId());
+//        }
+//
+//        if(dto.getStartPointId() != dto.getEndPointId()){
+//            BizTravePoint startPoint = bizTravePointMapper.selectById(dto.getStartPointId());
+//            BizTravePoint endPoint = bizTravePointMapper.selectById(dto.getEndPointId());
+//            QueryWrapper<BizTravePoint> queryWrapper2 = new QueryWrapper<>();
+//            queryWrapper2.lambda()
+//                    .eq(BizTravePoint::getTunnelId,startPoint.getTunnelId())
+//                    .between(BizTravePoint::getNo,startPoint.getNo(),endPoint.getNo());
+//            List<BizTravePoint> list2 = bizTravePointMapper.selectList(queryWrapper2);
+//            List<Long> pointIds = new ArrayList<>();
+//            if(list2 != null && list2.size()>0){
+//                pointIds = list2.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
+//            }
+//
+//            if(dto.getStartMeter() >= 0){
+//                pointIds.remove(dto.getStartPointId());
+//            }
+//
+//            if(dto.getStartMeter() <= 0){
+//                pointIds.remove(dto.getEndPointId());
+//            }
+//
+//            bizDangerArea.setPointlist(String.join(",", pointIds.stream()
+//                    .map(Object::toString)
+//                    .toArray(String[]::new)));
+//        }
         return bizDangerAreaMapper.insert(bizDangerArea);
     }
 
@@ -182,38 +182,38 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
         BizDangerArea bizDangerArea = new BizDangerArea();
         BeanUtil.copyProperties(dto, bizDangerArea);
 
-        if (dto.getStartMeter() > 0) {
-            BizPresetPoint startPoint = bizTravePointService.getPointPre(dto.getStartPointId(), dto.getStartMeter());
-            dto.setStartMeter(startPoint.getMeter()).setStartPointId(startPoint.getPointId());
-            bizDangerArea.setStartMeter(startPoint.getMeter()).setStartPointId(startPoint.getPointId());
-        }
-        if (dto.getEndMeter() > 0) {
-            BizPresetPoint endPoint = bizTravePointService.getPointPre(dto.getEndPointId(), dto.getEndMeter());
-            dto.setEndMeter(endPoint.getMeter()).setEndPointId(endPoint.getPointId());
-            bizDangerArea.setEndMeter(endPoint.getMeter()).setEndPointId(endPoint.getPointId());
-        }
-
-        if (dto.getStartPointId() != dto.getEndPointId()) {
-            BizTravePoint startPoint = bizTravePointMapper.selectById(dto.getStartPointId());
-            BizTravePoint endPoint = bizTravePointMapper.selectById(dto.getEndPointId());
-            QueryWrapper<BizTravePoint> queryWrapper2 = new QueryWrapper<>();
-            queryWrapper2.lambda()
-                    .eq(BizTravePoint::getTunnelId, startPoint.getTunnelId())
-                    .between(BizTravePoint::getNo, startPoint.getNo(), endPoint.getNo());
-            List<BizTravePoint> list2 = bizTravePointMapper.selectList(queryWrapper2);
-            List<Long> pointIds = new ArrayList<>();
-            if (list2 != null && list2.size() > 0) {
-                pointIds = list2.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
-                pointIds.remove(dto.getStartPointId());
-                pointIds.remove(dto.getEndPointId());
-            }
-
-
-            bizDangerArea.setPointlist(String.join(",", pointIds.stream()
-                    .map(Object::toString)
-                    .toArray(String[]::new)));
-
-        }
+//        if (dto.getStartMeter() > 0) {
+//            BizPresetPoint startPoint = bizTravePointService.getPointPre(dto.getStartPointId(), dto.getStartMeter());
+//            dto.setStartMeter(startPoint.getMeter()).setStartPointId(startPoint.getPointId());
+//            bizDangerArea.setStartMeter(startPoint.getMeter()).setStartPointId(startPoint.getPointId());
+//        }
+//        if (dto.getEndMeter() > 0) {
+//            BizPresetPoint endPoint = bizTravePointService.getPointPre(dto.getEndPointId(), dto.getEndMeter());
+//            dto.setEndMeter(endPoint.getMeter()).setEndPointId(endPoint.getPointId());
+//            bizDangerArea.setEndMeter(endPoint.getMeter()).setEndPointId(endPoint.getPointId());
+//        }
+//
+//        if (dto.getStartPointId() != dto.getEndPointId()) {
+//            BizTravePoint startPoint = bizTravePointMapper.selectById(dto.getStartPointId());
+//            BizTravePoint endPoint = bizTravePointMapper.selectById(dto.getEndPointId());
+//            QueryWrapper<BizTravePoint> queryWrapper2 = new QueryWrapper<>();
+//            queryWrapper2.lambda()
+//                    .eq(BizTravePoint::getTunnelId, startPoint.getTunnelId())
+//                    .between(BizTravePoint::getNo, startPoint.getNo(), endPoint.getNo());
+//            List<BizTravePoint> list2 = bizTravePointMapper.selectList(queryWrapper2);
+//            List<Long> pointIds = new ArrayList<>();
+//            if (list2 != null && list2.size() > 0) {
+//                pointIds = list2.stream().map(BizTravePoint::getPointId).collect(Collectors.toList());
+//                pointIds.remove(dto.getStartPointId());
+//                pointIds.remove(dto.getEndPointId());
+//            }
+//
+//
+//            bizDangerArea.setPointlist(String.join(",", pointIds.stream()
+//                    .map(Object::toString)
+//                    .toArray(String[]::new)));
+//
+//        }
         return bizDangerAreaMapper.updateById(bizDangerArea);
     }
 

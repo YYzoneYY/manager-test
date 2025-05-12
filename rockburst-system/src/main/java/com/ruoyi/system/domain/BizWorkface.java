@@ -158,5 +158,8 @@ public class BizWorkface extends BaseSelfEntity
     @TableField()
     private String center;
 
+    @ApiModelProperty(value = "坐标")
+    @TableField()
+    private String pointsList;
 
 }

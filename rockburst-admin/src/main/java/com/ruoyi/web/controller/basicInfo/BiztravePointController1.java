@@ -1,432 +1,362 @@
-package com.ruoyi.web.controller.basicInfo;
-
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.ruoyi.common.annotation.Log;
-import com.ruoyi.common.core.controller.BaseController;
-import com.ruoyi.common.core.domain.R;
-import com.ruoyi.common.core.page.MPage;
-import com.ruoyi.common.core.page.Pagination;
-import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.common.utils.poi.ExcelUtil;
-import com.ruoyi.system.constant.BizBaseConstant;
-import com.ruoyi.system.constant.GroupAdd;
-import com.ruoyi.system.constant.GroupUpdate;
-import com.ruoyi.system.domain.BizProjectRecord;
-import com.ruoyi.system.domain.BizTravePoint;
-import com.ruoyi.system.domain.Entity.TunnelEntity;
-import com.ruoyi.system.domain.dto.BizTravePointDto;
-import com.ruoyi.system.domain.excel.BiztravePointExcel;
-import com.ruoyi.system.domain.vo.BizTravePointVo;
-import com.ruoyi.system.service.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springdoc.api.annotations.ParameterObject;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.util.Assert;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.*;
-import java.util.stream.Collectors;
-
-/**
- * 矿井管理Controller
- *
- * @author ruoyi
- * @date 2024-11-11
- */
-@Api(tags = "basic-导线点管理")
-@RestController
-@RequestMapping("/basicInfo/point111")
-public class BiztravePointController1 extends BaseController
-{
-    @Autowired
-    private IBizMineService bizMineService;
-
-    @Autowired
-    private IBizTravePointService bizTravePointService;
-
-    @Autowired
-    private IBizMiningAreaService   bizMiningAreaService;
-
-    @Autowired
-    private IBizProjectRecordService bizProjectRecordService;
-
-    @Autowired
-    private TunnelService tunnelService;
-
-    /**
-     * 查询矿井管理列表
-     */
-    @ApiOperation("查询导线点管理列表")
-    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
-    @GetMapping("/list")
-    public R<MPage<BizTravePoint>> list(@ParameterObject BizTravePointDto dto, @ParameterObject Pagination pagination)
-    {
-        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<BizTravePoint>();
-        queryWrapper.lambda()
-//                .like(StrUtil.isNotEmpty(dto.getAxisx()),BizTravePoint::getAxisx,dto.getAxisx())
-//                .like(StrUtil.isNotEmpty(dto.getAxisy()),BizTravePoint::getAxisx,dto.getAxisy())
-//                .like(StrUtil.isNotEmpty(dto.getAxisz()),BizTravePoint::getAxisx,dto.getAxisz())
-                .like(StrUtil.isNotEmpty( dto.getPointName()), BizTravePoint::getPointName, dto.getPointName())
-//                .eq(dto.getStatus() != null , BizTravePoint::getStatus,dto.getStatus())
-                .eq(dto.getWorkfaceId() != null , BizTravePoint::getWorkfaceId,dto.getWorkfaceId())
-                .eq(dto.getTunnelId() != null , BizTravePoint::getTunnelId,dto.getTunnelId())
-                .eq(BizTravePoint::getDelFlag, BizBaseConstant.DELFLAG_N);
-        IPage<BizTravePoint> list = bizTravePointService.getBaseMapper().selectPage(pagination,queryWrapper);
-        return R.ok(new MPage<>(list));
-    }
-
-
-    @ApiOperation("下拉导线点列表-根据状态,工作面 查询导线点")
+//package com.ruoyi.web.controller.basicInfo;
+//
+//import cn.hutool.core.bean.BeanUtil;
+//import cn.hutool.core.util.StrUtil;
+//import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+//import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+//import com.baomidou.mybatisplus.core.metadata.IPage;
+//import com.ruoyi.common.annotation.Log;
+//import com.ruoyi.common.core.controller.BaseController;
+//import com.ruoyi.common.core.domain.R;
+//import com.ruoyi.common.core.page.MPage;
+//import com.ruoyi.common.core.page.Pagination;
+//import com.ruoyi.common.enums.BusinessType;
+//import com.ruoyi.common.utils.poi.ExcelUtil;
+//import com.ruoyi.system.constant.BizBaseConstant;
+//import com.ruoyi.system.constant.GroupAdd;
+//import com.ruoyi.system.constant.GroupUpdate;
+//import com.ruoyi.system.domain.BizProjectRecord;
+//import com.ruoyi.system.domain.BizTravePoint;
+//import com.ruoyi.system.domain.Entity.TunnelEntity;
+//import com.ruoyi.system.domain.dto.BizTravePointDto;
+//import com.ruoyi.system.domain.excel.BiztravePointExcel;
+//import com.ruoyi.system.domain.vo.BizTravePointVo;
+//import com.ruoyi.system.service.*;
+//import io.swagger.annotations.Api;
+//import io.swagger.annotations.ApiOperation;
+//import org.springdoc.api.annotations.ParameterObject;
+//import org.springframework.beans.BeanUtils;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.security.access.prepost.PreAuthorize;
+//import org.springframework.util.Assert;
+//import org.springframework.validation.annotation.Validated;
+//import org.springframework.web.bind.annotation.*;
+//import org.springframework.web.multipart.MultipartFile;
+//
+//import javax.servlet.http.HttpServletResponse;
+//import java.util.*;
+//import java.util.stream.Collectors;
+//
+///**
+// * 矿井管理Controller
+// *
+// * @author ruoyi
+// * @date 2024-11-11
+// */
+//@Api(tags = "basic-导线点管理")
+//@RestController
+//@RequestMapping("/basicInfo/point111")
+//public class BiztravePointController1 extends BaseController
+//{
+//    @Autowired
+//    private IBizMineService bizMineService;
+//
+//    @Autowired
+//    private IBizTravePointService bizTravePointService;
+//
+//    @Autowired
+//    private IBizMiningAreaService   bizMiningAreaService;
+//
+//    @Autowired
+//    private IBizProjectRecordService bizProjectRecordService;
+//
+//    @Autowired
+//    private TunnelService tunnelService;
+//
+//    /**
+//     * 查询矿井管理列表
+//     */
+//    @ApiOperation("查询导线点管理列表")
 //    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
-    @GetMapping("/checkList")
-    public R<List<BizTravePoint>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,
-                                            @RequestParam(value = "工作面合集", required = false) Long[] workfaceIds,
-                                            @RequestParam(value = "巷道合集", required = false) Long[] tunnelIds)
-    {
-        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda()
-//                .in(statuss != null && statuss.length > 0, BizTravePoint::getStatus, statuss)
-                .in(tunnelIds != null && tunnelIds.length > 0, BizTravePoint::getTunnelId, tunnelIds)
-                .in(workfaceIds != null && workfaceIds.length > 0, BizTravePoint::getWorkfaceId, workfaceIds)
-                .eq(BizTravePoint::getDelFlag,BizBaseConstant.DELFLAG_N);
-        List<BizTravePoint> list = bizTravePointService.getBaseMapper().selectList(queryWrapper);
-        return R.ok(list);
-    }
-
+//    @GetMapping("/list")
+//    public R<MPage<BizTravePoint>> list(@ParameterObject BizTravePointDto dto, @ParameterObject Pagination pagination)
+//    {
+//        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<BizTravePoint>();
+//        queryWrapper.lambda()
+////                .like(StrUtil.isNotEmpty(dto.getAxisx()),BizTravePoint::getAxisx,dto.getAxisx())
+////                .like(StrUtil.isNotEmpty(dto.getAxisy()),BizTravePoint::getAxisx,dto.getAxisy())
+////                .like(StrUtil.isNotEmpty(dto.getAxisz()),BizTravePoint::getAxisx,dto.getAxisz())
+//                .like(StrUtil.isNotEmpty( dto.getPointName()), BizTravePoint::getPointName, dto.getPointName())
+////                .eq(dto.getStatus() != null , BizTravePoint::getStatus,dto.getStatus())
+//                .eq(dto.getWorkfaceId() != null , BizTravePoint::getWorkfaceId,dto.getWorkfaceId())
+//                .eq(dto.getTunnelId() != null , BizTravePoint::getTunnelId,dto.getTunnelId())
+//                .eq(BizTravePoint::getDelFlag, BizBaseConstant.DELFLAG_N);
+//        IPage<BizTravePoint> list = bizTravePointService.getBaseMapper().selectPage(pagination,queryWrapper);
+//        return R.ok(new MPage<>(list));
+//    }
+//
+//
 //    @ApiOperation("下拉导线点列表-根据状态,工作面 查询导线点")
 ////    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
-//    @GetMapping("/checkList1")
-//    public R checkList1(
-//                                            @RequestParam(value = "工作面", required = false) Long workfaceId)
+//    @GetMapping("/checkList")
+//    public R<List<BizTravePoint>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss,
+//                                            @RequestParam(value = "工作面合集", required = false) Long[] workfaceIds,
+//                                            @RequestParam(value = "巷道合集", required = false) Long[] tunnelIds)
 //    {
-//        QueryWrapper<TunnelEntity> tunnelEntityQueryWrapper = new QueryWrapper<>();
-//        tunnelEntityQueryWrapper.lambda().eq(TunnelEntity::getWorkFaceId,workfaceId);
-//        long count =  tunnelService.count(tunnelEntityQueryWrapper);
-//        Assert.isTrue(count  > 2, "至少需要两个平行巷,一个切眼");
-//
-//        tunnelEntityQueryWrapper.clear();
-//        tunnelEntityQueryWrapper.lambda().select(TunnelEntity::getTunnelId,TunnelEntity::getTunnelType)
-//                .eq(TunnelEntity::getWorkFaceId,workfaceId)
-//                .in(TunnelEntity::getTunnelType,"QY","XH","SH");
-//        List<TunnelEntity> tunnelEntities = tunnelService.list(tunnelEntityQueryWrapper);
-//
-//        Long qyId = null;
-//        Long shId = null;
-//        Long xhId = null;
-//        for (TunnelEntity tunnelEntity : tunnelEntities) {
-//            if("QY".equals(tunnelEntity.getTunnelType())){
-//                qyId = tunnelEntity.getTunnelId();
-//            }
-//            if("SH".equals(tunnelEntity.getTunnelType())){
-//                shId = tunnelEntity.getTunnelId();
-//            }
-//            if("XH".equals(tunnelEntity.getTunnelType())){
-//                xhId = tunnelEntity.getTunnelId();
-//            }
-//        }
-//        Assert.isTrue(qyId != null,"此工作面下缺少 切眼巷道");
-//        Assert.isTrue(shId != null,"此工作面下缺少 SH巷道");
-//        Assert.isTrue(xhId != null,"此工作面下缺少 XH巷道");
-//
 //        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
 //        queryWrapper.lambda()
-//                .eq(BizTravePoint::getIsVertex,true)
-//                .eq( BizTravePoint::getTunnelId, qyId)
+////                .in(statuss != null && statuss.length > 0, BizTravePoint::getStatus, statuss)
+//                .in(tunnelIds != null && tunnelIds.length > 0, BizTravePoint::getTunnelId, tunnelIds)
+//                .in(workfaceIds != null && workfaceIds.length > 0, BizTravePoint::getWorkfaceId, workfaceIds)
 //                .eq(BizTravePoint::getDelFlag,BizBaseConstant.DELFLAG_N);
-//        List<BizTravePoint> qylist = bizTravePointService.getBaseMapper().selectList(queryWrapper);
-//
-//        Assert.isTrue(qylist != null && qylist.size() == 2 ,"该巷道下顶点个数不正确");
-//
-//        //上巷
-//        queryWrapper.clear();
-//        queryWrapper.lambda().eq(BizTravePoint::getTunnelId,shId)
-//                .eq(BizTravePoint::getIsVertex,true)
-//                .orderBy(true,true,BizTravePoint::getDistance);
-//        List<BizTravePoint> shVertex = bizTravePointService.getBaseMapper().selectList(queryWrapper);
-//
-//
-//        //下巷
-//        queryWrapper.clear();
-//        queryWrapper.lambda().eq(BizTravePoint::getTunnelId,xhId)
-//                .orderBy(true,true,BizTravePoint::getDistance);
-//        List<BizTravePoint> xhlist = bizTravePointService.getBaseMapper().selectList(queryWrapper);
-//
-//
-//        Map<String,List<BizTravePoint>> map = new HashMap<>();
-//        map.put("SH",shVertex);
-//        map.put("XH",xhlist);
-//        return R.ok(map);
+//        List<BizTravePoint> list = bizTravePointService.getBaseMapper().selectList(queryWrapper);
+//        return R.ok(list);
 //    }
 //
-//    private Double getMath(Point a, Point n){
-//        BigDecimal ax = a.getX().subtract(n.getX());
-//        BigDecimal ay = a.getY().subtract(n.getY());
-//        BigDecimal az = a.getZ().subtract(n.getZ());
+////    @ApiOperation("下拉导线点列表-根据状态,工作面 查询导线点")
+//////    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
+////    @GetMapping("/checkList1")
+////    public R checkList1(
+////                                            @RequestParam(value = "工作面", required = false) Long workfaceId)
+////    {
+////        QueryWrapper<TunnelEntity> tunnelEntityQueryWrapper = new QueryWrapper<>();
+////        tunnelEntityQueryWrapper.lambda().eq(TunnelEntity::getWorkFaceId,workfaceId);
+////        long count =  tunnelService.count(tunnelEntityQueryWrapper);
+////        Assert.isTrue(count  > 2, "至少需要两个平行巷,一个切眼");
+////
+////        tunnelEntityQueryWrapper.clear();
+////        tunnelEntityQueryWrapper.lambda().select(TunnelEntity::getTunnelId,TunnelEntity::getTunnelType)
+////                .eq(TunnelEntity::getWorkFaceId,workfaceId)
+////                .in(TunnelEntity::getTunnelType,"QY","XH","SH");
+////        List<TunnelEntity> tunnelEntities = tunnelService.list(tunnelEntityQueryWrapper);
+////
+////        Long qyId = null;
+////        Long shId = null;
+////        Long xhId = null;
+////        for (TunnelEntity tunnelEntity : tunnelEntities) {
+////            if("QY".equals(tunnelEntity.getTunnelType())){
+////                qyId = tunnelEntity.getTunnelId();
+////            }
+////            if("SH".equals(tunnelEntity.getTunnelType())){
+////                shId = tunnelEntity.getTunnelId();
+////            }
+////            if("XH".equals(tunnelEntity.getTunnelType())){
+////                xhId = tunnelEntity.getTunnelId();
+////            }
+////        }
+////        Assert.isTrue(qyId != null,"此工作面下缺少 切眼巷道");
+////        Assert.isTrue(shId != null,"此工作面下缺少 SH巷道");
+////        Assert.isTrue(xhId != null,"此工作面下缺少 XH巷道");
+////
+////        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+////        queryWrapper.lambda()
+////                .eq(BizTravePoint::getIsVertex,true)
+////                .eq( BizTravePoint::getTunnelId, qyId)
+////                .eq(BizTravePoint::getDelFlag,BizBaseConstant.DELFLAG_N);
+////        List<BizTravePoint> qylist = bizTravePointService.getBaseMapper().selectList(queryWrapper);
+////
+////        Assert.isTrue(qylist != null && qylist.size() == 2 ,"该巷道下顶点个数不正确");
+////
+////        //上巷
+////        queryWrapper.clear();
+////        queryWrapper.lambda().eq(BizTravePoint::getTunnelId,shId)
+////                .eq(BizTravePoint::getIsVertex,true)
+////                .orderBy(true,true,BizTravePoint::getDistance);
+////        List<BizTravePoint> shVertex = bizTravePointService.getBaseMapper().selectList(queryWrapper);
+////
+////
+////        //下巷
+////        queryWrapper.clear();
+////        queryWrapper.lambda().eq(BizTravePoint::getTunnelId,xhId)
+////                .orderBy(true,true,BizTravePoint::getDistance);
+////        List<BizTravePoint> xhlist = bizTravePointService.getBaseMapper().selectList(queryWrapper);
+////
+////
+////        Map<String,List<BizTravePoint>> map = new HashMap<>();
+////        map.put("SH",shVertex);
+////        map.put("XH",xhlist);
+////        return R.ok(map);
+////    }
+////
+////    private Double getMath(Point a, Point n){
+////        BigDecimal ax = a.getX().subtract(n.getX());
+////        BigDecimal ay = a.getY().subtract(n.getY());
+////        BigDecimal az = a.getZ().subtract(n.getZ());
+////
+////        ax = ax.multiply(ax);
+////        ay = ay.multiply(ay);
+////        az = az.multiply(az);
+////
+////        Double an = Math.sqrt(ax.add(ay).add(az).doubleValue());
+////        return an;
+////    }
+////
+////    private Point zhuanhuan(BizTravePoint bizTravePoint){
+////        Point point = new Point();
+////        point.setX(new BigDecimal(bizTravePoint.getAxisx()));
+////        point.setY(new BigDecimal(bizTravePoint.getAxisy()));
+////        point.setZ(new BigDecimal(bizTravePoint.getAxisz()));
+////        return point;
+////    }
 //
-//        ax = ax.multiply(ax);
-//        ay = ay.multiply(ay);
-//        az = az.multiply(az);
 //
-//        Double an = Math.sqrt(ax.add(ay).add(az).doubleValue());
-//        return an;
+//    @ApiOperation("尺子")
+////    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
+//    @GetMapping("/rule")
+//    public R<MPage<BizTravePointVo>> rule(@RequestParam Long locationId,@RequestParam String constructType,@ParameterObject Pagination pagination)
+//    {
+//        return R.ok(bizTravePointService.geRuleList(locationId,constructType,pagination));
 //    }
 //
-//    private Point zhuanhuan(BizTravePoint bizTravePoint){
-//        Point point = new Point();
-//        point.setX(new BigDecimal(bizTravePoint.getAxisx()));
-//        point.setY(new BigDecimal(bizTravePoint.getAxisy()));
-//        point.setZ(new BigDecimal(bizTravePoint.getAxisz()));
-//        return point;
+//
+//    @Log(title = "导线点导入", businessType = BusinessType.IMPORT)
+//    @PreAuthorize("@ss.hasPermi('basicInfo:point:import')")
+//    @ApiOperation("导线点导入")
+//    @PostMapping("/importData")
+//    public R importData(@RequestPart("file") MultipartFile file) throws Exception
+//    {
+//        ExcelUtil<BiztravePointExcel> util = new ExcelUtil<BiztravePointExcel>(BiztravePointExcel.class);
+//        List<BiztravePointExcel> excels = util.importExcel(file.getInputStream());
+//
+//        Map<String, List<BiztravePointExcel>> groupbyTunnel = excels
+//                .stream().collect(Collectors.groupingBy(BiztravePointExcel::getTunnelName));
+//        String username =  getUsername();
+//        //检查
+//        groupbyTunnel.forEach((tunnelName, group) -> {
+//            QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
+//            queryWrapper.lambda().eq(TunnelEntity::getTunnelName,tunnelName);
+//            Long count = tunnelService.getBaseMapper().selectCount(queryWrapper);
+//            if(count != 1l){
+//                Assert.isTrue(true,"请检查<"+tunnelName+">是否正确");
+//            }
+//            TunnelEntity tunnel =  tunnelService.getBaseMapper().selectOne(queryWrapper);
+//            List<String> pointNames =   group.stream().map(BiztravePointExcel::getPointName).collect(Collectors.toList());
+//            Set<String> uniquePoints = new HashSet<>(pointNames);
+//            if (uniquePoints.size() < pointNames.size()) {
+//                Assert.isTrue(true,"请检查<"+tunnelName+">中导线点名称是否重复");
+//            }
+//
+//            QueryWrapper<BizTravePoint> queryWrapper1 = new QueryWrapper<>();
+//            queryWrapper1.lambda().select(BizTravePoint::getPointName).eq(BizTravePoint::getTunnelId,tunnel.getTunnelId());
+//            List<BizTravePoint> points =  this.bizTravePointService.getBaseMapper().selectList(queryWrapper1);
+//            List<String> sourcePoints = points.stream().map(BizTravePoint::getPointName).collect(Collectors.toList());
+//            if(sourcePoints.containsAll(pointNames)){
+//                Assert.isTrue(true,"请检查<"+tunnelName+">中导线点名称与数据库中数据是否重复");
+//            }
+//
+//
+//        });
+//
+//        groupbyTunnel.forEach((tunnelName, group) -> {
+//            QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
+//            queryWrapper.lambda().eq(TunnelEntity::getTunnelName,tunnelName);
+//            TunnelEntity tunnel =  tunnelService.getBaseMapper().selectOne(queryWrapper);
+//
+//            group.sort(Comparator.comparing(BiztravePointExcel::getNo));
+//
+//            for (BiztravePointExcel biztravePointExcel : group) {
+//                BizTravePoint bizTravePoint = new BizTravePoint();
+//                BeanUtils.copyProperties(biztravePointExcel,bizTravePoint);
+//                bizTravePoint.setTunnelId(tunnel.getTunnelId()).setWorkfaceId(tunnel.getWorkFaceId()).setCreateBy(username);
+//                if(bizTravePoint.getNo() != 1){
+//                    QueryWrapper<BizTravePoint> queryWrapper1 = new QueryWrapper<>();
+//                    queryWrapper1.lambda().eq(BizTravePoint::getTunnelId,tunnel.getTunnelId())
+//                            .eq(BizTravePoint::getNo,bizTravePoint.getNo()-1);
+//                    BizTravePoint pre = bizTravePointService.getBaseMapper().selectOne(queryWrapper1);
+//                    bizTravePoint.setPrePointId(pre.getPointId());
+//                }
+//                this.bizTravePointService.getBaseMapper().insert(bizTravePoint);
+//            }
+//        });
+//        return R.ok();
+//
+//
+//
+////        String operName = getUsername();
+////        List<BizTravePoint> list = new ArrayList<BizTravePoint>();
+////        for (BiztravePointExcel biztravePointExcel : userList) {
+////            BizTravePoint bizTravePoint = new BizTravePoint();
+////            BeanUtils.copyProperties(biztravePointExcel, bizTravePoint);
+////            QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+////            queryWrapper.lambda().eq()
+////            bizTravePointService.getBaseMapper().selectOne()
+////            list.add(bizTravePoint);
+////
+////
+////        }
+//
+////
+////        String message = userService.importUser(userList, updateSupport, operName);
+////        return success(message);
 //    }
-
-
-    @ApiOperation("尺子")
-//    @PreAuthorize("@ss.hasPermi('basicInfo:point:list')")
-    @GetMapping("/rule")
-    public R<MPage<BizTravePointVo>> rule(@RequestParam Long locationId,@RequestParam String constructType,@ParameterObject Pagination pagination)
-    {
-        return R.ok(bizTravePointService.geRuleList(locationId,constructType,pagination));
-    }
-
-
-    @Log(title = "导线点导入", businessType = BusinessType.IMPORT)
-    @PreAuthorize("@ss.hasPermi('basicInfo:point:import')")
-    @ApiOperation("导线点导入")
-    @PostMapping("/importData")
-    public R importData(@RequestPart("file") MultipartFile file) throws Exception
-    {
-        ExcelUtil<BiztravePointExcel> util = new ExcelUtil<BiztravePointExcel>(BiztravePointExcel.class);
-        List<BiztravePointExcel> excels = util.importExcel(file.getInputStream());
-
-        Map<String, List<BiztravePointExcel>> groupbyTunnel = excels
-                .stream().collect(Collectors.groupingBy(BiztravePointExcel::getTunnelName));
-        String username =  getUsername();
-        //检查
-        groupbyTunnel.forEach((tunnelName, group) -> {
-            QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(TunnelEntity::getTunnelName,tunnelName);
-            Long count = tunnelService.getBaseMapper().selectCount(queryWrapper);
-            if(count != 1l){
-                Assert.isTrue(true,"请检查<"+tunnelName+">是否正确");
-            }
-            TunnelEntity tunnel =  tunnelService.getBaseMapper().selectOne(queryWrapper);
-            List<String> pointNames =   group.stream().map(BiztravePointExcel::getPointName).collect(Collectors.toList());
-            Set<String> uniquePoints = new HashSet<>(pointNames);
-            if (uniquePoints.size() < pointNames.size()) {
-                Assert.isTrue(true,"请检查<"+tunnelName+">中导线点名称是否重复");
-            }
-
-            QueryWrapper<BizTravePoint> queryWrapper1 = new QueryWrapper<>();
-            queryWrapper1.lambda().select(BizTravePoint::getPointName).eq(BizTravePoint::getTunnelId,tunnel.getTunnelId());
-            List<BizTravePoint> points =  this.bizTravePointService.getBaseMapper().selectList(queryWrapper1);
-            List<String> sourcePoints = points.stream().map(BizTravePoint::getPointName).collect(Collectors.toList());
-            if(sourcePoints.containsAll(pointNames)){
-                Assert.isTrue(true,"请检查<"+tunnelName+">中导线点名称与数据库中数据是否重复");
-            }
-
-
-        });
-
-        groupbyTunnel.forEach((tunnelName, group) -> {
-            QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(TunnelEntity::getTunnelName,tunnelName);
-            TunnelEntity tunnel =  tunnelService.getBaseMapper().selectOne(queryWrapper);
-
-            group.sort(Comparator.comparing(BiztravePointExcel::getNo));
-
-            for (BiztravePointExcel biztravePointExcel : group) {
-                BizTravePoint bizTravePoint = new BizTravePoint();
-                BeanUtils.copyProperties(biztravePointExcel,bizTravePoint);
-                bizTravePoint.setTunnelId(tunnel.getTunnelId()).setWorkfaceId(tunnel.getWorkFaceId()).setCreateBy(username);
-                if(bizTravePoint.getNo() != 1){
-                    QueryWrapper<BizTravePoint> queryWrapper1 = new QueryWrapper<>();
-                    queryWrapper1.lambda().eq(BizTravePoint::getTunnelId,tunnel.getTunnelId())
-                            .eq(BizTravePoint::getNo,bizTravePoint.getNo()-1);
-                    BizTravePoint pre = bizTravePointService.getBaseMapper().selectOne(queryWrapper1);
-                    bizTravePoint.setPrePointId(pre.getPointId());
-                }
-                this.bizTravePointService.getBaseMapper().insert(bizTravePoint);
-            }
-        });
-        return R.ok();
-
-
-
-//        String operName = getUsername();
-//        List<BizTravePoint> list = new ArrayList<BizTravePoint>();
-//        for (BiztravePointExcel biztravePointExcel : userList) {
-//            BizTravePoint bizTravePoint = new BizTravePoint();
-//            BeanUtils.copyProperties(biztravePointExcel, bizTravePoint);
-//            QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-//            queryWrapper.lambda().eq()
-//            bizTravePointService.getBaseMapper().selectOne()
-//            list.add(bizTravePoint);
+//
+//    @ApiOperation("模板")
+//    @PostMapping("/importTemplate")
+//    public void importTemplate(HttpServletResponse response)
+//    {
+//        ExcelUtil<BiztravePointExcel> util = new ExcelUtil<BiztravePointExcel>(BiztravePointExcel.class);
+//        util.importTemplateExcel(response, "模板");
+//    }
 //
 //
-//        }
-
 //
-//        String message = userService.importUser(userList, updateSupport, operName);
-//        return success(message);
-    }
-
-    @ApiOperation("模板")
-    @PostMapping("/importTemplate")
-    public void importTemplate(HttpServletResponse response)
-    {
-        ExcelUtil<BiztravePointExcel> util = new ExcelUtil<BiztravePointExcel>(BiztravePointExcel.class);
-        util.importTemplateExcel(response, "模板");
-    }
-
-
-
-    /**
-     * 获取矿井管理详细信息
-     */
-    @ApiOperation("获取前导线点管理详细信息")
+//    /**
+//     * 获取矿井管理详细信息
+//     */
+//    @ApiOperation("获取前导线点管理详细信息")
+////    @PreAuthorize("@ss.hasPermi('basicInfo:point:query')")
+//    @GetMapping(value = "/prePoint")
+//    public R<BizTravePoint> getPrePointDistance(BizTravePointDto dto) {
+//        Assert.isTrue(dto.getTunnelId() != null,"请填写巷道");
+//        Assert.isTrue(StrUtil.isNotEmpty(dto.getAxisx()) && StrUtil.isNotEmpty(dto.getAxisy()) && StrUtil.isNotEmpty(dto.getAxisz()),"请填写巷道");
+//        return R.ok(bizTravePointService.getPrePointDistance(dto));
+//    }
+//
+//    @ApiOperation("获取导线点管理详细信息")
 //    @PreAuthorize("@ss.hasPermi('basicInfo:point:query')")
-    @GetMapping(value = "/prePoint")
-    public R<BizTravePoint> getPrePointDistance(BizTravePointDto dto) {
-        Assert.isTrue(dto.getTunnelId() != null,"请填写巷道");
-        Assert.isTrue(StrUtil.isNotEmpty(dto.getAxisx()) && StrUtil.isNotEmpty(dto.getAxisy()) && StrUtil.isNotEmpty(dto.getAxisz()),"请填写巷道");
-        return R.ok(bizTravePointService.getPrePointDistance(dto));
-    }
-
-    @ApiOperation("获取导线点管理详细信息")
-    @PreAuthorize("@ss.hasPermi('basicInfo:point:query')")
-    @GetMapping(value = "/{pointId}")
-    public R<BizTravePoint> getInfo(@PathVariable("pointId") Long pointId)
-    {
-        return R.ok(bizTravePointService.getBaseMapper().selectById(pointId));
-    }
-
-
-//    @ApiOperation("获取钻孔经纬度")
-////    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
-//    @GetMapping(value = "/getlatlon")
-//    public R getDillLatLon(@RequestParam Long pointId,@RequestParam String distance)
+//    @GetMapping(value = "/{pointId}")
+//    public R<BizTravePoint> getInfo(@PathVariable("pointId") Long pointId)
 //    {
-//
-//        BizTravePoint point =  bizTravePointService.getById(pointId);
-//        Double.parseDouble(distance.substring(1));
-//        BizTravePoint nearPoint = bizTravePointService.getNearPoint(point);
-//        String direction = distance.substring(0, 1);
-//        Double directionnum = null;
-//        if(direction.equals("-")){
-//            directionnum = Double.parseDouble(distance);
-//        }else if(direction.equals("+")){
-//            String s = distance.substring(1);
-//            directionnum = Double.parseDouble(s);
-//        }
-//        BizTravePoint npoint = bizTravePointService.getPoint(point,nearPoint,directionnum);
-//
-//        double[] s = MathUtil.mapCartesianToGeodetic(7796.1399,194.9874,0,36.1977,117.206,
-//                113.5023,7222.6087,0, 36.2486,117.137 ,
-//                Double.parseDouble(npoint.getAxisx()),Double.parseDouble(npoint.getAxisy()),Double.parseDouble(npoint.getAxisz()));
-//
-//        return R.ok(s);
-//    }
-
-//    @ApiOperation("获取钻孔坐标")
-////    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
-//    @GetMapping(value = "/getAxis")
-//    public R<BizTravePoint> getDillAxis(@RequestParam Long pointId,@RequestParam String distance)
-//    {
-//        BizTravePoint point =  bizTravePointService.getById(pointId);
-//        String direction = distance.substring(0, 1);
-//        Double directionnum = null;
-//        if(direction.equals("-")){
-//            directionnum = Double.parseDouble(distance);
-//        }else if(direction.equals("+")){
-//            String s = distance.substring(1);
-//            directionnum = Double.parseDouble(s);
-//        }
-//        BizTravePoint nearPoint = bizTravePointService.getNearPoint(point);
-//
-//        return R.ok(bizTravePointService.getPoint(point,nearPoint,directionnum));
+//        return R.ok(bizTravePointService.getBaseMapper().selectById(pointId));
 //    }
 //
-
-    /**
-     * 新增矿井管理 先维护上下巷道,再维护切眼
-     */
-    @ApiOperation("新增导线点管理")
-    @PreAuthorize("@ss.hasPermi('basicInfo:point:add')")
-    @Log(title = "新增导线点管理", businessType = BusinessType.INSERT)
-    @PostMapping
-    public R add(@RequestBody @Validated(value = {GroupAdd.class}) BizTravePointDto dto)
-    {
-        BizTravePoint entity = new BizTravePoint();
-        BeanUtil.copyProperties(dto, entity);
-        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(BizTravePoint::getPointName,dto.getPointName())
-                .eq(BizTravePoint::getTunnelId, dto.getTunnelId());
-        long i = bizTravePointService.count(queryWrapper);
-        Assert.isTrue(i <= 0 , "名称重复");
-        queryWrapper.clear();
-        if(dto.getIsVertex()){
-            queryWrapper.lambda()
-//                    .eq(BizTravePoint::getIsVertex,dto.getIsVertex())
-                    .eq(BizTravePoint::getTunnelId,dto.getTunnelId());
-            long count = bizTravePointService.count(queryWrapper);
-            Assert.isTrue(count <= 0 , "每条巷道只有一个顶点");
-            Assert.isTrue(dto.getDistance() != null  , "顶点必须有距离切眼距离");
-        }
-
-//        TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
-//        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
 //
-//        } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType()) ) {
+////    @ApiOperation("获取钻孔经纬度")
+//////    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+////    @GetMapping(value = "/getlatlon")
+////    public R getDillLatLon(@RequestParam Long pointId,@RequestParam String distance)
+////    {
+////
+////        BizTravePoint point =  bizTravePointService.getById(pointId);
+////        Double.parseDouble(distance.substring(1));
+////        BizTravePoint nearPoint = bizTravePointService.getNearPoint(point);
+////        String direction = distance.substring(0, 1);
+////        Double directionnum = null;
+////        if(direction.equals("-")){
+////            directionnum = Double.parseDouble(distance);
+////        }else if(direction.equals("+")){
+////            String s = distance.substring(1);
+////            directionnum = Double.parseDouble(s);
+////        }
+////        BizTravePoint npoint = bizTravePointService.getPoint(point,nearPoint,directionnum);
+////
+////        double[] s = MathUtil.mapCartesianToGeodetic(7796.1399,194.9874,0,36.1977,117.206,
+////                113.5023,7222.6087,0, 36.2486,117.137 ,
+////                Double.parseDouble(npoint.getAxisx()),Double.parseDouble(npoint.getAxisy()),Double.parseDouble(npoint.getAxisz()));
+////
+////        return R.ok(s);
+////    }
 //
-//        }
-        return R.ok(bizTravePointService.getBaseMapper().insert(entity));
-    }
-
-
-    /**
-     * 修改矿井管理
-     */
-    @ApiOperation("修改导线点管理")
-    @PreAuthorize("@ss.hasPermi('basicInfo:point:edit')")
-    @Log(title = "修改导线点管理", businessType = BusinessType.UPDATE)
-    @PutMapping
-    public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizTravePointDto dto)
-    {
-        BizTravePoint source = this.bizTravePointService.getById(dto.getPointId());
-//        if(!source.getDistance().equals(dto.getDistance()) ){
-//            QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
-//            queryWrapper.lambda().eq(BizProjectRecord::getTravePoint,dto.getPointId());
-//            long count = bizProjectRecordService.getBaseMapper().selectCount(queryWrapper);
-//            Assert.isTrue(count<=0,"已经填报过,不能修改距上一个导线点的距离");
-//        }
-        //todo 填报和计划里有的 , 不能修改 距前一个点距离
-
-
-
-        BizTravePoint entity = new BizTravePoint();
-        entity.setPointId(dto.getPointId())
-//                .setDistance(dto.getDistance())
-                .setPrePointDistance(dto.getPrePointDistance());
-        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(BizTravePoint::getPointName,dto.getPointName())
-                .ne(BizTravePoint::getPointId,dto.getPointId())
-                .eq(BizTravePoint::getTunnelId, dto.getTunnelId());
-        long i = bizTravePointService.count(queryWrapper);
-        Assert.isTrue(i <= 0 , "名称重复");
-        return R.ok(bizTravePointService.updateById(entity));
-    }
-
-
+////    @ApiOperation("获取钻孔坐标")
+//////    @PreAuthorize("@ss.hasPermi('basicInfo:mine:query')")
+////    @GetMapping(value = "/getAxis")
+////    public R<BizTravePoint> getDillAxis(@RequestParam Long pointId,@RequestParam String distance)
+////    {
+////        BizTravePoint point =  bizTravePointService.getById(pointId);
+////        String direction = distance.substring(0, 1);
+////        Double directionnum = null;
+////        if(direction.equals("-")){
+////            directionnum = Double.parseDouble(distance);
+////        }else if(direction.equals("+")){
+////            String s = distance.substring(1);
+////            directionnum = Double.parseDouble(s);
+////        }
+////        BizTravePoint nearPoint = bizTravePointService.getNearPoint(point);
+////
+////        return R.ok(bizTravePointService.getPoint(point,nearPoint,directionnum));
+////    }
+////
+//
 //    /**
 //     * 新增矿井管理 先维护上下巷道,再维护切眼
 //     */
@@ -443,39 +373,26 @@ public class BiztravePointController1 extends BaseController
 //                .eq(BizTravePoint::getTunnelId, dto.getTunnelId());
 //        long i = bizTravePointService.count(queryWrapper);
 //        Assert.isTrue(i <= 0 , "名称重复");
-//
-//        TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
-//        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
-//            List<BizTravePoint> qypoints = bizTravePointService.getQyPoint(dto.getWorkfaceId());
-//            if(qypoints != null && qypoints.size() == 2){
-//                Double q0 = MathUtil.getMinDistance(
-//                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
-//                        qypoints.get(0).getAxisx(),qypoints.get(0).getAxisy(),qypoints.get(0).getAxisz());
-//
-//                Double q1 = MathUtil.getMinDistance(
-//                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
-//                        qypoints.get(1).getAxisx(),qypoints.get(1).getAxisy(),qypoints.get(1).getAxisz());
-//                if(q0 != null && q1 != null && q0 < q1){
-//                    entity.setBestNearPointId(qypoints.get(0).getPointId()).setDistance(q0);
-//                }else {
-//                    entity.setBestNearPointId(qypoints.get(1).getPointId()).setDistance(q1);
-//                }
-//            }
-//        } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType()) ) {
-//            if(dto.getIsVertex() != null && !dto.getIsVertex()){
-//                long counted = bizTravePointService.getVertexCount(dto.getPointId(),dto.getTunnelId(),true);
-//                Assert.isTrue(counted <= 2 , "最多有两个顶点");
-//                bizTravePointService.doit(entity);
-//                return R.ok(bizTravePointService.getBaseMapper().insert(entity));
-//            }
+//        queryWrapper.clear();
+//        if(dto.getIsVertex()){
+//            queryWrapper.lambda()
+////                    .eq(BizTravePoint::getIsVertex,dto.getIsVertex())
+//                    .eq(BizTravePoint::getTunnelId,dto.getTunnelId());
+//            long count = bizTravePointService.count(queryWrapper);
+//            Assert.isTrue(count <= 0 , "每条巷道只有一个顶点");
+//            Assert.isTrue(dto.getDistance() != null  , "顶点必须有距离切眼距离");
 //        }
 //
+////        TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
+////        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
+////
+////        } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType()) ) {
+////
+////        }
 //        return R.ok(bizTravePointService.getBaseMapper().insert(entity));
 //    }
-
-
-
-
+//
+//
 //    /**
 //     * 修改矿井管理
 //     */
@@ -485,83 +402,166 @@ public class BiztravePointController1 extends BaseController
 //    @PutMapping
 //    public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizTravePointDto dto)
 //    {
+//        BizTravePoint source = this.bizTravePointService.getById(dto.getPointId());
+////        if(!source.getDistance().equals(dto.getDistance()) ){
+////            QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+////            queryWrapper.lambda().eq(BizProjectRecord::getTravePoint,dto.getPointId());
+////            long count = bizProjectRecordService.getBaseMapper().selectCount(queryWrapper);
+////            Assert.isTrue(count<=0,"已经填报过,不能修改距上一个导线点的距离");
+////        }
+//        //todo 填报和计划里有的 , 不能修改 距前一个点距离
+//
+//
+//
 //        BizTravePoint entity = new BizTravePoint();
-//        BeanUtil.copyProperties(dto, entity);
+//        entity.setPointId(dto.getPointId())
+////                .setDistance(dto.getDistance())
+//                .setPrePointDistance(dto.getPrePointDistance());
 //        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
 //        queryWrapper.lambda().eq(BizTravePoint::getPointName,dto.getPointName())
 //                .ne(BizTravePoint::getPointId,dto.getPointId())
 //                .eq(BizTravePoint::getTunnelId, dto.getTunnelId());
 //        long i = bizTravePointService.count(queryWrapper);
 //        Assert.isTrue(i <= 0 , "名称重复");
-//
-//        TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
-//        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
-//            List<BizTravePoint> qypoints = bizTravePointService.getQyPoint(dto.getWorkfaceId());
-//            if(qypoints != null && qypoints.size() == 2){
-//                Double q0 = MathUtil.getMinDistance(
-//                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
-//                        qypoints.get(0).getAxisx(),qypoints.get(0).getAxisy(),qypoints.get(0).getAxisz());
-//
-//                Double q1 = MathUtil.getMinDistance(
-//                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
-//                        qypoints.get(1).getAxisx(),qypoints.get(1).getAxisy(),qypoints.get(1).getAxisz());
-//                if(q0 != null && q1 != null && q0 < q1){
-//                    entity.setBestNearPointId(qypoints.get(0).getPointId()).setDistance(q0);
-//                }else {
-//                    entity.setBestNearPointId(qypoints.get(1).getPointId()).setDistance(q1);
-//                }
-//            }
-//        } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType())  ) {
-//            if(dto.getIsVertex()){
-//                long counted = bizTravePointService.getVertexCount(dto.getPointId(),dto.getTunnelId(),true);
-//                Assert.isTrue(counted <= 2 , "最多有两个顶点");
-//                bizTravePointService.updateById(entity);
-//                bizTravePointService.doit(entity);
-//                return R.ok(1);
-//            }
-//        }
 //        return R.ok(bizTravePointService.updateById(entity));
 //    }
-
-    /**
-     * 删除矿井管理
-     */
-    @ApiOperation("删除导线点管理批量")
-    @PreAuthorize("@ss.hasPermi('basicInfo:point:remove')")
-    @Log(title = "删除导线点管理", businessType = BusinessType.DELETE)
-    @DeleteMapping("/{pointIds}")
-    public R remove(@PathVariable Long[] pointIds)
-    {
-        //todo 需要校验 是否在计划内
-        QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().in(BizProjectRecord::getTravePoint,pointIds);
-        long count = bizProjectRecordService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count<=0,"已经填报过,不能删除");
-        UpdateWrapper<BizTravePoint> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.lambda().in(BizTravePoint::getPointId, pointIds).set(BizTravePoint::getDelFlag,BizBaseConstant.DELFLAG_Y);
-        return R.ok(bizTravePointService.update(updateWrapper));
-    }
-
-
-    /**
-     * 删除矿井管理
-     */
-    @ApiOperation("删除导线点管理")
-    @PreAuthorize("@ss.hasPermi('basicInfo:point:remove')")
-    @Log(title = "删除导线点管理", businessType = BusinessType.DELETE)
-    @DeleteMapping("/one/{pointId}")
-    public R remove(@PathVariable("pointId") Long pointId)
-    {
-        //todo 需要校验 是否在计划内
-        QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(BizProjectRecord::getTravePoint,pointId);
-        long count = bizProjectRecordService.getBaseMapper().selectCount(queryWrapper);
-        Assert.isTrue(count<=0,"已经填报过,不能删除");
-        BizTravePoint entity = new BizTravePoint();
-        entity.setPointId(pointId).setDelFlag(BizBaseConstant.DELFLAG_Y);
-        return R.ok(bizTravePointService.updateById(entity));
-    }
-
-
-
-}
+//
+//
+////    /**
+////     * 新增矿井管理 先维护上下巷道,再维护切眼
+////     */
+////    @ApiOperation("新增导线点管理")
+////    @PreAuthorize("@ss.hasPermi('basicInfo:point:add')")
+////    @Log(title = "新增导线点管理", businessType = BusinessType.INSERT)
+////    @PostMapping
+////    public R add(@RequestBody @Validated(value = {GroupAdd.class}) BizTravePointDto dto)
+////    {
+////        BizTravePoint entity = new BizTravePoint();
+////        BeanUtil.copyProperties(dto, entity);
+////        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+////        queryWrapper.lambda().eq(BizTravePoint::getPointName,dto.getPointName())
+////                .eq(BizTravePoint::getTunnelId, dto.getTunnelId());
+////        long i = bizTravePointService.count(queryWrapper);
+////        Assert.isTrue(i <= 0 , "名称重复");
+////
+////        TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
+////        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
+////            List<BizTravePoint> qypoints = bizTravePointService.getQyPoint(dto.getWorkfaceId());
+////            if(qypoints != null && qypoints.size() == 2){
+////                Double q0 = MathUtil.getMinDistance(
+////                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
+////                        qypoints.get(0).getAxisx(),qypoints.get(0).getAxisy(),qypoints.get(0).getAxisz());
+////
+////                Double q1 = MathUtil.getMinDistance(
+////                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
+////                        qypoints.get(1).getAxisx(),qypoints.get(1).getAxisy(),qypoints.get(1).getAxisz());
+////                if(q0 != null && q1 != null && q0 < q1){
+////                    entity.setBestNearPointId(qypoints.get(0).getPointId()).setDistance(q0);
+////                }else {
+////                    entity.setBestNearPointId(qypoints.get(1).getPointId()).setDistance(q1);
+////                }
+////            }
+////        } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType()) ) {
+////            if(dto.getIsVertex() != null && !dto.getIsVertex()){
+////                long counted = bizTravePointService.getVertexCount(dto.getPointId(),dto.getTunnelId(),true);
+////                Assert.isTrue(counted <= 2 , "最多有两个顶点");
+////                bizTravePointService.doit(entity);
+////                return R.ok(bizTravePointService.getBaseMapper().insert(entity));
+////            }
+////        }
+////
+////        return R.ok(bizTravePointService.getBaseMapper().insert(entity));
+////    }
+//
+//
+//
+//
+////    /**
+////     * 修改矿井管理
+////     */
+////    @ApiOperation("修改导线点管理")
+////    @PreAuthorize("@ss.hasPermi('basicInfo:point:edit')")
+////    @Log(title = "修改导线点管理", businessType = BusinessType.UPDATE)
+////    @PutMapping
+////    public R edit(@RequestBody @Validated(value = {GroupUpdate.class}) BizTravePointDto dto)
+////    {
+////        BizTravePoint entity = new BizTravePoint();
+////        BeanUtil.copyProperties(dto, entity);
+////        QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+////        queryWrapper.lambda().eq(BizTravePoint::getPointName,dto.getPointName())
+////                .ne(BizTravePoint::getPointId,dto.getPointId())
+////                .eq(BizTravePoint::getTunnelId, dto.getTunnelId());
+////        long i = bizTravePointService.count(queryWrapper);
+////        Assert.isTrue(i <= 0 , "名称重复");
+////
+////        TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
+////        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
+////            List<BizTravePoint> qypoints = bizTravePointService.getQyPoint(dto.getWorkfaceId());
+////            if(qypoints != null && qypoints.size() == 2){
+////                Double q0 = MathUtil.getMinDistance(
+////                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
+////                        qypoints.get(0).getAxisx(),qypoints.get(0).getAxisy(),qypoints.get(0).getAxisz());
+////
+////                Double q1 = MathUtil.getMinDistance(
+////                        entity.getAxisx(),entity.getAxisy(),entity.getAxisz(),
+////                        qypoints.get(1).getAxisx(),qypoints.get(1).getAxisy(),qypoints.get(1).getAxisz());
+////                if(q0 != null && q1 != null && q0 < q1){
+////                    entity.setBestNearPointId(qypoints.get(0).getPointId()).setDistance(q0);
+////                }else {
+////                    entity.setBestNearPointId(qypoints.get(1).getPointId()).setDistance(q1);
+////                }
+////            }
+////        } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType())  ) {
+////            if(dto.getIsVertex()){
+////                long counted = bizTravePointService.getVertexCount(dto.getPointId(),dto.getTunnelId(),true);
+////                Assert.isTrue(counted <= 2 , "最多有两个顶点");
+////                bizTravePointService.updateById(entity);
+////                bizTravePointService.doit(entity);
+////                return R.ok(1);
+////            }
+////        }
+////        return R.ok(bizTravePointService.updateById(entity));
+////    }
+//
+//    /**
+//     * 删除矿井管理
+//     */
+//    @ApiOperation("删除导线点管理批量")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:point:remove')")
+//    @Log(title = "删除导线点管理", businessType = BusinessType.DELETE)
+//    @DeleteMapping("/{pointIds}")
+//    public R remove(@PathVariable Long[] pointIds)
+//    {
+//        //todo 需要校验 是否在计划内
+//        QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.lambda().in(BizProjectRecord::getTravePoint,pointIds);
+//        long count = bizProjectRecordService.getBaseMapper().selectCount(queryWrapper);
+//        Assert.isTrue(count<=0,"已经填报过,不能删除");
+//        UpdateWrapper<BizTravePoint> updateWrapper = new UpdateWrapper<>();
+//        updateWrapper.lambda().in(BizTravePoint::getPointId, pointIds).set(BizTravePoint::getDelFlag,BizBaseConstant.DELFLAG_Y);
+//        return R.ok(bizTravePointService.update(updateWrapper));
+//    }
+//
+//
+//    /**
+//     * 删除矿井管理
+//     */
+//    @ApiOperation("删除导线点管理")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:point:remove')")
+//    @Log(title = "删除导线点管理", businessType = BusinessType.DELETE)
+//    @DeleteMapping("/one/{pointId}")
+//    public R remove(@PathVariable("pointId") Long pointId)
+//    {
+//        //todo 需要校验 是否在计划内
+//        QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.lambda().eq(BizProjectRecord::getTravePoint,pointId);
+//        long count = bizProjectRecordService.getBaseMapper().selectCount(queryWrapper);
+//        Assert.isTrue(count<=0,"已经填报过,不能删除");
+//        BizTravePoint entity = new BizTravePoint();
+//        entity.setPointId(pointId).setDelFlag(BizBaseConstant.DELFLAG_Y);
+//        return R.ok(bizTravePointService.updateById(entity));
+//    }
+//
+//
+//
+//}

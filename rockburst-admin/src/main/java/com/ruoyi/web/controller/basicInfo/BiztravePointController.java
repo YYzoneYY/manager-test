@@ -17,10 +17,13 @@ import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizTravePoint;
+import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizTravePointDto;
 import com.ruoyi.system.domain.excel.BiztravePointExcel;
+import com.ruoyi.system.domain.utils.GeometryUtil;
 import com.ruoyi.system.domain.vo.BizTravePointVo;
+import com.ruoyi.system.mapper.BizTunnelBarMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -35,6 +38,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,6 +67,10 @@ public class BiztravePointController extends BaseController
 
     @Autowired
     private TunnelService tunnelService;
+    @Autowired
+    private BizTunnelBarController bizTunnelBarController;
+    @Autowired
+    private BizTunnelBarMapper bizTunnelBarMapper;
 
     /**
      * 查询矿井管理列表
@@ -312,6 +320,7 @@ public class BiztravePointController extends BaseController
 
 
 
+
     /**
      * 获取矿井管理详细信息
      */
@@ -381,6 +390,124 @@ public class BiztravePointController extends BaseController
 //        return R.ok(bizTravePointService.getPoint(point,nearPoint,directionnum));
 //    }
 //
+//
+//    /**
+//     * 新增矿井管理 先维护上下巷道,再维护切眼
+//     */
+//    @ApiOperation("新增导线点管理-CAD")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:point:add')")
+//    @Log(title = "新增导线点管理", businessType = BusinessType.INSERT)
+//    @PostMapping("/cad")
+//    public R addcad(@RequestBody  List<BizTravePointDto> dtos)
+//    {
+//        if(dtos != null && dtos.size() > 0){
+//            List<BizTravePoint> points = new ArrayList<>(dtos.size());
+//            List<String> uniqueNames = dtos.stream()
+//                    .map(BizTravePointDto::getTunnelName)
+//                    .distinct()
+//                    .collect(Collectors.toList());
+//
+//            QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
+//            queryWrapper.lambda().in(TunnelEntity::getTunnelName,uniqueNames);
+//            List<TunnelEntity> tunnelEntityList =  tunnelService.getBaseMapper().selectList(queryWrapper);
+//            if(tunnelEntityList == null || tunnelEntityList.size() == 0){
+//                return R.fail("没有添加巷道");
+//            }else if(tunnelEntityList != null && tunnelEntityList.size() != uniqueNames.size()){
+//                return R.fail("巷道没有添加全");
+//            }
+//            int no = 1;
+//            for (BizTravePointDto dto : dtos) {
+//                BizTravePoint bizTravePoint = new BizTravePoint();
+//                BeanUtils.copyProperties(dto,bizTravePoint);
+//                bizTravePoint.setNo(Long.parseLong(no+""));
+//                for (TunnelEntity tunnel : tunnelEntityList) {
+//                    if(tunnel.getTunnelName().equals(dto.getTunnelName())){
+//                        dto.setTunnelId(tunnel.getTunnelId());
+//                        points.add(bizTravePoint);
+//                    }
+//                }
+//                no++;
+//            }
+//            bizTravePointService.saveBatch(points);
+//            return R.ok();
+//        }
+//        return R.fail("空数据");
+//    }
+
+    /**
+     * 新增矿井管理 先维护上下巷道,再维护切眼
+     */
+    @ApiOperation("新增导线点管理-CAD")
+    @PreAuthorize("@ss.hasPermi('basicInfo:point:add')")
+    @Log(title = "新增导线点管理", businessType = BusinessType.INSERT)
+    @PostMapping("/cad")
+    public R sssssaa(@RequestBody  List<BizTravePointDto> dtos)
+    {
+        if(dtos != null && dtos.size() > 0){
+            List<BizTravePoint> points = new ArrayList<>(dtos.size());
+            List<String> uniqueNames = dtos.stream()
+                    .map(BizTravePointDto::getTunnelName)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().in(TunnelEntity::getTunnelName,uniqueNames);
+            List<TunnelEntity> tunnelEntityList =  tunnelService.getBaseMapper().selectList(queryWrapper);
+            if(tunnelEntityList == null || tunnelEntityList.size() == 0){
+                return R.fail("没有添加巷道");
+            }else if(tunnelEntityList != null && tunnelEntityList.size() != uniqueNames.size()){
+                return R.fail("巷道没有添加全");
+            }
+            long no = 1l;
+            for (BizTravePointDto dto : dtos) {
+                BizTravePoint bizTravePoint = new BizTravePoint();
+                BeanUtils.copyProperties(dto,bizTravePoint);
+                bizTravePoint.setNo(Long.parseLong(no+""));
+                for (TunnelEntity tunnel : tunnelEntityList) {
+                    if(tunnel.getTunnelName().equals(dto.getTunnelName())){
+                        bizTravePoint.setTunnelId(tunnel.getTunnelId());
+                        points.add(bizTravePoint);
+                    }
+                }
+                no++;
+            }
+            bizTravePointService.saveBatch(points);
+
+            for (TunnelEntity tunnel : tunnelEntityList) {
+                QueryWrapper<BizTravePoint> wrapper = new QueryWrapper<>();
+                wrapper.lambda().in(BizTravePoint::getTunnelId,tunnel.getTunnelId()).orderByDesc(BizTravePoint::getNo);
+                List<BizTravePoint> pointList = bizTravePointService.list(wrapper);
+                for (BizTravePoint point : pointList) {
+                    //获取帮
+                    QueryWrapper<BizTunnelBar> queryWrapper1 = new QueryWrapper<>();
+                    queryWrapper1.lambda().eq(BizTunnelBar::getTunnelId,tunnel.getTunnelId());
+                    List<BizTunnelBar> bars = bizTunnelBarMapper.selectList(queryWrapper1);
+                    BizTunnelBar bizTunnelBar = new BizTunnelBar();
+                    if(bars != null && bars.size()>0){
+                        bizTunnelBar = bars.get(0);
+                    }
+                    //巷道帮上的点
+                    BigDecimal[] dians =  GeometryUtil.getClosestPointOnSegment(point.getAxisx(),point.getAxisy(),bizTunnelBar.getStartx(),bizTunnelBar.getStarty(),bizTunnelBar.getEndx(),bizTunnelBar.getEndy());
+                    QueryWrapper<BizTravePoint> queryWrapper2 = new QueryWrapper<>();
+                    queryWrapper2.lambda().eq(BizTravePoint::getNo,point.getNo()-1);
+                    List<BizTravePoint> travePoints = bizTravePointService.getBaseMapper().selectList(queryWrapper2);
+                    if(travePoints != null && travePoints.size()>0){
+                        String prex = travePoints.get(0).getAxisx();
+                        String prey = travePoints.get(0).getAxisy();
+                        BigDecimal[] dianss =  GeometryUtil.getClosestPointOnSegment(prex,prey,bizTunnelBar.getStartx(),bizTunnelBar.getStarty(),bizTunnelBar.getEndx(),bizTunnelBar.getEndy());
+                        BigDecimal distance = GeometryUtil.getDistance(dians[0],dians[1],dianss[0],dianss[1]);
+                        point.setPrePointDistance(distance.doubleValue()).setPrePointId(travePoints.get(0).getPointId());
+                        bizTravePointService.updateById(point);
+                    }
+                }
+            }
+
+            return R.ok();
+        }
+        return R.fail("空数据");
+    }
+
+
 
     /**
      * 新增矿井管理 先维护上下巷道,再维护切眼
@@ -399,22 +526,37 @@ public class BiztravePointController extends BaseController
         long i = bizTravePointService.count(queryWrapper);
         Assert.isTrue(i <= 0 , "名称重复");
         queryWrapper.clear();
-//        if(dto.getIsVertex()){
-//            queryWrapper.lambda()
-////                    .eq(BizTravePoint::getIsVertex,dto.getIsVertex())
-//                    .eq(BizTravePoint::getTunnelId,dto.getTunnelId());
-//            long count = bizTravePointService.count(queryWrapper);
-//            Assert.isTrue(count <= 0 , "每条巷道只有一个顶点");
-////            Assert.isTrue(dto.getDistance() != null  , "顶点必须有距离切眼距离");
-//        }
-
-//        TunnelEntity tunnelEntity = tunnelService.getById(dto.getTunnelId());
-//        if(BizBaseConstant.TUNNEL_SH.equals(tunnelEntity.getTunnelType()) || BizBaseConstant.TUNNEL_XH.equals(tunnelEntity.getTunnelType())){
-//
-//        } else if (BizBaseConstant.TUNNEL_QY.equals(tunnelEntity.getTunnelType()) ) {
-//
-//        }
+        //获取帮
+        QueryWrapper<BizTunnelBar> queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.lambda().eq(BizTunnelBar::getTunnelId,dto.getTunnelId());
+        List<BizTunnelBar> bars = bizTunnelBarMapper.selectList(queryWrapper1);
+        BizTunnelBar bizTunnelBar = new BizTunnelBar();
+        if(bars != null && bars.size()>0){
+            bizTunnelBar = bars.get(0);
+        }
+        //巷道帮上的点
+        BigDecimal[] dians =  GeometryUtil.getClosestPointOnSegment(dto.getAxisx(),dto.getAxisy(),bizTunnelBar.getStartx(),bizTunnelBar.getStarty(),bizTunnelBar.getEndx(),bizTunnelBar.getEndy());
+        QueryWrapper<BizTravePoint> queryWrapper2 = new QueryWrapper<>();
+        queryWrapper2.lambda().eq(BizTravePoint::getNo,dto.getNo()-1);
+        List<BizTravePoint> points = bizTravePointService.getBaseMapper().selectList(queryWrapper2);
+        if(points != null && points.size()>0){
+           String prex = points.get(0).getAxisx();
+           String prey = points.get(0).getAxisy();
+            BigDecimal[] dianss =  GeometryUtil.getClosestPointOnSegment(prex,prey,bizTunnelBar.getStartx(),bizTunnelBar.getStarty(),bizTunnelBar.getEndx(),bizTunnelBar.getEndy());
+            BigDecimal distance = GeometryUtil.getDistance(dians[0],dians[1],dianss[0],dianss[1]);
+            entity.setPrePointDistance(distance.doubleValue()).setPrePointId(points.get(0).getPointId());
+        }
         return R.ok(bizTravePointService.getBaseMapper().insert(entity));
+    }
+
+    public static void ssss(BizTravePointDto dto,BizTunnelBar bizTunnelBar,BizTravePointDto predto ){
+        //当前点在巷道帮上的坐标
+        BigDecimal[] dians =  GeometryUtil.getClosestPointOnSegment(dto.getAxisx(),dto.getAxisy(),bizTunnelBar.getStartx(),bizTunnelBar.getStarty(),bizTunnelBar.getEndx(),bizTunnelBar.getEndy());
+
+        //前一个点在巷道帮上的坐标
+        BigDecimal[] dianqs =  GeometryUtil.getClosestPointOnSegment(predto.getAxisx(),predto.getAxisy(),bizTunnelBar.getStartx(),bizTunnelBar.getStarty(),bizTunnelBar.getEndx(),bizTunnelBar.getEndy());
+
+
     }
 
 

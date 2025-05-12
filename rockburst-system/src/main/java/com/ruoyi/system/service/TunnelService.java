@@ -22,7 +22,7 @@ public interface TunnelService extends IService<TunnelEntity> {
      * @param tunnelDTO 参数DTO
      * @return 返回结果
      */
-    int insertTunnel(TunnelDTO tunnelDTO);
+    Long insertTunnel(TunnelDTO tunnelDTO);
 
     /**
      * 巷道编辑

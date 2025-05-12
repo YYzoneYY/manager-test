@@ -39,6 +39,10 @@ public class BizTravePointDto
     @TableField()
     private Long tunnelId;
 
+    /** 矿井的唯一标识符 */
+    @ApiModelProperty(value = "巷道name")
+    private String tunnelName;
+
     /** 矿井名称 */
     @ApiModelProperty(value = "导线点名称")
     @TableField()

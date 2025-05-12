@@ -196,18 +196,7 @@ public class BizProjectRecordController extends BaseController
     {
 
         Long id= bizProjectRecordService.saveRecord(dto);
-        try{
-            if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
-                List<String> strings = new ArrayList<>();
-                for (BizVideoDto video : dto.getVideoList()) {
-                    strings.add(video.getFileUrl());
-                }
-                log.info("新增调用视频识别入参id:{},urls:{}",id, JSONUtil.parse(strings));
-                videoHandleService.insert(id,strings);
-            }
-        }catch (Exception e){
-            log.error(e.getMessage());
-        }
+
         return R.ok();
     }
 
@@ -220,18 +209,7 @@ public class BizProjectRecordController extends BaseController
     @PutMapping
     public R<?> edit(@RequestBody BizProjectRecordAddDto bizProjectRecord)
     {
-        try{
-            List<String> strings = new ArrayList<>();
-            if(bizProjectRecord.getVideoList() != null && bizProjectRecord.getVideoList().size() > 0){
-                for (BizVideoDto video : bizProjectRecord.getVideoList()) {
-                    strings.add(video.getFileUrl());
-                }
-                log.info("修改调用视频识别入参id:{},urls:{}",bizProjectRecord.getProjectId(), JSONUtil.parse(strings));
-            }
-            videoHandleService.update(bizProjectRecord.getProjectId(),strings);
-        }catch (Exception e){
-            log.error(e.getMessage());
-        }
+
         return R.ok(bizProjectRecordService.updateRecord(bizProjectRecord));
     }
 
@@ -306,21 +284,6 @@ public class BizProjectRecordController extends BaseController
         return R.ok(bizProjectRecordService.getReason(projectId));
     }
 
-//    @PreAuthorize("@ss.hasPermi('project:record:edit')")
-//    @Log(title = "区队审核工程填报记录", businessType = BusinessType.UPDATE)
-//    @PutMapping("/firstAudit")
-//    public AjaxResult firstAudit(@RequestBody BizProjectRecordDto dto)
-//    {
-//        return toAjax(bizProjectRecordService.firstAudit(dto));
-//    }
-//
-//    @PreAuthorize("@ss.hasPermi('project:record:edit')")
-//    @Log(title = "科室审核工程填报记录", businessType = BusinessType.UPDATE)
-//    @PutMapping("/secondAudit")
-//    public AjaxResult secondAudit(@RequestBody BizProjectRecordDto dto)
-//    {
-//        return toAjax(bizProjectRecordService.secondAudit(dto));
-//    }
 
 
 }

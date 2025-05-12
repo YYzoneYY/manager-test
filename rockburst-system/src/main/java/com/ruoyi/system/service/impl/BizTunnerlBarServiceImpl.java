@@ -63,12 +63,12 @@ public class BizTunnerlBarServiceImpl extends ServiceImpl<BizTunnelBarMapper, Bi
     public int insertEntity(BizTunnelBarDto dto) {
         BizTunnelBar BizTunnelBar = new BizTunnelBar();
         BeanUtil.copyProperties(dto, BizTunnelBar);
-        double A = new BigDecimal(dto.getEndLat()).subtract(new BigDecimal(dto.getStartLat())).doubleValue();
-        double B = new BigDecimal(dto.getStartLon()).subtract(new BigDecimal(dto.getEndLon())).doubleValue();
-        BigDecimal c1 = new BigDecimal(dto.getEndLon()).multiply(new BigDecimal(dto.getStartLat()));
-        BigDecimal c2 = new BigDecimal(dto.getStartLon()).multiply(new BigDecimal(dto.getEndLat()));
-        double C = c1.subtract(c2).doubleValue();
-        BizTunnelBar.setA(A).setB(B).setC(C);
+//        double A = new BigDecimal(dto.getEndLat()).subtract(new BigDecimal(dto.getStartLat())).doubleValue();
+//        double B = new BigDecimal(dto.getStartLon()).subtract(new BigDecimal(dto.getEndLon())).doubleValue();
+//        BigDecimal c1 = new BigDecimal(dto.getEndLon()).multiply(new BigDecimal(dto.getStartLat()));
+//        BigDecimal c2 = new BigDecimal(dto.getStartLon()).multiply(new BigDecimal(dto.getEndLat()));
+//        double C = c1.subtract(c2).doubleValue();
+//        BizTunnelBar.setA(A).setB(B).setC(C);
         return bizTunnelBarMapper.insert(BizTunnelBar);
     }
 

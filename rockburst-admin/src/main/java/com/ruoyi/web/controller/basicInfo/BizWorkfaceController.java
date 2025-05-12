@@ -104,12 +104,29 @@ public class BizWorkfaceController extends BaseController
     /**
      * 获取工作面管理详细信息
      */
-    @ApiOperation("获取工作面管理详细信息")
+    @ApiOperation("获取工作面管理详细信息根据ID")
     @PreAuthorize("@ss.hasPermi('basicInfo:workface:query')")
     @GetMapping(value = "/{workfaceId}")
     public R getInfo(@PathVariable("workfaceId") Long workfaceId)
     {
         return R.ok(bizWorkfaceService.selectBizWorkfaceByWorkfaceId(workfaceId));
+    }
+
+    /**
+     * 获取工作面管理详细信息
+     */
+    @ApiOperation("获取工作面管理详细信息根据名称")
+    @PreAuthorize("@ss.hasPermi('basicInfo:workface:query')")
+    @GetMapping(value = "detail/{workfaceName}")
+    public R getInfo1(@PathVariable("workfaceName") String workfaceName)
+    {
+        QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(BizWorkface::getWorkfaceName,workfaceName);
+        List<BizWorkface> vos =  bizWorkfaceService.getBaseMapper().selectList(queryWrapper);
+        if(vos != null && vos.size()>0){
+            return R.ok(vos.get(0));
+        }
+        return R.ok();
     }
 
     /**

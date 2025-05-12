@@ -41,6 +41,38 @@ public class BizDangerArea extends BaseSelfEntity
     @ApiModelProperty(value = "巷道id")
     private Long tunnelId;
 
+    @ApiModelProperty(value = "非生产帮开始导线点x")
+    private String fscbStartx;
+
+    @ApiModelProperty(value = "非生产帮开始导线点y")
+    private String fscbStarty;
+
+    @ApiModelProperty(value = "非生产帮结束导线点x")
+    private String fscbEndx;
+
+    @ApiModelProperty(value = "非生产帮结束导线点y")
+    private String fscbEndy;
+
+
+    @ApiModelProperty(value = "生产帮开始导线点x")
+    private String scbStartx;
+
+    @ApiModelProperty(value = "生产帮开始导线点y")
+    private String scbStarty;
+
+    @ApiModelProperty(value = "生产帮结束导线点x")
+    private String scbEndx;
+
+    @ApiModelProperty(value = "生产帮结束导线点y")
+    private String scbEndy;
+
+    @ApiModelProperty(value = "地图位置")
+    private String svg;
+
+    @ApiModelProperty(value = "导线点集合")
+    private String pointlist;
+
+
     @ApiModelProperty(value = "开始导线点")
     private Long startPointId;
 
@@ -53,11 +85,6 @@ public class BizDangerArea extends BaseSelfEntity
     @ApiModelProperty(value = "结束导线点前后距离")
     private Double endMeter;
 
-    @ApiModelProperty(value = "地图位置")
-    private String svg;
-
-    @ApiModelProperty(value = "导线点集合")
-    private String pointlist;
 
     @ApiModelProperty(value = "原始位置")
     private String source;

@@ -27,4 +27,8 @@ public class TunnelDTO extends TunnelEntity {
 
     @ApiModelProperty("支护形式格式化")
     private String supportFormFmt;
+
+    @ApiModelProperty("中心点")
+    private String workFaceCenter;
+
 }
