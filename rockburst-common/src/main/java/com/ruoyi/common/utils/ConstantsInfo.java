@@ -53,6 +53,7 @@ public class ConstantsInfo {
     public static final String DRILL_DEVICE_DICT_TYPE = "drill_device";
     public static final String YEAR_DICT_TYPE = "year";
     public static final String PLAN_TYPE_DICT_TYPE = "plan_type";
+    public static final String DANGER_AREA_LEVEL_DICT_TYPE = "danger_area_level";
 
 
     public static final String WORKLOAD = "工作量";

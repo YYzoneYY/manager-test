@@ -14,4 +14,6 @@ public class PointDTO {
 
     @ApiModelProperty(value = "导线点id")
     private Long traversePointId;
+
+    private String distance;
 }

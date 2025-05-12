@@ -34,6 +34,24 @@ public class DataJudgeUtils {
         return flag;
     }
 
+    public static boolean greaterThanTT(String s, double a) {
+        boolean flag = false;
+        double s1 = Double.parseDouble(s);
+        if (s1 >= a) {
+            flag = true;
+        }
+        return flag;
+    }
+
+    public static boolean TH(String s, double a) {
+        boolean flag = false;
+        double s1 = Double.parseDouble(s);
+        if (s1 <= a) {
+            flag = true;
+        }
+        return flag;
+    }
+
     public static boolean lessThan(String s, String max) {
         boolean flag = false;
         double s1 = 0.0;
