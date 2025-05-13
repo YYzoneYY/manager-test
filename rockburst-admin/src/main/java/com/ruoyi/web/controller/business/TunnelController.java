@@ -3,21 +3,21 @@ package com.ruoyi.web.controller.business;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.system.domain.BizTunnelBar;
-import com.ruoyi.system.domain.BizWorkface;
+import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
-import com.ruoyi.system.domain.Segment;
-import com.ruoyi.system.domain.dto.SelectTunnelDTO;
-import com.ruoyi.system.domain.dto.TunnelChoiceListDTO;
-import com.ruoyi.system.domain.dto.TunnelDTO;
-import com.ruoyi.system.domain.dto.TunnelDTOCAD;
+import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.utils.GeometryUtil;
+import com.ruoyi.system.domain.utils.RectangleRegionFinder;
 import com.ruoyi.system.mapper.BizTunnelBarMapper;
 import com.ruoyi.system.mapper.BizWorkfaceMapper;
+import com.ruoyi.system.mapper.PolylineObjectMapper;
+import com.ruoyi.system.service.IBizDangerAreaService;
+import com.ruoyi.system.service.IBizTunnelBarService;
 import com.ruoyi.system.service.TunnelService;
+import com.ruoyi.web.controller.basicInfo.SegmentIntersection;
 import io.swagger.annotations.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +29,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -48,7 +49,12 @@ public class TunnelController {
     private BizTunnelBarMapper bizTunnelBarMapper;
     @Autowired
     private BizWorkfaceMapper bizWorkfaceMapper;
-
+    @Autowired
+    private IBizDangerAreaService bizDangerAreaService;
+    @Autowired
+    private IBizTunnelBarService bizTunnelBarService;
+    @Autowired
+    private PolylineObjectMapper polylineObjectMapper;
 
     /**
      * 获取工作面管理详细信息
@@ -134,9 +140,137 @@ public class TunnelController {
                 bizTunnelBarMapper.insert(bar);
             }
         }
+
+        List<PolylineObject> polylineObjects = polylineObjectMapper.selectList(new QueryWrapper<>());
+        List<Segment> segments = new ArrayList<>();
+        for (PolylineObject polylineObject : polylineObjects) {
+            Segment segment = new Segment();
+            Point2D start = new Point2D();
+            start.setX(new BigDecimal(polylineObject.getStartx()));
+            start.setY(new BigDecimal(polylineObject.getStarty()));
+
+            Point2D end = new Point2D();
+            end.setX(new BigDecimal(polylineObject.getEndx()));
+            end.setY(new BigDecimal(polylineObject.getEndy()));
+            segment.setStart(start);
+            segment.setEnd(end);
+            segments.add(segment);
+        }
+        List<BizDangerArea> areasources = bizDangerAreaService.list(new QueryWrapper<>());
+        List<BizDangerArea> areas = addcsssad1(segments);
+        List<BizDangerArea> instes = new ArrayList<>();
+        for (BizDangerArea area : areas) {
+            List<String> sdsd =  getsssssss(area);
+            for (BizDangerArea areasource : areasources) {
+                List<String> sdd = getsssssss(areasource);
+                boolean isEqual = new HashSet<>(sdsd).equals(new HashSet<>(sdd));
+                if(isEqual){
+                    instes.add(areasource);
+                    continue;
+                }
+            }
+        }
+        areas.remove(instes);
+        for (BizDangerArea area : areas) {
+            BizDangerAreaDto ssss = new BizDangerAreaDto();
+            BeanUtils.copyProperties(area,ssss);
+            bizDangerAreaService.insertEntity(ssss);
+        }
         return R.ok();
     }
+    public  List<String> getsssssss(BizDangerArea area){
+        List<String> sssssss = new ArrayList<>();
+        sssssss.add(area.getFscbStartx());
+        sssssss.add(area.getFscbEndx());
+        sssssss.add(area.getScbStarty());
+        sssssss.add(area.getScbEndy());
+        return sssssss;
+    }
 
+
+
+    public List<BizDangerArea> addcsssad1(  List<Segment> pointList)
+    {
+
+        List<BizDangerArea> areas = new ArrayList<>();
+        List<TunnelEntity> tunnelEntities = tunnelService.list();
+
+        for (TunnelEntity tunnelEntity : tunnelEntities) {
+            QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizTunnelBar::getTunnelId,tunnelEntity.getTunnelId());
+            List<BizTunnelBar> bars = bizTunnelBarService.list(queryWrapper);
+            if(bars == null || bars.size() == 0){
+                continue;
+            }
+            List<List<Point2D>> list = new ArrayList<>();
+            for (Segment segment : pointList) {
+                List<Point2D> point2DS = new ArrayList<>();
+                if(bars != null && bars.size() > 0){
+                    for (BizTunnelBar bar : bars) {
+                        Point2D jiaodian =  SegmentIntersection.getIntersection(new Point2D(segment.getStart().getX(),segment.getStart().getY()),
+                                new Point2D(segment.getEnd().getX(),segment.getEnd().getY()),
+                                new Point2D(new BigDecimal(bar.getStartx()),new BigDecimal(bar.getStarty())),
+                                new Point2D(new BigDecimal(bar.getEndx()),new BigDecimal(bar.getEndy())));
+                        if(jiaodian != null){
+                            jiaodian.setBarType(bar.getType());
+                            point2DS.add(jiaodian);
+                        }
+                    }
+                    list.add(point2DS);
+                }
+            }
+            List<List<Point2D>> quyus = RectangleRegionFinder.findRectangleRegions(list);
+
+            for (List<Point2D> quyu : quyus) {
+                if(quyu == null || quyu.size() == 0){
+                    continue;
+                }
+                Point2D center = GeometryUtil.getCenterPoint(quyu);
+                BizDangerArea area = new BizDangerArea();
+                area.setTunnelId(tunnelEntity.getTunnelId())
+                        .setWorkfaceId(tunnelEntity.getWorkFaceId());
+                area.setCenter(center.getX()+","+center.getY());
+                Point2D scb1 = getscb(quyu);
+                quyu.remove(scb1);
+                area.setScbStartx(scb1.getX()+"")
+                        .setScbStarty(scb1.getY()+"");
+                Point2D scb2 = getscb(quyu);
+                area.setScbEndx(scb2.getX()+"")
+                        .setScbEndy(scb2.getY()+"");
+
+                Point2D fscb1 = getfscb(quyu);
+                area.setFscbStartx(fscb1.getX()+"")
+                        .setFscbStarty(fscb1.getY()+"");
+                quyu.remove(fscb1);
+                Point2D fscb2 = getfscb(quyu);
+                area.setFscbEndx(fscb2.getX()+"")
+                        .setFscbEndy(fscb2.getY()+"");
+                BizDangerAreaDto dto = new BizDangerAreaDto();
+                BeanUtils.copyProperties(area,dto);
+                areas.add(area);
+//                bizDangerAreaService.insertEntity(dto);
+            }
+        }
+        return areas;
+    }
+
+    public Point2D getscb(List<Point2D> pointList){
+        for (Point2D point2D : pointList) {
+            if (point2D.getBarType().equals("scb")) {
+                return point2D;
+            }
+        }
+        return null;
+    }
+
+    public Point2D getfscb(List<Point2D> pointList){
+        for (Point2D point2D : pointList) {
+            if (point2D.getBarType().equals("fscb")) {
+                return point2D;
+            }
+        }
+        return null;
+    }
 
     @ApiOperation(value = "修改巷道cad", notes = "修改巷道cad")
     @PutMapping("/add-cad")

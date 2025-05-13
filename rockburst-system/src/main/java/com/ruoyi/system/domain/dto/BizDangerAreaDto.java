@@ -38,6 +38,12 @@ public class BizDangerAreaDto
     @ApiModelProperty(value = "状态")
     private Integer status;
 
+
+    @ApiModelProperty(value = "名字")
+    private String name;
+
+
+
     @ApiModelProperty(value = "巷道id",required = true)
     private Long tunnelId;
 

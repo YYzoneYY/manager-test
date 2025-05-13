@@ -70,6 +70,9 @@ public class BizDangerAreaController extends BaseController
     @Autowired
     private BizWorkfaceMapper bizWorkfaceMapper;
 
+    @Autowired
+    private IPolylineObjectService polylineObjectService;
+
     /**
      *
      */
@@ -137,6 +140,36 @@ public class BizDangerAreaController extends BaseController
 //        return R.ok(bizDangerAreaService.insertEntity(dto));
 //    }
 
+    /**
+     * 新增危险区管理
+     */
+    @ApiOperation("新增危险区管理cad")
+    @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:add')")
+    @Log(title = "危险区管理", businessType = BusinessType.INSERT)
+    @PostMapping("add-cadsss")
+    public R addcsssad(@RequestBody  List<PolylineObject> polylineObjects)
+    {
+        if(polylineObjects != null &&  polylineObjects.size() > 0){
+            for (PolylineObject polylineObject : polylineObjects) {
+                if(polylineObject.getStart() != null && polylineObject.getEnd() != null){
+                    polylineObject.setStartx(polylineObject.getStart().getX()+"")
+                            .setStarty(polylineObject.getStart().getY()+"")
+                            .setEndx(polylineObject.getEnd().getX()+"")
+                            .setEndy(polylineObject.getEnd().getY()+"");
+                }
+                QueryWrapper<PolylineObject> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(PolylineObject::getId, polylineObject.getId());
+                long count  = polylineObjectService.getBaseMapper().selectCount(queryWrapper);
+                if(count > 0){
+                    continue;
+                }
+                polylineObjectService.save(polylineObject);
+            }
+        }
+        return R.ok();
+
+    }
+
 
     /**
      * 新增危险区管理
@@ -145,12 +178,33 @@ public class BizDangerAreaController extends BaseController
     @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:add')")
     @Log(title = "危险区管理", businessType = BusinessType.INSERT)
     @PostMapping("add-cad")
-    public R addcsssad(@RequestBody  List<Segment> pointList)
+    public R addcsssad1(@RequestBody List<PolylineObject> polylineObjects)
     {
+
+        List<Segment> pointList = new ArrayList<>();
+
+        List<BizDangerArea> areas = new ArrayList<>();
+
+        for (PolylineObject polylineObject : polylineObjects) {
+            Segment segment = new Segment();
+            BeanUtils.copyProperties(polylineObject, segment);
+            pointList.add(segment);
+            if(polylineObject.getStart() != null && polylineObject.getEnd() != null){
+                polylineObject.setStartx(polylineObject.getStart().getX()+"")
+                        .setStarty(polylineObject.getStart().getY()+"")
+                        .setEndx(polylineObject.getEnd().getX()+"")
+                        .setEndy(polylineObject.getEnd().getY()+"");
+            }
+            QueryWrapper<PolylineObject> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(PolylineObject::getId, polylineObject.getId());
+            long count  = polylineObjectService.getBaseMapper().selectCount(queryWrapper);
+            if(count > 0){
+                continue;
+            }
+            polylineObjectService.save(polylineObject);
+        }
+
         List<TunnelEntity> tunnelEntities = tunnelService.list();
-
-
-
 
         for (TunnelEntity tunnelEntity : tunnelEntities) {
             QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
@@ -204,13 +258,58 @@ public class BizDangerAreaController extends BaseController
                         .setFscbEndy(fscb2.getY()+"");
                 BizDangerAreaDto dto = new BizDangerAreaDto();
                 BeanUtils.copyProperties(area,dto);
-                bizDangerAreaService.insertEntity(dto);
+
+
+                areas.add(area);
+
+//                bizDangerAreaService.insertEntity(dto);
             }
+        }
+
+        List<BizDangerArea> distinctAreas = new ArrayList<>();
+        Set<Set<String>> seen = new HashSet<>();
+
+        for (BizDangerArea area : areas) {
+            List<String> sdsd = getsssssss(area);
+            Set<String> aset = new HashSet<>(sdsd); // 转成 HashSet 去除顺序影响
+
+            if (seen.add(aset)) { // 如果未出现过，就加入
+                distinctAreas.add(area);
+            }
+        }
+        areas = distinctAreas;
+
+        List<BizDangerArea> areasources = bizDangerAreaService.list(new QueryWrapper<>());
+
+        List<BizDangerArea> instes = new ArrayList<>();
+        for (BizDangerArea area : areas) {
+            List<String> sdsd =  getsssssss(area);
+            for (BizDangerArea areasource : areasources) {
+                List<String> sdd = getsssssss(areasource);
+                boolean isEqual = new HashSet<>(sdsd).equals(new HashSet<>(sdd));
+                if(isEqual){
+                    instes.add(areasource);
+                    continue;
+                }
+            }
+        }
+        areas.removeAll(instes);
+        for (BizDangerArea area : areas) {
+            BizDangerAreaDto ssss = new BizDangerAreaDto();
+            BeanUtils.copyProperties(area,ssss);
+            bizDangerAreaService.insertEntity(ssss);
         }
         return R.ok();
     }
 
-
+    public  List<String> getsssssss(BizDangerArea area){
+        List<String> sssssss = new ArrayList<>();
+        sssssss.add(area.getFscbStartx());
+        sssssss.add(area.getFscbEndx());
+        sssssss.add(area.getScbStarty());
+        sssssss.add(area.getScbEndy());
+        return sssssss;
+    }
     public Point2D getscb(List<Point2D> pointList){
         for (Point2D point2D : pointList) {
             if (point2D.getBarType().equals("scb")) {
