@@ -3,6 +3,8 @@ package com.ruoyi.system.domain.dto;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.github.yulichang.annotation.EntityMapping;
+import com.ruoyi.system.domain.BizDangerLevel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -58,6 +60,49 @@ public class BizDangerAreaDto
     private String source;
 
 
+    @ApiModelProperty(value = "序号")
+    private Integer no;
+
+
+    @ApiModelProperty(value = "非生产帮开始导线点x")
+    private String fscbStartx;
+
+    @ApiModelProperty(value = "非生产帮开始导线点y")
+    private String fscbStarty;
+
+    @ApiModelProperty(value = "非生产帮结束导线点x")
+    private String fscbEndx;
+
+    @ApiModelProperty(value = "非生产帮结束导线点y")
+    private String fscbEndy;
+
+
+    @ApiModelProperty(value = "生产帮开始导线点x")
+    private String scbStartx;
+
+    @ApiModelProperty(value = "生产帮开始导线点y")
+    private String scbStarty;
+
+    @ApiModelProperty(value = "生产帮结束导线点x")
+    private String scbEndx;
+
+    @ApiModelProperty(value = "生产帮结束导线点y")
+    private String scbEndy;
+
+
+    @ApiModelProperty(value = "导线点集合")
+    private String pointlist;
+
+
+
+    @ApiModelProperty(value = "中心点")
+    @TableField()
+    private String center;
+
+    @ApiModelProperty(value = "间隔距离")
+    @TableField(exist = false)
+    @EntityMapping(thisField = "level" , joinField = "level")
+    private BizDangerLevel dangerLevel;
 
 
 

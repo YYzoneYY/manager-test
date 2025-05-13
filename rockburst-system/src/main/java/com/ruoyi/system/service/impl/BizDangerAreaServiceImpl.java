@@ -125,7 +125,7 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
         QueryWrapper<BizDangerArea> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .select(BizDangerArea::getNo)
-                .eq(BizDangerArea::getWorkfaceId,dto.getTunnelId());
+                .eq(BizDangerArea::getTunnelId,dto.getTunnelId());
         List<BizDangerArea> list =  bizDangerAreaMapper.selectList(queryWrapper);
         Optional<BizDangerArea> maxArea = list.stream().max(Comparator.comparingInt(BizDangerArea::getNo));
 
@@ -133,8 +133,11 @@ public class BizDangerAreaServiceImpl extends ServiceImpl<BizDangerAreaMapper, B
 
         BizDangerArea bizDangerArea = new BizDangerArea();
         BeanUtil.copyProperties(dto, bizDangerArea);
+
         if (maxArea.isPresent()) {
             bizDangerArea.setNo(maxArea.get().getNo()+1) ;
+        }else {
+            bizDangerArea.setNo(1);
         }
 //        Assert.isTrue(dto.getStartMeter()<=0,"必须在导线点前开始");
 //        if(dto.getStartMeter() > 0 ){

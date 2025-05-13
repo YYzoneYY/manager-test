@@ -9,6 +9,7 @@ import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
+import com.ruoyi.system.domain.Segment;
 import com.ruoyi.system.domain.dto.SelectTunnelDTO;
 import com.ruoyi.system.domain.dto.TunnelChoiceListDTO;
 import com.ruoyi.system.domain.dto.TunnelDTO;
@@ -86,44 +87,48 @@ public class TunnelController {
 
         if(StringUtils.isNotEmpty(dto.getPointsList()) && StringUtils.isNotEmpty(dto.getWorkFaceCenter())){
             List<BigDecimal[]> bigDecimals = GeometryUtil.parseToBigDecimalArrayList(dto.getPointsList());
+            List<Segment> segments = GeometryUtil.findLongestTwoSegments(bigDecimals);
             String centerstr = dto.getWorkFaceCenter();
             BigDecimal[] mn =  GeometryUtil.parsePoint(centerstr);
-            List<BigDecimal[]> bars  = GeometryUtil.findTwoClosestPoints(bigDecimals,mn[0],mn[1]);
+            Segment minnear = GeometryUtil.findNearestSegment(segments,mn);
+//            List<BigDecimal[]> bars  = GeometryUtil.findTwoClosestPoints(bigDecimals,mn[0],mn[1]);
+//
+//            List<BigDecimal[]> remaining = new ArrayList<>();
+//            for (BigDecimal[] arr : bigDecimals) {
+//                boolean found = false;
+//                for (BigDecimal[] bar : bars) {
+//                    if (Arrays.equals(arr, bar)) {
+//                        found = true;
+//                        break;
+//                    }
+//                }
+//                if (!found) {
+//                    remaining.add(arr);
+//                }
+//            }
 
-            List<BigDecimal[]> remaining = new ArrayList<>();
-            for (BigDecimal[] arr : bigDecimals) {
-                boolean found = false;
-                for (BigDecimal[] bar : bars) {
-                    if (Arrays.equals(arr, bar)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    remaining.add(arr);
-                }
-            }
-
-            if(remaining != null && remaining.size() > 0){
+            segments.remove(minnear);
+            if(segments != null && segments.size() > 0){
+                Segment maxnear = segments.get(0);
                 BizTunnelBar bar = new BizTunnelBar();
                 bar.setBarName(dto.getTunnelName()+"非生产帮")
-                        .setStartx(remaining.get(0)[0].toString())
-                        .setStarty(remaining.get(0)[1].toString())
-                        .setEndx(remaining.get(1)[0].toString())
-                        .setEndy(remaining.get(1)[1].toString())
+                        .setStartx(maxnear.getStart().getX().toString())
+                        .setStarty(maxnear.getStart().getY().toString())
+                        .setEndx(maxnear.getEnd().getX().toString())
+                        .setEndy(maxnear.getEnd().getY().toString())
                         .setType("fscb")
                         .setTunnelId(tunnelId);
                 bizTunnelBarMapper.insert(bar);
             }
 
 
-            if(bars != null && bars.size() > 0){
+            if(minnear != null ){
                 BizTunnelBar bar = new BizTunnelBar();
                 bar.setBarName(dto.getTunnelName()+"生产帮")
-                        .setStartx(bars.get(0)[0].toString())
-                        .setStarty(bars.get(0)[1].toString())
-                        .setEndx(bars.get(1)[0].toString())
-                        .setEndy(bars.get(1)[1].toString())
+                        .setStartx(minnear.getStart().getX().toString())
+                        .setStarty(minnear.getStart().getY().toString())
+                        .setEndx(minnear.getEnd().getX().toString())
+                        .setEndy(minnear.getEnd().getY().toString())
                         .setType("scb")
                         .setTunnelId(tunnelId);
                 bizTunnelBarMapper.insert(bar);

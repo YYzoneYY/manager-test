@@ -154,14 +154,17 @@ public class BizDangerAreaController extends BaseController
 
         for (TunnelEntity tunnelEntity : tunnelEntities) {
             QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(BizTunnelBar::getTunnelId,tunnelEntity);
+            queryWrapper.lambda().eq(BizTunnelBar::getTunnelId,tunnelEntity.getTunnelId());
             List<BizTunnelBar> bars = bizTunnelBarService.list(queryWrapper);
+            if(bars == null || bars.size() == 0){
+                continue;
+            }
             List<List<Point2D>> list = new ArrayList<>();
             for (Segment segment : pointList) {
                 List<Point2D> point2DS = new ArrayList<>();
                 if(bars != null && bars.size() > 0){
                     for (BizTunnelBar bar : bars) {
-                        Point2D jiaodian =  GeometryUtil.getIntersection(new Point2D(segment.getStart().getX(),segment.getEnd().getY()),
+                        Point2D jiaodian =  SegmentIntersection.getIntersection(new Point2D(segment.getStart().getX(),segment.getStart().getY()),
                                 new Point2D(segment.getEnd().getX(),segment.getEnd().getY()),
                                 new Point2D(new BigDecimal(bar.getStartx()),new BigDecimal(bar.getStarty())),
                                 new Point2D(new BigDecimal(bar.getEndx()),new BigDecimal(bar.getEndy())));
@@ -176,8 +179,13 @@ public class BizDangerAreaController extends BaseController
             List<List<Point2D>> quyus = RectangleRegionFinder.findRectangleRegions(list);
 
             for (List<Point2D> quyu : quyus) {
+                if(quyu == null || quyu.size() == 0){
+                    continue;
+                }
                 Point2D center = GeometryUtil.getCenterPoint(quyu);
                 BizDangerArea area = new BizDangerArea();
+                area.setTunnelId(tunnelEntity.getTunnelId())
+                                .setWorkfaceId(tunnelEntity.getWorkFaceId());
                 area.setCenter(center.getX()+","+center.getY());
                 Point2D scb1 = getscb(quyu);
                 quyu.remove(scb1);

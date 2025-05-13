@@ -48,17 +48,27 @@ public class RectangleRegionFinder {
      * 主函数：输入线段列表，输出每条线段与最近线段组成的矩形
      */
     public static List<List<Point2D>> findRectangleRegions(List<List<Point2D>> segments) {
+        if(segments == null || segments.size() == 0){
+            return null;
+        }
         List<List<Point2D>> rectangles = new ArrayList<>();
 
         for (int i = 0; i < segments.size(); i++) {
             List<Point2D> segA = segments.get(i);
+            if(segA == null || segA.size() == 0){
+                continue;
+            }
             BigDecimal minDist = null;
             List<Point2D> closestSeg = null;
 
             // 找出最近的一条线段
             for (int j = 0; j < segments.size(); j++) {
+
                 if (i == j) continue;
                 List<Point2D> segB = segments.get(j);
+                if(segB == null || segB.size() == 0){
+                    continue;
+                }
                 BigDecimal dist = segmentDistance(segA, segB);
                 if (minDist == null || dist.compareTo(minDist) < 0) {
                     minDist = dist;

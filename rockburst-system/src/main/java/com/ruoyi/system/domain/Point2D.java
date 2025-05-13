@@ -13,6 +13,9 @@ public class Point2D {
     private Long areaId;
     private String barType;
 
+    public Point2D() {
+    }
+
     public Point2D(BigDecimal x, BigDecimal y) {
         this.x = x;
         this.y = y;
