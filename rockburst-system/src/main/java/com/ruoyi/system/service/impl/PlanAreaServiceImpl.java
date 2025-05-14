@@ -7,10 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.PlanAreaEntity;
+import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.PlanAreaBatchDTO;
 import com.ruoyi.system.domain.dto.PlanAreaDTO;
 import com.ruoyi.system.domain.dto.TraversePointGatherDTO;
 import com.ruoyi.system.mapper.PlanAreaMapper;
+import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.PlanAreaService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,9 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
 
     @Resource
     private PlanAreaMapper planAreaMapper;
+
+    @Resource
+    private TunnelMapper tunnelMapper;
 
     @Override
     public boolean insert(Long planId, String type, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS) {
@@ -98,6 +103,9 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
                 planAreaDTO.setStartDistance(planAreaEntity.getStartDistance());
                 planAreaDTO.setEndTraversePointId(planAreaEntity.getEndTraversePointId());
                 planAreaDTO.setEndDistance(planAreaEntity.getEndDistance());
+                Long workFaceId = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                        .eq(TunnelEntity::getTunnelId, planAreaEntity.getTunnelId())).getWorkFaceId();
+                planAreaDTO.setWorkFaceId(workFaceId);
                 planAreaDTOS.add(planAreaDTO);
             });
         }

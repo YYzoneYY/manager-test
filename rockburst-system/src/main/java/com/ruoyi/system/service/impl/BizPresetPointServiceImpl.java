@@ -2,26 +2,28 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
-import com.ruoyi.system.domain.BizPlanPreset;
-import com.ruoyi.system.domain.BizPresetPoint;
-import com.ruoyi.system.domain.BizTravePoint;
-import com.ruoyi.system.domain.BizTunnelBar;
+import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizPlanPrePointDto;
 import com.ruoyi.system.domain.dto.BizPresetPointDto;
 import com.ruoyi.system.mapper.*;
+import com.ruoyi.system.service.BizPlanPresetService;
 import com.ruoyi.system.service.IBizPresetPointService;
 import com.ruoyi.system.service.IBizTravePointService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -57,6 +59,12 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
     private BizTravePointMapper bizTravePointMapper;
     @Autowired
     private TunnelMapper tunnelMapper;
+
+    @Resource
+    private BizDangerAreaMapper bizDangerAreaMapper;
+
+    @Resource
+    private BizPlanPresetService bizPlanPresetService;
 
 
     @Override
@@ -146,6 +154,117 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
             return true;
         }
 
+    }
+
+    @Override
+    public boolean setPlanPrePointNew(Long planId, List<BizPlanPrePointDto> dtos) {
+        try {
+            ArrayList<BizPlanPreset> bizPlanPresets = new ArrayList<>();
+            PlanEntity entity =  planMapper.selectById(planId);
+            for (BizPlanPrePointDto dto : dtos) {
+
+                if(dto.getStartPointCoordinate() == null || dto.getEndPointCoordinate() == null){
+                    continue;
+                }
+                String[] partsStartX = StringUtils.split(dto.getStartPointCoordinate(), ',');
+                String[] partsEndX = StringUtils.split(dto.getEndPointCoordinate(), ',');
+
+                if (partsStartX.length == 0 || partsEndX.length == 0) {
+                    continue;
+                }
+
+                double planStartXFmt = Double.parseDouble(partsStartX[0]); // 计划开始导线点 x坐标
+                double planEndXFmt = Double.parseDouble(partsEndX[0]); // 计划结束导线点 x坐标
+
+                List<Long> dangerAreaIds = new ArrayList<>();
+                List<Long> dangerIds  = new ArrayList<>();
+                List<Long> areaIds = new ArrayList<>();
+                List<Long> specialDangerIds = new ArrayList<>();
+
+                List<BizDangerArea> bizDangerAreas = bizDangerAreaMapper.selectList(new LambdaQueryWrapper<BizDangerArea>()
+                        .eq(BizDangerArea::getWorkfaceId, entity.getWorkFaceId())
+                        .eq(BizDangerArea::getTunnelId, dto.getTunnelId())
+                        .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+                if (bizDangerAreas != null && !bizDangerAreas.isEmpty()) {
+                    for (BizDangerArea bizDangerArea : bizDangerAreas) {
+                        double scbStartXFmt = Double.parseDouble(bizDangerArea.getScbStartx()); // 生产帮开始导线点 x坐标
+                        double scbEndXFmt = Double.parseDouble(bizDangerArea.getScbEndx()); // 生产帮结束导线点 x坐标
+                        // 判断危险区是否在计划区域内
+                        if (scbStartXFmt >= planStartXFmt && scbEndXFmt <= planEndXFmt) {
+                            dangerAreaIds.add(bizDangerArea.getDangerAreaId());
+                        }
+                        // 查找危险区一部分在计划区域内的数据
+                        if (scbStartXFmt >= planStartXFmt && planEndXFmt < scbEndXFmt) {
+                            dangerIds.add(bizDangerArea.getDangerAreaId());
+                        }
+                        if (scbEndXFmt <= planEndXFmt && planStartXFmt > scbStartXFmt) {
+                            areaIds.add(bizDangerArea.getDangerAreaId());
+                        }
+                        // 计划区域在危险区内但不全部包含危险区
+                        if (planStartXFmt > scbStartXFmt && planEndXFmt < scbEndXFmt) {
+                            specialDangerIds.add(bizDangerArea.getDangerAreaId());
+                        }
+                    }
+                    List<Long> allDangerAreaIds = new ArrayList<>(dangerAreaIds);
+                    allDangerAreaIds.addAll(dangerIds);
+                    if (!allDangerAreaIds.isEmpty()) {
+                        List<BizPresetPoint> presetPoints = bizPresetPointMapper.selectList(new LambdaQueryWrapper<BizPresetPoint>()
+                                .in(BizPresetPoint::getDangerAreaId, allDangerAreaIds)
+                                .eq(BizPresetPoint::getTunnelId, dto.getTunnelId())
+                                .eq(BizPresetPoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+                        for (BizPresetPoint point : presetPoints) {
+                            Long dangerAreaId = getMatchingDangerAreaId(point, dangerAreaIds, dangerIds, areaIds, specialDangerIds);
+                            if (dangerAreaId == null) continue;
+
+                            double axisXFmt = Double.parseDouble(point.getAxisx());
+                            if (dangerIds.contains(dangerAreaId)) {
+                                if (axisXFmt > planEndXFmt) {
+                                    continue;
+                                }
+                            }
+                            if (areaIds.contains(dangerAreaId)) {
+                                if (axisXFmt < planStartXFmt) {
+                                    continue;
+                                }
+                            }
+                            if (specialDangerIds.contains(dangerAreaId)) {
+                                if (axisXFmt > planStartXFmt && axisXFmt < planEndXFmt) {
+                                    continue;
+                                }
+                            }
+
+                            BizPlanPreset preset = new BizPlanPreset();
+                            preset.setPlanId(planId)
+                                    .setDangerAreaId(dangerAreaId)
+                                    .setPresetPointId(point.getPresetPointId())
+                                    .setBottom(point.getAxisy() + "," + point.getAxisx());
+                            bizPlanPresets.add(preset);
+                        }
+                    }
+                }
+            }
+            this.bizPlanPresetService.saveBatch(bizPlanPresets);
+            return true;
+        } catch (Exception e) {
+            return true;
+        } finally {
+            return true;
+        }
+    }
+
+    private Long getMatchingDangerAreaId(BizPresetPoint point, List<Long> dangerAreaIds, List<Long> dangerIds, List<Long> areaIds, List<Long> specialDangerIds) {
+        if (dangerAreaIds.contains(point.getDangerAreaId())) {
+            return point.getDangerAreaId();
+        } else if (dangerIds.contains(point.getDangerAreaId())) {
+            return point.getDangerAreaId();
+        } else if (areaIds.contains(point.getDangerAreaId())) {
+            return point.getDangerAreaId();
+        } else if (specialDangerIds.contains(point.getDangerAreaId())) {
+            return point.getDangerAreaId();
+        }
+        return null;
     }
 
 

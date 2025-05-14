@@ -322,7 +322,8 @@ public class BizMapController extends BaseController
 
     @ApiOperation("三合一")
     @GetMapping("/getshy")
-    public R<Map<String,Object>> getshy(@RequestParam( required = false) String year,
+    public R<Map<String,Object>> getshy(@RequestParam( required = false) String constructType,
+                                        @RequestParam( required = false) String year,
                                         @RequestParam( required = false) String month,
                                         @RequestParam( required = false) Long workfaceId,
                                         @RequestParam(required = false) String drillType)
@@ -334,7 +335,7 @@ public class BizMapController extends BaseController
         Date end = null;
         start = getStart(year, month);
         end = getEnd(year, month);
-
+        // 查询施工钻孔
         QueryWrapper<BizPresetPoint> queryWrapperPro = new QueryWrapper<>();
         queryWrapperPro.lambda()
                 .eq(StrUtil.isNotEmpty(drillType), BizPresetPoint::getDrillType,drillType)
@@ -346,8 +347,11 @@ public class BizMapController extends BaseController
         if(points != null && points.size() > 0){
             List<Long> projectIds = points.stream().map(BizPresetPoint::getProjectId).collect(Collectors.toList());
             QueryWrapper<BizProjectRecord> projectRecordQueryWrapper = new QueryWrapper<>();
-            List<BizProjectRecord> records = bizProjectRecordService.listByIdsDeep(projectIds);
 
+            projectRecordQueryWrapper.lambda().in(BizProjectRecord::getProjectId,projectIds).eq(BizProjectRecord::getConstructType,constructType);
+            List<BizProjectRecord> records = bizProjectRecordService.listDeep(projectRecordQueryWrapper);
+
+//            List<BizProjectRecord> records = bizProjectRecordService.listByIdsDeep(projectIds);
             final Map<Long, List<BizProjectRecord>>[] groupedByProjectId = new Map[]{records.stream()
                     .collect(Collectors.groupingBy(BizProjectRecord::getProjectId))};
             for (BizPresetPoint point : points) {
@@ -373,6 +377,7 @@ public class BizMapController extends BaseController
         }
         map.put("ProjectPoints",vos);
 
+        // 查询迎头钻孔
         QueryWrapper<BizPresetPoint> queryWrapperProYt = new QueryWrapper<>();
         queryWrapperProYt.lambda()
                 .isNotNull( BizPresetPoint::getCrosLatlngs)
@@ -415,6 +420,7 @@ public class BizMapController extends BaseController
         }
         map.put("ProjectPointYts",ytvos);
 
+        // 计划内危险区
         Long startc;
         Long endc;
         if(end == null){
@@ -425,12 +431,11 @@ public class BizMapController extends BaseController
             endc = end.getTime();
         }
 
-
-
         QueryWrapper<PlanEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().select(PlanEntity::getPlanId,PlanEntity::getPlanName,PlanEntity::getType)
                 .eq(StrUtil.isNotEmpty(year),PlanEntity::getAnnual,year)
                 .eq(workfaceId != null, PlanEntity::getWorkFaceId,workfaceId)
+                .eq(PlanEntity::getType, constructType)
                 .eq(StrUtil.isNotEmpty(drillType),PlanEntity::getDrillType,drillType)
                 .and(startc != null,i->i.le(PlanEntity::getStartTime,endc).ge(PlanEntity::getEndTime,startc));
         List<PlanEntity> planEntities = planService.list(queryWrapper);
@@ -457,7 +462,7 @@ public class BizMapController extends BaseController
 
         }
 
-
+        // 计划内预设点
         List<BizPlanPreset> vo1s = new ArrayList<>();
         //循环计划
         if(planEntities != null && planEntities.size() > 0){
@@ -469,7 +474,6 @@ public class BizMapController extends BaseController
             }
             map.put("planPrePoint",vo1s);
         }
-
 
         return R.ok(map);
     }

@@ -36,9 +36,10 @@ public class BizPlanPrePointDto
     @ApiModelProperty(value = "结束导线点 前后距离")
     private Double endMeter;
 
+    @ApiModelProperty(value = "起始导线点坐标")
+    private String startPointCoordinate;
 
-
-
-
+    @ApiModelProperty(value = "终始导线点坐标")
+    private String endPointCoordinate;
 
 }

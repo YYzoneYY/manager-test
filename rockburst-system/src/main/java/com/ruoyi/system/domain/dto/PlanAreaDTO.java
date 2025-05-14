@@ -26,4 +26,12 @@ public class PlanAreaDTO {
 
     @ApiModelProperty(value = "终始距离(+-)")
     private String endDistance;
+
+    private Long workFaceId;
+
+    @ApiModelProperty(value = "起始导线点坐标")
+    private String startPointCoordinate;
+
+    @ApiModelProperty(value = "终始导线点坐标")
+    private String endPointCoordinate;
 }

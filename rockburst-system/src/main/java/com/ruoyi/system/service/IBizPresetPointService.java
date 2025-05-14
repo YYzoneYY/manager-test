@@ -40,6 +40,14 @@ public interface IBizPresetPointService extends IService<BizPresetPoint>
     public boolean setPlanPrePoint(Long planId,List<BizPlanPrePointDto> dtos);
 
     /**
+     * 计划预设点(新)
+     * @param planId
+     * @param dtos
+     * @return
+     */
+    public boolean setPlanPrePointNew(Long planId,List<BizPlanPrePointDto> dtos);
+
+    /**
      * 根据开始结束导线点获取区间内所有的预设点
      * @param startPointId
      * @param endPointId
