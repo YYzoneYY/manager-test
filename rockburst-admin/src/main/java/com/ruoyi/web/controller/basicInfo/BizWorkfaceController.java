@@ -138,6 +138,10 @@ public class BizWorkfaceController extends BaseController
     @PostMapping
     public R add(@RequestBody @Validated(value = {GroupAdd.class}) BizWorkfaceDto dto)
     {
+        QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
+
+
+
         BizWorkface entity = new BizWorkface();
         BeanUtil.copyProperties(dto, entity);
         BizMiningArea area = bizMiningAreaService.getBaseMapper().selectById(entity.getMiningAreaId());

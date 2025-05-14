@@ -186,6 +186,107 @@ public class GeometryUtil {
         return new BigDecimal[]{px.setScale(6, BigDecimal.ROUND_HALF_UP), py.setScale(6, BigDecimal.ROUND_HALF_UP)};
     }
 
+
+    /**
+     * 获取离指定点 mn 最近的线段
+     * @param segments List<Segment>
+     * @param mn 坐标点 [x, y]
+     * @return 最近的 Segment
+     */
+    public static Segment findNearestSegment(List<Segment> segments, BigDecimal[] mn) {
+        if (mn == null || mn.length != 2) {
+            throw new IllegalArgumentException("mn 必须是长度为 2 的数组");
+        }
+
+        Point2D p = new Point2D(mn[0], mn[1]);
+
+        Segment closestSegment = null;
+        BigDecimal minDistance = null;
+
+        for (Segment segment : segments) {
+            BigDecimal distance = pointToSegmentDistance(p, segment.getStart(), segment.getEnd());
+            if (minDistance == null || distance.compareTo(minDistance) < 0) {
+                minDistance = distance;
+                closestSegment = segment;
+            }
+        }
+
+        return closestSegment;
+    }
+
+    /**
+     * 计算点到线段的最短距离（平方计算后开根号）
+     */
+    private static BigDecimal pointToSegmentDistance(Point2D p, Point2D a, Point2D b) {
+        BigDecimal dx = b.getX().subtract(a.getX());
+        BigDecimal dy = b.getY().subtract(a.getY());
+
+        BigDecimal lengthSquared = dx.pow(2).add(dy.pow(2));
+        if (lengthSquared.compareTo(BigDecimal.ZERO) == 0) {
+            // a == b, 退化为点
+            return distance(p, a);
+        }
+
+        BigDecimal t = (p.getX().subtract(a.getX())).multiply(dx)
+                .add(p.getY().subtract(a.getY()).multiply(dy))
+                .divide(lengthSquared, 20, BigDecimal.ROUND_HALF_UP);
+
+        if (t.compareTo(BigDecimal.ZERO) < 0) t = BigDecimal.ZERO;
+        if (t.compareTo(BigDecimal.ONE) > 0) t = BigDecimal.ONE;
+
+        BigDecimal projX = a.getX().add(t.multiply(dx));
+        BigDecimal projY = a.getY().add(t.multiply(dy));
+
+        return distance(p, new Point2D(projX, projY));
+    }
+
+    /**
+     * 计算两点之间的距离
+     */
+    private static BigDecimal distance(Point2D p1, Point2D p2) {
+        BigDecimal dx = p1.getX().subtract(p2.getX());
+        BigDecimal dy = p1.getY().subtract(p2.getY());
+        double dist = Math.sqrt(dx.pow(2).add(dy.pow(2)).doubleValue());
+        return BigDecimal.valueOf(dist);
+    }
+
+    /**
+     * 从 List<BigDecimal[]> 创建线段，并返回长度最长的两条
+     * @param bigDecimals 共4个元素，每个元素是长度为2的数组 [x, y]
+     * @return 最长的两个 Segment（降序排列）
+     */
+    public static List<Segment> findLongestTwoSegments(List<BigDecimal[]> bigDecimals) {
+        if (bigDecimals == null || bigDecimals.size() != 4) {
+            throw new IllegalArgumentException("必须传入恰好4个 BigDecimal[] 点，每个数组长度为2");
+        }
+
+        List<Segment> segments = new ArrayList<>();
+
+        for (int i = 0; i < 4; i++) {
+            BigDecimal[] coords1 = bigDecimals.get(i);
+            BigDecimal[] coords2 = bigDecimals.get((i + 1) % 4);
+
+            Point2D start = new Point2D(coords1[0], coords1[1]);
+            Point2D end = new Point2D(coords2[0], coords2[1]);
+            BigDecimal interval = calculateDistance(coords1, coords2);
+
+            segments.add(new Segment(start, end, interval));
+        }
+
+        // 按照 interval 降序排序
+        segments.sort((s1, s2) -> s2.getInterval().compareTo(s1.getInterval()));
+
+        return segments.subList(0, 2);
+    }
+
+    // 计算两点间距离
+    private static BigDecimal calculateDistance(BigDecimal[] p1, BigDecimal[] p2) {
+        BigDecimal dx = p1[0].subtract(p2[0]);
+        BigDecimal dy = p1[1].subtract(p2[1]);
+        double dist = Math.sqrt(dx.pow(2).add(dy.pow(2)).doubleValue());
+        return BigDecimal.valueOf(dist);
+    }
+
     /**
      * 二维数组字符串  返回二维数组
      * @param jsonStr
@@ -342,4 +443,188 @@ public class GeometryUtil {
         }
         return x1;
     }
+
+        /**
+     * 计算两条线段的交点
+     * @param p1 第一条线段的起点
+     * @param p2 第一条线段的终点
+     * @param p3 第二条线段的起点
+     * @param p4 第二条线段的终点
+     * @return 若相交，返回交点坐标；否则返回 null
+     */
+        public static Point2D getIntersection(Point2D p1, Point2D p2, Point2D p3, Point2D p4) {
+            MathContext mc = new MathContext(20, RoundingMode.HALF_UP); // 高精度上下文
+            BigDecimal epsilon = new BigDecimal("1e-10"); // 容差判断边界误差
+
+            // 提取坐标
+            BigDecimal x1 = p1.getX(), y1 = p1.getY();
+            BigDecimal x2 = p2.getX(), y2 = p2.getY();
+            BigDecimal x3 = p3.getX(), y3 = p3.getY();
+            BigDecimal x4 = p4.getX(), y4 = p4.getY();
+
+            // 向量差
+            BigDecimal dx1 = x2.subtract(x1, mc);
+            BigDecimal dy1 = y2.subtract(y1, mc);
+            BigDecimal dx2 = x4.subtract(x3, mc);
+            BigDecimal dy2 = y4.subtract(y3, mc);
+
+            // 计算行列式
+            BigDecimal denominator = dx1.multiply(dy2, mc).subtract(dy1.multiply(dx2, mc), mc);
+            if (denominator.abs().compareTo(epsilon) < 0) {
+                return null; // 平行或重合
+            }
+
+            BigDecimal dx3 = x1.subtract(x3, mc);
+            BigDecimal dy3 = y1.subtract(y3, mc);
+
+            // 参数 t 和 u
+            BigDecimal tNumerator = dx3.multiply(dy2, mc).subtract(dy3.multiply(dx2, mc), mc);
+            BigDecimal uNumerator = dx3.multiply(dy1, mc).subtract(dy3.multiply(dx1, mc), mc);
+
+            BigDecimal t = tNumerator.divide(denominator, mc);
+            BigDecimal u = uNumerator.divide(denominator, mc);
+
+            // 使用容差判断是否在线段上
+            if (t.compareTo(BigDecimal.ZERO.subtract(epsilon)) >= 0 && t.compareTo(BigDecimal.ONE.add(epsilon)) <= 0 &&
+                    u.compareTo(BigDecimal.ZERO.subtract(epsilon)) >= 0 && u.compareTo(BigDecimal.ONE.add(epsilon)) <= 0) {
+
+                BigDecimal intersectX = x1.add(dx1.multiply(t, mc), mc);
+                BigDecimal intersectY = y1.add(dy1.multiply(t, mc), mc);
+                return new Point2D(intersectX, intersectY);
+            }
+
+            return null;
+        }
+
+
+//    /**
+//     * 计算两条线段的交点
+//     * @param p1 第一条线段的起点
+//     * @param p2 第一条线段的终点
+//     * @param p3 第二条线段的起点
+//     * @param p4 第二条线段的终点
+//     * @return 若相交，返回交点坐标；否则返回 null
+//     */
+//    public static Point2D getIntersection(Point2D p1, Point2D p2, Point2D p3, Point2D p4) {
+//        MathContext mc = new MathContext(6, RoundingMode.HALF_UP); // 控制精度和舍入方式
+//
+//        // 取出各点坐标
+//        BigDecimal x1 = p1.getX(), y1 = p1.getY();
+//        BigDecimal x2 = p2.getX(), y2 = p2.getY();
+//        BigDecimal x3 = p3.getX(), y3 = p3.getY();
+//        BigDecimal x4 = p4.getX(), y4 = p4.getY();
+//
+//        // 计算两个方向向量
+//        BigDecimal dx1 = x2.subtract(x1, mc);
+//        BigDecimal dy1 = y2.subtract(y1, mc);
+//        BigDecimal dx2 = x4.subtract(x3, mc);
+//        BigDecimal dy2 = y4.subtract(y3, mc);
+//
+//        // 计算分母，判断是否平行（行列式为0）
+//        BigDecimal denominator = dx1.multiply(dy2, mc).subtract(dy1.multiply(dx2, mc), mc);
+//        if (denominator.compareTo(BigDecimal.ZERO) == 0) {
+//            return null; // 两线段平行或重合
+//        }
+//
+//        // 线段间向量差值
+//        BigDecimal dx3 = x1.subtract(x3, mc);
+//        BigDecimal dy3 = y1.subtract(y3, mc);
+//
+//        // 计算参数 t 和 u 的分子（参数化方程）
+//        BigDecimal tNumerator = dx3.multiply(dy2, mc).subtract(dy3.multiply(dx2, mc), mc);
+//        BigDecimal uNumerator = dx3.multiply(dy1, mc).subtract(dy3.multiply(dx1, mc), mc);
+//
+//        // 计算 t 和 u，用于判断交点是否在线段范围内
+//        BigDecimal t = tNumerator.divide(denominator, mc);
+//        BigDecimal u = uNumerator.divide(denominator, mc);
+//
+//        // 如果交点在线段的范围内（0 <= t <= 1 且 0 <= u <= 1）
+//        if (t.compareTo(BigDecimal.ZERO) >= 0 && t.compareTo(BigDecimal.ONE) <= 0 &&
+//                u.compareTo(BigDecimal.ZERO) >= 0 && u.compareTo(BigDecimal.ONE) <= 0) {
+//
+//            // 利用参数 t 计算交点坐标
+//            BigDecimal intersectX = x1.add(dx1.multiply(t, mc), mc);
+//            BigDecimal intersectY = y1.add(dy1.multiply(t, mc), mc);
+//            return new Point2D(intersectX, intersectY);
+//        }
+//
+//        return null; // 不在线段内相交
+//    }
+
+    /**
+     * 计算四边形的中心点坐标
+     * 输入必须是 4 个点（按任意顺序）
+     * 中心点为四个点坐标的平均值
+     *
+     * @param points 由 4 个 Point2D 对象组成的列表
+     * @return 中心点 Point2D 对象
+     */
+    public static Point2D getCenterPoint(List<Point2D> points) {
+        // 校验点数量是否为 4
+        if (points.size() != 4) {
+            throw new IllegalArgumentException("必须传入 4 个点");
+        }
+
+        // 用于累加 x 和 y 坐标
+        BigDecimal sumX = BigDecimal.ZERO;
+        BigDecimal sumY = BigDecimal.ZERO;
+
+        // 遍历每个点，累加它们的 x 和 y 坐标
+        for (Point2D p : points) {
+            sumX = sumX.add(p.getX());
+            sumY = sumY.add(p.getY());
+        }
+
+        // 计算平均值：x 坐标之和除以 4，y 坐标之和除以 4
+        BigDecimal centerX = sumX.divide(BigDecimal.valueOf(4), MathContext.DECIMAL64);
+        BigDecimal centerY = sumY.divide(BigDecimal.valueOf(4), MathContext.DECIMAL64);
+
+        // 返回中心点对象
+        return new Point2D(centerX, centerY);
+    }
+
+    /**
+     * 判断点 P 是否在线段 AB 上
+     * @param p 点p
+     * @param a 线段AB 的点a
+     * @param b 线段AB 的点b
+     * @return
+     */
+    public static boolean isPointOnSegment(Point2D p, Point2D a, Point2D b) {
+        BigDecimal x = p.getX(), y = p.getY();
+        BigDecimal x1 = a.getX(), y1 = a.getY();
+        BigDecimal x2 = b.getX(), y2 = b.getY();
+
+        // 计算叉积：如果为0说明共线
+        BigDecimal cross = (x.subtract(x1)).multiply(y2.subtract(y1))
+                .subtract((y.subtract(y1)).multiply(x2.subtract(x1)));
+
+        if (cross.abs().compareTo(new BigDecimal("1e-10")) > 0) {
+            return false; // 不共线
+        }
+
+        // 判断是否在端点范围内
+        BigDecimal minX = x1.min(x2), maxX = x1.max(x2);
+        BigDecimal minY = y1.min(y2), maxY = y1.max(y2);
+
+        return x.compareTo(minX) >= 0 && x.compareTo(maxX) <= 0 &&
+                y.compareTo(minY) >= 0 && y.compareTo(maxY) <= 0;
+    }
+
+
+
+    public static void main(String[] args) {
+        Point2D p1 = new Point2D(new BigDecimal("0"), new BigDecimal("0"));
+        Point2D p2 = new Point2D(new BigDecimal("4"), new BigDecimal("4"));
+        Point2D p3 = new Point2D(new BigDecimal("0"), new BigDecimal("4"));
+        Point2D p4 = new Point2D(new BigDecimal("4"), new BigDecimal("0"));
+
+        Point2D result = getIntersection(p1, p2, p3, p4);
+        if (result != null) {
+            System.out.println("交点坐标为: " + result);
+        } else {
+            System.out.println("两线段不相交");
+        }
+    }
+
 }

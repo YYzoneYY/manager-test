@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.basicInfo;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.annotation.Anonymous;
@@ -16,12 +17,15 @@ import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
 import com.ruoyi.system.domain.utils.GeometryUtil;
+import com.ruoyi.system.domain.utils.RectangleRegionFinder;
 import com.ruoyi.system.domain.vo.BizDangerAreaVo;
 import com.ruoyi.system.mapper.BizTunnelBarMapper;
+import com.ruoyi.system.mapper.BizWorkfaceMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springdoc.api.annotations.ParameterObject;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -47,7 +51,8 @@ public class BizDangerAreaController extends BaseController
     @Autowired
     private IBizDangerAreaService bizDangerAreaService;
 
-
+    @Autowired
+    private IBizTunnelBarService bizTunnelBarService;
     @Autowired
     private IBizDangerLevelService bizDangerLevelService;
 
@@ -62,6 +67,11 @@ public class BizDangerAreaController extends BaseController
     private BizTunnelBarMapper bizTunnelBarMapper;
     @Autowired
     private ISysConfigService configService;
+    @Autowired
+    private BizWorkfaceMapper bizWorkfaceMapper;
+
+    @Autowired
+    private IPolylineObjectService polylineObjectService;
 
     /**
      *
@@ -71,6 +81,14 @@ public class BizDangerAreaController extends BaseController
     @GetMapping("/list")
     public R<MPage<BizDangerAreaVo>> list(@ParameterObject BizDangerAreaDto dto, @ParameterObject Pagination pagination)
     {
+        if(StrUtil.isNotEmpty(dto.getWorkfaceName())){
+            QueryWrapper<BizWorkface> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizWorkface::getWorkfaceName, dto.getWorkfaceName());
+            List<BizWorkface> workfaces = bizWorkfaceMapper.selectList(queryWrapper);
+            if(workfaces != null &&  workfaces.size() > 0){
+                dto.setWorkfaceId(workfaces.get(0).getWorkfaceId());
+            }
+        }
         return R.ok(bizDangerAreaService.selectEntityList(dto, pagination));
     }
 
@@ -86,6 +104,229 @@ public class BizDangerAreaController extends BaseController
         return R.ok(bizDangerAreaService.selectEntityById(dangerAreaId));
     }
 
+
+//    /**
+//     * 新增危险区管理
+//     */
+//    @ApiOperation("新增危险区管理cad")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:add')")
+//    @Log(title = "危险区管理", businessType = BusinessType.INSERT)
+//    @PostMapping("add-cad")
+//    public R addcad(@RequestBody  List<Segment> pointList)
+//    {
+//        List<TunnelEntity> tunnelEntities = tunnelService.list();
+//        List<List<Point2D>> list = new ArrayList<>();
+//        for (Segment segment : pointList) {
+//            List<Point2D> point2DS = new ArrayList<>();
+//            for (TunnelEntity tunnelEntity : tunnelEntities) {
+//                QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
+//                queryWrapper.lambda().eq(BizTunnelBar::getTunnelId,tunnelEntity);
+//                List<BizTunnelBar> bars = bizTunnelBarService.list(queryWrapper);
+//                if(bars != null && bars.size() > 0){
+//                    for (BizTunnelBar bar : bars) {
+//                        Point2D jiaodian =  GeometryUtil.getIntersection(new Point2D(segment.getStart().getX(),segment.getEnd().getY()),
+//                                new Point2D(segment.getEnd().getX(),segment.getEnd().getY()),
+//                                new Point2D(new BigDecimal(bar.getStartx()),new BigDecimal(bar.getStarty())),
+//                                new Point2D(new BigDecimal(bar.getEndx()),new BigDecimal(bar.getEndy())));
+//                        if(jiaodian != null){
+//                            point2DS.add(jiaodian);
+//                        }
+//                    }
+//                }
+//            }
+//            list.add(point2DS);
+//        }
+//
+//        return R.ok(bizDangerAreaService.insertEntity(dto));
+//    }
+
+    /**
+     * 新增危险区管理
+     */
+    @ApiOperation("新增危险区管理cad")
+    @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:add')")
+    @Log(title = "危险区管理", businessType = BusinessType.INSERT)
+    @PostMapping("add-cadsss")
+    public R addcsssad(@RequestBody  List<PolylineObject> polylineObjects)
+    {
+        if(polylineObjects != null &&  polylineObjects.size() > 0){
+            for (PolylineObject polylineObject : polylineObjects) {
+                if(polylineObject.getStart() != null && polylineObject.getEnd() != null){
+                    polylineObject.setStartx(polylineObject.getStart().getX()+"")
+                            .setStarty(polylineObject.getStart().getY()+"")
+                            .setEndx(polylineObject.getEnd().getX()+"")
+                            .setEndy(polylineObject.getEnd().getY()+"");
+                }
+                QueryWrapper<PolylineObject> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(PolylineObject::getId, polylineObject.getId());
+                long count  = polylineObjectService.getBaseMapper().selectCount(queryWrapper);
+                if(count > 0){
+                    continue;
+                }
+                polylineObjectService.save(polylineObject);
+            }
+        }
+        return R.ok();
+
+    }
+
+
+    /**
+     * 新增危险区管理
+     */
+    @ApiOperation("新增危险区管理cad")
+    @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:add')")
+    @Log(title = "危险区管理", businessType = BusinessType.INSERT)
+    @PostMapping("add-cad")
+    public R addcsssad1(@RequestBody List<PolylineObject> polylineObjects)
+    {
+
+        List<Segment> pointList = new ArrayList<>();
+
+        List<BizDangerArea> areas = new ArrayList<>();
+
+        for (PolylineObject polylineObject : polylineObjects) {
+            Segment segment = new Segment();
+            BeanUtils.copyProperties(polylineObject, segment);
+            pointList.add(segment);
+            if(polylineObject.getStart() != null && polylineObject.getEnd() != null){
+                polylineObject.setStartx(polylineObject.getStart().getX()+"")
+                        .setStarty(polylineObject.getStart().getY()+"")
+                        .setEndx(polylineObject.getEnd().getX()+"")
+                        .setEndy(polylineObject.getEnd().getY()+"");
+            }
+            QueryWrapper<PolylineObject> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(PolylineObject::getId, polylineObject.getId());
+            long count  = polylineObjectService.getBaseMapper().selectCount(queryWrapper);
+            if(count > 0){
+                continue;
+            }
+            polylineObjectService.save(polylineObject);
+        }
+
+        List<TunnelEntity> tunnelEntities = tunnelService.list();
+
+        for (TunnelEntity tunnelEntity : tunnelEntities) {
+            QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizTunnelBar::getTunnelId,tunnelEntity.getTunnelId());
+            List<BizTunnelBar> bars = bizTunnelBarService.list(queryWrapper);
+            if(bars == null || bars.size() == 0){
+                continue;
+            }
+            List<List<Point2D>> list = new ArrayList<>();
+            for (Segment segment : pointList) {
+                List<Point2D> point2DS = new ArrayList<>();
+                if(bars != null && bars.size() > 0){
+                    for (BizTunnelBar bar : bars) {
+                        Point2D jiaodian =  SegmentIntersection.getIntersection(new Point2D(segment.getStart().getX(),segment.getStart().getY()),
+                                new Point2D(segment.getEnd().getX(),segment.getEnd().getY()),
+                                new Point2D(new BigDecimal(bar.getStartx()),new BigDecimal(bar.getStarty())),
+                                new Point2D(new BigDecimal(bar.getEndx()),new BigDecimal(bar.getEndy())));
+                        if(jiaodian != null){
+                            jiaodian.setBarType(bar.getType());
+                            point2DS.add(jiaodian);
+                        }
+                    }
+                    list.add(point2DS);
+                }
+            }
+            List<List<Point2D>> quyus = RectangleRegionFinder.findRectangleRegions(list);
+
+            for (List<Point2D> quyu : quyus) {
+                if(quyu == null || quyu.size() == 0){
+                    continue;
+                }
+                Point2D center = GeometryUtil.getCenterPoint(quyu);
+                BizDangerArea area = new BizDangerArea();
+                area.setTunnelId(tunnelEntity.getTunnelId())
+                                .setWorkfaceId(tunnelEntity.getWorkFaceId());
+                area.setCenter(center.getX()+","+center.getY());
+                Point2D scb1 = getscb(quyu);
+                quyu.remove(scb1);
+                area.setScbStartx(scb1.getX()+"")
+                        .setScbStarty(scb1.getY()+"");
+                Point2D scb2 = getscb(quyu);
+                area.setScbEndx(scb2.getX()+"")
+                        .setScbEndy(scb2.getY()+"");
+
+                Point2D fscb1 = getfscb(quyu);
+                area.setFscbStartx(fscb1.getX()+"")
+                        .setFscbStarty(fscb1.getY()+"");
+                quyu.remove(fscb1);
+                Point2D fscb2 = getfscb(quyu);
+                area.setFscbEndx(fscb2.getX()+"")
+                        .setFscbEndy(fscb2.getY()+"");
+                BizDangerAreaDto dto = new BizDangerAreaDto();
+                BeanUtils.copyProperties(area,dto);
+
+
+                areas.add(area);
+
+//                bizDangerAreaService.insertEntity(dto);
+            }
+        }
+
+        List<BizDangerArea> distinctAreas = new ArrayList<>();
+        Set<Set<String>> seen = new HashSet<>();
+
+        for (BizDangerArea area : areas) {
+            List<String> sdsd = getsssssss(area);
+            Set<String> aset = new HashSet<>(sdsd); // 转成 HashSet 去除顺序影响
+
+            if (seen.add(aset)) { // 如果未出现过，就加入
+                distinctAreas.add(area);
+            }
+        }
+        areas = distinctAreas;
+
+        List<BizDangerArea> areasources = bizDangerAreaService.list(new QueryWrapper<>());
+
+        List<BizDangerArea> instes = new ArrayList<>();
+        for (BizDangerArea area : areas) {
+            List<String> sdsd =  getsssssss(area);
+            for (BizDangerArea areasource : areasources) {
+                List<String> sdd = getsssssss(areasource);
+                boolean isEqual = new HashSet<>(sdsd).equals(new HashSet<>(sdd));
+                if(isEqual){
+                    instes.add(areasource);
+                    continue;
+                }
+            }
+        }
+        areas.removeAll(instes);
+        for (BizDangerArea area : areas) {
+            BizDangerAreaDto ssss = new BizDangerAreaDto();
+            BeanUtils.copyProperties(area,ssss);
+            bizDangerAreaService.insertEntity(ssss);
+        }
+        return R.ok();
+    }
+
+    public  List<String> getsssssss(BizDangerArea area){
+        List<String> sssssss = new ArrayList<>();
+        sssssss.add(area.getFscbStartx());
+        sssssss.add(area.getFscbEndx());
+        sssssss.add(area.getScbStarty());
+        sssssss.add(area.getScbEndy());
+        return sssssss;
+    }
+    public Point2D getscb(List<Point2D> pointList){
+        for (Point2D point2D : pointList) {
+            if (point2D.getBarType().equals("scb")) {
+                return point2D;
+            }
+        }
+        return null;
+    }
+
+    public Point2D getfscb(List<Point2D> pointList){
+        for (Point2D point2D : pointList) {
+            if (point2D.getBarType().equals("fscb")) {
+                return point2D;
+            }
+        }
+        return null;
+    }
     /**
      * 新增危险区管理
      */

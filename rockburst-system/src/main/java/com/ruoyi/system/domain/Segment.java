@@ -15,6 +15,9 @@ public class Segment {
     BigDecimal interval;
     Long areaId;
 
+    public Segment() {
+    }
+
     public Segment(Point2D start, Point2D end, BigDecimal interval) {
         this.start = start;
         this.end = end;
