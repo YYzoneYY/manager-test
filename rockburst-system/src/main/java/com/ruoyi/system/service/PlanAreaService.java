@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface PlanAreaService extends IService<PlanAreaEntity> {
 
-    boolean insert(Long planId, String type, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS);
+    boolean insert(Long planId, Long workFaceId, String type, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS);
 
     boolean batchInsert(List<PlanAreaBatchDTO> planAreaBatchDTOS);
 

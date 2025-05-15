@@ -40,7 +40,7 @@ public class DrillSpacingWarnUtil {
         }
 
         // 获取当前施工钻孔坐标
-        String obtainCoordinate = AlgorithmUtil.obtainCoordinate(projectRecord.getWorkfaceId(), projectRecord.getTunnelId(),
+        String obtainCoordinate = AlgorithmUtils.obtainCoordinate(projectRecord.getWorkfaceId(), projectRecord.getTunnelId(),
                 projectRecord.getTravePointId(), projectRecord.getConstructRange(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
 
         if (StringUtils.isBlank(obtainCoordinate)) {
@@ -81,7 +81,7 @@ public class DrillSpacingWarnUtil {
         for (BizDangerArea bizDangerArea : bizDangerAreas) {
             List<CoordinatePointDTO> coordinatePointDTOS = buildCoordinatePoints(bizDangerArea);
             // 判断施工钻孔是否在此危险区之内
-            boolean pointInPolygon = AlgorithmUtil.isPointInPolygon(coordinatePointDTOS, new CoordinatePointDTO(x, y));
+            boolean pointInPolygon = AlgorithmUtils.isPointInPolygon(coordinatePointDTOS, new CoordinatePointDTO(x, y));
             if (pointInPolygon) {
                 String result = algorithm(bizProjectRecords, bizDangerArea, projectId, coordinate, cacheDataMapper,
                         bizProjectRecordMapper, bizDangerLevelMapper, sysDictDataMapper,
@@ -121,7 +121,7 @@ public class DrillSpacingWarnUtil {
             BizProjectRecord priorRecord = bizProjectRecordMapper.selectOne(new LambdaQueryWrapper<BizProjectRecord>()
                     .eq(BizProjectRecord::getProjectId, priorProjectId));
 
-            String obtainPriorCoordinate = AlgorithmUtil.obtainCoordinate(priorRecord.getWorkfaceId(), priorRecord.getTunnelId(),
+            String obtainPriorCoordinate = AlgorithmUtils.obtainCoordinate(priorRecord.getWorkfaceId(), priorRecord.getTunnelId(),
                     priorRecord.getTravePointId(), priorRecord.getConstructRange(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
             // 前一个孔坐标(x,y)
             String[] priorCoordinate = StringUtils.split(obtainPriorCoordinate, ',');

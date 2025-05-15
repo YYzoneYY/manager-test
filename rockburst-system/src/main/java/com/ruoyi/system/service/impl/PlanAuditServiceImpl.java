@@ -15,15 +15,11 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
-import com.ruoyi.system.domain.BizTravePoint;
-import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.BizWorkface;
-import com.ruoyi.system.domain.Entity.PlanContentsMappingEntity;
 import com.ruoyi.system.domain.Entity.PlanAuditEntity;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.*;
-import com.ruoyi.system.domain.utils.AlgorithmUtil;
-import com.ruoyi.system.domain.utils.GeometryUtil;
+import com.ruoyi.system.domain.utils.AlgorithmUtils;
 import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
@@ -31,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -279,9 +274,9 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         bizPlanPrePointDto.setEndPointId(planAreaDTO.getEndTraversePointId());
         bizPlanPrePointDto.setStartMeter(Double.valueOf(planAreaDTO.getStartDistance()));
         bizPlanPrePointDto.setEndMeter(Double.valueOf(planAreaDTO.getEndDistance()));
-        String startPointCoordinate = AlgorithmUtil.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+        String startPointCoordinate = AlgorithmUtils.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
                 planAreaDTO.getStartTraversePointId(), planAreaDTO.getStartDistance(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
-        String endPointCoordinate = AlgorithmUtil.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+        String endPointCoordinate = AlgorithmUtils.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
                 planAreaDTO.getEndTraversePointId(), planAreaDTO.getEndDistance(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
         bizPlanPrePointDto.setStartPointCoordinate(startPointCoordinate);
         bizPlanPrePointDto.setEndPointCoordinate(endPointCoordinate);

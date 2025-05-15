@@ -5,14 +5,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.common.utils.ListUtils;
-import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.PlanAreaEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.PlanAreaBatchDTO;
 import com.ruoyi.system.domain.dto.PlanAreaDTO;
 import com.ruoyi.system.domain.dto.TraversePointGatherDTO;
-import com.ruoyi.system.mapper.PlanAreaMapper;
-import com.ruoyi.system.mapper.TunnelMapper;
+import com.ruoyi.system.domain.utils.AlgorithmUtils;
+import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.PlanAreaService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +36,17 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
     @Resource
     private TunnelMapper tunnelMapper;
 
+    @Resource
+    private BizTunnelBarMapper bizTunnelBarMapper;
+
+    @Resource
+    private BizTravePointMapper bizTravePointMapper;
+
+    @Resource
+    private SysConfigMapper sysConfigMapper;
+
     @Override
-    public boolean insert(Long planId, String type, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS) {
+    public boolean insert(Long planId, Long workFaceId, String type, List<PlanAreaDTO> planAreaDTOS, List<TraversePointGatherDTO> traversePointGatherDTOS) {
         boolean flag = false;
         ArrayList<PlanAreaEntity> planAreaEntities = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -51,6 +59,14 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
             planAreaEntity.setStartDistance(planAreaDTO.getStartDistance());
             planAreaEntity.setEndTraversePointId(planAreaDTO.getEndTraversePointId());
             planAreaEntity.setEndDistance(planAreaDTO.getEndDistance());
+            // 起始点坐标
+            String startPointCoordinate = AlgorithmUtils.obtainCoordinate(workFaceId, planAreaEntity.getTunnelId(), planAreaEntity.getStartTraversePointId(),
+                    planAreaEntity.getStartDistance(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
+            planAreaEntity.setStartPointCoordinate(startPointCoordinate);
+            // 终始点坐标
+            String endPointCoordinate = AlgorithmUtils.obtainCoordinate(workFaceId, planAreaEntity.getTunnelId(), planAreaEntity.getEndTraversePointId(),
+                    planAreaEntity.getEndDistance(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
+            planAreaEntity.setEndPointCoordinate(endPointCoordinate);
             try {
                 String gather = objectMapper.writeValueAsString(traversePointGatherDTOS);
                 planAreaEntity.setTraversePointGather(gather);
@@ -77,6 +93,16 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
             planAreaEntity.setEndTraversePointId(planAreaBatchDTO.getEndTraversePointId());
             planAreaEntity.setEndDistance(planAreaBatchDTO.getEndDistance());
             planAreaEntity.setTraversePointGather(planAreaBatchDTO.getTraversePointGather());
+            // 起始点坐标
+            String startPointCoordinate = AlgorithmUtils.obtainCoordinate(planAreaBatchDTO.getWorkFaceId(), planAreaBatchDTO.getTunnelId(),
+                    planAreaBatchDTO.getStartTraversePointId(), planAreaBatchDTO.getStartDistance(),
+                    bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
+            planAreaEntity.setStartPointCoordinate(startPointCoordinate);
+            // 终始点坐标
+            String endPointCoordinate = AlgorithmUtils.obtainCoordinate(planAreaBatchDTO.getWorkFaceId(), planAreaBatchDTO.getTunnelId(),
+                    planAreaBatchDTO.getEndTraversePointId(), planAreaBatchDTO.getEndDistance(),
+                    bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
+            planAreaEntity.setEndPointCoordinate(endPointCoordinate);
             planAreaEntities.add(planAreaEntity);
         });
         flag = this.saveBatch(planAreaEntities);
@@ -101,8 +127,10 @@ public class PlanAreaServiceImpl extends ServiceImpl<PlanAreaMapper, PlanAreaEnt
                 planAreaDTO.setTunnelId(planAreaEntity.getTunnelId());
                 planAreaDTO.setStartTraversePointId(planAreaEntity.getStartTraversePointId());
                 planAreaDTO.setStartDistance(planAreaEntity.getStartDistance());
+                planAreaDTO.setStartPointCoordinate(planAreaEntity.getStartPointCoordinate());
                 planAreaDTO.setEndTraversePointId(planAreaEntity.getEndTraversePointId());
                 planAreaDTO.setEndDistance(planAreaEntity.getEndDistance());
+                planAreaDTO.setEndPointCoordinate(planAreaEntity.getEndPointCoordinate());
                 Long workFaceId = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
                         .eq(TunnelEntity::getTunnelId, planAreaEntity.getTunnelId())).getWorkFaceId();
                 planAreaDTO.setWorkFaceId(workFaceId);

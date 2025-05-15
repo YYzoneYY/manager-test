@@ -110,7 +110,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
                     traversePointGatherDTOS.add(traversePointGatherDTO);
                 }
             }
-            boolean insert = planAreaService.insert(planEntity.getPlanId(), planEntity.getType(), planAreaDTOS, traversePointGatherDTOS);
+            boolean insert = planAreaService.insert(planEntity.getPlanId(), planEntity.getWorkFaceId(), planEntity.getType(), planAreaDTOS, traversePointGatherDTOS);
             if (!insert) {
                 throw new RuntimeException("发生未知异常,计划添加失败！！");
             }
@@ -152,6 +152,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
                     PlanAreaBatchDTO planAreaBatchDTO = new PlanAreaBatchDTO();
                     BeanUtils.copyProperties(addDTO, planAreaBatchDTO);
                     planAreaBatchDTO.setPlanId(planEntity.getPlanId());
+                    planAreaBatchDTO.setWorkFaceId(planEntity.getWorkFaceId());
                     planAreaBatchDTO.setType(planEntity.getType());
                     planAreaBatchDTOS.add(planAreaBatchDTO);
                 });

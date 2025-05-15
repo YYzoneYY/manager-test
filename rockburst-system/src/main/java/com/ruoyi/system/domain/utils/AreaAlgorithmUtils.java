@@ -60,6 +60,13 @@ public class AreaAlgorithmUtils {
         validatePoint(type, planAreaDTO, planAreaEntity, planAreaEntities, bizTravePointMapper, planAreaMapper);
     }
 
+
+    public static void areaCheckNew(String type, PlanAreaDTO planAreaDTO, PlanAreaEntity planAreaEntity,
+                                 List<PlanAreaEntity> planAreaEntities, PlanAreaMapper planAreaMapper, BizTravePointMapper bizTravePointMapper) {
+        // 校验距离
+        checkDistance(planAreaDTO.getTunnelId(), planAreaDTO, bizTravePointMapper);
+    }
+
     /**
      * 主算法逻辑一
      */

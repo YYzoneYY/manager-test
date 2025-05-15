@@ -17,7 +17,7 @@ import java.util.*;
  * @date: 2025/5/14
  * @description:
  */
-public class AlgorithmUtil {
+public class AlgorithmUtils {
 
     /**
      * 通过 导线点+距离 获取相应坐标

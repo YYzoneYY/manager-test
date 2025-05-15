@@ -15,6 +15,9 @@ public class PlanAreaBatchDTO {
     @ApiModelProperty(value = "计划id")
     private Long planId;
 
+    @ApiModelProperty(value = "工作面id")
+    private Long  workFaceId;
+
     @ApiModelProperty(value = "类型(掘进or回采)")
     private String type;
 

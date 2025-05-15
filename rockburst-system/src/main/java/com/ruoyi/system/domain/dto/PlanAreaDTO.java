@@ -29,9 +29,7 @@ public class PlanAreaDTO {
 
     private Long workFaceId;
 
-    @ApiModelProperty(value = "起始导线点坐标")
     private String startPointCoordinate;
 
-    @ApiModelProperty(value = "终始导线点坐标")
     private String endPointCoordinate;
 }

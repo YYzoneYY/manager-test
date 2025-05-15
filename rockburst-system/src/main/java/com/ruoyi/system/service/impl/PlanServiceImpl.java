@@ -148,7 +148,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                        }
                     }
                 });
-                boolean insert = planAreaService.insert(planEntity.getPlanId(), planEntity.getType(),
+                boolean insert = planAreaService.insert(planEntity.getPlanId(), planEntity.getWorkFaceId(), planEntity.getType(),
                         planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
                 if (!insert) {
                     throw new RuntimeException("发生未知异常,计划添加失败！！");
@@ -215,7 +215,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                         }
                     }
                 });
-                boolean insert = planAreaService.insert(planDTO.getPlanId(), planDTO.getType(),
+                boolean insert = planAreaService.insert(planDTO.getPlanId(), planDTO.getWorkFaceId(), planDTO.getType(),
                         planDTO.getPlanAreaDTOS(), traversePointGatherDTOS);
                 if (!insert) {
                     throw new RuntimeException("发生未知异常,计划修改失败！！");

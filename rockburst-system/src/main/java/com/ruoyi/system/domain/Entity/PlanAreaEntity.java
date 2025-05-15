@@ -51,6 +51,10 @@ public class PlanAreaEntity implements Serializable {
     @TableField(value = "start_distance")
     private String startDistance;
 
+    @ApiModelProperty(value = "起始导线点坐标")
+    @TableField(value = "start_point_coordinate")
+    private String startPointCoordinate;
+
     @ApiModelProperty(value = "终始导线点")
     @TableField(value = "end_traverse_point_id")
     private Long endTraversePointId;
@@ -58,6 +62,10 @@ public class PlanAreaEntity implements Serializable {
     @ApiModelProperty(value = "终始距离")
     @TableField(value = "end_distance")
     private String endDistance;
+
+    @ApiModelProperty(value = "终始导线点坐标")
+    @TableField(value = "end_point_coordinate")
+    private String endPointCoordinate;
 
     @ApiModelProperty(value = "导线点集合")
     @TableField(value = "traverse_point_gather")
