@@ -116,26 +116,11 @@ public class ConstantsInfo {
     public static final String ZERO_IDENTIFY_STATUS = "0"; //未识别
     public static final String ONE_IDENTIFY_STATUS = "1"; //已识别
 
-    // 不明确是否分层
-    public static final String UNKNOWN = "0";
-
-    // 分层
-    public static final String LAMINATION = "1";
-
-    // 不分层
-    public static final String NOLAYERING = "2";
-
-    // 是煤层
-    public static final String YES = "1";
-
-    // 不是煤层
-    public static final String No = "0";
-
-    // 边界开采情况 未开采
-    public static final String UNMINED = "0";
-
-    // 边界开采情况 已开采
-    public static final String MINED = "1";
+    // 返回数据提示词
+    public static final String CUE_WORD_ONE = "号钻孔与";
+    public static final String CUE_WORD_TWO = "号钻孔不满足当前卸压计划中";
+    public static final String CUE_WORD_THREE = "间距不大于";
+    public static final String CUE_WORD_FOUR = "米的要求，发生预警!!";
 
     //只取200条监测数据
     public static final  int SUB = 200;

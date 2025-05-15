@@ -22,6 +22,7 @@ import com.ruoyi.system.domain.Entity.PlanContentsMappingEntity;
 import com.ruoyi.system.domain.Entity.PlanAuditEntity;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.utils.AlgorithmUtil;
 import com.ruoyi.system.domain.utils.GeometryUtil;
 import com.ruoyi.system.domain.vo.PlanVO;
 import com.ruoyi.system.mapper.*;
@@ -73,6 +74,9 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
 
     @Resource
     private ISysConfigService  sysConfigService;
+
+    @Resource
+    SysConfigMapper sysConfigMapper;
 
     @Override
     public PlanDTO audit(Long planId) {
@@ -275,34 +279,12 @@ public class PlanAuditServiceImpl extends ServiceImpl<PlanAuditMapper, PlanAudit
         bizPlanPrePointDto.setEndPointId(planAreaDTO.getEndTraversePointId());
         bizPlanPrePointDto.setStartMeter(Double.valueOf(planAreaDTO.getStartDistance()));
         bizPlanPrePointDto.setEndMeter(Double.valueOf(planAreaDTO.getEndDistance()));
-        String startPointCoordinate = obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
-                planAreaDTO.getStartTraversePointId(), planAreaDTO.getStartDistance());
-        String endPointCoordinate = obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
-                planAreaDTO.getEndTraversePointId(), planAreaDTO.getEndDistance());
+        String startPointCoordinate = AlgorithmUtil.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+                planAreaDTO.getStartTraversePointId(), planAreaDTO.getStartDistance(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
+        String endPointCoordinate = AlgorithmUtil.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+                planAreaDTO.getEndTraversePointId(), planAreaDTO.getEndDistance(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
         bizPlanPrePointDto.setStartPointCoordinate(startPointCoordinate);
         bizPlanPrePointDto.setEndPointCoordinate(endPointCoordinate);
         return bizPlanPrePointDto;
-    }
-
-    /**
-     * 根据导线点获取坐标
-     */
-    private String obtainCoordinate(Long workFaceId, Long tunnelId, Long pointId, String distance) {
-        String coordinate = "";
-        BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
-                .eq(BizTravePoint::getPointId, pointId));
-        String axisx = bizTravePoint.getAxisx();
-        String axisy = bizTravePoint.getAxisy();
-        BizTunnelBar bizTunnelBar = bizTunnelBarMapper.selectOne(new LambdaQueryWrapper<BizTunnelBar>()
-                .eq(BizTunnelBar::getWorkfaceId, workFaceId)
-                .eq(BizTunnelBar::getTunnelId, tunnelId)
-                .last("LIMIT 1"));
-        // 巷道走向
-        Double towardAngle = bizTunnelBar.getTowardAngle();
-        // 比例
-        String key = sysConfigService.selectConfigByKey("bili");
-        BigDecimal[] extendedPoint = GeometryUtil.getExtendedPoint(axisx, axisy, towardAngle, Double.parseDouble(distance), Double.parseDouble(key));
-        coordinate = extendedPoint[0] + "," + extendedPoint[1];
-        return coordinate;
     }
 }

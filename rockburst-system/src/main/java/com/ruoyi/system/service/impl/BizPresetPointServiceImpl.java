@@ -166,15 +166,15 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                 if(dto.getStartPointCoordinate() == null || dto.getEndPointCoordinate() == null){
                     continue;
                 }
-                String[] partsStartX = StringUtils.split(dto.getStartPointCoordinate(), ',');
-                String[] partsEndX = StringUtils.split(dto.getEndPointCoordinate(), ',');
+                String[] partsStart = StringUtils.split(dto.getStartPointCoordinate(), ',');
+                String[] partsEnd = StringUtils.split(dto.getEndPointCoordinate(), ',');
 
-                if (partsStartX.length == 0 || partsEndX.length == 0) {
+                if (partsStart.length == 0 || partsEnd.length == 0) {
                     continue;
                 }
 
-                double planStartXFmt = Double.parseDouble(partsStartX[0]); // 计划开始导线点 x坐标
-                double planEndXFmt = Double.parseDouble(partsEndX[0]); // 计划结束导线点 x坐标
+                double planStartXFmt = Double.parseDouble(partsStart[0]); // 计划开始导线点 x坐标
+                double planEndXFmt = Double.parseDouble(partsEnd[0]); // 计划结束导线点 x坐标
 
                 List<Long> dangerAreaIds = new ArrayList<>();
                 List<Long> dangerIds  = new ArrayList<>();
