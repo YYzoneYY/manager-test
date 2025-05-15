@@ -12,6 +12,9 @@ import java.util.*;
 
 public class GeometryUtil {
 
+
+    private static final MathContext MC = new MathContext(20, RoundingMode.HALF_UP);
+
     /**
      * 判断点 (x, y) 是否在四边形 (p1, p2, p3, p4) 内（顺/逆时针均可）
      *
@@ -248,6 +251,114 @@ public class GeometryUtil {
         BigDecimal dy = p1.getY().subtract(p2.getY());
         double dist = Math.sqrt(dx.pow(2).add(dy.pow(2)).doubleValue());
         return BigDecimal.valueOf(dist);
+    }
+
+
+    public static List<List<Point2D>> buildRegionsFromSortedSegments(List<Segment> sorted) {
+        List<List<Point2D>> quyus = new ArrayList<>();
+
+        for (int i = 0; i < sorted.size() - 1; i++) {
+            Segment s1 = sorted.get(i);
+            Segment s2 = sorted.get(i + 1);
+
+            // 构成一个四边形区域：顺时针或逆时针都可以
+            List<Point2D> region = new ArrayList<>();
+            region.add(s1.getStart());
+            region.add(s1.getEnd());
+            region.add(s2.getEnd());
+            region.add(s2.getStart());
+
+            quyus.add(region);
+        }
+
+        return quyus;
+    }
+
+
+    public static List<Segment> findNearRectangleRegions(List<List<Point2D>> segments, Segment target) {
+        List<Segment> segmentList = new ArrayList<>();
+
+        for (List<Point2D> pts : segments) {
+            if (pts.size() >= 2) {
+                Segment s = new Segment(pts.get(0), pts.get(1), BigDecimal.ZERO);
+                segmentList.add(s);
+            }
+        }
+
+        segmentList.sort(Comparator.comparing(s -> GeometryUtil.segmentToSegmentDistance(s, target)));
+
+        return segmentList;
+    }
+
+    public static BigDecimal pointToSegmentDistance(Point2D p, Segment s) {
+        BigDecimal x = p.getX();
+        BigDecimal y = p.getY();
+        BigDecimal x1 = s.getStart().getX();
+        BigDecimal y1 = s.getStart().getY();
+        BigDecimal x2 = s.getEnd().getX();
+        BigDecimal y2 = s.getEnd().getY();
+
+        BigDecimal dx = x2.subtract(x1, MC);
+        BigDecimal dy = y2.subtract(y1, MC);
+
+        if (dx.compareTo(BigDecimal.ZERO) == 0 && dy.compareTo(BigDecimal.ZERO) == 0) {
+            return sqrt(x.subtract(x1).pow(2).add(y.subtract(y1).pow(2)), MC);
+        }
+
+        BigDecimal tNumerator = (x.subtract(x1).multiply(dx)).add((y.subtract(y1).multiply(dy)));
+        BigDecimal tDenominator = dx.pow(2).add(dy.pow(2));
+
+        BigDecimal t = tNumerator.divide(tDenominator, MC);
+        t = t.max(BigDecimal.ZERO).min(BigDecimal.ONE);
+
+        BigDecimal projX = x1.add(t.multiply(dx));
+        BigDecimal projY = y1.add(t.multiply(dy));
+
+        return sqrt(x.subtract(projX).pow(2).add(y.subtract(projY).pow(2)), MC);
+    }
+
+    public static BigDecimal segmentToSegmentDistance(Segment s1, Segment s2) {
+        BigDecimal d1 = pointToSegmentDistance(s1.getStart(), s2);
+        BigDecimal d2 = pointToSegmentDistance(s1.getEnd(), s2);
+        BigDecimal d3 = pointToSegmentDistance(s2.getStart(), s1);
+        BigDecimal d4 = pointToSegmentDistance(s2.getEnd(), s1);
+        return d1.min(d2).min(d3).min(d4);
+    }
+
+    private static BigDecimal sqrt(BigDecimal value, MathContext mc) {
+        BigDecimal x = new BigDecimal(Math.sqrt(value.doubleValue()), mc);
+        return x.add(new BigDecimal(value.subtract(x.multiply(x, mc), mc).doubleValue() / (x.doubleValue() * 2.0), mc));
+    }
+
+
+
+    /**
+         * 从 List<BigDecimal[]> 创建线段，并返回长度最短的两条
+         * @param bigDecimals 共4个元素，每个元素是长度为2的数组 [x, y]
+         * @return 最长的两个 Segment（降序排列）
+         */
+    public static Segment findShortestTwoSegments(List<BigDecimal[]> bigDecimals) {
+        if (bigDecimals == null || bigDecimals.size() != 4) {
+            throw new IllegalArgumentException("必须传入恰好4个 BigDecimal[] 点，每个数组长度为2");
+        }
+
+        List<Segment> segments = new ArrayList<>();
+
+        for (int i = 0; i < 4; i++) {
+            BigDecimal[] coords1 = bigDecimals.get(i);
+            BigDecimal[] coords2 = bigDecimals.get((i + 1) % 4);
+
+            Point2D start = new Point2D(coords1[0], coords1[1]);
+            Point2D end = new Point2D(coords2[0], coords2[1]);
+            BigDecimal interval = calculateDistance(coords1, coords2);
+
+            segments.add(new Segment(start, end, interval));
+        }
+
+        // 按照 interval 降序排序
+        segments.sort((s1, s2) -> s2.getInterval().compareTo(s1.getInterval()));
+
+        return segments.get(3);
     }
 
     /**

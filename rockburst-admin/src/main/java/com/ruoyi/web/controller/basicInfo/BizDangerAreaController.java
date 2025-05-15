@@ -16,14 +16,14 @@ import com.ruoyi.system.constant.MapConfigConstant;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizDangerAreaDto;
-import com.ruoyi.system.domain.utils.GeometryUtil;
-import com.ruoyi.system.domain.utils.RectangleRegionFinder;
+import com.ruoyi.system.domain.utils.*;
 import com.ruoyi.system.domain.vo.BizDangerAreaVo;
 import com.ruoyi.system.mapper.BizTunnelBarMapper;
 import com.ruoyi.system.mapper.BizWorkfaceMapper;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -205,6 +205,9 @@ public class BizDangerAreaController extends BaseController
         }
 
         List<TunnelEntity> tunnelEntities = tunnelService.list();
+        if(tunnelEntities == null || tunnelEntities.size() == 0){
+            return R.ok();
+        }
 
         for (TunnelEntity tunnelEntity : tunnelEntities) {
             QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
@@ -213,6 +216,20 @@ public class BizDangerAreaController extends BaseController
             if(bars == null || bars.size() == 0){
                 continue;
             }
+            List<List<Point2D>> lines = new ArrayList<>();
+            for (BizTunnelBar bar : bars) {
+                List<Point2D> line = new ArrayList<>();
+                Point2D start = new Point2D();
+                start.setX(new BigDecimal(bar.getStartx()));
+                start.setY(new BigDecimal(bar.getStarty()));
+                Point2D end = new Point2D();
+                end.setX(new BigDecimal(bar.getEndx()));
+                end.setY(new BigDecimal(bar.getEndy()));
+                line.add(start);
+                line.add(end);
+                lines.add(line);
+            }
+            List<List<Point2D>> barPoints = new ArrayList<>();
             List<List<Point2D>> list = new ArrayList<>();
             for (Segment segment : pointList) {
                 List<Point2D> point2DS = new ArrayList<>();
@@ -230,7 +247,12 @@ public class BizDangerAreaController extends BaseController
                     list.add(point2DS);
                 }
             }
-            List<List<Point2D>> quyus = RectangleRegionFinder.findRectangleRegions(list);
+            List<BigDecimal[]> bigDecimals = getSegments(bars);
+            Segment segment = GeometryUtil.findShortestTwoSegments(bigDecimals);
+
+            List<Segment> sorted = GeometryUtil.findNearRectangleRegions(list, segment);
+
+            List<List<Point2D>> quyus = GeometryUtil.buildRegionsFromSortedSegments(sorted);
 
             for (List<Point2D> quyu : quyus) {
                 if(quyu == null || quyu.size() == 0){
@@ -258,11 +280,8 @@ public class BizDangerAreaController extends BaseController
                         .setFscbEndy(fscb2.getY()+"");
                 BizDangerAreaDto dto = new BizDangerAreaDto();
                 BeanUtils.copyProperties(area,dto);
-
-
                 areas.add(area);
 
-//                bizDangerAreaService.insertEntity(dto);
             }
         }
 
@@ -281,19 +300,35 @@ public class BizDangerAreaController extends BaseController
 
         List<BizDangerArea> areasources = bizDangerAreaService.list(new QueryWrapper<>());
 
-        List<BizDangerArea> instes = new ArrayList<>();
-        for (BizDangerArea area : areas) {
-            List<String> sdsd =  getsssssss(area);
+        List<BizDangerArea> instes = DeepCopyUtil.deepCopyList(areas);
+
+        Iterator<BizDangerArea> it = instes.iterator();
+        while (it.hasNext()) {
+            BizDangerArea insteArea = it.next();
+            List<String> sdsd = getsssssss(insteArea);
             for (BizDangerArea areasource : areasources) {
                 List<String> sdd = getsssssss(areasource);
-                boolean isEqual = new HashSet<>(sdsd).equals(new HashSet<>(sdd));
-                if(isEqual){
-                    instes.add(areasource);
-                    continue;
+                if (new HashSet<>(sdsd).equals(new HashSet<>(sdd))) {
+                    it.remove();
+                    break; // 避免多次删除
                 }
             }
         }
-        areas.removeAll(instes);
+
+//        List<BizDangerArea> instes = DeepCopyUtil.deepCopyList(areas);
+//        for (BizDangerArea area : areas) {
+//            List<String> sdsd =  getsssssss(area);
+//            for (BizDangerArea areasource : areasources) {
+//                List<String> sdd = getsssssss(areasource);
+//                boolean isEqual = new HashSet<>(sdsd).equals(new HashSet<>(sdd));
+//                if(isEqual){
+//                    boolean s =  instes.remove(area);
+//                    System.out.println("s = " + s);
+//
+//                }
+//            }
+//        }
+        areas = instes;
         for (BizDangerArea area : areas) {
             BizDangerAreaDto ssss = new BizDangerAreaDto();
             BeanUtils.copyProperties(area,ssss);
@@ -302,6 +337,30 @@ public class BizDangerAreaController extends BaseController
         return R.ok();
     }
 
+
+
+    /**
+     * 从 List<BigDecimal[]> 创建线段，并返回长度最短的两条
+     * @param bigDecimals 共4个元素，每个元素是长度为2的数组 [x, y]
+     * @return 最长的两个 Segment（降序排列）
+     */
+    public static List<BigDecimal[]> getSegments(List<BizTunnelBar> bars) {
+        List<BigDecimal[]> segments = new ArrayList<>();
+        for (BizTunnelBar bar : bars) {
+            BigDecimal[] sge = new BigDecimal[2];
+            sge[0] = new BigDecimal(bar.getStartx());
+            sge[1] = new BigDecimal(bar.getStarty());
+
+            BigDecimal[] sger = new BigDecimal[2];
+            sger[0] = new BigDecimal(bar.getEndx());
+            sger[1] = new BigDecimal(bar.getEndy());
+
+            segments.add(sge);
+            segments.add(sger);
+        }
+        return segments;
+
+    }
     public  List<String> getsssssss(BizDangerArea area){
         List<String> sssssss = new ArrayList<>();
         sssssss.add(area.getFscbStartx());

@@ -163,14 +163,14 @@ public class TunnelController {
             List<String> sdsd =  getsssssss(area);
             for (BizDangerArea areasource : areasources) {
                 List<String> sdd = getsssssss(areasource);
-                boolean isEqual = new HashSet<>(sdsd).equals(new HashSet<>(sdd));
+                boolean isEqual = new HashSet<>(sdsd).equals(new HashSet<>(sdd)) ;
                 if(isEqual){
                     instes.add(areasource);
                     continue;
                 }
             }
         }
-        areas.remove(instes);
+        areas.removeAll(instes);
         for (BizDangerArea area : areas) {
             BizDangerAreaDto ssss = new BizDangerAreaDto();
             BeanUtils.copyProperties(area,ssss);
@@ -178,6 +178,8 @@ public class TunnelController {
         }
         return R.ok();
     }
+
+
     public  List<String> getsssssss(BizDangerArea area){
         List<String> sssssss = new ArrayList<>();
         sssssss.add(area.getFscbStartx());

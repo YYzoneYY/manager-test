@@ -18,6 +18,11 @@ public class Segment {
     public Segment() {
     }
 
+    public Segment(Point2D end, Point2D start) {
+        this.end = end;
+        this.start = start;
+    }
+
     public Segment(Point2D start, Point2D end, BigDecimal interval) {
         this.start = start;
         this.end = end;

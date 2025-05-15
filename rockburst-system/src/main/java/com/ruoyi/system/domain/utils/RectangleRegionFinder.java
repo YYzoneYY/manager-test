@@ -4,10 +4,7 @@ import com.ruoyi.system.domain.Point2D;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class RectangleRegionFinder {
 
@@ -43,6 +40,71 @@ public class RectangleRegionFinder {
         BigDecimal projY = y1.add(dy.multiply(t));
         return x.subtract(projX).pow(2).add(y.subtract(projY).pow(2)).sqrt(new MathContext(20));
     }
+
+    /**
+     * 主函数：输入线段列表，输出每条线段与相邻线段组成的矩形
+     */
+    public static List<List<Point2D>> findNearRectangleRegions(List<List<Point2D>> segments,List<List<Point2D>> linePoints) {
+        if (segments == null || segments.size() == 0) {
+            return null;
+        }
+
+        List<List<Point2D>> rectangles = new ArrayList<>();
+
+        for (int i = 0; i < segments.size(); i++) {
+            List<Point2D> segA = segments.get(i);
+            if (segA == null || segA.size() != 2) {
+                continue;
+            }
+
+            // 找出与 segA 最近的两条线段
+            List<SegmentDistance> distances = new ArrayList<>();
+
+            for (int j = 0; j < segments.size(); j++) {
+                if (i == j) continue;
+                List<Point2D> segB = segments.get(j);
+                if (segB == null || segB.size() != 2) {
+                    continue;
+                }
+
+                BigDecimal dist = segmentDistance(segA, segB);
+                distances.add(new SegmentDistance(segB, dist));
+            }
+
+            // 排序，取前两条最短距离的线段
+            distances.sort(Comparator.comparing(sd -> sd.distance));
+            int limit = Math.min(2, distances.size());
+
+            for (int k = 0; k < limit; k++) {
+                List<Point2D> segB = distances.get(k).segment;
+
+                // 构造矩形（保持顺序）
+                List<Point2D> rectangle = new ArrayList<>();
+                rectangle.add(segA.get(0));
+                rectangle.add(segA.get(1));
+                rectangle.add(segB.get(1));
+                rectangle.add(segB.get(0));
+
+                rectangles.add(rectangle);
+            }
+        }
+
+        return rectangles;
+    }
+
+    // 辅助类：线段和距离的组合
+    static class SegmentDistance {
+        List<Point2D> segment;
+        BigDecimal distance;
+
+        SegmentDistance(List<Point2D> segment, BigDecimal distance) {
+            this.segment = segment;
+            this.distance = distance;
+        }
+    }
+
+
+
 
     /**
      * 主函数：输入线段列表，输出每条线段与最近线段组成的矩形
