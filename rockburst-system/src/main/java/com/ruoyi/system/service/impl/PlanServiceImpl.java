@@ -101,6 +101,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     @Resource
     private SysFileInfoMapper sysFileInfoMapper;
 
+    @Resource
+    private BizTunnelBarMapper bizTunnelBarMapper;
+
 
 
 
@@ -775,7 +778,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     private void importCheckArea(String type, PlanAreaDTO planAreaDTO, List<PlanAreaEntity> planAreaEntities) {
         planAreaEntities.forEach(planAreaEntity -> {
             try {
-                AreaAlgorithmUtils.areaCheck(type, planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
+                AreaAlgorithmUtils.areaCheckNew(planAreaDTO, planAreaEntities, bizTravePointMapper,  bizTunnelBarMapper);
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage());
             }
@@ -789,7 +792,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         planAreaDTOS.forEach(planAreaDTO -> {
             planAreaEntities.forEach(planAreaEntity -> {
                 try {
-                    AreaAlgorithmUtils.areaCheck(type, planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
+                    AreaAlgorithmUtils.areaCheckNew(planAreaDTO, planAreaEntities, bizTravePointMapper,  bizTunnelBarMapper);
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage());
                 }
@@ -914,13 +917,11 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             }
             List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(queryWrapper);
             if (ListUtils.isNotNull(planAreaEntities)) {
-                planAreaEntities.forEach(planAreaEntity -> {
-                    try {
-                        AreaAlgorithmUtils.areaCheck(type, planAreaDTO, planAreaEntity, planAreaEntities, planAreaMapper, bizTravePointMapper);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e.getMessage());
-                    }
-                });
+                try {
+                    AreaAlgorithmUtils.areaCheckNew(planAreaDTO, planAreaEntities, bizTravePointMapper,  bizTunnelBarMapper);
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getMessage());
+                }
             }
         });
     }

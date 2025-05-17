@@ -7,15 +7,21 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.BizTravePoint;
+import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.Entity.PlanAreaEntity;
 import com.ruoyi.system.domain.dto.AreaDTO;
+import com.ruoyi.system.domain.dto.Coordinate.AxisPoint;
+import com.ruoyi.system.domain.dto.Coordinate.Coordinate;
 import com.ruoyi.system.domain.dto.PlanAreaDTO;
 import com.ruoyi.system.domain.dto.TraversePointGatherDTO;
 import com.ruoyi.system.mapper.BizTravePointMapper;
+import com.ruoyi.system.mapper.BizTunnelBarMapper;
 import com.ruoyi.system.mapper.PlanAreaMapper;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -61,10 +67,80 @@ public class AreaAlgorithmUtils {
     }
 
 
-    public static void areaCheckNew(String type, PlanAreaDTO planAreaDTO, PlanAreaEntity planAreaEntity,
-                                 List<PlanAreaEntity> planAreaEntities, PlanAreaMapper planAreaMapper, BizTravePointMapper bizTravePointMapper) {
+    public static void areaCheckNew(PlanAreaDTO planAreaDTO, List<PlanAreaEntity> planAreaEntities,
+                                    BizTravePointMapper bizTravePointMapper, BizTunnelBarMapper bizTunnelBarMapper) {
         // 校验距离
         checkDistance(planAreaDTO.getTunnelId(), planAreaDTO, bizTravePointMapper);
+
+        String[] currentStart =StringUtils.split(planAreaDTO.getStartPointCoordinate(), ',');
+        String[] currentEnd =StringUtils.split(planAreaDTO.getEndPointCoordinate(), ',');
+
+        if (currentStart.length < 2 || currentEnd.length < 2) {
+            throw new IllegalArgumentException("起始或结束坐标格式错误");
+        }
+
+        // 获取生产邦和非生产邦 开始点和结束点 组成的线段数据
+        BizTunnelBar scbTunnelBar = getTunnelBar(bizTunnelBarMapper, planAreaDTO, "scb");
+        BizTunnelBar fscbTunnelBar = getTunnelBar(bizTunnelBarMapper, planAreaDTO, "fscb");
+
+        // 生产邦线段坐标
+        String scbStartX = scbTunnelBar.getStartx();
+        String scbStartY = scbTunnelBar.getStarty();
+        String scbEndX = scbTunnelBar.getEndx();
+        String scbEndY = scbTunnelBar.getEndy();
+
+        // 非生产邦线段坐标
+        String fscbStartX = fscbTunnelBar.getStartx();
+        String fscbStartY = fscbTunnelBar.getStarty();
+        String fscbEndX = fscbTunnelBar.getEndx();
+        String fscbEndY = fscbTunnelBar.getEndy();
+
+        // 主计划区域在两个线段上的投影
+        BigDecimal[] scbProjectionStart = GeometryUtil.getClosestPointOnSegment(currentStart[0], currentStart[1], scbStartX, scbStartY, scbEndX, scbEndY);
+        BigDecimal[] scbProjectionEnd = GeometryUtil.getClosestPointOnSegment(currentEnd[0], currentEnd[1], scbStartX, scbStartY, scbEndX, scbEndY);
+        BigDecimal[] fscbProjectionStart = GeometryUtil.getClosestPointOnSegment(currentStart[0], currentStart[1], fscbStartX, fscbStartY, fscbEndX, fscbEndY);
+        BigDecimal[] fscbProjectionEnd = GeometryUtil.getClosestPointOnSegment(currentEnd[0], currentEnd[1], fscbStartX, fscbStartY, fscbEndX, fscbEndY);
+
+
+        Coordinate mainRegion = new Coordinate(scbProjectionStart[0].doubleValue(), scbProjectionStart[1].doubleValue(),
+                scbProjectionEnd[0].doubleValue(), scbProjectionEnd[1].doubleValue(),
+                fscbProjectionStart[0].doubleValue(), fscbProjectionStart[1].doubleValue(),
+                fscbProjectionEnd[0].doubleValue(), fscbProjectionEnd[1].doubleValue());
+
+        List<Coordinate> coordinates = new ArrayList<>();
+
+        for (PlanAreaEntity areaEntity : planAreaEntities) {
+            String[] startSplit = StringUtils.split(areaEntity.getStartPointCoordinate(), ',');
+            String[] endSplit = StringUtils.split(areaEntity.getEndPointCoordinate(), ',');
+            if (startSplit.length < 2 || endSplit.length < 2) {
+                throw new IllegalArgumentException("实体坐标格式错误");
+            }
+            // 转换为 开始、结束点 落到生产邦、非生产邦上的坐标
+            BigDecimal[] scbStartPoint = GeometryUtil.getClosestPointOnSegment(startSplit[0], startSplit[1], scbStartX, scbStartY, scbEndX, scbEndY);
+            BigDecimal[] scbEndPoint = GeometryUtil.getClosestPointOnSegment(endSplit[0], endSplit[1], scbStartX, scbStartY, scbEndX, scbEndY);
+
+            BigDecimal[] fscbStartPoint = GeometryUtil.getClosestPointOnSegment(startSplit[0], startSplit[1], fscbStartX, fscbStartY, fscbEndX, fscbEndY);
+            BigDecimal[] fscbEndPoint = GeometryUtil.getClosestPointOnSegment(endSplit[0], endSplit[1], fscbStartX, fscbStartY, fscbEndX, fscbEndY);
+
+            Coordinate coordinate = new Coordinate(scbStartPoint[0].doubleValue(), scbStartPoint[1].doubleValue(),
+                    scbEndPoint[0].doubleValue(), scbEndPoint[1].doubleValue(),
+                    fscbStartPoint[0].doubleValue(), fscbStartPoint[1].doubleValue(),
+                    fscbEndPoint[0].doubleValue(), fscbEndPoint[1].doubleValue());
+            coordinates.add(coordinate);
+        }
+
+        List<AxisPoint> mainPoly = mainRegion.toPointList();
+        for (Coordinate coord : coordinates) {
+            List<AxisPoint> poly = coord.toPointList();
+            // 判断包含、被包含、边相交三种情况
+            if (AlgorithmUtils.polygonContainsPolygon(mainPoly, poly)) {
+                throw new AreaAlgorithmUtils.AreaAlgorithmException(OVERLAP_ERROR); // 输入计划区域内包含了其他计划区域
+            } else if (AlgorithmUtils.polygonContainsPolygon(poly, mainPoly)) {
+                throw new AreaAlgorithmUtils.AreaAlgorithmException(OVERLAP_ERROR); // 输入计划区域被其他计划区域包含
+            } else if (AlgorithmUtils.polygonsIntersect(mainPoly, poly)) {
+                throw new AreaAlgorithmUtils.AreaAlgorithmException(OVERLAP_ERROR); // 输入计划区域与其他计划区域相交
+            }
+        }
     }
 
     /**
@@ -675,5 +751,20 @@ public class AreaAlgorithmUtils {
                 throw new AreaAlgorithmUtils.AreaAlgorithmException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
             }
         }
+    }
+
+
+
+    // 封装隧道条查询方法
+    private static BizTunnelBar getTunnelBar(BizTunnelBarMapper mapper, PlanAreaDTO dto, String type) {
+        BizTunnelBar bar = mapper.selectOne(new LambdaQueryWrapper<BizTunnelBar>()
+                .eq(BizTunnelBar::getWorkfaceId, dto.getWorkFaceId())
+                .eq(BizTunnelBar::getTunnelId, dto.getTunnelId())
+                .eq(BizTunnelBar::getType, type)
+                .eq(BizTunnelBar::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (bar == null) {
+            throw new IllegalArgumentException("未找到类型为 [" + type + "] 的隧道条数据");
+        }
+        return bar;
     }
 }

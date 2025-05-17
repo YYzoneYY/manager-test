@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.system.domain.BizTravePoint;
 import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.SysConfig;
+import com.ruoyi.system.domain.dto.Coordinate.AxisPoint;
 import com.ruoyi.system.domain.dto.CoordinatePointDTO;
 import com.ruoyi.system.mapper.BizTravePointMapper;
 import com.ruoyi.system.mapper.BizTunnelBarMapper;
@@ -50,7 +51,7 @@ public class AlgorithmUtils {
         return coordinate;
     }
 
-    /**
+     /**
      * 判断目标点是否在由给定的一组无序点所构成的多边形内部
      * @param polygonPoints 多边形顶点（无序）
      * @param targetPoint 要判断的目标点
@@ -72,6 +73,61 @@ public class AlgorithmUtils {
 
         return isInsidePolygon(sortedPoints, targetPoint);
     }
+
+    /**
+     * 判断一个点是否在多边形内部（射线法）
+     */
+    public static boolean isPointInPolygon(AxisPoint p, List<AxisPoint> polygon) {
+        int count = 0;
+        for (int i = 0; i < polygon.size(); i++) {
+            AxisPoint a = polygon.get(i);
+            AxisPoint b = polygon.get((i + 1) % polygon.size());
+            if (rayIntersectsSegment(p, a, b)) {
+                count++;
+            }
+        }
+        return count % 2 == 1;
+    }
+
+
+    /**
+     * 判断两条线段是否相交
+     */
+    public static boolean segmentsIntersect(AxisPoint a1, AxisPoint a2, AxisPoint b1, AxisPoint b2) {
+        return ccw(a1, b1, b2) != ccw(a2, b1, b2) &&
+                ccw(a1, a2, b1) != ccw(a1, a2, b2);
+    }
+
+    /**
+     * 判断两个多边形是否存在边相交
+     */
+    public static boolean polygonsIntersect(List<AxisPoint> poly1, List<AxisPoint> poly2) {
+        for (int i = 0; i < poly1.size(); i++) {
+            AxisPoint a1 = poly1.get(i);
+            AxisPoint a2 = poly1.get((i + 1) % poly1.size());
+            for (int j = 0; j < poly2.size(); j++) {
+                AxisPoint b1 = poly2.get(j);
+                AxisPoint b2 = poly2.get((j + 1) % poly2.size());
+                if (segmentsIntersect(a1, a2, b1, b2)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断 polygon outer 是否完全包含 polygon inner
+     */
+    public static boolean polygonContainsPolygon(List<AxisPoint> outer, List<AxisPoint> inner) {
+        for (AxisPoint p : inner) {
+            if (!isPointInPolygon(p, outer)) return false;
+        }
+        return true;
+    }
+
+
+
 
     /**
      * 按极角排序，构造闭合多边形轮廓
@@ -139,4 +195,27 @@ public class AlgorithmUtils {
         return p.x < redX;
     }
 
+
+    /**
+     *  射线法核心：判断点 p 是否穿过线段 ab
+     */
+    private static boolean rayIntersectsSegment(AxisPoint p, AxisPoint a, AxisPoint b) {
+        if (a.y > b.y) {
+            AxisPoint temp = a; a = b; b = temp;
+        }
+        if (p.y == a.y || p.y == b.y) p.y += 1e-10;
+        if (p.y < a.y || p.y > b.y) return false;
+        if (p.x >= Math.max(a.x, b.x)) return false;
+        if (p.x < Math.min(a.x, b.x)) return true;
+
+        double xinters = (p.y - a.y) * (b.x - a.x) / (b.y - a.y) + a.x;
+        return p.x < xinters;
+    }
+
+    /**
+     * 计算点的相对方向，判断是否构成逆时针
+     */
+    private static boolean ccw(AxisPoint a, AxisPoint b, AxisPoint c) {
+        return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
+    }
 }
