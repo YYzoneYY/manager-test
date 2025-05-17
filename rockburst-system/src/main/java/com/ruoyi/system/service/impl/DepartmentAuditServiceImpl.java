@@ -25,6 +25,7 @@ import com.ruoyi.system.domain.dto.DepartAuditHistoryDTO;
 import com.ruoyi.system.domain.dto.SelectDeptAuditDTO;
 import com.ruoyi.system.domain.dto.SelectProjectDTO;
 import com.ruoyi.system.domain.dto.project.DepartmentAuditDTO;
+import com.ruoyi.system.domain.utils.DrillSpacingWarnUtil;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.ProjectVO;
 import com.ruoyi.system.mapper.*;
@@ -74,6 +75,19 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
 
     @Resource
     private SysUserMapper sysUserMapper;
+
+    @Resource
+    private BizDangerAreaMapper bizDangerAreaMapper;
+    @Resource
+    BizTunnelBarMapper bizTunnelBarMapper;
+    @Resource
+    BizTravePointMapper bizTravePointMapper;
+    @Resource
+    CacheDataMapper cacheDataMapper;
+    @Resource
+    BizDangerLevelMapper bizDangerLevelMapper;
+    @Resource
+    SysConfigMapper sysConfigMapper;
 
     /**
      * 点击审核按钮
@@ -169,6 +183,10 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
             int b = bizProjectRecordMapper.updateById(projectRecord);
             if (t <= 0 || b <= 0) {
                 throw new DepartmentAuditException("审核失败,请联系管理员");
+            } else {
+                String logic = DrillSpacingWarnUtil.warningLogic(departAuditDTO.getProjectId(), bizProjectRecordMapper,
+                        bizDangerAreaMapper, bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper,
+                        cacheDataMapper, bizDangerLevelMapper, sysDictDataMapper);
             }
         }
         return flag;
