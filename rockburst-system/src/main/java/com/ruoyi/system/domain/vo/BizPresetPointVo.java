@@ -33,6 +33,10 @@ public class BizPresetPointVo extends BaseSelfEntity
     @ApiModelProperty(value = "巷道")
     private Long tunnelId;
 
+
+    @ApiModelProperty(value = "组")
+    private String axiss;
+
     @ApiModelProperty(value = "帮")
     private Long tunnelBarId;
 

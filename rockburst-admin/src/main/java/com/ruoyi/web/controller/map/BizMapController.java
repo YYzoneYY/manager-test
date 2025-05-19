@@ -380,7 +380,7 @@ public class BizMapController extends BaseController
         // 查询迎头钻孔
         QueryWrapper<BizPresetPoint> queryWrapperProYt = new QueryWrapper<>();
         queryWrapperProYt.lambda()
-                .isNotNull( BizPresetPoint::getCrosLatlngs)
+                .isNotNull( BizPresetPoint::getAxiss)
                 .eq( StrUtil.isNotEmpty(drillType), BizPresetPoint::getDrillType,drillType )
                 .eq(workfaceId != null, BizPresetPoint::getWorkfaceId,workfaceId)
                 .isNotNull(BizPresetPoint::getProjectId)
