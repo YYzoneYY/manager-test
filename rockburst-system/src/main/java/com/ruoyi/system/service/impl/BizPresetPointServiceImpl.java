@@ -377,19 +377,19 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
 
     @Override
     public int savebarPresetPoint(BizPresetPoint dto) {
-        BizTravePoint point11 =  bizTravePointMapper.selectById(dto.getPointId());
-        //先存生产帮,再存非生产帮
-        QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(BizTunnelBar::getTunnelId, point11.getTunnelId());
-        List<BizTunnelBar> tunnelBars = bizTunnelBarMapper.selectList(queryWrapper);
-        for (BizTunnelBar tunnelBar : tunnelBars) {
-            BizPresetPoint point = sssss(tunnelBar.getDirectRangePre(),tunnelBar.getDirectAngle(),dto);
-            point.setTunnelBarId(tunnelBar.getBarId());
-            point.setDrillType(dto.getDrillType());
-            point.setWorkfaceId(tunnelBar.getWorkfaceId());
-            point.setPresetPointId(null);
-            this.save(point);
-        }
+//        BizTravePoint point11 =  bizTravePointMapper.selectById(dto.getPointId());
+//        //先存生产帮,再存非生产帮
+//        QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.lambda().eq(BizTunnelBar::getTunnelId, point11.getTunnelId());
+//        List<BizTunnelBar> tunnelBars = bizTunnelBarMapper.selectList(queryWrapper);
+//        for (BizTunnelBar tunnelBar : tunnelBars) {
+//            BizPresetPoint point = sssss(tunnelBar.getDirectRangePre(),tunnelBar.getDirectAngle(),dto);
+//            point.setTunnelBarId(tunnelBar.getBarId());
+//            point.setDrillType(dto.getDrillType());
+//            point.setWorkfaceId(tunnelBar.getWorkfaceId());
+//            point.setPresetPointId(null);
+//            this.save(point);
+//        }
         return 0;
     }
 

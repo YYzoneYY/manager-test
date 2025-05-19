@@ -2,6 +2,9 @@ package com.ruoyi.web.controller.system;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.system.domain.dto.SysConfigDto;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -74,6 +77,19 @@ public class SysConfigController extends BaseController
     {
         return success(configService.selectConfigByKey(configKey));
     }
+
+    /**
+     * 根据参数键名查询参数值
+     */
+    @PostMapping("/updateByConfigKey")
+    public AjaxResult updateByConfigKey(@Validated @RequestBody SysConfigDto dto)
+    {
+        SysConfig sysConfig = new SysConfig();
+        BeanUtils.copyProperties(dto, sysConfig);
+        configService.updateByConfigKey(sysConfig);
+        return success();
+    }
+
 
     /**
      * 新增参数配置

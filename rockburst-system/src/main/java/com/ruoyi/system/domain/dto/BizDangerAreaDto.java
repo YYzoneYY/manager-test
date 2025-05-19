@@ -97,7 +97,7 @@ public class BizDangerAreaDto
 
 
     @ApiModelProperty(value = "导线点集合")
-    private String pointlist;
+    private String pointList;
 
 
 

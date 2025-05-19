@@ -9,6 +9,7 @@ import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.utils.DeepCopyUtil;
 import com.ruoyi.system.domain.utils.GeometryUtil;
 import com.ruoyi.system.domain.utils.RectangleRegionFinder;
 import com.ruoyi.system.mapper.BizTunnelBarMapper;
@@ -27,10 +28,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author: shikai
@@ -123,7 +121,8 @@ public class TunnelController {
                         .setEndx(maxnear.getEnd().getX().toString())
                         .setEndy(maxnear.getEnd().getY().toString())
                         .setType("fscb")
-                        .setTunnelId(tunnelId);
+                        .setTunnelId(tunnelId)
+                        .setWorkfaceId(tunnelDTO.getWorkFaceId());
                 bizTunnelBarMapper.insert(bar);
             }
 
@@ -136,7 +135,8 @@ public class TunnelController {
                         .setEndx(minnear.getEnd().getX().toString())
                         .setEndy(minnear.getEnd().getY().toString())
                         .setType("scb")
-                        .setTunnelId(tunnelId);
+                        .setTunnelId(tunnelId)
+                        .setWorkfaceId(tunnelDTO.getWorkFaceId());
                 bizTunnelBarMapper.insert(bar);
             }
         }
@@ -158,23 +158,44 @@ public class TunnelController {
         }
         List<BizDangerArea> areasources = bizDangerAreaService.list(new QueryWrapper<>());
         List<BizDangerArea> areas = addcsssad1(segments);
-        List<BizDangerArea> instes = new ArrayList<>();
+
+
+        List<BizDangerArea> distinctAreas = new ArrayList<>();
+        Set<Set<String>> seen = new HashSet<>();
+
         for (BizDangerArea area : areas) {
-            List<String> sdsd =  getsssssss(area);
+            List<String> sdsd = getsssssss(area);
+            Set<String> aset = new HashSet<>(sdsd); // 转成 HashSet 去除顺序影响
+
+            if (seen.add(aset)) { // 如果未出现过，就加入
+                distinctAreas.add(area);
+            }
+        }
+        areas = distinctAreas;
+
+
+        List<BizDangerArea> instes = DeepCopyUtil.deepCopyList(areas);
+
+        Iterator<BizDangerArea> it = instes.iterator();
+        while (it.hasNext()) {
+            BizDangerArea insteArea = it.next();
+            List<String> sdsd = getsssssss(insteArea);
             for (BizDangerArea areasource : areasources) {
                 List<String> sdd = getsssssss(areasource);
-                boolean isEqual = new HashSet<>(sdsd).equals(new HashSet<>(sdd)) ;
-                if(isEqual){
-                    instes.add(areasource);
-                    continue;
+                if (new HashSet<>(sdsd).equals(new HashSet<>(sdd))) {
+                    it.remove();
+                    break; // 避免多次删除
                 }
             }
         }
-        areas.removeAll(instes);
+        areas = instes;
+
         for (BizDangerArea area : areas) {
             BizDangerAreaDto ssss = new BizDangerAreaDto();
             BeanUtils.copyProperties(area,ssss);
+
             bizDangerAreaService.insertEntity(ssss);
+
         }
         return R.ok();
     }
@@ -221,9 +242,15 @@ public class TunnelController {
                     list.add(point2DS);
                 }
             }
-            List<List<Point2D>> quyus = RectangleRegionFinder.findRectangleRegions(list);
+            List<BigDecimal[]> bigDecimals = getSegments(bars);
+            Segment segment = GeometryUtil.findShortestTwoSegments(bigDecimals);
+
+            List<Segment> sorted = GeometryUtil.findNearRectangleRegions(list, segment);
+
+            List<List<Point2D>> quyus = GeometryUtil.buildRegionsFromSortedSegments(sorted);
 
             for (List<Point2D> quyu : quyus) {
+
                 if(quyu == null || quyu.size() == 0){
                     continue;
                 }
@@ -240,6 +267,15 @@ public class TunnelController {
                 area.setScbEndx(scb2.getX()+"")
                         .setScbEndy(scb2.getY()+"");
 
+                BigDecimal dance1 = GeometryUtil.pointToSegmentDistance(scb1,segment.getStart(),segment.getEnd());
+                BigDecimal dance2 = GeometryUtil.pointToSegmentDistance(scb2,segment.getStart(),segment.getEnd());
+                if(dance1.compareTo(dance2) >=  0){
+                    area.setScbStartx(scb2.getX()+"")
+                            .setScbStarty(scb2.getY()+"");
+                    area.setScbEndx(scb1.getX()+"")
+                            .setScbEndy(scb1.getY()+"");
+                }
+
                 Point2D fscb1 = getfscb(quyu);
                 area.setFscbStartx(fscb1.getX()+"")
                         .setFscbStarty(fscb1.getY()+"");
@@ -247,15 +283,46 @@ public class TunnelController {
                 Point2D fscb2 = getfscb(quyu);
                 area.setFscbEndx(fscb2.getX()+"")
                         .setFscbEndy(fscb2.getY()+"");
+
+                dance1 = GeometryUtil.pointToSegmentDistance(fscb1,segment.getStart(),segment.getEnd());
+                dance2 = GeometryUtil.pointToSegmentDistance(fscb2,segment.getStart(),segment.getEnd());
+                if(dance1.compareTo(dance2) >=  0){
+                    area.setFscbStartx(fscb2.getX()+"")
+                            .setFscbStarty(fscb2.getY()+"");
+                    area.setFscbEndx(fscb1.getX()+"")
+                            .setFscbEndy(fscb1.getY()+"");
+                }
                 BizDangerAreaDto dto = new BizDangerAreaDto();
                 BeanUtils.copyProperties(area,dto);
                 areas.add(area);
-//                bizDangerAreaService.insertEntity(dto);
+
             }
         }
         return areas;
     }
 
+    /**
+     * 获取两条线段
+     * @param bars
+     * @return
+     */
+    public static List<BigDecimal[]> getSegments(List<BizTunnelBar> bars) {
+        List<BigDecimal[]> segments = new ArrayList<>();
+        for (BizTunnelBar bar : bars) {
+            BigDecimal[] sge = new BigDecimal[2];
+            sge[0] = new BigDecimal(bar.getStartx());
+            sge[1] = new BigDecimal(bar.getStarty());
+
+            BigDecimal[] sger = new BigDecimal[2];
+            sger[0] = new BigDecimal(bar.getEndx());
+            sger[1] = new BigDecimal(bar.getEndy());
+
+            segments.add(sge);
+            segments.add(sger);
+        }
+        return segments;
+
+    }
     public Point2D getscb(List<Point2D> pointList){
         for (Point2D point2D : pointList) {
             if (point2D.getBarType().equals("scb")) {

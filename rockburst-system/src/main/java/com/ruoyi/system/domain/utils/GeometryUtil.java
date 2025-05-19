@@ -220,7 +220,7 @@ public class GeometryUtil {
     /**
      * 计算点到线段的最短距离（平方计算后开根号）
      */
-    private static BigDecimal pointToSegmentDistance(Point2D p, Point2D a, Point2D b) {
+    public static BigDecimal pointToSegmentDistance(Point2D p, Point2D a, Point2D b) {
         BigDecimal dx = b.getX().subtract(a.getX());
         BigDecimal dy = b.getY().subtract(a.getY());
 
@@ -314,6 +314,13 @@ public class GeometryUtil {
         BigDecimal projX = x1.add(t.multiply(dx));
         BigDecimal projY = y1.add(t.multiply(dy));
 
+        System.out.println("projX = " + projX);
+        System.out.println("projY = " + projY);
+        BigDecimal ass = x.subtract(projX).pow(2).add(y.subtract(projY).pow(2));
+
+        if(ass.compareTo(BigDecimal.ZERO) == 0){
+            return BigDecimal.ZERO;
+        }
         return sqrt(x.subtract(projX).pow(2).add(y.subtract(projY).pow(2)), MC);
     }
 
@@ -326,7 +333,9 @@ public class GeometryUtil {
     }
 
     private static BigDecimal sqrt(BigDecimal value, MathContext mc) {
+
         BigDecimal x = new BigDecimal(Math.sqrt(value.doubleValue()), mc);
+//        System.out.println("x = " + x);
         return x.add(new BigDecimal(value.subtract(x.multiply(x, mc), mc).doubleValue() / (x.doubleValue() * 2.0), mc));
     }
 
@@ -390,12 +399,75 @@ public class GeometryUtil {
         return segments.subList(0, 2);
     }
 
+
+
     // 计算两点间距离
-    private static BigDecimal calculateDistance(BigDecimal[] p1, BigDecimal[] p2) {
+    public static BigDecimal calculateDistance(BigDecimal[] p1, BigDecimal[] p2) {
         BigDecimal dx = p1[0].subtract(p2[0]);
         BigDecimal dy = p1[1].subtract(p2[1]);
         double dist = Math.sqrt(dx.pow(2).add(dy.pow(2)).doubleValue());
         return BigDecimal.valueOf(dist);
+    }
+
+
+    /**
+     * 计算点m到直线ab的垂线方向与Y轴正方向夹角
+     * @param a1
+     * @param a2
+     * @param m
+     * @return
+     */
+    public static double angleWithYAxisOfPerpendicular(BigDecimal[] a1, BigDecimal[] a2, BigDecimal[] m) {
+        double x1 = a1[0].doubleValue(), y1 = a1[1].doubleValue();
+        double x2 = a2[0].doubleValue(), y2 = a2[1].doubleValue();
+        double x0 = m[0].doubleValue(), y0 = m[1].doubleValue();
+
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+
+        // 计算垂足 P 到 m 的方向向量
+        double len2 = dx * dx + dy * dy;
+        if (len2 == 0) {
+            // a1 == a2，线段退化成点
+            dx = x1 - x0;
+            dy = y1 - y0;
+        } else {
+            double t = ((x0 - x1) * dx + (y0 - y1) * dy) / len2;
+
+            double px = x1 + t * dx;
+            double py = y1 + t * dy;
+
+            dx = px - x0;
+            dy = py - y0;
+        }
+
+        // 求夹角：向量 (dx, dy) 与 y轴正方向 (0,1) 的夹角
+        double vlen = Math.sqrt(dx * dx + dy * dy);
+        if (vlen == 0) return 0.0; // 点在直线上，方向不确定，返回0°
+
+        double cosTheta = dy / vlen;
+        double thetaRad = Math.acos(cosTheta); // ∈ [0, π]
+        return Math.toDegrees(thetaRad);       // 返回角度 ∈ [0°, 180°]
+    }
+
+    /**
+     * n个点距离mn最近的点
+     * @param points
+     * @param mn
+     * @return
+     */
+    public static BigDecimal[] findNearestPoint(BigDecimal[][] points, BigDecimal[] mn) {
+        int nearestIndex = -1;
+        BigDecimal minDistance = null;
+
+        for (int i = 0; i < points.length; i++) {
+            BigDecimal distance = calculateDistance(points[i], mn);
+            if (minDistance == null || distance.compareTo(minDistance) < 0) {
+                minDistance = distance;
+                nearestIndex = i;
+            }
+        }
+        return points[nearestIndex]; // 返回最近点的索引
     }
 
     /**
@@ -422,6 +494,31 @@ public class GeometryUtil {
 
         return result;
     }
+
+    public static BigDecimal[] parsePoints(String input) {
+        if (input == null) {
+            throw new IllegalArgumentException("Input is null");
+        }
+
+        // 去掉中括号和多余空格
+        input = input.trim().replaceAll("[\\[\\]]", "");
+
+        // 拆分逗号
+        String[] parts = input.split(",");
+
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid input format: " + input);
+        }
+
+        try {
+            BigDecimal m = new BigDecimal(parts[0].trim());
+            BigDecimal n = new BigDecimal(parts[1].trim());
+            return new BigDecimal[]{m, n};
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid number in input: " + input, e);
+        }
+    }
+
 
     /**
      * 输入 "[m,n]"字符串 解析称 m n

@@ -1,6 +1,8 @@
 package com.ruoyi.web.controller.basicInfo;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSON;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.annotation.Anonymous;
@@ -260,6 +262,7 @@ public class BizDangerAreaController extends BaseController
                 }
                 Point2D center = GeometryUtil.getCenterPoint(quyu);
                 BizDangerArea area = new BizDangerArea();
+
                 area.setTunnelId(tunnelEntity.getTunnelId())
                                 .setWorkfaceId(tunnelEntity.getWorkFaceId());
                 area.setCenter(center.getX()+","+center.getY());
@@ -271,6 +274,15 @@ public class BizDangerAreaController extends BaseController
                 area.setScbEndx(scb2.getX()+"")
                         .setScbEndy(scb2.getY()+"");
 
+                BigDecimal dance1 = GeometryUtil.pointToSegmentDistance(scb1,segment.getStart(),segment.getEnd());
+                BigDecimal dance2 = GeometryUtil.pointToSegmentDistance(scb2,segment.getStart(),segment.getEnd());
+                if(dance1.compareTo(dance2) >=  0){
+                    area.setScbStartx(scb2.getX()+"")
+                            .setScbStarty(scb2.getY()+"");
+                    area.setScbEndx(scb1.getX()+"")
+                            .setScbEndy(scb1.getY()+"");
+                }
+
                 Point2D fscb1 = getfscb(quyu);
                 area.setFscbStartx(fscb1.getX()+"")
                         .setFscbStarty(fscb1.getY()+"");
@@ -278,6 +290,15 @@ public class BizDangerAreaController extends BaseController
                 Point2D fscb2 = getfscb(quyu);
                 area.setFscbEndx(fscb2.getX()+"")
                         .setFscbEndy(fscb2.getY()+"");
+
+                 dance1 = GeometryUtil.pointToSegmentDistance(fscb1,segment.getStart(),segment.getEnd());
+                 dance2 = GeometryUtil.pointToSegmentDistance(fscb2,segment.getStart(),segment.getEnd());
+                if(dance1.compareTo(dance2) >=  0){
+                    area.setFscbStartx(fscb2.getX()+"")
+                            .setFscbStarty(fscb2.getY()+"");
+                    area.setFscbEndx(fscb1.getX()+"")
+                            .setFscbEndy(fscb1.getY()+"");
+                }
                 BizDangerAreaDto dto = new BizDangerAreaDto();
                 BeanUtils.copyProperties(area,dto);
                 areas.add(area);
@@ -329,20 +350,45 @@ public class BizDangerAreaController extends BaseController
 //            }
 //        }
         areas = instes;
+        int n = 1 ;
         for (BizDangerArea area : areas) {
             BizDangerAreaDto ssss = new BizDangerAreaDto();
             BeanUtils.copyProperties(area,ssss);
+            TunnelEntity tunnel =  tunnelService.getById(area.getTunnelId());
+            area.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区");
             bizDangerAreaService.insertEntity(ssss);
+            n++;
         }
         return R.ok();
     }
-
 
 
     /**
      * 从 List<BigDecimal[]> 创建线段，并返回长度最短的两条
      * @param bigDecimals 共4个元素，每个元素是长度为2的数组 [x, y]
      * @return 最长的两个 Segment（降序排列）
+     */
+    public void toward() {
+        List<TunnelEntity> tunnelEntities = tunnelService.list();
+        if(tunnelEntities == null || tunnelEntities.size() == 0){
+            return;
+        }
+        for (TunnelEntity tunnelEntity : tunnelEntities) {
+            QueryWrapper<BizDangerArea> qw = new QueryWrapper<>();
+            qw.lambda().eq(BizDangerArea::getTunnelId,tunnelEntity.getTunnelId());
+            List<BizDangerArea> areas = bizDangerAreaService.list(qw);
+            for (BizDangerArea area : areas) {
+                area.getFscbStartx();
+            }
+        }
+
+    }
+
+
+    /**
+     * 获取两条线段
+     * @param bars
+     * @return
      */
     public static List<BigDecimal[]> getSegments(List<BizTunnelBar> bars) {
         List<BigDecimal[]> segments = new ArrayList<>();
@@ -463,7 +509,7 @@ public class BizDangerAreaController extends BaseController
                         .setWorkfaceId(workfaceId)
                         .setTunnelBarId(fsbbar.getBarId())
                         .setDrillType(drillType)
-                        .setAxiss(list.toString());
+                        .setAxiss(JSONUtil.toJsonStr(list));
                 bizPresetPointService.save(bp);
             }
 
@@ -486,7 +532,7 @@ public class BizDangerAreaController extends BaseController
                         .setWorkfaceId(workfaceId)
                         .setTunnelBarId(scbbar.getBarId())
                         .setDrillType(drillType)
-                        .setAxiss(list.toString());
+                        .setAxiss(JSONUtil.toJsonStr(list));
 
                 bizPresetPointService.save(bp);
             }

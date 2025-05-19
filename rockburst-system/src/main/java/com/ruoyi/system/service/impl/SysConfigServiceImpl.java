@@ -3,6 +3,8 @@ package com.ruoyi.system.service.impl;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.PostConstruct;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.annotation.DataSource;
@@ -146,6 +148,29 @@ public class SysConfigServiceImpl implements ISysConfigService
             redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
         }
         return row;
+    }
+
+    @Override
+    public int updateByConfigKey(SysConfig config) {
+        QueryWrapper<SysConfig> queryWrapper = new QueryWrapper<SysConfig>();
+        queryWrapper.lambda().eq(SysConfig::getConfigKey, config.getConfigKey());
+        List<SysConfig> temps = configMapper.selectList(queryWrapper);
+        if(temps != null && temps.size() > 0){
+            SysConfig temp = temps.get(0);
+            if (!StringUtils.equals(temp.getConfigKey(), config.getConfigKey()))
+            {
+                redisCache.deleteObject(getCacheKey(temp.getConfigKey()));
+            }
+            config.setConfigId(temp.getConfigId());
+            int row = configMapper.updateConfig(config);
+            if (row > 0)
+            {
+                redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+            }
+            return row;
+        }
+        return 0;
+
     }
 
     /**
