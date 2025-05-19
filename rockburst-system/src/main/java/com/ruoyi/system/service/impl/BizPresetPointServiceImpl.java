@@ -198,7 +198,7 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                             dangerAreaIds.add(bizDangerArea.getDangerAreaId());
                         }
                         // 查找危险区一部分在计划区域内的数据
-                        if (scbStartXFmt >= planStartXFmt && planEndXFmt < scbEndXFmt) {
+                        if (scbStartXFmt > planStartXFmt && scbStartXFmt < planEndXFmt) {
                             dangerIds.add(bizDangerArea.getDangerAreaId());
                         }
                         if (scbEndXFmt <= planEndXFmt && planStartXFmt > scbStartXFmt) {
