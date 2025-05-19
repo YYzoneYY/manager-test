@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.utils.ConstantsInfo;
@@ -15,6 +17,7 @@ import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizPlanPrePointDto;
 import com.ruoyi.system.domain.dto.BizPresetPointDto;
+import com.ruoyi.system.domain.dto.Coordinate.ConvertPoint;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.BizPlanPresetService;
 import com.ruoyi.system.service.IBizPresetPointService;
@@ -215,22 +218,32 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                                 .eq(BizPresetPoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
 
                         for (BizPresetPoint point : presetPoints) {
+                            double axisX = 0.0;
                             Long dangerAreaId = getMatchingDangerAreaId(point, dangerAreaIds, dangerIds, areaIds, specialDangerIds);
                             if (dangerAreaId == null) continue;
 
-                            double axisXFmt = Double.parseDouble(point.getAxisx());
+                            String axiss = point.getAxiss();
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            List<ConvertPoint> convertPoints = objectMapper.readValue(axiss, new TypeReference<List<ConvertPoint>>() {});
+                            if (!convertPoints.isEmpty()) {
+                                // 取坐标点位集合中第一个元素
+                                ConvertPoint firstPoint = convertPoints.get(0);
+                                axisX = firstPoint.x;
+                            }
+
+//                            double axisXFmt = Double.parseDouble(point.getAxisx());
                             if (dangerIds.contains(dangerAreaId)) {
-                                if (axisXFmt > planEndXFmt) {
+                                if (axisX > planEndXFmt) {
                                     continue;
                                 }
                             }
                             if (areaIds.contains(dangerAreaId)) {
-                                if (axisXFmt < planStartXFmt) {
+                                if (axisX < planStartXFmt) {
                                     continue;
                                 }
                             }
                             if (specialDangerIds.contains(dangerAreaId)) {
-                                if (axisXFmt > planStartXFmt && axisXFmt < planEndXFmt) {
+                                if (axisX > planStartXFmt && axisX < planEndXFmt) {
                                     continue;
                                 }
                             }
