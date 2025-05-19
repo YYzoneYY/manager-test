@@ -734,7 +734,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             //新版本,曲折一一对应
             if(point != null && point.getPointId() != null){
                 Long dangerAreaId = bizTravePointService.judgeXYInArea(bigDecimals[0].toString(),bigDecimals[1].toString(),dto.getTunnelId());
-                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
+//                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
 
                 presetPoint.setConstructTime(dto.getConstructTime())
                         .setDrillType(dto.getDrillType())
@@ -995,7 +995,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             //新版本,曲折一一对应
             if(point != null && point.getPointId() != null){
                 Long dangerAreaId = bizTravePointService.judgeXYInArea(bigDecimals[0].toString(),bigDecimals[1].toString(),dto.getTunnelId());
-                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
+//                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
 
                 presetPoint.setConstructTime(dto.getConstructTime())
                         .setDrillType(dto.getDrillType())
