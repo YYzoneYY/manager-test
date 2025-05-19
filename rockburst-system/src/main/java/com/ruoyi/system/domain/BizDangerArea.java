@@ -77,7 +77,7 @@ public class BizDangerArea extends BaseSelfEntity
     private String svg;
 
     @ApiModelProperty(value = "导线点集合")
-    private String pointlist;
+    private String pointList;
 
 
     @ApiModelProperty(value = "开始导线点")

@@ -589,13 +589,13 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
             List<Map<String,Object>> list = new ArrayList<>();
             Map<String,Object> map = new HashMap<>();
-            map.put("lat", pointssa[0]);
-            map.put("lon", pointssa[1]);
+            map.put("x", pointssa[0]);
+            map.put("y", pointssa[1]);
 
 
             Map<String,Object> map1 = new HashMap<>();
-            map1.put("lat", pointssass[0]);
-            map1.put("lon", pointssass[1]);
+            map1.put("x", pointssass[0]);
+            map1.put("y", pointssass[1]);
 
 
             list.add(map);
@@ -624,67 +624,57 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
     }
 
     private void updateYtPoint(BizProjectRecordAddDto dto,Long projectId){
+        UpdateWrapper<BizPresetPoint> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().eq(BizPresetPoint::getProjectId,projectId)
+                        .set(BizPresetPoint::getDelFlag,BizBaseConstant.DELFLAG_Y);
+        bizPresetPointMapper.update(new BizPresetPoint(),updateWrapper);
 
         try{
 //            BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getConstructRange()));
-//            BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
-//            BigDecimal ddda = new BigDecimal(bar.getDirectRange()).multiply(new BigDecimal(dto.getBarRange()));
-//            int bear_angle = bar.getDirectAngle() + 180;
-//
-//            //获取帮上的点
-//            BigDecimal[] bigDecimals = ClosestPointOnLine.getClosestPoint(new BigDecimal(bar.getA()),new BigDecimal(bar.getB()),new BigDecimal(bar.getC()),new BigDecimal(point.getAxisx()) ,new BigDecimal(point.getAxisy()));
-//            //获取另一个帮
-//            QueryWrapper<BizTunnelBar> bizTunnelBarQueryWrapper = new QueryWrapper<>();
-//            bizTunnelBarQueryWrapper.lambda().eq(BizTunnelBar::getTunnelId,bar.getTunnelId()).ne(BizTunnelBar::getBarId,dto.getBarId());
-//            List<BizTunnelBar> otherBars = bizTunnelBarMapper.selectList(bizTunnelBarQueryWrapper);
-//
-//
-//
-//            if(otherBars != null && otherBars.size() > 0){
-//                BizTunnelBar otherBar = otherBars.get(0);
-//                BigDecimal[] otherBarbigDecimals = ClosestPointOnLine.getClosestPoint(new BigDecimal(otherBar.getA()),new BigDecimal(otherBar.getB()),new BigDecimal(otherBar.getC()),new BigDecimal(point.getAxisx()) ,new BigDecimal(point.getAxisy()));
-//                point.setCrosLatlngs(getJsonStr(bigDecimals,otherBarbigDecimals));
-//            }else{
-//                BizPresetPoint xuxianPoint = bizTravePointService.getLatLontop(bigDecimals[0].toString(),bigDecimals[1].toString(),ddda.doubleValue(),bear_angle);
-//                point.setCrosLatlngs(getJsonStr(bigDecimals,new BigDecimal[]{new BigDecimal(xuxianPoint.getLatitudet()), new BigDecimal(xuxianPoint.getLongitudet())}));
-//            }
-//
-//            BizPresetPoint startPoint = bizTravePointService.getLatLontop(bigDecimals[0].toString(),bigDecimals[1].toString(),ddda.doubleValue(),bear_angle);
-//            List<Map<String,Object>> list = new ArrayList<>();
-//            String lat = startPoint.getAxisx();
-//            String lon = startPoint.getLongitudet();
-//            Map<String, Object> map = new HashMap<>();
-//            map.put("lat", lat);
-//            map.put("lng", lon);
-//            list.add(map);
+            BizTravePoint point = bizTravePointService.getById(dto.getTravePointId());
+            BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
+            //获取帮上的点
+            //坐标获取 帮上的对应点   获取比例  根据走向 获取 孔在 帮上的坐标
+            BigDecimal[] bigDecimals = getClosestPointOnSegment(point.getAxisx(),point.getAxisy(),bar.getStartx(), bar.getStarty(), bar.getEndx(), bar.getEndy());
+            //
 
-//            //新版本,曲折一一对应
-//            if(point != null && point.getPointId() != null){
-//                Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
-//                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
-//                if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
-//                    BigDecimal realDeep = dto.getDrillRecords().get(0).getRealDeep().multiply(new BigDecimal(bar.getDirectRange()));
-//                    BizPresetPoint endPoint = bizTravePointService.getLatLontop(startPoint.getAxisx(),startPoint.getAxisy(),realDeep.doubleValue(),bar.getYtAngle());
-//                    lat = endPoint.getLatitudet();
-//                    lon = endPoint.getLongitudet();
-//                    Map<String, Object> map1 = new HashMap<>();
-//                    map1.put("lat", lat);
-//                    map1.put("lng", lon);
-//                    list.add(map1);
-//                }
-//                String str = JSONUtil.parseArray(list).toString();
-//                point.setAxiss(str);
-//                point.setConstructTime(dto.getConstructTime())
-//                        .setDrillType(dto.getDrillType())
-//                        .setTunnelId(dto.getTunnelId())
-//                        .setWorkfaceId(dto.getWorkfaceId())
-//                        .setProjectId(projectId)
-//                        .setDangerAreaId(dangerAreaId)
-//                        .setTunnelBarId(bar.getBarId());
-//                UpdateWrapper<BizPresetPoint> updateWrapper = new UpdateWrapper<>();
-//                updateWrapper.lambda().eq(BizPresetPoint::getProjectId,projectId);
-//                bizPresetPointMapper.update(point,updateWrapper);
-//            }
+            String uploadUrl = configService.selectConfigByKey(MapConfigConstant.map_bili);
+
+            BigDecimal[] pointssa = getExtendedPoint(bigDecimals[0].toString(), bigDecimals[1].toString(), bar.getDirectAngle()+180, Double.parseDouble(dto.getBarRange()), Double.parseDouble(uploadUrl));
+
+
+            BigDecimal[] pointssass = getExtendedPoint(pointssa[0].toString(), pointssa[1].toString(), bar.getDirectRange(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
+
+
+            List<Map<String,Object>> list = new ArrayList<>();
+            Map<String,Object> map = new HashMap<>();
+            map.put("x", pointssa[0]);
+            map.put("y", pointssa[1]);
+
+
+            Map<String,Object> map1 = new HashMap<>();
+            map1.put("x", pointssass[0]);
+            map1.put("y", pointssass[1]);
+
+
+            list.add(map);
+            list.add(map1);
+            //新版本,曲折一一对应
+            if(point != null && point.getPointId() != null){
+                Long dangerAreaId = bizTravePointService.judgeXYInArea(bigDecimals[0].toString(),bigDecimals[1].toString(),dto.getTunnelId());
+
+                BizPresetPoint presetPoint = new BizPresetPoint();
+                String str = JSONUtil.parseArray(list).toString();
+                presetPoint.setAxiss(str);
+                presetPoint.setConstructTime(dto.getConstructTime())
+                        .setDrillType(dto.getDrillType())
+                        .setTunnelId(dto.getTunnelId())
+                        .setWorkfaceId(dto.getWorkfaceId())
+                        .setProjectId(projectId)
+                        .setDangerAreaId(dangerAreaId)
+                        .setTunnelBarId(bar.getBarId());
+                bizPresetPointMapper.insert(presetPoint);
+            }
 
         }catch (Exception e){
             log.error(e.getMessage());
@@ -722,8 +712,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                     lat = pppp[0].toString();
                     lon = pppp[1].toString();
                     Map<String, Object> map1 = new HashMap<>();
-                    map1.put("lat", lat);
-                    map1.put("lng", lon);
+                    map1.put("x", lat);
+                    map1.put("y", lon);
                     list.add(map1);
                     for (Object o : array) {
                         Integer bear_angle = JSONUtil.parseObj(o).getInt("bear_angle");
@@ -732,8 +722,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                         lat = pppps[0].toString();
                         lon = pppps[1].toString();
                         Map<String, Object> map = new HashMap<>();
-                        map.put("lat", lat);
-                        map.put("lng", lon);
+                        map.put("x", lat);
+                        map.put("y", lon);
                         list.add(map);
                     }
                     String str = JSONUtil.parseArray(list).toString();
@@ -744,7 +734,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             //新版本,曲折一一对应
             if(point != null && point.getPointId() != null){
                 Long dangerAreaId = bizTravePointService.judgeXYInArea(bigDecimals[0].toString(),bigDecimals[1].toString(),dto.getTunnelId());
-                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
+//                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
 
                 presetPoint.setConstructTime(dto.getConstructTime())
                         .setDrillType(dto.getDrillType())
@@ -950,100 +940,76 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
 
     private void updatePresetPoint(BizProjectRecordAddDto dto,Long projectId){
-//        BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
-//        QueryWrapper<BizPresetPoint> pointQueryWrapper = new QueryWrapper<>();
-//        pointQueryWrapper.lambda().eq(BizPresetPoint::getProjectId,dto.getProjectId());
-//        List<BizPresetPoint> bizProjectRecords = bizPresetPointMapper.selectList(pointQueryWrapper);
-//
-//        try{
-//            BizPresetPoint point = bizTravePointService.getPointLatLon(dto.getTravePointId(),Double.parseDouble(dto.getConstructRange()));
-//            if(bizProjectRecords != null && bizProjectRecords.size() > 0){
-//                point.setPresetPointId(bizProjectRecords.get(0).getPresetPointId());
-//                if(point != null && point.getPointId() != null){
-//                    Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
-//                    Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
-//                    if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
-//                        String details = dto.getDrillRecords().get(0).getDetailJson();
-//                        if(details != null && StrUtil.isNotBlank(details) && !details.equals("[]")){
-//                            JSONArray array = JSONUtil.parseArray(details);
-//                            List<Map<String,Object>> list = new ArrayList<>();
-//                            String lat = point.getAxisx();
-//                            String lon = point.getAxisy();
-//                            Map<String, Object> map1 = new HashMap<>();
-//                            map1.put("lat", lat);
-//                            map1.put("lng", lon);
-//                            list.add(map1);
-//                            for (Object o : array) {
-//                                Integer bear_angle = JSONUtil.parseObj(o).getInt("bear_angle");
-//                                bear_angle = getAngle(bar.getDirectAngle(),bear_angle);
-//                                BizPresetPoint projectPoint = bizTravePointService.getLatLontop(lat,lon,ddd,bear_angle);
-//                                lat = projectPoint.getLatitudet();
-//                                lon = projectPoint.getLongitudet();
-//                                Map<String, Object> map = new HashMap<>();
-//                                map.put("lat", lat);
-//                                map.put("lng", lon);
-//                                list.add(map);
-//                            }
-//                            String str = JSONUtil.parseArray(list).toString();
-//                            point.setAxiss(str);
-//                        }
-//                    }
-//
-//                    point.setConstructTime(dto.getConstructTime())
-//                            .setDrillType(dto.getDrillType())
-//                            .setTunnelId(dto.getTunnelId())
-//                            .setWorkfaceId(dto.getWorkfaceId())
-//                            .setProjectId(projectId)
-//                            .setDangerAreaId(dangerAreaId)
-//                            .setTunnelBarId(bar.getBarId());
-//                    bizPresetPointMapper.updateById(point);
-//                }
-//            }else {
-//                if(point != null && point.getPointId() != null){
-//                    Long dangerAreaId = bizTravePointService.judgePointInArea(point.getPointId(),point.getMeter());
-//                    Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
-//                    if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
-//                        String details = dto.getDrillRecords().get(0).getDetailJson();
-//                        if(details != null && StrUtil.isNotBlank(details) && !details.equals("[]")){
-//                            JSONArray array = JSONUtil.parseArray(details);
-//                            List<Map<String,Object>> list = new ArrayList<>();
-//                            String lat = point.getAxisx();
-//                            String lon = point.getAxisy();
-//                            Map<String, Object> map1 = new HashMap<>();
-//                            map1.put("lat", lat);
-//                            map1.put("lng", lon);
-//                            list.add(map1);
-//                            for (Object o : array) {
-//                                Integer bear_angle = JSONUtil.parseObj(o).getInt("bear_angle");
-//                                bear_angle = getAngle(bar.getDirectAngle(),bear_angle);
-//                                BizPresetPoint projectPoint = bizTravePointService.getLatLontop(lat,lon,ddd,bear_angle);
-//                                lat = projectPoint.getLatitudet();
-//                                lon = projectPoint.getLongitudet();
-//                                Map<String, Object> map = new HashMap<>();
-//                                map.put("lat", lat);
-//                                map.put("lng", lon);
-//                                list.add(map);
-//                            }
-//                            String str = JSONUtil.parseArray(list).toString();
-//                            point.setAxiss(str);
-//                        }
-//                    }
-//
-//                    point.setConstructTime(dto.getConstructTime())
-//                            .setDrillType(dto.getDrillType())
-//                            .setTunnelId(dto.getTunnelId())
-//                            .setWorkfaceId(dto.getWorkfaceId())
-//                            .setProjectId(projectId)
-//                            .setDangerAreaId(dangerAreaId)
-//                            .setTunnelBarId(bar.getBarId());
-//                    bizPresetPointMapper.insert(point);
-//                }
-//            }
-//
-//        }catch (Exception e){
-//            log.error(e.getMessage());
-//        }
+        UpdateWrapper<BizPresetPoint> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().eq(BizPresetPoint::getProjectId,projectId)
+                .set(BizPresetPoint::getDelFlag,BizBaseConstant.DELFLAG_Y);
+        bizPresetPointMapper.update(new BizPresetPoint(),updateWrapper);
 
+        try{
+
+            BizPresetPoint presetPoint = new BizPresetPoint();
+            //帮的线段 和 走向
+            BizTunnelBar bar = bizTunnelBarMapper.selectById(dto.getBarId());
+            //拿到当前到导线点和距离 DF09 -9 换算坐标
+            BizTravePoint point = bizTravePointService.getById(dto.getTravePointId());
+            //坐标获取 帮上的对应点   获取比例  根据走向 获取 孔在 帮上的坐标
+            BigDecimal[] bigDecimals = getClosestPointOnSegment(point.getAxisx(),point.getAxisy(),bar.getStartx(), bar.getStarty(), bar.getEndx(), bar.getEndy());
+
+            String uploadUrl = configService.selectConfigByKey(MapConfigConstant.map_bili);
+
+            BigDecimal[] pointssa = getExtendedPoint(bigDecimals[0].toString(), bigDecimals[1].toString(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
+
+            //根据 方位角 和 每米的 方位角 获取下一个点的坐标 ,
+            //返回坐标组
+            if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){
+                String details = dto.getDrillRecords().get(0).getDetailJson();
+                if(details != null && StrUtil.isNotBlank(details) && !details.equals("[]")){
+                    JSONArray array = JSONUtil.parseArray(details);
+                    List<Map<String,Object>> list = new ArrayList<>();
+
+                    String lat = pointssa[0].toString();
+                    String lon = pointssa[1].toString();
+                    BigDecimal[] pppp =  getExtendedPoint(lat,lon,bar.getDirectAngle(),1, Double.parseDouble(uploadUrl));
+                    lat = pppp[0].toString();
+                    lon = pppp[1].toString();
+                    Map<String, Object> map1 = new HashMap<>();
+                    map1.put("x", lat);
+                    map1.put("y", lon);
+                    list.add(map1);
+                    for (Object o : array) {
+                        Integer bear_angle = JSONUtil.parseObj(o).getInt("bear_angle");
+                        bear_angle = getAngle(bar.getDirectAngle(),bear_angle);
+                        BigDecimal[] pppps = getExtendedPoint(lat,lon,bear_angle,1,Double.parseDouble(uploadUrl));
+                        lat = pppps[0].toString();
+                        lon = pppps[1].toString();
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("x", lat);
+                        map.put("y", lon);
+                        list.add(map);
+                    }
+                    String str = JSONUtil.parseArray(list).toString();
+                    presetPoint.setAxiss(str);
+                }
+            }
+
+            //新版本,曲折一一对应
+            if(point != null && point.getPointId() != null){
+                Long dangerAreaId = bizTravePointService.judgeXYInArea(bigDecimals[0].toString(),bigDecimals[1].toString(),dto.getTunnelId());
+//                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
+
+                presetPoint.setConstructTime(dto.getConstructTime())
+                        .setDrillType(dto.getDrillType())
+                        .setTunnelId(dto.getTunnelId())
+                        .setWorkfaceId(dto.getWorkfaceId())
+                        .setProjectId(projectId)
+                        .setDangerAreaId(dangerAreaId)
+                        .setTunnelBarId(bar.getBarId());
+                bizPresetPointMapper.insert(presetPoint);
+            }
+
+        }catch (Exception e){
+            log.error(e.getMessage());
+        }
     }
 
 

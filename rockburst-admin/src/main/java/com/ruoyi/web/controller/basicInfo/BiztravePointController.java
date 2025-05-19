@@ -21,6 +21,7 @@ import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizTravePointDto;
 import com.ruoyi.system.domain.excel.BiztravePointExcel;
+import com.ruoyi.system.domain.utils.DeepCopyUtil;
 import com.ruoyi.system.domain.utils.GeometryUtil;
 import com.ruoyi.system.domain.vo.BizTravePointVo;
 import com.ruoyi.system.mapper.BizTunnelBarMapper;
@@ -459,18 +460,48 @@ public class BiztravePointController extends BaseController
                 return R.fail("巷道没有添加全");
             }
             long no = 1l;
-            for (BizTravePointDto dto : dtos) {
+            List<BizTravePoint> pointLists = bizTravePointService.list();
+            List<String> listname = new ArrayList<>(pointLists.size());
+            if(pointLists != null && pointLists.size() > 0){
+                listname = pointLists.stream().map(BizTravePoint::getPointName).collect(Collectors.toList());
+            }
+            List<BizTravePointDto> ds = DeepCopyUtil.deepCopyList(dtos);
+            for (int i = 0; i < dtos.size(); i++) {
+                if (listname != null && listname.contains(dtos.get(0).getPointName())) {
+                    ds.remove(i);continue;
+                }
                 BizTravePoint bizTravePoint = new BizTravePoint();
-                BeanUtils.copyProperties(dto,bizTravePoint);
+                BeanUtils.copyProperties(dtos.get(i),bizTravePoint);
                 bizTravePoint.setNo(Long.parseLong(no+""));
+
                 for (TunnelEntity tunnel : tunnelEntityList) {
-                    if(tunnel.getTunnelName().equals(dto.getTunnelName())){
-                        bizTravePoint.setTunnelId(tunnel.getTunnelId());
+                    if(tunnel.getTunnelName().equals(dtos.get(i).getTunnelName())){
+                        bizTravePoint.setTunnelId(tunnel.getTunnelId())
+                                        .setWorkfaceId(tunnel.getWorkFaceId());
                         points.add(bizTravePoint);
                     }
                 }
-                no++;
+                no = i;
             }
+
+//            for (BizTravePointDto dto : dtos) {
+//
+//                if(listname != null && listname.contains(dto.getPointName())){
+//                    continue;
+//                }
+//
+//                BizTravePoint bizTravePoint = new BizTravePoint();
+//                BeanUtils.copyProperties(dto,bizTravePoint);
+//                bizTravePoint.setNo(Long.parseLong(no+""));
+//
+//                for (TunnelEntity tunnel : tunnelEntityList) {
+//                    if(tunnel.getTunnelName().equals(dto.getTunnelName())){
+//                        bizTravePoint.setTunnelId(tunnel.getTunnelId());
+//                        points.add(bizTravePoint);
+//                    }
+//                }
+//                no++;
+//            }
             bizTravePointService.saveBatch(points);
 
             for (TunnelEntity tunnel : tunnelEntityList) {

@@ -95,4 +95,60 @@ public class TunnelEntity extends BusinessBaseEntity implements Serializable {
     @TableField("del_flag")
     @TableLogic(value = "0", delval = "2")
     private String delFlag;
+
+
+    // 计算点m到直线ab的垂线方向与Y轴正方向夹角
+    public static double angleWithYAxisOfPerpendicular(BigDecimal[] a1, BigDecimal[] a2, BigDecimal[] m) {
+        double x1 = a1[0].doubleValue(), y1 = a1[1].doubleValue();
+        double x2 = a2[0].doubleValue(), y2 = a2[1].doubleValue();
+        double x0 = m[0].doubleValue(), y0 = m[1].doubleValue();
+
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+
+        // 计算垂足 P 到 m 的方向向量
+        double len2 = dx * dx + dy * dy;
+        if (len2 == 0) {
+            // a1 == a2，线段退化成点
+            dx = x1 - x0;
+            dy = y1 - y0;
+        } else {
+            double t = ((x0 - x1) * dx + (y0 - y1) * dy) / len2;
+
+            double px = x1 + t * dx;
+            double py = y1 + t * dy;
+
+            dx = px - x0;
+            dy = py - y0;
+        }
+
+        // 求夹角：向量 (dx, dy) 与 y轴正方向 (0,1) 的夹角
+        double vlen = Math.sqrt(dx * dx + dy * dy);
+        if (vlen == 0) return 0.0; // 点在直线上，方向不确定，返回0°
+
+        double cosTheta = dy / vlen;
+        double thetaRad = Math.acos(cosTheta); // ∈ [0, π]
+        return Math.toDegrees(thetaRad);       // 返回角度 ∈ [0°, 180°]
+    }
+
+    // 字符串解析 "[m,n]" 或 "m,n"
+    public static BigDecimal[] parsePoint(String input) {
+        if (input == null) throw new IllegalArgumentException("Input is null");
+        input = input.trim().replaceAll("[\\[\\]]", "");
+        String[] parts = input.split(",");
+        if (parts.length != 2) throw new IllegalArgumentException("Invalid input: " + input);
+        return new BigDecimal[]{
+                new BigDecimal(parts[0].trim()),
+                new BigDecimal(parts[1].trim())
+        };
+    }
+
+    public static void main(String[] args) {
+        BigDecimal[] a1 = parsePoint("1748.8763,2272.2789");
+        BigDecimal[] a2 = parsePoint("2414.1421,2267.7059");
+        BigDecimal[] m = parsePoint("2696.4222,2092.4084");
+
+        double angle = angleWithYAxisOfPerpendicular(a1, a2, m);
+        System.out.printf("与 Y 轴正方向夹角: %.2f 度%n", angle);
+    }
 }

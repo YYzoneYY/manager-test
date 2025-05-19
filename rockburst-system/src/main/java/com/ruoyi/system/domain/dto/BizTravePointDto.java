@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 矿井管理对象 biz_mine
@@ -21,7 +22,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class BizTravePointDto
+public class BizTravePointDto implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
