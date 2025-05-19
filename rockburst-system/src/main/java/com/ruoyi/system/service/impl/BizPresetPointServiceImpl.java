@@ -220,6 +220,8 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                         for (BizPresetPoint point : presetPoints) {
                             double axisX = 0.0;
                             double axisY = 0.0;
+                            double axisX1 = 0.0;
+                            double axisY1 = 0.0;
                             Long dangerAreaId = getMatchingDangerAreaId(point, dangerAreaIds, dangerIds, areaIds, specialDangerIds);
                             if (dangerAreaId == null) continue;
 
@@ -229,8 +231,12 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                             if (!convertPoints.isEmpty()) {
                                 // 取坐标点位集合中第一个元素
                                 ConvertPoint firstPoint = convertPoints.get(0);
+                                // 取坐标点位集合中第二个元素
+                                ConvertPoint twoPoint = convertPoints.get(1);
                                 axisX = firstPoint.x;
                                 axisY = firstPoint.y;
+                                axisX1 = twoPoint.x;
+                                axisY1 = twoPoint.y;
                             }
 
 //                            double axisXFmt = Double.parseDouble(point.getAxisx());
@@ -254,7 +260,8 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                             preset.setPlanId(planId)
                                     .setDangerAreaId(dangerAreaId)
                                     .setPresetPointId(point.getPresetPointId())
-                                    .setBottom(axisX + "," + axisY);
+                                    .setBottom(axisX + "," + axisY)
+                                    .setTop(axisX1 + "," + axisY1);
                             bizPlanPresets.add(preset);
                         }
                     }
