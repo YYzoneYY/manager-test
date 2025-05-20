@@ -24,6 +24,7 @@ import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.utils.AlgorithmUtils;
 import com.ruoyi.system.domain.utils.AreaAlgorithmUtils;
 import com.ruoyi.system.domain.utils.DataJudgeUtils;
 import com.ruoyi.system.domain.utils.TrimUtils;
@@ -103,6 +104,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
 
     @Resource
     private BizTunnelBarMapper bizTunnelBarMapper;
+
+    @Resource
+    SysConfigMapper sysConfigMapper;
 
 
 
@@ -699,7 +703,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         // 组装DTO
         String type = dicValue(ConstantsInfo.TYPE_DICT_TYPE, importPlanDTO.getType());
         String planType = dicValue(ConstantsInfo.PLAN_TYPE_DICT_TYPE, importPlanDTO.getPlanType());// 计划类型
-        PlanAreaDTO planAreaDTO = assembleDTO(tunnelEntity.getTunnelId(), startPoint,
+        PlanAreaDTO planAreaDTO = assembleDTO(workfaceId, tunnelEntity.getTunnelId(), startPoint,
                 importPlanDTO.getStartDistance(), endPoint, importPlanDTO.getEndDistance());
         List<PlanAreaEntity> planAreaEntities = planAreaMapper.selectList(new LambdaQueryWrapper<PlanAreaEntity>()
                 .eq(PlanAreaEntity::getTunnelId, tunnelEntity.getTunnelId()).eq(PlanAreaEntity::getType, type));
@@ -753,9 +757,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         checkDicTwo(importPlanTwoDTO.getAnnual(), importPlanTwoDTO.getPlanType(),
                 importPlanTwoDTO.getType(), importPlanTwoDTO.getDrillType());
         // 组装DTOs
-        PlanAreaDTO planAreaDTO = assembleDTO(tunnelEntity.getTunnelId(), startPoint,
+        PlanAreaDTO planAreaDTO = assembleDTO(workFaceId, tunnelEntity.getTunnelId(), startPoint,
                 importPlanTwoDTO.getStartDistance(), endPoint, importPlanTwoDTO.getEndDistance());
-        PlanAreaDTO dto = assembleDTO(tunnelEntity.getTunnelId(), startPointTwo,
+        PlanAreaDTO dto = assembleDTO(workFaceId, tunnelEntity.getTunnelId(), startPointTwo,
                 importPlanTwoDTO.getStartDistanceTwo(), endPointTwo, importPlanTwoDTO.getEndDistanceTwo());
         List<PlanAreaDTO> planAreaDTOS = new ArrayList<>();
         planAreaDTOS.add(planAreaDTO);
@@ -778,6 +782,19 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     private void importCheckArea(String type, PlanAreaDTO planAreaDTO, List<PlanAreaEntity> planAreaEntities) {
         planAreaEntities.forEach(planAreaEntity -> {
             try {
+                String startCoordinate = AlgorithmUtils.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+                        planAreaDTO.getStartTraversePointId(), planAreaDTO.getStartDistance(), bizTunnelBarMapper,
+                        bizTravePointMapper, sysConfigMapper);
+                String endCoordinate = AlgorithmUtils.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+                        planAreaDTO.getEndTraversePointId(), planAreaDTO.getEndDistance(), bizTunnelBarMapper,
+                        bizTravePointMapper, sysConfigMapper);
+
+                if (ObjectUtil.isNull(startCoordinate) || ObjectUtil.isNull(endCoordinate)) {
+                    throw new RuntimeException("起始或结束坐标转换失败！！");
+                }
+
+                planAreaDTO.setStartPointCoordinate(startCoordinate);
+                planAreaDTO.setEndPointCoordinate(endCoordinate);
                 AreaAlgorithmUtils.areaCheckNew(planAreaDTO, planAreaEntities, bizTravePointMapper,  bizTunnelBarMapper);
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage());
@@ -792,6 +809,19 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         planAreaDTOS.forEach(planAreaDTO -> {
             planAreaEntities.forEach(planAreaEntity -> {
                 try {
+                    String startCoordinate = AlgorithmUtils.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+                            planAreaDTO.getStartTraversePointId(), planAreaDTO.getStartDistance(), bizTunnelBarMapper,
+                            bizTravePointMapper, sysConfigMapper);
+                    String endCoordinate = AlgorithmUtils.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+                            planAreaDTO.getEndTraversePointId(), planAreaDTO.getEndDistance(), bizTunnelBarMapper,
+                            bizTravePointMapper, sysConfigMapper);
+
+                    if (ObjectUtil.isNull(startCoordinate) || ObjectUtil.isNull(endCoordinate)) {
+                        throw new RuntimeException("起始或结束坐标转换失败！！");
+                    }
+
+                    planAreaDTO.setStartPointCoordinate(startCoordinate);
+                    planAreaDTO.setEndPointCoordinate(endCoordinate);
                     AreaAlgorithmUtils.areaCheckNew(planAreaDTO, planAreaEntities, bizTravePointMapper,  bizTunnelBarMapper);
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage());
@@ -803,8 +833,9 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     /**
      * 组装DTO
      */
-    private PlanAreaDTO assembleDTO(Long tunnelId, Long sPoint, String sDistance, Long ePoint, String eDistance) {
+    private PlanAreaDTO assembleDTO(Long workFaceId, Long tunnelId, Long sPoint, String sDistance, Long ePoint, String eDistance) {
         PlanAreaDTO planAreaDTO = new PlanAreaDTO();
+        planAreaDTO.setWorkFaceId(workFaceId);
         planAreaDTO.setTunnelId(tunnelId);
         planAreaDTO.setStartTraversePointId(sPoint);
         planAreaDTO.setStartDistance(sDistance);
@@ -875,18 +906,34 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         // 月计划、临时计划区域不可重复选择校验
         if (planDTO.getPlanType().equals(ConstantsInfo.Month_PLAN) ||
                 planDTO.getPlanType().equals(ConstantsInfo.TEMPORARY_PLAN)) {
-            checkArea(planDTO.getPlanId(),planDTO.getType(), planDTO.getPlanAreaDTOS());
+            checkArea(planDTO.getPlanId(),planDTO.getWorkFaceId(), planDTO.getType(), planDTO.getPlanAreaDTOS());
         }
     }
 
     /**
      * 区域信息校验
      */
-    private void checkArea(Long planId, String type, List<PlanAreaDTO> planAreaDTOS) {
+    private void checkArea(Long planId, Long workFaceId, String type, List<PlanAreaDTO> planAreaDTOS) {
         if (ListUtils.isNull(planAreaDTOS) ||planAreaDTOS.isEmpty()) {
             throw new RuntimeException("区域信息不能为空");
         }
         planAreaDTOS.forEach(planAreaDTO -> {
+
+            planAreaDTO.setWorkFaceId(workFaceId);
+            String startCoordinate = AlgorithmUtils.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+                    planAreaDTO.getStartTraversePointId(), planAreaDTO.getStartDistance(), bizTunnelBarMapper,
+                    bizTravePointMapper, sysConfigMapper);
+            String endCoordinate = AlgorithmUtils.obtainCoordinate(planAreaDTO.getWorkFaceId(), planAreaDTO.getTunnelId(),
+                    planAreaDTO.getEndTraversePointId(), planAreaDTO.getEndDistance(), bizTunnelBarMapper,
+                    bizTravePointMapper, sysConfigMapper);
+
+            if (ObjectUtil.isNull(startCoordinate) || ObjectUtil.isNull(endCoordinate)) {
+                throw new RuntimeException("起始或结束坐标转换失败！！");
+            }
+
+            planAreaDTO.setStartPointCoordinate(startCoordinate);
+            planAreaDTO.setEndPointCoordinate(endCoordinate);
+
             // 检查距离字符串是否为空或长度不足
             if (planAreaDTO.getStartDistance() == null || planAreaDTO.getStartDistance().isEmpty()) {
                 throw new RuntimeException("StartDistance 不能为空");

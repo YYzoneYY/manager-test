@@ -14,6 +14,7 @@ import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.push.GeTuiUtils;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
@@ -88,6 +89,9 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
     BizDangerLevelMapper bizDangerLevelMapper;
     @Resource
     SysConfigMapper sysConfigMapper;
+
+    @Resource
+    private GeTuiUtils geTuiUtils;
 
     /**
      * 点击审核按钮
@@ -187,6 +191,11 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 String logic = DrillSpacingWarnUtil.warningLogic(departAuditDTO.getProjectId(), bizProjectRecordMapper,
                         bizDangerAreaMapper, bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper,
                         cacheDataMapper, bizDangerLevelMapper, sysDictDataMapper);
+                SysUser sysUser = sysUserMapper.selectUserById(1L);
+                String cid = sysUser.getCid();
+                List<String> cids = new ArrayList<>();
+                cids.add(cid);
+                geTuiUtils.pushMsg(cids, "施工钻孔间距预警推送通知", logic);
             }
         }
         return flag;

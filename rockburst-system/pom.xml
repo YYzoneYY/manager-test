@@ -83,6 +83,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>rockburst-admin</artifactId>
+            <version>3.8.8</version>
+            <scope>compile</scope>
+        </dependency>
         <!--        <dependency>-->
 <!--            <groupId>com.alibaba</groupId>-->
 <!--            <artifactId>easyexcel-core</artifactId>-->
