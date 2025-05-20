@@ -90,9 +90,6 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
     @Resource
     SysConfigMapper sysConfigMapper;
 
-    @Resource
-    private GeTuiUtils geTuiUtils;
-
     /**
      * 点击审核按钮
      * @param projectId 计划id
@@ -195,7 +192,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 String cid = sysUser.getCid();
                 List<String> cids = new ArrayList<>();
                 cids.add(cid);
-                geTuiUtils.pushMsg(cids, "施工钻孔间距预警推送通知", logic);
+//                GeTuiUtils.pushMsg(cids, "施工钻孔间距预警推送通知", logic);
             }
         }
         return flag;
