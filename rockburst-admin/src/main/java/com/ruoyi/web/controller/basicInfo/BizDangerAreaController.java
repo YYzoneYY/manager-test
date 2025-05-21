@@ -652,9 +652,9 @@ public class BizDangerAreaController extends BaseController
             BigDecimal length = GeometryUtil.hypot(dx, dy, precision);
 
             BigDecimal interval = current.getInterval();
-            if (next != null) {
-                interval = interval.min(next.getInterval());
-            }
+//            if (next != null) {
+//                interval = interval.min(next.getInterval());
+//            }
 
             if (interval.compareTo(BigDecimal.ZERO) <= 0) continue;
 
