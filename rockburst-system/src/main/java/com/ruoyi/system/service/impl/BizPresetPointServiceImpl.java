@@ -32,6 +32,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -179,10 +180,10 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                 double planStartXFmt = Double.parseDouble(partsStart[0]); // 计划开始导线点 x坐标
                 double planEndXFmt = Double.parseDouble(partsEnd[0]); // 计划结束导线点 x坐标
 
-                List<Long> dangerAreaIds = new ArrayList<>();
-                List<Long> dangerIds  = new ArrayList<>();
-                List<Long> areaIds = new ArrayList<>();
-                List<Long> specialDangerIds = new ArrayList<>();
+                List<Long> dangerAreaIds = new ArrayList<>();       // 完全包含
+                List<Long> dangerIds = new ArrayList<>();           // 右交（起点在计划内）
+                List<Long> areaIds = new ArrayList<>();             // 左交（终点在计划内）
+                List<Long> specialDangerIds = new ArrayList<>();    // 危险区完全包含计划区域
 
                 List<BizDangerArea> bizDangerAreas = bizDangerAreaMapper.selectList(new LambdaQueryWrapper<BizDangerArea>()
                         .eq(BizDangerArea::getWorkfaceId, entity.getWorkFaceId())
@@ -193,24 +194,33 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                     for (BizDangerArea bizDangerArea : bizDangerAreas) {
                         double scbStartXFmt = Double.parseDouble(bizDangerArea.getScbStartx()); // 生产帮开始导线点 x坐标
                         double scbEndXFmt = Double.parseDouble(bizDangerArea.getScbEndx()); // 生产帮结束导线点 x坐标
-                        // 判断危险区是否在计划区域内
+                        // 判断是否与计划区域相交
+                        if (scbEndXFmt < planStartXFmt || scbStartXFmt > planEndXFmt) {
+                            continue; // 不相交
+                        }
+
+                        // 完全包含
                         if (scbStartXFmt >= planStartXFmt && scbEndXFmt <= planEndXFmt) {
                             dangerAreaIds.add(bizDangerArea.getDangerAreaId());
                         }
-                        // 查找危险区一部分在计划区域内的数据
-                        if (scbStartXFmt > planStartXFmt && scbStartXFmt < planEndXFmt) {
-                            dangerIds.add(bizDangerArea.getDangerAreaId());
-                        }
-                        if (scbEndXFmt > planStartXFmt && scbEndXFmt < planEndXFmt) {
-                            areaIds.add(bizDangerArea.getDangerAreaId());
-                        }
-                        // 计划区域在危险区内但不全部包含危险区
-                        if (planStartXFmt > scbStartXFmt && planEndXFmt < scbEndXFmt) {
+                        // 危险区完全包含计划
+                        else if (scbStartXFmt <= planStartXFmt && scbEndXFmt >= planEndXFmt) {
                             specialDangerIds.add(bizDangerArea.getDangerAreaId());
                         }
+                        // 左交（危险区起点在计划外，终点在计划内）
+                        else if (scbStartXFmt < planStartXFmt && scbEndXFmt >= planStartXFmt && scbEndXFmt <= planEndXFmt) {
+                            areaIds.add(bizDangerArea.getDangerAreaId());
+                        }
+                        // 右交（危险区终点在计划外，起点在计划内）
+                        else if (scbStartXFmt >= planStartXFmt && scbStartXFmt < planEndXFmt && scbEndXFmt > planEndXFmt) {
+                            dangerIds.add(bizDangerArea.getDangerAreaId());
+                        }
                     }
-                    List<Long> allDangerAreaIds = new ArrayList<>(dangerAreaIds);
-                    allDangerAreaIds.addAll(dangerIds);
+                    List<Long> allDangerAreaIds = Stream.concat(
+                                    Stream.concat(dangerAreaIds.stream(), dangerIds.stream()),
+                                    areaIds.stream())
+                            .distinct().collect(Collectors.toList());
+
                     if (!allDangerAreaIds.isEmpty()) {
                         List<BizPresetPoint> presetPoints = bizPresetPointMapper.selectList(new LambdaQueryWrapper<BizPresetPoint>()
                                 .in(BizPresetPoint::getDangerAreaId, allDangerAreaIds)
@@ -240,20 +250,15 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
                             }
 
 //                            double axisXFmt = Double.parseDouble(point.getAxisx());
-                            if (dangerIds.contains(dangerAreaId)) {
-                                if (axisX > planEndXFmt) {
-                                    continue;
-                                }
+                            // 过滤不符合条件的点
+                            if ((dangerIds.contains(dangerAreaId) && axisX > planEndXFmt) ||
+                                    (areaIds.contains(dangerAreaId) && axisX < planStartXFmt)) {
+                                continue;
                             }
-                            if (areaIds.contains(dangerAreaId)) {
-                                if (axisX < planStartXFmt) {
-                                    continue;
-                                }
-                            }
-                            if (specialDangerIds.contains(dangerAreaId)) {
-                                if (axisX > planStartXFmt && axisX < planEndXFmt) {
-                                    continue;
-                                }
+
+                            if (specialDangerIds.contains(dangerAreaId) &&
+                                    (axisX < planStartXFmt || axisX > planEndXFmt)) {
+                                continue;
                             }
 
                             BizPlanPreset preset = new BizPlanPreset();
