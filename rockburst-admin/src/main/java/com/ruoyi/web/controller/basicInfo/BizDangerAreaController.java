@@ -358,7 +358,7 @@ public class BizDangerAreaController extends BaseController
             BizDangerAreaDto ssss = new BizDangerAreaDto();
             BeanUtils.copyProperties(area,ssss);
             TunnelEntity tunnel =  tunnelService.getById(area.getTunnelId());
-            area.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区");
+            area.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区").setPrePointStatus(0);
             bizDangerAreaService.insertEntity(ssss);
             n++;
         }
@@ -461,7 +461,7 @@ public class BizDangerAreaController extends BaseController
         List<TunnelEntity> tunnelEntities  =  tunnelService.list(queryWrapper);
         for (TunnelEntity tunnelEntity : tunnelEntities) {
             QueryWrapper<BizDangerArea> queryWrapper1 = new QueryWrapper<>();
-            queryWrapper1.lambda().eq(BizDangerArea::getTunnelId,tunnelEntity.getTunnelId()).orderByAsc(BizDangerArea::getNo);
+            queryWrapper1.lambda().eq(BizDangerArea::getPrePointStatus,0).eq(BizDangerArea::getTunnelId,tunnelEntity.getTunnelId()).orderByAsc(BizDangerArea::getNo);
             List<BizDangerArea> areas = bizDangerAreaService.list(queryWrapper1);
             List<BizDangerLevel> levels = bizDangerLevelService.list();
             //非生产帮
@@ -582,6 +582,12 @@ public class BizDangerAreaController extends BaseController
 
 // 关闭线程池
             executorService.shutdown();
+
+            for (BizDangerArea area : areas) {
+                area.setPrePointStatus(1);
+                bizDangerAreaService.updateById(area);
+
+            }
 
 //            for (Point2D point2D : fpoint2DS) {
 //                BigDecimal[] biaisai  =  bizPresetPointService.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),fsbbar.getDirectAngle(),Double.parseDouble(meter),Double.parseDouble(uploadUrl));

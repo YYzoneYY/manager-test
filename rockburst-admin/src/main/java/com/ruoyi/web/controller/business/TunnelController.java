@@ -201,12 +201,14 @@ public class TunnelController {
         }
         areas = instes;
 
+        int n = 1 ;
         for (BizDangerArea area : areas) {
             BizDangerAreaDto ssss = new BizDangerAreaDto();
             BeanUtils.copyProperties(area,ssss);
-
+            TunnelEntity tunnel =  tunnelService.getById(area.getTunnelId());
+            area.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区").setPrePointStatus(0);
             bizDangerAreaService.insertEntity(ssss);
-
+            n++;
         }
 
         return R.ok();
