@@ -453,9 +453,31 @@ public class BizDangerAreaController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:sss')")
     @Log(title = "危险区管理", businessType = BusinessType.INSERT)
     @PostMapping("/addpre")
-    public R addpre( Long workfaceId,String drillType)
+    public R addpre( String workfaceName,String drillType)
     {
+        Long workfaceId;
+        if(StrUtil.isEmpty(workfaceName)){
+            return R.ok();
+        }
+        QueryWrapper<BizWorkface> qw = new QueryWrapper<>();
+        qw.lambda().eq(BizWorkface::getWorkfaceName,workfaceName);
+        List<BizWorkface> workfaces =  bizWorkfaceMapper.selectList(qw);
+        if(workfaces != null && workfaces.size() > 0){
+            workfaceId = workfaces.get(0).getWorkfaceId();
+        } else {
+            workfaceId = 0l;
+        }
 
+        QueryWrapper<BizDangerArea> qw1 = new QueryWrapper<>();
+        qw1.lambda().eq(BizDangerArea::getWorkfaceId,workfaceId).eq(BizDangerArea::getPrePointStatus,0);
+        long count =  bizDangerAreaService.count(qw1);
+        if(count <= 0){
+            return R.ok();
+        }
+
+        if(StrUtil.isEmpty(drillType)){
+            drillType = BizBaseConstant.FILL_TYPE_LDPR;
+        }
         QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(TunnelEntity::getWorkFaceId, workfaceId);
         List<TunnelEntity> tunnelEntities  =  tunnelService.list(queryWrapper);
@@ -501,6 +523,7 @@ public class BizDangerAreaController extends BaseController
 
 // 处理 fpoint2DS
             for (Point2D point2D : fpoint2DS) {
+                String finalDrillType = drillType;
                 futures.add(executorService.submit(() -> {
                     BigDecimal[] biaisai = bizPresetPointService.getExtendedPoint(
                             point2D.getX().toString(),
@@ -525,7 +548,7 @@ public class BizDangerAreaController extends BaseController
                             .setDangerAreaId(point2D.getAreaId())
                             .setWorkfaceId(workfaceId)
                             .setTunnelBarId(fsbbar.getBarId())
-                            .setDrillType(drillType)
+                            .setDrillType(finalDrillType)
                             .setAxiss(JSONUtil.toJsonStr(list));
                     return bp;
                 }));
@@ -534,6 +557,7 @@ public class BizDangerAreaController extends BaseController
 // 处理 spoint2DS
             List<Point2D> spoint2DS = samplePoints(ssegments);
             for (Point2D point2D : spoint2DS) {
+                String finalDrillType1 = drillType;
                 futures.add(executorService.submit(() -> {
                     BigDecimal[] biaisai = bizPresetPointService.getExtendedPoint(
                             point2D.getX().toString(),
@@ -558,7 +582,7 @@ public class BizDangerAreaController extends BaseController
                             .setDangerAreaId(point2D.getAreaId())
                             .setWorkfaceId(workfaceId)
                             .setTunnelBarId(scbbar.getBarId())
-                            .setDrillType(drillType)
+                            .setDrillType(finalDrillType1)
                             .setAxiss(JSONUtil.toJsonStr(list));
                     return bp;
                 }));
