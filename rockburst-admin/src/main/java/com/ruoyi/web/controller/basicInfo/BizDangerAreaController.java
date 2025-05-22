@@ -37,6 +37,9 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * 危险区管理Controller
@@ -490,52 +493,141 @@ public class BizDangerAreaController extends BaseController
 
 
             String uploadUrl = configService.selectConfigByKey(MapConfigConstant.map_bili);
+            String meter = configService.selectConfigByKey(MapConfigConstant.pre_drill);
 
+
+            ExecutorService executorService = Executors.newFixedThreadPool(8);
+            List<Future<BizPresetPoint>> futures = new ArrayList<>();
+
+// 处理 fpoint2DS
             for (Point2D point2D : fpoint2DS) {
-                BigDecimal[] biaisai  =  GeometryUtil.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),fsbbar.getDirectAngle(),3,Double.parseDouble(uploadUrl));
+                futures.add(executorService.submit(() -> {
+                    BigDecimal[] biaisai = bizPresetPointService.getExtendedPoint(
+                            point2D.getX().toString(),
+                            point2D.getY().toString(),
+                            fsbbar.getDirectAngle(),
+                            Double.parseDouble(meter),
+                            Double.parseDouble(uploadUrl)
+                    );
 
-                List<Map<String,Object>> list = new ArrayList<>();
-                Map<String,Object> map = new HashMap<>();
-                map.put("x",point2D.getX());
-                map.put("y",point2D.getY());
-                Map<String,Object> map1 = new HashMap<>();
-                map1.put("x",biaisai[0]);
-                map1.put("y",biaisai[1]);
-                list.add(map);
-                list.add(map1);
-                BizPresetPoint bp = new BizPresetPoint();
-                bp.setTunnelId(tunnelEntity.getTunnelId())
-                        .setDangerAreaId(point2D.getAreaId())
-                        .setWorkfaceId(workfaceId)
-                        .setTunnelBarId(fsbbar.getBarId())
-                        .setDrillType(drillType)
-                        .setAxiss(JSONUtil.toJsonStr(list));
-                bizPresetPointService.save(bp);
+                    List<Map<String, Object>> list = new ArrayList<>();
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("x", point2D.getX());
+                    map.put("y", point2D.getY());
+                    Map<String, Object> map1 = new HashMap<>();
+                    map1.put("x", biaisai[0]);
+                    map1.put("y", biaisai[1]);
+                    list.add(map);
+                    list.add(map1);
+
+                    BizPresetPoint bp = new BizPresetPoint();
+                    bp.setTunnelId(tunnelEntity.getTunnelId())
+                            .setDangerAreaId(point2D.getAreaId())
+                            .setWorkfaceId(workfaceId)
+                            .setTunnelBarId(fsbbar.getBarId())
+                            .setDrillType(drillType)
+                            .setAxiss(JSONUtil.toJsonStr(list));
+                    return bp;
+                }));
             }
 
-            List<Point2D> spoint2DS =  samplePoints(ssegments);
+// 处理 spoint2DS
+            List<Point2D> spoint2DS = samplePoints(ssegments);
             for (Point2D point2D : spoint2DS) {
-                BigDecimal[] biaisai  =  GeometryUtil.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),scbbar.getDirectAngle(),3,Double.parseDouble(uploadUrl));
+                futures.add(executorService.submit(() -> {
+                    BigDecimal[] biaisai = bizPresetPointService.getExtendedPoint(
+                            point2D.getX().toString(),
+                            point2D.getY().toString(),
+                            scbbar.getDirectAngle(),
+                            Double.parseDouble(meter),
+                            Double.parseDouble(uploadUrl)
+                    );
 
-                List<Map<String,Object>> list = new ArrayList<>();
-                Map<String,Object> map = new HashMap<>();
-                map.put("x",point2D.getX());
-                map.put("y",point2D.getY());
-                Map<String,Object> map1 = new HashMap<>();
-                map1.put("x",biaisai[0]);
-                map1.put("y",biaisai[1]);
-                list.add(map);
-                list.add(map1);
-                BizPresetPoint bp = new BizPresetPoint();
-                bp.setTunnelId(tunnelEntity.getTunnelId())
-                        .setDangerAreaId(point2D.getAreaId())
-                        .setWorkfaceId(workfaceId)
-                        .setTunnelBarId(scbbar.getBarId())
-                        .setDrillType(drillType)
-                        .setAxiss(JSONUtil.toJsonStr(list));
+                    List<Map<String, Object>> list = new ArrayList<>();
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("x", point2D.getX());
+                    map.put("y", point2D.getY());
+                    Map<String, Object> map1 = new HashMap<>();
+                    map1.put("x", biaisai[0]);
+                    map1.put("y", biaisai[1]);
+                    list.add(map);
+                    list.add(map1);
 
-                bizPresetPointService.save(bp);
+                    BizPresetPoint bp = new BizPresetPoint();
+                    bp.setTunnelId(tunnelEntity.getTunnelId())
+                            .setDangerAreaId(point2D.getAreaId())
+                            .setWorkfaceId(workfaceId)
+                            .setTunnelBarId(scbbar.getBarId())
+                            .setDrillType(drillType)
+                            .setAxiss(JSONUtil.toJsonStr(list));
+                    return bp;
+                }));
             }
+
+// 收集结果
+            List<BizPresetPoint> resultList = new ArrayList<>();
+            for (Future<BizPresetPoint> future : futures) {
+                try {
+                    BizPresetPoint bp = future.get();
+                    if (bp != null) {
+                        resultList.add(bp);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace(); // 或使用 log.error("线程异常", e);
+                }
+            }
+
+// 批量保存
+            bizPresetPointService.saveBatch(resultList);
+
+// 关闭线程池
+            executorService.shutdown();
+
+//            for (Point2D point2D : fpoint2DS) {
+//                BigDecimal[] biaisai  =  bizPresetPointService.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),fsbbar.getDirectAngle(),Double.parseDouble(meter),Double.parseDouble(uploadUrl));
+//
+//                List<Map<String,Object>> list = new ArrayList<>();
+//                Map<String,Object> map = new HashMap<>();
+//                map.put("x",point2D.getX());
+//                map.put("y",point2D.getY());
+//                Map<String,Object> map1 = new HashMap<>();
+//                map1.put("x",biaisai[0]);
+//                map1.put("y",biaisai[1]);
+//                list.add(map);
+//                list.add(map1);
+//                BizPresetPoint bp = new BizPresetPoint();
+//                bp.setTunnelId(tunnelEntity.getTunnelId())
+//                        .setDangerAreaId(point2D.getAreaId())
+//                        .setWorkfaceId(workfaceId)
+//                        .setTunnelBarId(fsbbar.getBarId())
+//                        .setDrillType(drillType)
+//                        .setAxiss(JSONUtil.toJsonStr(list));
+//                bizPresetPointService.save(bp);
+//            }
+//
+//            List<Point2D> spoint2DS =  samplePoints(ssegments);
+//            for (Point2D point2D : spoint2DS) {
+//                BigDecimal[] biaisai  =  bizPresetPointService.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),scbbar.getDirectAngle(),3,Double.parseDouble(uploadUrl));
+//
+//                List<Map<String,Object>> list = new ArrayList<>();
+//                Map<String,Object> map = new HashMap<>();
+//                map.put("x",point2D.getX());
+//                map.put("y",point2D.getY());
+//                Map<String,Object> map1 = new HashMap<>();
+//                map1.put("x",biaisai[0]);
+//                map1.put("y",biaisai[1]);
+//                list.add(map);
+//                list.add(map1);
+//                BizPresetPoint bp = new BizPresetPoint();
+//                bp.setTunnelId(tunnelEntity.getTunnelId())
+//                        .setDangerAreaId(point2D.getAreaId())
+//                        .setWorkfaceId(workfaceId)
+//                        .setTunnelBarId(scbbar.getBarId())
+//                        .setDrillType(drillType)
+//                        .setAxiss(JSONUtil.toJsonStr(list));
+//
+//                bizPresetPointService.save(bp);
+//            }
             
         }
 

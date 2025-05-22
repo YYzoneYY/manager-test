@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.business;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.*;
@@ -12,9 +13,7 @@ import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.utils.DeepCopyUtil;
 import com.ruoyi.system.domain.utils.GeometryUtil;
 import com.ruoyi.system.domain.utils.RectangleRegionFinder;
-import com.ruoyi.system.mapper.BizTunnelBarMapper;
-import com.ruoyi.system.mapper.BizWorkfaceMapper;
-import com.ruoyi.system.mapper.PolylineObjectMapper;
+import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizDangerAreaService;
 import com.ruoyi.system.service.IBizTunnelBarService;
 import com.ruoyi.system.service.TunnelService;
@@ -54,6 +53,15 @@ public class TunnelController {
     @Autowired
     private PolylineObjectMapper polylineObjectMapper;
 
+
+    @Autowired
+    private TunnelMapper tunnelMapper;
+    @Autowired
+    private BizTravePointMapper bizTravePointMapper;
+    @Autowired
+    private BizDangerAreaMapper bizDangerAreaMapper;
+
+
     /**
      * 获取工作面管理详细信息
      */
@@ -84,6 +92,9 @@ public class TunnelController {
             return R.fail("没有找到"+dto.getWorkFaceName());
         }
         dto.setWorkFaceId(workfaces.get(0).getWorkfaceId());
+
+
+
 
         TunnelDTO tunnelDTO = new TunnelDTO();
         BeanUtils.copyProperties(dto,tunnelDTO);
@@ -197,6 +208,7 @@ public class TunnelController {
             bizDangerAreaService.insertEntity(ssss);
 
         }
+
         return R.ok();
     }
 
@@ -347,8 +359,105 @@ public class TunnelController {
 
         TunnelEntity tunnel = new TunnelEntity();
         BeanUtils.copyProperties(dto,tunnel);
-        return R.ok(tunnelService.updateById(tunnel));
+        tunnelService.updateById(tunnel);
+
+        if(StringUtils.isNotEmpty(dto.getPointsList()) && StringUtils.isNotEmpty(dto.getWorkFaceCenter())) {
+            List<BigDecimal[]> bigDecimals = GeometryUtil.parseToBigDecimalArrayList(dto.getPointsList());
+            List<Segment> segments = GeometryUtil.findLongestTwoSegments(bigDecimals);
+            String centerstr = dto.getWorkFaceCenter();
+            BigDecimal[] mn = GeometryUtil.parsePoint(centerstr);
+            Segment minnear = GeometryUtil.findNearestSegment(segments, mn);
+
+
+            segments.remove(minnear);
+            if(segments != null && segments.size() > 0){
+                Segment maxnear = segments.get(0);
+                BizTunnelBar bar = new BizTunnelBar();
+                bar.setStartx(maxnear.getStart().getX().toString())
+                        .setStarty(maxnear.getStart().getY().toString())
+                        .setEndx(maxnear.getEnd().getX().toString())
+                        .setEndy(maxnear.getEnd().getY().toString());
+                UpdateWrapper<BizTunnelBar> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.lambda().eq(BizTunnelBar::getType,"fscb");
+                bizTunnelBarMapper.update(bar,updateWrapper);
+            }
+
+
+            if(minnear != null ){
+                BizTunnelBar bar = new BizTunnelBar();
+                bar.setStartx(minnear.getStart().getX().toString())
+                        .setStarty(minnear.getStart().getY().toString())
+                        .setEndx(minnear.getEnd().getX().toString())
+                        .setEndy(minnear.getEnd().getY().toString());
+                UpdateWrapper<BizTunnelBar> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.lambda().eq(BizTunnelBar::getType,"scb");
+                bizTunnelBarMapper.update(bar,updateWrapper);
+            }
+        }
+
+        List<PolylineObject> polylineObjects = polylineObjectMapper.selectList(new QueryWrapper<>());
+        List<Segment> segments = new ArrayList<>();
+        for (PolylineObject polylineObject : polylineObjects) {
+            Segment segment = new Segment();
+            Point2D start = new Point2D();
+            start.setX(new BigDecimal(polylineObject.getStartx()));
+            start.setY(new BigDecimal(polylineObject.getStarty()));
+
+            Point2D end = new Point2D();
+            end.setX(new BigDecimal(polylineObject.getEndx()));
+            end.setY(new BigDecimal(polylineObject.getEndy()));
+            segment.setStart(start);
+            segment.setEnd(end);
+            segments.add(segment);
+        }
+        List<BizDangerArea> areasources = bizDangerAreaService.list(new QueryWrapper<>());
+        List<BizDangerArea> areas = addcsssad1(segments);
+
+
+        List<BizDangerArea> distinctAreas = new ArrayList<>();
+        Set<Set<String>> seen = new HashSet<>();
+
+        for (BizDangerArea area : areas) {
+            List<String> sdsd = getsssssss(area);
+            Set<String> aset = new HashSet<>(sdsd); // 转成 HashSet 去除顺序影响
+
+            if (seen.add(aset)) { // 如果未出现过，就加入
+                distinctAreas.add(area);
+            }
+        }
+        areas = distinctAreas;
+
+
+        List<BizDangerArea> instes = DeepCopyUtil.deepCopyList(areas);
+
+        Iterator<BizDangerArea> it = instes.iterator();
+        while (it.hasNext()) {
+            BizDangerArea insteArea = it.next();
+            List<String> sdsd = getsssssss(insteArea);
+            for (BizDangerArea areasource : areasources) {
+                List<String> sdd = getsssssss(areasource);
+                if (new HashSet<>(sdsd).equals(new HashSet<>(sdd))) {
+                    it.remove();
+                    break; // 避免多次删除
+                }
+            }
+        }
+        areas = instes;
+
+        for (BizDangerArea area : areas) {
+            BizDangerAreaDto ssss = new BizDangerAreaDto();
+            BeanUtils.copyProperties(area,ssss);
+
+            bizDangerAreaService.insertEntity(ssss);
+
+        }
+
+        return R.ok();
     }
+
+
+
+
 
     @ApiOperation(value = "新增巷道", notes = "新增巷道")
     @PostMapping("/add")
