@@ -13,5 +13,7 @@ public class MapConfigConstant {
      */
     public static final String map_bili = "bili";
 
+    public static final String pre_drill = "pre.drill";
+
 
 }

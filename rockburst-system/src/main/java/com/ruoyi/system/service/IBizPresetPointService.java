@@ -7,6 +7,7 @@ import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.dto.BizPlanPrePointDto;
 import com.ruoyi.system.domain.dto.BizPresetPointDto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -17,6 +18,13 @@ import java.util.List;
  */
 public interface IBizPresetPointService extends IService<BizPresetPoint>
 {
+
+    public  BigDecimal[] getExtendedPoint(
+            String xa, String ya,
+            double angleDeg,
+            double i,
+            double scale
+    );
 
 
     public BizPresetPoint selectEntityById(Long id);

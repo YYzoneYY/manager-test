@@ -584,13 +584,15 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             BigDecimal[] pointssa = getExtendedPoint(bigDecimals[0].toString(), bigDecimals[1].toString(), bar.getDirectAngle()+180, Double.parseDouble(dto.getBarRange()), Double.parseDouble(uploadUrl));
 
 
-            BigDecimal[] pointssass = getExtendedPoint(pointssa[0].toString(), pointssa[1].toString(), bar.getDirectRange(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
+            BigDecimal[] pointssasss = getExtendedPoint(pointssa[0].toString(), pointssa[1].toString(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
+
+            BigDecimal[] pointssass = getExtendedPoint(pointssasss[0].toString(), pointssasss[1].toString(), bar.getYtAngle(), dto.getDrillRecords().get(0).getRealDeep().doubleValue(), Double.parseDouble(uploadUrl));
 
 
             List<Map<String,Object>> list = new ArrayList<>();
             Map<String,Object> map = new HashMap<>();
-            map.put("x", pointssa[0]);
-            map.put("y", pointssa[1]);
+            map.put("x", pointssasss[0]);
+            map.put("y", pointssasss[1]);
 
 
             Map<String,Object> map1 = new HashMap<>();
@@ -643,13 +645,18 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             BigDecimal[] pointssa = getExtendedPoint(bigDecimals[0].toString(), bigDecimals[1].toString(), bar.getDirectAngle()+180, Double.parseDouble(dto.getBarRange()), Double.parseDouble(uploadUrl));
 
 
-            BigDecimal[] pointssass = getExtendedPoint(pointssa[0].toString(), pointssa[1].toString(), bar.getDirectRange(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
+
+
+            BigDecimal[] pointssasss = getExtendedPoint(pointssa[0].toString(), pointssa[1].toString(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
+
+
+            BigDecimal[] pointssass = getExtendedPoint(pointssasss[0].toString(), pointssasss[1].toString(), bar.getYtAngle(),dto.getDrillRecords().get(0).getRealDeep().doubleValue(), Double.parseDouble(uploadUrl));
 
 
             List<Map<String,Object>> list = new ArrayList<>();
             Map<String,Object> map = new HashMap<>();
-            map.put("x", pointssa[0]);
-            map.put("y", pointssa[1]);
+            map.put("x", pointssasss[0]);
+            map.put("y", pointssasss[1]);
 
 
             Map<String,Object> map1 = new HashMap<>();
@@ -708,7 +715,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
                     String lat = pointssa[0].toString();
                     String lon = pointssa[1].toString();
-                    BigDecimal[] pppp =  getExtendedPoint(lat,lon,bar.getDirectAngle(),1, Double.parseDouble(uploadUrl));
+//                    BigDecimal[] pppp =  getExtendedPoint(lat,lon,bar.getDirectAngle(),1, Double.parseDouble(uploadUrl));
+                    BigDecimal[] pppp =  pointssa;
                     lat = pppp[0].toString();
                     lon = pppp[1].toString();
                     Map<String, Object> map1 = new HashMap<>();
@@ -969,7 +977,8 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
                     String lat = pointssa[0].toString();
                     String lon = pointssa[1].toString();
-                    BigDecimal[] pppp =  getExtendedPoint(lat,lon,bar.getDirectAngle(),1, Double.parseDouble(uploadUrl));
+//                    BigDecimal[] pppp =  getExtendedPoint(lat,lon,bar.getDirectAngle(),1, Double.parseDouble(uploadUrl));
+                    BigDecimal[] pppp =  pointssa;
                     lat = pppp[0].toString();
                     lon = pppp[1].toString();
                     Map<String, Object> map1 = new HashMap<>();

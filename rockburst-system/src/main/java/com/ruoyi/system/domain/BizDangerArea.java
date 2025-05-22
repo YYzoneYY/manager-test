@@ -39,6 +39,10 @@ public class BizDangerArea extends BaseSelfEntity
     @ApiModelProperty(value = "状态")
     private Integer status;
 
+    @ApiModelProperty(value = "是否生成预设点")
+    private Integer prePointStatus;
+
+
     @ApiModelProperty(value = "等级")
     private String level;
 

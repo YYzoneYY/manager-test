@@ -72,6 +72,31 @@ public class BizPresetPointServiceImpl extends ServiceImpl<BizPresetPointMapper,
 
 
     @Override
+    public BigDecimal[] getExtendedPoint(String xa, String ya, double angleDeg, double i, double scale) {
+        BigDecimal x = new BigDecimal(xa);
+        BigDecimal y = new BigDecimal(ya);
+
+        // 转换为与 X 轴正方向的夹角（Math 以 X 正方向为 0°）
+        double angleFromXAxis = 90 - angleDeg;
+
+        // 弧度制
+        double radians = Math.toRadians(angleFromXAxis);
+
+        // 米 → 坐标单位
+        double distanceInCoord = i * scale;
+
+        // 计算偏移量
+        double dx = distanceInCoord * Math.cos(radians);
+        double dy = distanceInCoord * Math.sin(radians);
+
+        // 新坐标
+        BigDecimal newX = x.add(BigDecimal.valueOf(dx)).setScale(6, BigDecimal.ROUND_HALF_UP);
+        BigDecimal newY = y.add(BigDecimal.valueOf(dy)).setScale(6, BigDecimal.ROUND_HALF_UP);
+
+        return new BigDecimal[]{newX, newY};
+    }
+
+    @Override
     public BizPresetPoint selectEntityById(Long id) {
         return bizPresetPointMapper.selectById(id);
     }

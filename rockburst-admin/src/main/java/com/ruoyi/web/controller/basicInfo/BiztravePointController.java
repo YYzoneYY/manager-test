@@ -15,16 +15,14 @@ import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
-import com.ruoyi.system.domain.BizProjectRecord;
-import com.ruoyi.system.domain.BizTravePoint;
-import com.ruoyi.system.domain.BizTunnelBar;
+import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizTravePointDto;
 import com.ruoyi.system.domain.excel.BiztravePointExcel;
 import com.ruoyi.system.domain.utils.DeepCopyUtil;
 import com.ruoyi.system.domain.utils.GeometryUtil;
 import com.ruoyi.system.domain.vo.BizTravePointVo;
-import com.ruoyi.system.mapper.BizTunnelBarMapper;
+import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -38,6 +36,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.*;
@@ -72,6 +71,22 @@ public class BiztravePointController extends BaseController
     private BizTunnelBarController bizTunnelBarController;
     @Autowired
     private BizTunnelBarMapper bizTunnelBarMapper;
+
+    @Autowired
+    private TunnelMapper tunnelMapper;
+    @Autowired
+    private BizTravePointMapper bizTravePointMapper;
+    @Autowired
+    private BizDangerAreaMapper bizDangerAreaMapper;
+
+
+    @Autowired
+    private BizWorkfaceMapper bizWorkfaceMapper;
+
+    @Autowired
+    private IBizTunnelBarService bizTunnelBarService;
+
+
 
     /**
      * 查询矿井管理列表
@@ -468,12 +483,14 @@ public class BiztravePointController extends BaseController
             List<BizTravePointDto> ds = DeepCopyUtil.deepCopyList(dtos);
             for (int i = 0; i < dtos.size(); i++) {
                 if (listname != null && listname.contains(dtos.get(0).getPointName())) {
-                    ds.remove(i);continue;
+                    ds.remove(i);
+                    no = no+1;
+                    continue;
                 }
                 BizTravePoint bizTravePoint = new BizTravePoint();
                 BeanUtils.copyProperties(dtos.get(i),bizTravePoint);
                 bizTravePoint.setNo(Long.parseLong(no+""));
-
+                no = no+1;
                 for (TunnelEntity tunnel : tunnelEntityList) {
                     if(tunnel.getTunnelName().equals(dtos.get(i).getTunnelName())){
                         bizTravePoint.setTunnelId(tunnel.getTunnelId())
@@ -481,7 +498,6 @@ public class BiztravePointController extends BaseController
                         points.add(bizTravePoint);
                     }
                 }
-                no = i;
             }
 
 //            for (BizTravePointDto dto : dtos) {
@@ -520,7 +536,7 @@ public class BiztravePointController extends BaseController
                     //巷道帮上的点
                     BigDecimal[] dians =  GeometryUtil.getClosestPointOnSegment(point.getAxisx(),point.getAxisy(),bizTunnelBar.getStartx(),bizTunnelBar.getStarty(),bizTunnelBar.getEndx(),bizTunnelBar.getEndy());
                     QueryWrapper<BizTravePoint> queryWrapper2 = new QueryWrapper<>();
-                    queryWrapper2.lambda().eq(BizTravePoint::getNo,point.getNo()-1);
+                    queryWrapper2.lambda().eq(BizTravePoint::getTunnelId,tunnel.getTunnelId()).eq(BizTravePoint::getNo,point.getNo()-1);
                     List<BizTravePoint> travePoints = bizTravePointService.getBaseMapper().selectList(queryWrapper2);
                     if(travePoints != null && travePoints.size()>0){
                         String prex = travePoints.get(0).getAxisx();
@@ -532,13 +548,141 @@ public class BiztravePointController extends BaseController
                     }
                 }
             }
-
+            set_toward_angle();
             return R.ok();
         }
         return R.fail("空数据");
     }
 
+    public R set_toward_angle()
+    {
+        List<TunnelEntity> tunnels = tunnelMapper.selectList(new QueryWrapper<>());
+        for (TunnelEntity tunnel : tunnels) {
+            QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizTravePoint::getTunnelId,tunnel.getTunnelId()).orderByAsc(BizTravePoint::getNo);
+            List<BizTravePoint> points  = bizTravePointMapper.selectList(queryWrapper);
+            if(points == null || points.size() == 0){
+                continue;
+            }
+            Optional<BizTravePoint> minPoint = points.stream()
+                    .min(Comparator.comparing(BizTravePoint::getNo));
+            Optional<BizTravePoint> maxPoint = points.stream()
+                    .max(Comparator.comparing(BizTravePoint::getNo));
+            BigDecimal ll = GeometryUtil.calculateAngleFromYAxis(minPoint.get().getAxisx(), minPoint.get().getAxisy(),maxPoint.get().getAxisx(), maxPoint.get().getAxisy());
+            QueryWrapper<BizTunnelBar> queryWrapper2 = new QueryWrapper<>();
+            queryWrapper2.lambda().eq(BizTunnelBar::getTunnelId,tunnel.getTunnelId());
+            List<BizTunnelBar> bars =  bizTunnelBarService.getBaseMapper().selectList(queryWrapper2);
 
+            BigDecimal[][] pss = new BigDecimal[4][2];
+
+
+            BizWorkface workface =  bizWorkfaceMapper.selectById(tunnel.getWorkFaceId());
+
+
+            BigDecimal[] lll = GeometryUtil.parsePoint(workface.getCenter());
+            for (int i = 0; i < bars.size(); i++) {
+                bars.get(i).setTowardAngle(ll.doubleValue());
+                if(bars.get(i).getType().equals("fscb")){
+                    BigDecimal[] aa = new BigDecimal[2];
+                    aa[0] = new BigDecimal(bars.get(i).getStartx());
+                    aa[1] = new BigDecimal(bars.get(i).getStarty());
+
+                    BigDecimal[] ab = new BigDecimal[2];
+                    ab[0] = new BigDecimal(bars.get(i).getEndx());
+                    ab[1] = new BigDecimal(bars.get(i).getEndy());
+                    double sssas =  GeometryUtil.angleWithYAxisOfPerpendicular(aa,ab,lll);
+                    bars.get(i).setDirectAngle((int)sssas)
+                            .setYtAngle((int)ll.doubleValue());
+                }
+
+                if(bars.get(i).getType().equals("scb")){
+                    BigDecimal[] aa = new BigDecimal[2];
+                    aa[0] = new BigDecimal(bars.get(i).getStartx());
+                    aa[1] = new BigDecimal(bars.get(i).getStarty());
+
+                    BigDecimal[] ab = new BigDecimal[2];
+                    ab[0] = new BigDecimal(bars.get(i).getEndx());
+                    ab[1] = new BigDecimal(bars.get(i).getEndy());
+                    double sssas =  GeometryUtil.angleWithYAxisOfPerpendicular(aa,ab,lll);
+                    bars.get(i).setDirectAngle((int)sssas -180)
+                            .setYtAngle((int)ll.doubleValue());
+                }
+                bizTunnelBarService.updateById(bars.get(i));
+                BigDecimal[] ps = new BigDecimal[2];
+                ps[0] = new BigDecimal(bars.get(i).getStartx());
+                ps[1] = new BigDecimal(bars.get(i).getStarty());
+                pss[i*2] =  ps;
+                BigDecimal[] ps1 = new BigDecimal[2];
+                ps1[0] = new BigDecimal(bars.get(i).getEndx());
+                ps1[1] = new BigDecimal(bars.get(i).getEndy());
+                pss[i*2+1] = ps1;
+            }
+
+            BigDecimal[] mn = new BigDecimal[2];
+            mn[0] = new BigDecimal(minPoint.get().getAxisx());
+            mn[1] = new BigDecimal(minPoint.get().getAxisy());
+            BigDecimal[] min =  GeometryUtil.findNearestPoint(pss,mn);
+
+
+            QueryWrapper<BizDangerArea> queryWrapper3 = new QueryWrapper<>();
+            queryWrapper3.lambda().eq(BizDangerArea::getTunnelId,tunnel.getTunnelId());
+            List<BizDangerArea> areas = bizDangerAreaMapper.selectList(queryWrapper3);
+            if(areas != null && areas.size() > 0){
+
+                for (BizDangerArea area : areas) {
+                    BigDecimal[] s1 = new BigDecimal[2];
+                    s1[0] = new BigDecimal(area.getScbStartx());
+                    s1[1] = new BigDecimal(area.getScbStarty());
+
+                    BigDecimal[] s2 = new BigDecimal[2];
+                    s2[0] = new BigDecimal(area.getScbEndx());
+                    s2[1] = new BigDecimal(area.getScbEndy());
+                    BigDecimal dance1 = GeometryUtil.calculateDistance(s1,min);
+                    BigDecimal dance2 = GeometryUtil.calculateDistance(s2,min);
+                    if(dance1.compareTo(dance2) > 0){
+                        area.setScbStartx(area.getScbEndx())
+                                .setScbStarty(area.getScbEndy())
+                                .setScbEndx(area.getScbStartx())
+                                .setScbEndy(area.getScbStarty());
+                    }
+
+                    s1[0] = new BigDecimal(area.getFscbStartx());
+                    s1[1] = new BigDecimal(area.getFscbStarty());
+
+                    s2[0] = new BigDecimal(area.getFscbEndx());
+                    s2[1] = new BigDecimal(area.getFscbEndy());
+                    dance1 = GeometryUtil.calculateDistance(s1,min);
+                    dance2 = GeometryUtil.calculateDistance(s2,min);
+
+                    if(dance1.compareTo(dance2) > 0){
+                        area.setFscbStartx(area.getFscbEndx())
+                                .setFscbStarty(area.getFscbEndy())
+                                .setFscbEndx(area.getFscbStartx())
+                                .setFscbEndy(area.getFscbStarty());
+                    }
+                }
+
+                List<BizDangerArea> areas1 = sortByDistance(areas,min);
+                for (int i = 0; i < areas1.size(); i++) {
+                    areas1.get(i).setNo(i+1);
+                    areas1.get(i).setStatus(1);
+                    areas1.get(i).setName(tunnel.getTunnelName()+"-"+(i+1)+"-"+"危险区");
+                }
+                for (BizDangerArea area : areas1) {
+                    bizDangerAreaMapper.updateById(area);
+                }
+            }
+        }
+        return R.ok();
+    }
+
+    public List<BizDangerArea>  sortByDistance(List<BizDangerArea> areas, BigDecimal[] m) {
+        areas.sort(Comparator.comparing(area -> {
+            BigDecimal[] centerCoords = GeometryUtil.parsePoints(area.getCenter());
+            return GeometryUtil.calculateDistance(centerCoords, m);
+        }));
+        return areas;
+    }
 
     /**
      * 新增矿井管理 先维护上下巷道,再维护切眼

@@ -37,6 +37,9 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * 危险区管理Controller
@@ -355,7 +358,7 @@ public class BizDangerAreaController extends BaseController
             BizDangerAreaDto ssss = new BizDangerAreaDto();
             BeanUtils.copyProperties(area,ssss);
             TunnelEntity tunnel =  tunnelService.getById(area.getTunnelId());
-            area.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区");
+            area.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区").setPrePointStatus(0);
             bizDangerAreaService.insertEntity(ssss);
             n++;
         }
@@ -450,15 +453,37 @@ public class BizDangerAreaController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:sss')")
     @Log(title = "危险区管理", businessType = BusinessType.INSERT)
     @PostMapping("/addpre")
-    public R addpre( Long workfaceId,String drillType)
+    public R addpre( String workfaceName,String drillType)
     {
+        Long workfaceId;
+        if(StrUtil.isEmpty(workfaceName)){
+            return R.ok();
+        }
+        QueryWrapper<BizWorkface> qw = new QueryWrapper<>();
+        qw.lambda().eq(BizWorkface::getWorkfaceName,workfaceName);
+        List<BizWorkface> workfaces =  bizWorkfaceMapper.selectList(qw);
+        if(workfaces != null && workfaces.size() > 0){
+            workfaceId = workfaces.get(0).getWorkfaceId();
+        } else {
+            workfaceId = 0l;
+        }
 
+        QueryWrapper<BizDangerArea> qw1 = new QueryWrapper<>();
+        qw1.lambda().eq(BizDangerArea::getWorkfaceId,workfaceId).eq(BizDangerArea::getPrePointStatus,0);
+        long count =  bizDangerAreaService.count(qw1);
+        if(count <= 0){
+            return R.ok();
+        }
+
+        if(StrUtil.isEmpty(drillType)){
+            drillType = BizBaseConstant.FILL_TYPE_LDPR;
+        }
         QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(TunnelEntity::getWorkFaceId, workfaceId);
         List<TunnelEntity> tunnelEntities  =  tunnelService.list(queryWrapper);
         for (TunnelEntity tunnelEntity : tunnelEntities) {
             QueryWrapper<BizDangerArea> queryWrapper1 = new QueryWrapper<>();
-            queryWrapper1.lambda().eq(BizDangerArea::getTunnelId,tunnelEntity.getTunnelId()).orderByAsc(BizDangerArea::getNo);
+            queryWrapper1.lambda().eq(BizDangerArea::getPrePointStatus,0).eq(BizDangerArea::getTunnelId,tunnelEntity.getTunnelId()).orderByAsc(BizDangerArea::getNo);
             List<BizDangerArea> areas = bizDangerAreaService.list(queryWrapper1);
             List<BizDangerLevel> levels = bizDangerLevelService.list();
             //非生产帮
@@ -490,52 +515,149 @@ public class BizDangerAreaController extends BaseController
 
 
             String uploadUrl = configService.selectConfigByKey(MapConfigConstant.map_bili);
+            String meter = configService.selectConfigByKey(MapConfigConstant.pre_drill);
 
+
+            ExecutorService executorService = Executors.newFixedThreadPool(8);
+            List<Future<BizPresetPoint>> futures = new ArrayList<>();
+
+// 处理 fpoint2DS
             for (Point2D point2D : fpoint2DS) {
-                BigDecimal[] biaisai  =  GeometryUtil.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),fsbbar.getDirectAngle(),3,Double.parseDouble(uploadUrl));
+                String finalDrillType = drillType;
+                futures.add(executorService.submit(() -> {
+                    BigDecimal[] biaisai = bizPresetPointService.getExtendedPoint(
+                            point2D.getX().toString(),
+                            point2D.getY().toString(),
+                            fsbbar.getDirectAngle(),
+                            Double.parseDouble(meter),
+                            Double.parseDouble(uploadUrl)
+                    );
 
-                List<Map<String,Object>> list = new ArrayList<>();
-                Map<String,Object> map = new HashMap<>();
-                map.put("x",point2D.getX());
-                map.put("y",point2D.getY());
-                Map<String,Object> map1 = new HashMap<>();
-                map1.put("x",biaisai[0]);
-                map1.put("y",biaisai[1]);
-                list.add(map);
-                list.add(map1);
-                BizPresetPoint bp = new BizPresetPoint();
-                bp.setTunnelId(tunnelEntity.getTunnelId())
-                        .setDangerAreaId(point2D.getAreaId())
-                        .setWorkfaceId(workfaceId)
-                        .setTunnelBarId(fsbbar.getBarId())
-                        .setDrillType(drillType)
-                        .setAxiss(JSONUtil.toJsonStr(list));
-                bizPresetPointService.save(bp);
+                    List<Map<String, Object>> list = new ArrayList<>();
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("x", point2D.getX());
+                    map.put("y", point2D.getY());
+                    Map<String, Object> map1 = new HashMap<>();
+                    map1.put("x", biaisai[0]);
+                    map1.put("y", biaisai[1]);
+                    list.add(map);
+                    list.add(map1);
+
+                    BizPresetPoint bp = new BizPresetPoint();
+                    bp.setTunnelId(tunnelEntity.getTunnelId())
+                            .setDangerAreaId(point2D.getAreaId())
+                            .setWorkfaceId(workfaceId)
+                            .setTunnelBarId(fsbbar.getBarId())
+                            .setDrillType(finalDrillType)
+                            .setAxiss(JSONUtil.toJsonStr(list));
+                    return bp;
+                }));
             }
 
-            List<Point2D> spoint2DS =  samplePoints(ssegments);
+// 处理 spoint2DS
+            List<Point2D> spoint2DS = samplePoints(ssegments);
             for (Point2D point2D : spoint2DS) {
-                BigDecimal[] biaisai  =  GeometryUtil.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),scbbar.getDirectAngle(),3,Double.parseDouble(uploadUrl));
+                String finalDrillType1 = drillType;
+                futures.add(executorService.submit(() -> {
+                    BigDecimal[] biaisai = bizPresetPointService.getExtendedPoint(
+                            point2D.getX().toString(),
+                            point2D.getY().toString(),
+                            scbbar.getDirectAngle(),
+                            Double.parseDouble(meter),
+                            Double.parseDouble(uploadUrl)
+                    );
 
-                List<Map<String,Object>> list = new ArrayList<>();
-                Map<String,Object> map = new HashMap<>();
-                map.put("x",point2D.getX());
-                map.put("y",point2D.getY());
-                Map<String,Object> map1 = new HashMap<>();
-                map1.put("x",biaisai[0]);
-                map1.put("y",biaisai[1]);
-                list.add(map);
-                list.add(map1);
-                BizPresetPoint bp = new BizPresetPoint();
-                bp.setTunnelId(tunnelEntity.getTunnelId())
-                        .setDangerAreaId(point2D.getAreaId())
-                        .setWorkfaceId(workfaceId)
-                        .setTunnelBarId(scbbar.getBarId())
-                        .setDrillType(drillType)
-                        .setAxiss(JSONUtil.toJsonStr(list));
+                    List<Map<String, Object>> list = new ArrayList<>();
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("x", point2D.getX());
+                    map.put("y", point2D.getY());
+                    Map<String, Object> map1 = new HashMap<>();
+                    map1.put("x", biaisai[0]);
+                    map1.put("y", biaisai[1]);
+                    list.add(map);
+                    list.add(map1);
 
-                bizPresetPointService.save(bp);
+                    BizPresetPoint bp = new BizPresetPoint();
+                    bp.setTunnelId(tunnelEntity.getTunnelId())
+                            .setDangerAreaId(point2D.getAreaId())
+                            .setWorkfaceId(workfaceId)
+                            .setTunnelBarId(scbbar.getBarId())
+                            .setDrillType(finalDrillType1)
+                            .setAxiss(JSONUtil.toJsonStr(list));
+                    return bp;
+                }));
             }
+
+// 收集结果
+            List<BizPresetPoint> resultList = new ArrayList<>();
+            for (Future<BizPresetPoint> future : futures) {
+                try {
+                    BizPresetPoint bp = future.get();
+                    if (bp != null) {
+                        resultList.add(bp);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace(); // 或使用 log.error("线程异常", e);
+                }
+            }
+
+// 批量保存
+            bizPresetPointService.saveBatch(resultList);
+
+// 关闭线程池
+            executorService.shutdown();
+
+            for (BizDangerArea area : areas) {
+                area.setPrePointStatus(1);
+                bizDangerAreaService.updateById(area);
+
+            }
+
+//            for (Point2D point2D : fpoint2DS) {
+//                BigDecimal[] biaisai  =  bizPresetPointService.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),fsbbar.getDirectAngle(),Double.parseDouble(meter),Double.parseDouble(uploadUrl));
+//
+//                List<Map<String,Object>> list = new ArrayList<>();
+//                Map<String,Object> map = new HashMap<>();
+//                map.put("x",point2D.getX());
+//                map.put("y",point2D.getY());
+//                Map<String,Object> map1 = new HashMap<>();
+//                map1.put("x",biaisai[0]);
+//                map1.put("y",biaisai[1]);
+//                list.add(map);
+//                list.add(map1);
+//                BizPresetPoint bp = new BizPresetPoint();
+//                bp.setTunnelId(tunnelEntity.getTunnelId())
+//                        .setDangerAreaId(point2D.getAreaId())
+//                        .setWorkfaceId(workfaceId)
+//                        .setTunnelBarId(fsbbar.getBarId())
+//                        .setDrillType(drillType)
+//                        .setAxiss(JSONUtil.toJsonStr(list));
+//                bizPresetPointService.save(bp);
+//            }
+//
+//            List<Point2D> spoint2DS =  samplePoints(ssegments);
+//            for (Point2D point2D : spoint2DS) {
+//                BigDecimal[] biaisai  =  bizPresetPointService.getExtendedPoint(point2D.getX().toString(),point2D.getY().toString(),scbbar.getDirectAngle(),3,Double.parseDouble(uploadUrl));
+//
+//                List<Map<String,Object>> list = new ArrayList<>();
+//                Map<String,Object> map = new HashMap<>();
+//                map.put("x",point2D.getX());
+//                map.put("y",point2D.getY());
+//                Map<String,Object> map1 = new HashMap<>();
+//                map1.put("x",biaisai[0]);
+//                map1.put("y",biaisai[1]);
+//                list.add(map);
+//                list.add(map1);
+//                BizPresetPoint bp = new BizPresetPoint();
+//                bp.setTunnelId(tunnelEntity.getTunnelId())
+//                        .setDangerAreaId(point2D.getAreaId())
+//                        .setWorkfaceId(workfaceId)
+//                        .setTunnelBarId(scbbar.getBarId())
+//                        .setDrillType(drillType)
+//                        .setAxiss(JSONUtil.toJsonStr(list));
+//
+//                bizPresetPointService.save(bp);
+//            }
             
         }
 
@@ -652,9 +774,9 @@ public class BizDangerAreaController extends BaseController
             BigDecimal length = GeometryUtil.hypot(dx, dy, precision);
 
             BigDecimal interval = current.getInterval();
-            if (next != null) {
-                interval = interval.min(next.getInterval());
-            }
+//            if (next != null) {
+//                interval = interval.min(next.getInterval());
+//            }
 
             if (interval.compareTo(BigDecimal.ZERO) <= 0) continue;
 
