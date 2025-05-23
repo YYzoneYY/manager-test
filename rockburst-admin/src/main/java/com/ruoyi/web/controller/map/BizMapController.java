@@ -585,6 +585,16 @@ public class BizMapController extends BaseController
             BizPresetPoint p = bizPresetPoints.get(0);
             BizPresetPointVo vo = new BizPresetPointVo();
             BeanUtil.copyProperties(p,vo);
+
+            if(p.getDangerAreaId() != null){
+                BizDangerArea area = bizDangerAreaService.getById(p.getDangerAreaId());
+                QueryWrapper<BizDangerLevel> queryWrapper2 = new QueryWrapper<>();
+                queryWrapper2.lambda().eq(BizDangerLevel::getLevel,area.getLevel());
+                List<BizDangerLevel> levels = bizDangerLevelMapper.selectList(queryWrapper2);
+                if(levels != null && levels.size() > 0){
+                    vo.setColor(levels.get(0).getColor());
+                }
+            }
             BizProjectRecord record = bizProjectRecordService.getByIdDeep(projectId);
             vo.setAccepter(record.getAccepterEntity() == null ? "" : record.getAccepterEntity().getName())
                     .setConstructType(record.getConstructTypeName())
