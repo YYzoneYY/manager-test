@@ -3,11 +3,13 @@ package com.ruoyi.web.controller.map;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.domain.entity.SysDictData;
+import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.push.GeTuiUtils;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.PlanEntity;
@@ -97,6 +99,9 @@ public class BizMapController extends BaseController
     private BizDangerLevelMapper bizDangerLevelMapper;
     @Autowired
     private IYtFactorService ytFactorService;
+
+    @Resource
+    private BizDangerAreaMapper bizDangerAreaMapper;
 
     @Resource
     private GeTuiUtils geTuiUtils;
@@ -355,6 +360,14 @@ public class BizMapController extends BaseController
             final Map<Long, List<BizProjectRecord>>[] groupedByProjectId = new Map[]{records.stream()
                     .collect(Collectors.groupingBy(BizProjectRecord::getProjectId))};
             for (BizPresetPoint point : points) {
+
+                BizDangerArea bizDangerArea = bizDangerAreaMapper.selectOne(new LambdaQueryWrapper<BizDangerArea>()
+                        .eq(BizDangerArea::getDangerAreaId, point.getDangerAreaId())
+                        .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                BizDangerLevel bizDangerLevel = bizDangerLevelMapper.selectOne(new LambdaQueryWrapper<BizDangerLevel>()
+                        .eq(BizDangerLevel::getLevel, bizDangerArea.getLevel())
+                        .eq(BizDangerLevel::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
                 BizPresetPointVo pointVo = new BizPresetPointVo();
                 BeanUtil.copyProperties(point,pointVo);
                 List<BizProjectRecord> projectRecords =  groupedByProjectId[0].get(point.getProjectId());
@@ -369,7 +382,9 @@ public class BizMapController extends BaseController
                             .setWorkfaceName(projectRecord.getWorkfaceName())
                             .setTunnelName(projectRecord.getTunnelName())
                             .setPointName(projectRecord.getTravePoint() == null ? "" : projectRecord.getTravePoint().getPointName())
-                            .setDrillNum(projectRecord.getDrillNum());
+                            .setDrillNum(projectRecord.getDrillNum())
+                            .setLevel(bizDangerLevel.getLevel())
+                            .setColor(bizDangerLevel.getColor());
                     vos.add(pointVo);
                 }
 
@@ -397,6 +412,14 @@ public class BizMapController extends BaseController
             final Map<Long, List<BizProjectRecord>>[] groupedByProjectId = new Map[]{records.stream()
                     .collect(Collectors.groupingBy(BizProjectRecord::getProjectId))};
             for (BizPresetPoint point : pointYts) {
+
+                BizDangerArea bizDangerArea = bizDangerAreaMapper.selectOne(new LambdaQueryWrapper<BizDangerArea>()
+                        .eq(BizDangerArea::getDangerAreaId, point.getDangerAreaId())
+                        .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                BizDangerLevel bizDangerLevel = bizDangerLevelMapper.selectOne(new LambdaQueryWrapper<BizDangerLevel>()
+                        .eq(BizDangerLevel::getLevel, bizDangerArea.getLevel())
+                        .eq(BizDangerLevel::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
                 BizPresetPointVo pointVo = new BizPresetPointVo();
                 BeanUtil.copyProperties(point,pointVo);
                 List<BizProjectRecord> projectRecords =  groupedByProjectId[0].get(point.getProjectId());
@@ -412,7 +435,9 @@ public class BizMapController extends BaseController
                             .setWorkfaceName(projectRecord.getWorkfaceName())
                             .setTunnelName(projectRecord.getTunnelName())
                             .setPointName(projectRecord.getTravePoint() == null ? "" : projectRecord.getTravePoint().getPointName())
-                            .setDrillNum(projectRecord.getDrillNum());
+                            .setDrillNum(projectRecord.getDrillNum())
+                            .setLevel(bizDangerLevel.getLevel())
+                            .setColor(bizDangerLevel.getColor());
                     ytvos.add(pointVo);
                 }
 

@@ -128,4 +128,10 @@ public class BizPresetPointVo extends BaseSelfEntity
     @ApiModelProperty(value = "验收员")
     private String accepter;
 
+    @ApiModelProperty(value = "危险区等级")
+    private String level;
+
+    @ApiModelProperty(value = "颜色")
+    private String color;
+
 }
