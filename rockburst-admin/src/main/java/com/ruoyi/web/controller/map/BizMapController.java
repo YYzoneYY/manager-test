@@ -353,7 +353,9 @@ public class BizMapController extends BaseController
             List<Long> projectIds = points.stream().map(BizPresetPoint::getProjectId).collect(Collectors.toList());
             QueryWrapper<BizProjectRecord> projectRecordQueryWrapper = new QueryWrapper<>();
 
-            projectRecordQueryWrapper.lambda().in(BizProjectRecord::getProjectId,projectIds).eq(BizProjectRecord::getConstructType,constructType);
+            projectRecordQueryWrapper.lambda().in(BizProjectRecord::getProjectId,projectIds)
+                    .eq(BizProjectRecord::getConstructType,constructType)
+                    .ne(BizProjectRecord::getIsHead,1);
             List<BizProjectRecord> records = bizProjectRecordService.listDeep(projectRecordQueryWrapper);
 
 //            List<BizProjectRecord> records = bizProjectRecordService.listByIdsDeep(projectIds);
@@ -407,7 +409,12 @@ public class BizMapController extends BaseController
             pointYts = pointYts.size() > 3 ? pointYts.subList(0, 3) : pointYts;
             List<Long> projectIds = pointYts.stream().map(BizPresetPoint::getProjectId).collect(Collectors.toList());
             QueryWrapper<BizProjectRecord> projectRecordQueryWrapper = new QueryWrapper<>();
-            List<BizProjectRecord> records = bizProjectRecordService.listByIdsDeep(projectIds);
+//            List<BizProjectRecord> records = bizProjectRecordService.listByIdsDeep(projectIds);
+
+            projectRecordQueryWrapper.lambda().in(BizProjectRecord::getProjectId,projectIds)
+                    .eq(BizProjectRecord::getConstructType,constructType)
+                    .eq(BizProjectRecord::getIsHead,1);
+            List<BizProjectRecord> records = bizProjectRecordService.listDeep(projectRecordQueryWrapper);
 
             final Map<Long, List<BizProjectRecord>>[] groupedByProjectId = new Map[]{records.stream()
                     .collect(Collectors.groupingBy(BizProjectRecord::getProjectId))};
