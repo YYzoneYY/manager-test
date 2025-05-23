@@ -98,12 +98,12 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
         QueryWrapper<BizDangerArea> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(BizDangerArea::getTunnelId,tunnelId);
         List<BizDangerArea> areas = bizDangerAreaMapper.selectList(queryWrapper);
-        String[] px = {"0", "4", "4", "0"};
-        String[] py = {"0", "0", "3", "3"};
+
         if(areas != null && areas.size() > 0){
             for (BizDangerArea area : areas) {
-                String source = area.getSource();
-                boolean inside = GeometryUtil.isPointInQuadrilateral(x, y, px, py);
+
+                boolean inside = GeometryUtil.getisInside(x,y,area.getFscbStartx(),area.getFscbStarty(),area.getFscbEndx(),area.getFscbEndy()
+                                                            ,area.getScbStartx(),area.getScbStarty(),area.getScbEndx(),area.getScbEndy());
                 if(inside){
                     return area.getDangerAreaId();
                 }

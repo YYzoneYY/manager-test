@@ -370,6 +370,95 @@ public class GeometryUtil {
         return segments.get(3);
     }
 
+    // 判断点 a 是否在 polygon 中（适用于四边形）
+    public static boolean isInside(Point2D a, Point2D[] polygon) {
+        int n = polygon.length;
+        int count = 0;
+
+        for (int i = 0; i < n; i++) {
+            Point2D p1 = polygon[i];
+            Point2D p2 = polygon[(i + 1) % n];
+
+            if (intersects(a, p1, p2)) {
+                count++;
+            }
+        }
+
+        return count % 2 == 1;
+    }
+
+    // 判断 a 向右的射线是否和边 (p1, p2) 相交
+    private static boolean intersects(Point2D a, Point2D p1, Point2D p2) {
+        // 交换点使 p1.y <= p2.y
+        if (p1.getY().compareTo(p2.getY()) > 0) {
+            Point2D temp = p1;
+            p1 = p2;
+            p2 = temp;
+        }
+
+        BigDecimal ay = a.getY();
+        BigDecimal ax = a.getX();
+
+        // 如果点在顶点上，略微上移以避免精度误差
+        if (ay.compareTo(p1.getY()) == 0 || ay.compareTo(p2.getY()) == 0) {
+            ay = ay.add(new BigDecimal("0.000000001"));
+        }
+
+        // 不在边的垂直范围内
+        if (ay.compareTo(p1.getY()) < 0 || ay.compareTo(p2.getY()) > 0) {
+            return false;
+        }
+
+        // 射线右侧无交点
+        if (ax.compareTo(p1.getX().max(p2.getX())) >= 0) {
+            return false;
+        }
+
+        // 计算交点的 x 坐标
+        BigDecimal dy = p2.getY().subtract(p1.getY());
+        BigDecimal dx = p2.getX().subtract(p1.getX());
+
+        if (dy.compareTo(BigDecimal.ZERO) == 0) {
+            return false; // 水平边
+        }
+
+        BigDecimal k = dx.divide(dy, 20, BigDecimal.ROUND_HALF_UP); // 斜率
+        BigDecimal xIntersect = p1.getX().add(k.multiply(ay.subtract(p1.getY())));
+
+        return ax.compareTo(xIntersect) < 0;
+    }
+
+
+    //示例测试
+    public static boolean getisInside(String x, String y,String fsx,String fsy,String fex,String fey,String ssx,String ssy,String sex,String sey ) {
+        Point2D a = new Point2D(new BigDecimal(x), new BigDecimal(y));
+
+        Point2D[] polygon = new Point2D[] {
+                new Point2D(new BigDecimal(fsx), new BigDecimal(fsy)),
+                new Point2D(new BigDecimal(fex), new BigDecimal(fey)),
+                new Point2D(new BigDecimal(ssx), new BigDecimal(ssy)),
+                new Point2D(new BigDecimal(sex), new BigDecimal(sey))
+        };
+        boolean result = isInside(a, polygon);
+        return result;
+    }
+//
+//    // 示例测试
+//    public static void main(String[] args) {
+//        Point2D a = new Point2D(new BigDecimal("3"), new BigDecimal("3"));
+//
+//        Point2D[] polygon = new Point2D[] {
+//                new Point2D(new BigDecimal("1"), new BigDecimal("1")),
+//                new Point2D(new BigDecimal("5"), new BigDecimal("1")),
+//                new Point2D(new BigDecimal("4"), new BigDecimal("4")),
+//                new Point2D(new BigDecimal("1"), new BigDecimal("4"))
+//        };
+//
+//        boolean result = isInside(a, polygon);
+//        System.out.println("点是否在四边形内: " + result);
+//    }
+//
+
     /**
      * 从 List<BigDecimal[]> 创建线段，并返回长度最长的两条
      * @param bigDecimals 共4个元素，每个元素是长度为2的数组 [x, y]
