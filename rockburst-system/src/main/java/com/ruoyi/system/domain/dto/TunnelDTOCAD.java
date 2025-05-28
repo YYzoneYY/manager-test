@@ -108,4 +108,9 @@ public class TunnelDTOCAD  {
     @ApiModelProperty("中心点")
     private String workFaceCenter;
 
+    @ApiModelProperty("迎头距离")
+    @JsonSerialize(using = ToStringSerializer.class)
+    private BigDecimal headDistance;
+
+
 }

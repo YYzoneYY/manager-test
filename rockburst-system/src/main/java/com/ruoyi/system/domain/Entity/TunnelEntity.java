@@ -91,10 +91,16 @@ public class TunnelEntity extends BusinessBaseEntity implements Serializable {
     @TableField()
     private String center;
 
+    @ApiModelProperty("迎头距离")
+    @JsonSerialize(using = ToStringSerializer.class)
+    private BigDecimal headDistance;
+
     @ApiModelProperty(value = "删除标志(0存在2删除)")
     @TableField("del_flag")
     @TableLogic(value = "0", delval = "2")
     private String delFlag;
+
+
 
 
     // 计算点m到直线ab的垂线方向与Y轴正方向夹角
