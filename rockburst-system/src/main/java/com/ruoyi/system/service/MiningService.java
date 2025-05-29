@@ -3,6 +3,7 @@ package com.ruoyi.system.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.MiningEntity;
+import com.ruoyi.system.domain.dto.FootageReturnDTO;
 import com.ruoyi.system.domain.dto.MiningFootageNewDTO;
 import com.ruoyi.system.domain.dto.MiningSelectNewDTO;
 import com.ruoyi.system.domain.dto.ShowWayChoiceListDTO;
@@ -68,4 +69,11 @@ public interface MiningService extends IService<MiningEntity> {
      * @return 返回结果
      */
     List<ShowWayChoiceListDTO> getShowWayChoiceList(Long workFaceId);
+
+    /**
+     * 根据当前累计进尺计算目前回采进度处于危险区信息
+     * @param workFaceId 工作面id
+     * @return 返回结果
+     */
+    List<FootageReturnDTO> getFootageReturnDTO(Long workFaceId);
 }

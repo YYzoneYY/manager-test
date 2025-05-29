@@ -103,4 +103,10 @@ public class MiningFootageController {
     public R<List<ShowWayChoiceListDTO>> getShowWayChoiceList(@RequestParam(value = "workFaceId") Long workFaceId) {
         return R.ok(miningService.getShowWayChoiceList(workFaceId));
     }
+
+    @ApiOperation(value = "根据当前累计进尺计算目前回采进度处于危险区信息", notes = "根据当前累计进尺计算目前回采进度处于危险区信息")
+    @GetMapping(value = "/getFootageReturnDTO")
+    public R<List<FootageReturnDTO> > getFootageReturnDTO(@RequestParam(value = "workFaceId") Long workFaceId) {
+        return R.ok(this.miningService.getFootageReturnDTO(workFaceId));
+    }
 }

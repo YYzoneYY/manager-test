@@ -7,22 +7,27 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.enums.MiningFootageEnum;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.system.domain.BizDangerArea;
+import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.MiningEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
+import com.ruoyi.system.domain.SysConfig;
 import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.utils.AlgorithmUtils;
+import com.ruoyi.system.domain.utils.GeometryUtil;
 import com.ruoyi.system.domain.utils.ListPageSimple;
-import com.ruoyi.system.mapper.BizWorkfaceMapper;
-import com.ruoyi.system.mapper.MiningMapper;
-import com.ruoyi.system.mapper.TunnelMapper;
+import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.MiningRecordNewService;
 import com.ruoyi.system.service.MiningService;
+import com.ruoyi.system.service.TunnelService;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +63,18 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
 
     @Resource
     private TunnelMapper tunnelMapper;
+
+    @Resource
+    private BizTunnelBarMapper bizTunnelBarMapper;
+
+    @Resource
+    private SysConfigMapper sysConfigMapper;
+
+    @Resource
+    private TunnelService tunnelService;
+
+    @Resource
+    private BizDangerAreaMapper bizDangerAreaMapper;
 
     private static final BigDecimal TWO = new BigDecimal("2");
 
@@ -360,6 +377,145 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         listDTO.setValue("average");
         showWayChoiceListDTOS.add(listDTO);
         return showWayChoiceListDTOS;
+    }
+
+    @Override
+    public List<FootageReturnDTO> getFootageReturnDTO(Long workFaceId) {
+
+        List<FootageReturnDTO> footageReturnDTOS = new ArrayList<>();
+        List<TunnelChoiceListDTO> tunnelChoiceListTwo = tunnelService.getTunnelChoiceListTwo(workFaceId);
+
+        if (tunnelChoiceListTwo == null || tunnelChoiceListTwo.isEmpty()) {
+            return footageReturnDTOS;
+        }
+
+        // 获取比例因子
+        String key = sysConfigMapper.selectOne(new LambdaQueryWrapper<SysConfig>()
+                        .eq(SysConfig::getConfigKey, "bili"))
+                .getConfigValue();
+
+        for (TunnelChoiceListDTO choiceListDTO : tunnelChoiceListTwo) {
+            FootageReturnDTO footageReturnDTO = new FootageReturnDTO();
+
+            BizTunnelBar bizTunnelBar = bizTunnelBarMapper.selectOne(new LambdaQueryWrapper<BizTunnelBar>()
+                    .eq(BizTunnelBar::getWorkfaceId, workFaceId)
+                    .eq(BizTunnelBar::getTunnelId, choiceListDTO.getValue())
+                    .eq(BizTunnelBar::getType, "scb")
+                    .eq(BizTunnelBar::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+            if (bizTunnelBar == null) {
+                continue;
+            }
+
+            BigDecimal miningPaceSum = miningMapper.mineLength(workFaceId, choiceListDTO.getValue());
+            // 转换
+            double reverseDistance = -miningPaceSum.doubleValue();
+
+            String endX = bizTunnelBar.getEndx();
+            String endY = bizTunnelBar.getEndy();
+
+            // 巷道走向
+            Double towardAngle = bizTunnelBar.getTowardAngle();
+            double angle = towardAngle + 180;
+            // 比例
+
+            // 当前累计进尺坐标
+            BigDecimal[] extendedPoint = GeometryUtil.getExtendedPoint(endX, endY, angle, reverseDistance, Double.parseDouble(key));
+            String footageCoordinates = extendedPoint[0] + "," + extendedPoint[1];
+            footageReturnDTO.setFootageCoordinates(footageCoordinates);
+
+            MPJLambdaWrapper<BizDangerArea> queryWrapper = new MPJLambdaWrapper<>();
+            queryWrapper.eq(BizDangerArea::getWorkfaceId, workFaceId)
+                    .eq(BizDangerArea::getTunnelId, choiceListDTO.getValue())
+                    .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
+            List<BizDangerArea> bizDangerAreas = bizDangerAreaMapper.selectJoinList(queryWrapper);
+
+            Long dangerAreaId = null;
+            for (BizDangerArea bizDangerArea : bizDangerAreas) {
+                List<CoordinatePointDTO> coordinatePointDTOS = buildCoordinatePoints(bizDangerArea);
+
+                CoordinatePointDTO target = new CoordinatePointDTO(extendedPoint[0].doubleValue(), extendedPoint[1].doubleValue());
+
+                if (AlgorithmUtils.isPointInPolygon(coordinatePointDTOS, target)) {
+                    dangerAreaId = bizDangerArea.getDangerAreaId();
+                    break; // 找到后跳出循环
+                }
+            }
+
+            footageReturnDTO.setDangerAreaId(dangerAreaId); // 可能为 null 或实际值
+
+            if (dangerAreaId != null) {
+                BizDangerArea currentArea = null;
+                for (BizDangerArea area : bizDangerAreas) {
+                    if (area.getDangerAreaId().equals(dangerAreaId)) {
+                        currentArea = area;
+                        break;
+                    }
+                }
+
+                if (currentArea == null) {
+                    continue;
+                }
+
+                String scbStartX = currentArea.getScbStartx();
+                String scbStartY = currentArea.getScbStarty();
+                if (scbStartX == null || scbStartY == null) {
+                    continue;
+                }
+
+                BigDecimal[] startPoint = new BigDecimal[] {
+                        new BigDecimal(scbStartX),
+                        new BigDecimal(scbStartY)
+                };
+                BigDecimal[] tunnelBarEnd = new BigDecimal[] {
+                        new BigDecimal(endX),
+                        new BigDecimal(endY)
+                };
+
+                BigDecimal spacing = GeometryUtil.calculateDistance(tunnelBarEnd, startPoint);
+                // 当前危险区剩余长度
+                BigDecimal remainingLength = spacing.subtract(miningPaceSum);
+                footageReturnDTO.setCurrentRemainingLength(remainingLength.doubleValue());
+
+                Integer no = currentArea.getNo();
+                if (no == null || no <= 1) {
+                    footageReturnDTOS.add(footageReturnDTO);
+                    continue;
+                }
+                // 前一个危险区
+                BizDangerArea frontDangerArea = bizDangerAreaMapper.selectOne(new LambdaQueryWrapper<BizDangerArea>()
+                        .eq(BizDangerArea::getWorkfaceId, workFaceId)
+                        .eq(BizDangerArea::getTunnelId, choiceListDTO.getValue())
+                        .eq(BizDangerArea::getNo, no - 1)
+                        .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+                if (frontDangerArea == null) {
+                    footageReturnDTOS.add(footageReturnDTO);
+                    continue;
+                }
+                // 前一个危险区结束坐标
+                BigDecimal[] frontEndPoint = new BigDecimal[]{
+                        new BigDecimal(frontDangerArea.getScbEndx()),
+                        new BigDecimal(frontDangerArea.getScbEndy())
+                };
+                // 当前危险区与前一个危险区之间的距离
+                BigDecimal calculated = GeometryUtil.calculateDistance(startPoint, frontEndPoint);
+                // 距下一个危险区的距离
+                BigDecimal distance = remainingLength.add(calculated);
+                footageReturnDTO.setNextDangerAreaDistance(distance.doubleValue());
+                footageReturnDTOS.add(footageReturnDTO);
+            }
+        }
+        return footageReturnDTOS;
+    }
+
+    private static List<CoordinatePointDTO> buildCoordinatePoints(BizDangerArea area) {
+        List<CoordinatePointDTO> points = new ArrayList<>();
+        points.add(new CoordinatePointDTO(Double.parseDouble(area.getScbStartx()), Double.parseDouble(area.getScbStarty())));
+        points.add(new CoordinatePointDTO(Double.parseDouble(area.getScbEndx()), Double.parseDouble(area.getScbEndy())));
+        points.add(new CoordinatePointDTO(Double.parseDouble(area.getFscbStartx()), Double.parseDouble(area.getFscbStarty())));
+        points.add(new CoordinatePointDTO(Double.parseDouble(area.getFscbEndx()), Double.parseDouble(area.getFscbEndy())));
+        return points;
     }
 
     /**
