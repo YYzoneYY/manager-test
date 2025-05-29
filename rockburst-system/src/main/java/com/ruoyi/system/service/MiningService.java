@@ -76,4 +76,14 @@ public interface MiningService extends IService<MiningEntity> {
      * @return 返回结果
      */
     List<FootageReturnDTO> getFootageReturnDTO(Long workFaceId);
+
+    /**
+     * 初始化数据
+     * @param workFaceId 工作面id
+     * @param tunnelId 巷道id
+     * @param time 回采时间
+     * @param sumPace 累计
+     * @return 返回结果
+     */
+    int initData(Long workFaceId, Long tunnelId,  Long time, BigDecimal sumPace);
 }

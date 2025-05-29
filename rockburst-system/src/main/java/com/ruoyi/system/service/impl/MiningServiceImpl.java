@@ -509,6 +509,20 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         return footageReturnDTOS;
     }
 
+    @Override
+    public int initData(Long workFaceId, Long tunnelId, Long time, BigDecimal sumPace) {
+        int flag = 0;
+        MiningEntity miningEntity = new MiningEntity();
+        miningEntity.setWorkFaceId(workFaceId);
+        miningEntity.setTunnelId(tunnelId);
+        miningEntity.setMiningTime(time);
+        miningEntity.setMiningPace(sumPace);
+        miningEntity.setFlag(MiningFootageEnum.NORMAL.getIndex());
+        miningEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
+        flag = miningMapper.insert(miningEntity);
+        return flag;
+    }
+
     private static List<CoordinatePointDTO> buildCoordinatePoints(BizDangerArea area) {
         List<CoordinatePointDTO> points = new ArrayList<>();
         points.add(new CoordinatePointDTO(Double.parseDouble(area.getScbStartx()), Double.parseDouble(area.getScbStarty())));
