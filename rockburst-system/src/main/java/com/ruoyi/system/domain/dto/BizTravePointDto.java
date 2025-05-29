@@ -102,6 +102,14 @@ public class BizTravePointDto implements Serializable
     @ApiModelProperty(value = "经度")
     private String longitude;
 
+    @NotNull(groups = GroupAdd.class)
+    @ApiModelProperty(value = "标高")
+    private String elevation;
+
+
+    @NotNull(groups = GroupAdd.class)
+    @ApiModelProperty(value = "坡度")
+    private String slope;
 
 
 }

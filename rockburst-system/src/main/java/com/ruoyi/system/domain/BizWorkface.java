@@ -162,4 +162,17 @@ public class BizWorkface extends BaseSelfEntity
     @TableField()
     private String pointsList;
 
+
+    @ApiModelProperty(value = "初次来压")
+    @TableField()
+    private String firstWeighting;
+
+
+    @ApiModelProperty(value = "循环来压")
+    @TableField()
+    private String circulateWeighting;
+
+    @ApiModelProperty(value = "初始回采进尺位置")
+    @TableField()
+    private String miningProgress;
 }
