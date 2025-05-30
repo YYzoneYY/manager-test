@@ -265,6 +265,7 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
             pageSize = 10;
         }
         try {
+            List<MiningFootageNewDTO> aggregatedResults = new ArrayList<>();
             Long startTime = 0L;
             Long endTime = 0L;
             if (ObjectUtil.isNull(miningSelectNewDTO.getStartTime()) || ObjectUtil.isNull(miningSelectNewDTO.getEndTime())) {
@@ -274,31 +275,35 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
                 startTime = miningSelectNewDTO.getStartTime();
                 endTime = miningSelectNewDTO.getEndTime();
             }
-            List<MiningFootageNewDTO> aggregatedResults = new ArrayList<>();
-            List<TimeDTO> timeList = getTimeList(startTime, endTime);
-            for (TimeDTO timeDTO : timeList) {
-                List<MiningFootageNewDTO> footageNewDTOS = miningMapper.selectMining(timeDTO.startOfDayTimestamp, timeDTO.endOfDayTimestamp,
-                        miningSelectNewDTO.getPace(), miningSelectNewDTO.getWorkFaceId());
+            if (startTime != null && endTime != null) {
+                List<TimeDTO> timeList = getTimeList(startTime, endTime);
+                for (TimeDTO timeDTO : timeList) {
+                    List<MiningFootageNewDTO> footageNewDTOS = miningMapper.selectMining(timeDTO.startOfDayTimestamp, timeDTO.endOfDayTimestamp,
+                            miningSelectNewDTO.getPace(), miningSelectNewDTO.getWorkFaceId());
 
-                if (ObjectUtil.isNotEmpty(footageNewDTOS)) {
-                    Set<Long> tunnelIdSet = footageNewDTOS.stream()
-                            .map(MiningFootageNewDTO::getTunnelId)
-                            .collect(Collectors.toSet());
+                    if (ObjectUtil.isNotEmpty(footageNewDTOS)) {
+                        Set<Long> tunnelIdSet = footageNewDTOS.stream()
+                                .map(MiningFootageNewDTO::getTunnelId)
+                                .collect(Collectors.toSet());
 
-                    if (!tunnelIdSet.isEmpty()) {
-                        List<Long> tunnelIds = new ArrayList<>(tunnelIdSet);
-                        BigDecimal num = BigDecimal.valueOf(tunnelIdSet.size());
-                        BigDecimal paceSum = footageNewDTOS.stream()
-                                .map(MiningEntity::getMiningPace)
-                                .reduce(BigDecimal.ZERO, BigDecimal::add);
-                        BigDecimal paceSumFmt = paceSum.divide(num, 2, RoundingMode.HALF_UP);  // 平均回采进尺
-                        BigDecimal cumulativePace = getBatchCumulativePace(tunnelIds, timeDTO.endOfDayTimestamp);
-                        BigDecimal cumulativePaceFmt  = cumulativePace.divide(num, 2, RoundingMode.HALF_UP); //平均累计回采进尺
-                        MiningFootageNewDTO miningFootageNewDTO = createMiningFootageNewDTO(timeDTO.startOfDayTimestamp, paceSumFmt, cumulativePaceFmt);
-                        aggregatedResults.add(miningFootageNewDTO);
+                        if (!tunnelIdSet.isEmpty()) {
+                            List<Long> tunnelIds = new ArrayList<>(tunnelIdSet);
+                            BigDecimal num = BigDecimal.valueOf(tunnelIdSet.size());
+                            BigDecimal paceSum = footageNewDTOS.stream()
+                                    .map(MiningEntity::getMiningPace)
+                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                            BigDecimal paceSumFmt = paceSum.divide(num, 2, RoundingMode.HALF_UP);  // 平均回采进尺
+                            BigDecimal cumulativePace = getBatchCumulativePace(tunnelIds, timeDTO.endOfDayTimestamp);
+                            BigDecimal cumulativePaceFmt  = cumulativePace.divide(num, 2, RoundingMode.HALF_UP); //平均累计回采进尺
+                            MiningFootageNewDTO miningFootageNewDTO = createMiningFootageNewDTO(timeDTO.startOfDayTimestamp, paceSumFmt, cumulativePaceFmt);
+                            aggregatedResults.add(miningFootageNewDTO);
+                        }
                     }
                 }
+            } else {
+                aggregatedResults.add(new MiningFootageNewDTO());
             }
+
             aggregatedResults.sort(Comparator.comparingLong(MiningFootageNewDTO::getMiningTime).reversed());
             int total = aggregatedResults.size();
             int fromIndex = (pageNum - 1) * pageSize;
