@@ -409,103 +409,109 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
             }
 
             BigDecimal miningPaceSum = miningMapper.mineLength(workFaceId, choiceListDTO.getValue());
-            // 转换
-            double reverseDistance = -miningPaceSum.doubleValue();
 
-            String endX = bizTunnelBar.getEndx();
-            String endY = bizTunnelBar.getEndy();
-
-            // 巷道走向
-            Double towardAngle = bizTunnelBar.getTowardAngle();
-            double angle = towardAngle + 180;
-            // 比例
-
-            // 当前累计进尺坐标
-            BigDecimal[] extendedPoint = GeometryUtil.getExtendedPoint(endX, endY, angle, reverseDistance, Double.parseDouble(key));
-            String footageCoordinates = extendedPoint[0] + "," + extendedPoint[1];
-            footageReturnDTO.setFootageCoordinates(footageCoordinates);
-
-            MPJLambdaWrapper<BizDangerArea> queryWrapper = new MPJLambdaWrapper<>();
-            queryWrapper.eq(BizDangerArea::getWorkfaceId, workFaceId)
-                    .eq(BizDangerArea::getTunnelId, choiceListDTO.getValue())
-                    .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
-            List<BizDangerArea> bizDangerAreas = bizDangerAreaMapper.selectJoinList(queryWrapper);
-
-            Long dangerAreaId = null;
-            for (BizDangerArea bizDangerArea : bizDangerAreas) {
-                List<CoordinatePointDTO> coordinatePointDTOS = buildCoordinatePoints(bizDangerArea);
-
-                CoordinatePointDTO target = new CoordinatePointDTO(extendedPoint[0].doubleValue(), extendedPoint[1].doubleValue());
-
-                if (AlgorithmUtils.isPointInPolygon(coordinatePointDTOS, target)) {
-                    dangerAreaId = bizDangerArea.getDangerAreaId();
-                    break; // 找到后跳出循环
-                }
+            if (miningPaceSum == null) {
+                footageReturnDTOS.add(footageReturnDTO);
+                continue;
             }
 
-            footageReturnDTO.setDangerAreaId(dangerAreaId); // 可能为 null 或实际值
+                // 转换
+                double reverseDistance = -miningPaceSum.doubleValue();
 
-            if (dangerAreaId != null) {
-                BizDangerArea currentArea = null;
-                for (BizDangerArea area : bizDangerAreas) {
-                    if (area.getDangerAreaId().equals(dangerAreaId)) {
-                        currentArea = area;
-                        break;
+                String endX = bizTunnelBar.getEndx();
+                String endY = bizTunnelBar.getEndy();
+
+                // 巷道走向
+                Double towardAngle = bizTunnelBar.getTowardAngle();
+                double angle = towardAngle + 180;
+                // 比例
+
+                // 当前累计进尺坐标
+                BigDecimal[] extendedPoint = GeometryUtil.getExtendedPoint(endX, endY, angle, reverseDistance, Double.parseDouble(key));
+                String footageCoordinates = extendedPoint[0] + "," + extendedPoint[1];
+                footageReturnDTO.setFootageCoordinates(footageCoordinates);
+
+                MPJLambdaWrapper<BizDangerArea> queryWrapper = new MPJLambdaWrapper<>();
+                queryWrapper.eq(BizDangerArea::getWorkfaceId, workFaceId)
+                        .eq(BizDangerArea::getTunnelId, choiceListDTO.getValue())
+                        .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
+                List<BizDangerArea> bizDangerAreas = bizDangerAreaMapper.selectJoinList(queryWrapper);
+
+                Long dangerAreaId = null;
+                for (BizDangerArea bizDangerArea : bizDangerAreas) {
+                    List<CoordinatePointDTO> coordinatePointDTOS = buildCoordinatePoints(bizDangerArea);
+
+                    CoordinatePointDTO target = new CoordinatePointDTO(extendedPoint[0].doubleValue(), extendedPoint[1].doubleValue());
+
+                    if (AlgorithmUtils.isPointInPolygon(coordinatePointDTOS, target)) {
+                        dangerAreaId = bizDangerArea.getDangerAreaId();
+                        break; // 找到后跳出循环
                     }
                 }
 
-                if (currentArea == null) {
-                    continue;
-                }
+                footageReturnDTO.setDangerAreaId(dangerAreaId); // 可能为 null 或实际值
 
-                String scbStartX = currentArea.getScbStartx();
-                String scbStartY = currentArea.getScbStarty();
-                if (scbStartX == null || scbStartY == null) {
-                    continue;
-                }
+                if (dangerAreaId != null) {
+                    BizDangerArea currentArea = null;
+                    for (BizDangerArea area : bizDangerAreas) {
+                        if (area.getDangerAreaId().equals(dangerAreaId)) {
+                            currentArea = area;
+                            break;
+                        }
+                    }
 
-                BigDecimal[] startPoint = new BigDecimal[] {
-                        new BigDecimal(scbStartX),
-                        new BigDecimal(scbStartY)
-                };
-                BigDecimal[] tunnelBarEnd = new BigDecimal[] {
-                        new BigDecimal(endX),
-                        new BigDecimal(endY)
-                };
+                    if (currentArea == null) {
+                        continue;
+                    }
 
-                BigDecimal spacing = GeometryUtil.calculateDistance(tunnelBarEnd, startPoint);
-                // 当前危险区剩余长度
-                BigDecimal remainingLength = spacing.subtract(miningPaceSum);
-                footageReturnDTO.setCurrentRemainingLength(remainingLength.doubleValue());
+                    String scbStartX = currentArea.getScbStartx();
+                    String scbStartY = currentArea.getScbStarty();
+                    if (scbStartX == null || scbStartY == null) {
+                        continue;
+                    }
 
-                Integer no = currentArea.getNo();
-                if (no == null || no <= 1) {
+                    BigDecimal[] startPoint = new BigDecimal[] {
+                            new BigDecimal(scbStartX),
+                            new BigDecimal(scbStartY)
+                    };
+                    BigDecimal[] tunnelBarEnd = new BigDecimal[] {
+                            new BigDecimal(endX),
+                            new BigDecimal(endY)
+                    };
+
+                    BigDecimal spacing = GeometryUtil.calculateDistance(tunnelBarEnd, startPoint);
+                    // 当前危险区剩余长度
+                    BigDecimal remainingLength = spacing.subtract(miningPaceSum);
+                    footageReturnDTO.setCurrentRemainingLength(remainingLength.doubleValue());
+
+                    Integer no = currentArea.getNo();
+                    if (no == null || no <= 1) {
+                        footageReturnDTOS.add(footageReturnDTO);
+                        continue;
+                    }
+                    // 前一个危险区
+                    BizDangerArea frontDangerArea = bizDangerAreaMapper.selectOne(new LambdaQueryWrapper<BizDangerArea>()
+                            .eq(BizDangerArea::getWorkfaceId, workFaceId)
+                            .eq(BizDangerArea::getTunnelId, choiceListDTO.getValue())
+                            .eq(BizDangerArea::getNo, no - 1)
+                            .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+                    if (frontDangerArea == null) {
+                        footageReturnDTOS.add(footageReturnDTO);
+                        continue;
+                    }
+                    // 前一个危险区结束坐标
+                    BigDecimal[] frontEndPoint = new BigDecimal[]{
+                            new BigDecimal(frontDangerArea.getScbEndx()),
+                            new BigDecimal(frontDangerArea.getScbEndy())
+                    };
+                    // 当前危险区与前一个危险区之间的距离
+                    BigDecimal calculated = GeometryUtil.calculateDistance(startPoint, frontEndPoint);
+                    // 距下一个危险区的距离
+                    BigDecimal distance = remainingLength.add(calculated);
+                    footageReturnDTO.setNextDangerAreaDistance(distance.doubleValue());
                     footageReturnDTOS.add(footageReturnDTO);
-                    continue;
                 }
-                // 前一个危险区
-                BizDangerArea frontDangerArea = bizDangerAreaMapper.selectOne(new LambdaQueryWrapper<BizDangerArea>()
-                        .eq(BizDangerArea::getWorkfaceId, workFaceId)
-                        .eq(BizDangerArea::getTunnelId, choiceListDTO.getValue())
-                        .eq(BizDangerArea::getNo, no - 1)
-                        .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-
-                if (frontDangerArea == null) {
-                    footageReturnDTOS.add(footageReturnDTO);
-                    continue;
-                }
-                // 前一个危险区结束坐标
-                BigDecimal[] frontEndPoint = new BigDecimal[]{
-                        new BigDecimal(frontDangerArea.getScbEndx()),
-                        new BigDecimal(frontDangerArea.getScbEndy())
-                };
-                // 当前危险区与前一个危险区之间的距离
-                BigDecimal calculated = GeometryUtil.calculateDistance(startPoint, frontEndPoint);
-                // 距下一个危险区的距离
-                BigDecimal distance = remainingLength.add(calculated);
-                footageReturnDTO.setNextDangerAreaDistance(distance.doubleValue());
-                footageReturnDTOS.add(footageReturnDTO);
-            }
         }
         return footageReturnDTOS;
     }
