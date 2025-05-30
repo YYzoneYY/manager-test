@@ -12,6 +12,9 @@ import lombok.Data;
 @Data
 public class FootageReturnDTO {
 
+    @ApiModelProperty("巷道id")
+    private Long tunnelId;
+
     @ApiModelProperty("当前累计进尺坐标")
     private String footageCoordinates;
 

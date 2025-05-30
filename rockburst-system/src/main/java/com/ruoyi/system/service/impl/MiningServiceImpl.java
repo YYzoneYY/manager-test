@@ -396,6 +396,7 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
 
         for (TunnelChoiceListDTO choiceListDTO : tunnelChoiceListTwo) {
             FootageReturnDTO footageReturnDTO = new FootageReturnDTO();
+            footageReturnDTO.setTunnelId(choiceListDTO.getValue());
 
             BizTunnelBar bizTunnelBar = bizTunnelBarMapper.selectOne(new LambdaQueryWrapper<BizTunnelBar>()
                     .eq(BizTunnelBar::getWorkfaceId, workFaceId)
