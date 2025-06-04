@@ -24,6 +24,13 @@ public class ProjectDTO {
     @ApiModelProperty(value = "施工时间")
     private Long  constructTime;
 
+    @ApiModelProperty(value = "施工地点")
+    private String constructionSite;
+
     @ApiModelProperty(value = "状态")
     private Integer status;
+
+    private String constructType;
+    private Long tunnelId;
+    private Long workFaceId;
 }

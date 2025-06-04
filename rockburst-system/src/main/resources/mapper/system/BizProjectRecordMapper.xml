@@ -28,4 +28,56 @@
         order by bpr.construct_time desc
     </select>
 
+    <select id="queryProjectOfAudit" resultType="com.ruoyi.system.domain.dto.largeScreen.ProjectDTO">
+        select
+            bpr.project_id as projectId,
+            bpr.construct_type as constructType,
+            bpr.drill_type as drillType,
+            bpr.construct_unit_id as constructUnitId,
+            bpr.construct_time as constructTime,
+            bpr.tunnel_id as tunnelId,
+            bpr.workface_id as workFaceId,
+           bpr.status as status
+        from biz_project_record as bpr
+        <where>
+            <if test="constructionUnitId != null and constructionUnitId != ''">
+                and bpr.construct_unit_id = #{constructionUnitId}
+            </if>
+            <if test="fillingType != null and fillingType != ''">
+                and bpr.drill_type = #{fillingType}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and bpr.construct_time between #{startTime} and #{endTime}
+            </if>
+            and bpr.status = 3
+        </where>
+        order by bpr.construct_time desc
+    </select>
+
+    <select id="queryProjectOfAudit" resultType="com.ruoyi.system.domain.dto.largeScreen.ProjectDTO">
+        select
+        bpr.project_id as projectId,
+        bpr.construct_type as constructType,
+        bpr.drill_type as drillType,
+        bpr.construct_unit_id as constructUnitId,
+        bpr.construct_time as constructTime,
+        bpr.tunnel_id as tunnelId,
+        bpr.workface_id as workFaceId,
+        bpr.status as status
+        from biz_project_record as bpr
+        <where>
+            <if test="constructionUnitId != null and constructionUnitId != ''">
+                and bpr.construct_unit_id = #{constructionUnitId}
+            </if>
+            <if test="fillingType != null and fillingType != ''">
+                and bpr.drill_type = #{fillingType}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and bpr.construct_time between #{startTime} and #{endTime}
+            </if>
+            and bpr.status in (1,2)
+        </where>
+        order by bpr.construct_time desc
+    </select>
+
 </mapper>

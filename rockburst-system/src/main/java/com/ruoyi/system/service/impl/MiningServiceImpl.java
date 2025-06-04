@@ -417,12 +417,32 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
                     .eq(BizTunnelBar::getType, "scb")
                     .eq(BizTunnelBar::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
 
-            if (bizTunnelBar == null) {
+
+            BizTunnelBar bizTunnelFscbBar = bizTunnelBarMapper.selectOne(new LambdaQueryWrapper<BizTunnelBar>()
+                    .eq(BizTunnelBar::getWorkfaceId, workFaceId)
+                    .eq(BizTunnelBar::getTunnelId, choiceListDTO.getValue())
+                    .eq(BizTunnelBar::getType, "fscb")
+                    .eq(BizTunnelBar::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+            if (bizTunnelBar == null ||  bizTunnelFscbBar == null) {
                 continue;
             }
 
+            String scbEndX = bizTunnelBar.getEndx();
+            String scbEndY = bizTunnelBar.getEndy();
+
+            String fscbEndX = bizTunnelFscbBar.getEndx();
+            String fscbEndY = bizTunnelFscbBar.getEndy();
+
+            double midpointY = (Double.parseDouble(fscbEndY) + Double.parseDouble(scbEndY)) / 2;
+            double absY = Math.abs(midpointY);
+
+            // 巷道走向
+            Double towardAngle = bizTunnelBar.getTowardAngle();
+//            double angle = towardAngle + 180;
+
             // 巷道生产邦结束坐标
-            footageReturnDTO.setTunnelScbEndCoordinate(bizTunnelBar.getEndx() + "," + bizTunnelBar.getEndy());
+            footageReturnDTO.setFootageStartCoordinates(bizTunnelBar.getEndx() + "," + absY);
             // 累计进尺
             BigDecimal miningPaceSum = miningMapper.mineLength(workFaceId, choiceListDTO.getValue());
 
@@ -435,15 +455,8 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
             // 转换
             double reverseDistance = -miningPaceSum.doubleValue();
 
-            String endX = bizTunnelBar.getEndx();
-            String endY = bizTunnelBar.getEndy();
-
-            // 巷道走向
-            Double towardAngle = bizTunnelBar.getTowardAngle();
-//                double angle = towardAngle + 180;
-
             // 当前累计进尺坐标
-            BigDecimal[] extendedPoint = GeometryUtil.getExtendedPoint(endX, endY, towardAngle, reverseDistance, key);
+            BigDecimal[] extendedPoint = GeometryUtil.getExtendedPoint(scbEndX, String.valueOf(absY), towardAngle, reverseDistance, key);
 
             if (extendedPoint.length < 2) {
                 continue;
@@ -489,8 +502,8 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
                         new BigDecimal(scbStartY)
                 };
                 BigDecimal[] tunnelBarEnd = new BigDecimal[]{
-                        new BigDecimal(endX),
-                        new BigDecimal(endY)
+                        new BigDecimal(scbEndX),
+                        new BigDecimal(scbEndY)
                 };
 
                 BigDecimal spacing = GeometryUtil.calculateDistance(tunnelBarEnd, startPoint);
@@ -530,7 +543,8 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
                         .eq(BizDangerArea::getTunnelId, choiceListDTO.getValue())
                         .ge(BizDangerArea::getScbEndx, extendedPoint[0])
                         .eq(BizDangerArea::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
-                        .orderByDesc(BizDangerArea::getNo);
+                        .orderByDesc(BizDangerArea::getNo)
+                        .last("limit 1");
 
                 BizDangerArea bizDangerArea = bizDangerAreaMapper.selectOne(queryWrapper);
 

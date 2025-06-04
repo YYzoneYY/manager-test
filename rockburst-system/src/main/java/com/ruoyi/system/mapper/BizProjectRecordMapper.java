@@ -4,6 +4,8 @@ import com.github.pagehelper.Page;
 import com.github.yulichang.base.MPJBaseMapper;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.dto.ReportFormsDTO;
+import com.ruoyi.system.domain.dto.largeScreen.ProjectDTO;
+import com.ruoyi.system.domain.dto.largeScreen.Select1DTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -76,4 +78,8 @@ public interface BizProjectRecordMapper extends MPJBaseMapper<BizProjectRecord>
     Page<ReportFormsDTO> queryDateByPage(@Param("startTime") Date startTime,
                                          @Param("endTime") Date endTime,
                                          @Param("drillTypes") List<String> drillTypes);
+
+    List<ProjectDTO> queryProjectOfAudit(Select1DTO select1DTO);
+
+    List<ProjectDTO> queryProjectOfUnaudited(Select1DTO select1DTO);
 }
