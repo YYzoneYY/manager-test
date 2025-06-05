@@ -168,7 +168,7 @@ public class TunnelController {
             segments.add(segment);
         }
         List<BizDangerArea> areasources = bizDangerAreaService.list(new QueryWrapper<>());
-        List<BizDangerArea> areas = addcsssad1(segments);
+        List<BizDangerArea> areas = addcsssad1(segments,tunnelId);
 
 
         List<BizDangerArea> distinctAreas = new ArrayList<>();
@@ -206,7 +206,7 @@ public class TunnelController {
             BizDangerAreaDto ssss = new BizDangerAreaDto();
             BeanUtils.copyProperties(area,ssss);
             TunnelEntity tunnel =  tunnelService.getById(area.getTunnelId());
-            area.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区").setPrePointStatus(0);
+            ssss.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区").setPrePointStatus(0);
             bizDangerAreaService.insertEntity(ssss);
             n++;
         }
@@ -226,11 +226,13 @@ public class TunnelController {
 
 
 
-    public List<BizDangerArea> addcsssad1(  List<Segment> pointList)
+    public List<BizDangerArea> addcsssad1(  List<Segment> pointList,Long tunnelId)
     {
 
         List<BizDangerArea> areas = new ArrayList<>();
-        List<TunnelEntity> tunnelEntities = tunnelService.list();
+        QueryWrapper<TunnelEntity> qw = new QueryWrapper<>();
+        qw.eq("tunnel_id", tunnelId);
+        List<TunnelEntity> tunnelEntities = tunnelService.list(qw);
 
         for (TunnelEntity tunnelEntity : tunnelEntities) {
             QueryWrapper<BizTunnelBar> queryWrapper = new QueryWrapper<>();
@@ -413,7 +415,7 @@ public class TunnelController {
             segments.add(segment);
         }
         List<BizDangerArea> areasources = bizDangerAreaService.list(new QueryWrapper<>());
-        List<BizDangerArea> areas = addcsssad1(segments);
+        List<BizDangerArea> areas = addcsssad1(segments,tunnel.getTunnelId());
 
 
         List<BizDangerArea> distinctAreas = new ArrayList<>();

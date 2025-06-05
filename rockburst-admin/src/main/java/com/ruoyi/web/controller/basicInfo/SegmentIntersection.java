@@ -17,8 +17,8 @@ public class SegmentIntersection  {
             return null; // 平行或重合
         }
 
-        BigDecimal s = vperp(v, w).divide(dVal, 20, BigDecimal.ROUND_HALF_UP);
-        BigDecimal t = vperp(u, w).divide(dVal, 20, BigDecimal.ROUND_HALF_UP);
+        BigDecimal s = vperp(v, w).divide(dVal, 6, BigDecimal.ROUND_HALF_UP);
+        BigDecimal t = vperp(u, w).divide(dVal, 6, BigDecimal.ROUND_HALF_UP);
 
         // 判断 s 和 t 是否都在 [0, 1] 区间内
         if (isInRange(s) && isInRange(t)) {

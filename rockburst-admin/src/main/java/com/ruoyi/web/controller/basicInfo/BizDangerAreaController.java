@@ -221,19 +221,22 @@ public class BizDangerAreaController extends BaseController
             if(bars == null || bars.size() == 0){
                 continue;
             }
-            List<List<Point2D>> lines = new ArrayList<>();
-            for (BizTunnelBar bar : bars) {
-                List<Point2D> line = new ArrayList<>();
-                Point2D start = new Point2D();
-                start.setX(new BigDecimal(bar.getStartx()));
-                start.setY(new BigDecimal(bar.getStarty()));
-                Point2D end = new Point2D();
-                end.setX(new BigDecimal(bar.getEndx()));
-                end.setY(new BigDecimal(bar.getEndy()));
-                line.add(start);
-                line.add(end);
-                lines.add(line);
+            if(bars.get(0).getTowardAngle() != null && bars.get(0).getTowardAngle() > 0){
+                continue;
             }
+//            List<List<Point2D>> lines = new ArrayList<>();
+//            for (BizTunnelBar bar : bars) {
+//                List<Point2D> line = new ArrayList<>();
+//                Point2D start = new Point2D();
+//                start.setX(new BigDecimal(bar.getStartx()));
+//                start.setY(new BigDecimal(bar.getStarty()));
+//                Point2D end = new Point2D();
+//                end.setX(new BigDecimal(bar.getEndx()));
+//                end.setY(new BigDecimal(bar.getEndy()));
+//                line.add(start);
+//                line.add(end);
+//                lines.add(line);
+//            }
             List<List<Point2D>> barPoints = new ArrayList<>();
             List<List<Point2D>> list = new ArrayList<>();
             for (Segment segment : pointList) {
@@ -252,8 +255,18 @@ public class BizDangerAreaController extends BaseController
                     list.add(point2DS);
                 }
             }
-            List<BigDecimal[]> bigDecimals = getSegments(bars);
-            Segment segment = GeometryUtil.findShortestTwoSegments(bigDecimals);
+//            List<BigDecimal[]> bigDecimals = getSegments(bars);
+
+//            Segment segment = GeometryUtil.findShortestTwoSegments(bigDecimals);
+
+            Segment segment = new Segment();
+            Point2D start2D = new Point2D();
+            Point2D end2D = new Point2D();
+            start2D.setX(new BigDecimal(bars.get(0).getStartx() ) );
+            start2D.setY(new BigDecimal(bars.get(0).getStarty() ) );
+            end2D.setX(new BigDecimal(bars.get(1).getStarty() ) );
+            end2D.setY(new BigDecimal(bars.get(1).getStarty() ) );
+
 
             List<Segment> sorted = GeometryUtil.findNearRectangleRegions(list, segment);
 
@@ -358,7 +371,7 @@ public class BizDangerAreaController extends BaseController
             BizDangerAreaDto ssss = new BizDangerAreaDto();
             BeanUtils.copyProperties(area,ssss);
             TunnelEntity tunnel =  tunnelService.getById(area.getTunnelId());
-            area.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区").setPrePointStatus(0);
+            ssss.setStatus(1).setName(tunnel.getTunnelName()+"-"+n+"危险区").setPrePointStatus(0);
             bizDangerAreaService.insertEntity(ssss);
             n++;
         }
