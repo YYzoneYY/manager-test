@@ -121,8 +121,8 @@ public class PlanController {
         headers.add(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName);
         headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-        headers.setContentLength(resource.getFile().length());
-
+//        headers.setContentLength(resource.getFile().length());
+        headers.setContentLength(resource.contentLength()); //
         return ResponseEntity.ok()
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
