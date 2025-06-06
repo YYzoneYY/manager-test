@@ -10,6 +10,7 @@ import com.ruoyi.system.domain.dto.largeScreen.ProjectTypeDTO;
 import com.ruoyi.system.domain.dto.largeScreen.Select1DTO;
 import com.ruoyi.system.mapper.BizProjectRecordMapper;
 import com.ruoyi.system.mapper.BizWorkfaceMapper;
+import com.ruoyi.system.mapper.SysDictDataMapper;
 import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.LargeScreenService;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +40,9 @@ public class LargeScreenServiceImpl implements LargeScreenService {
     @Resource
     private BizWorkfaceMapper bizWorkfaceMapper;
 
+    @Resource
+    private SysDictDataMapper sysDictDataMapper;
+
 
     @Override
     public List<ProjectDTO> obtainProject(String tag, Select1DTO select1DTO) {
@@ -54,7 +59,26 @@ public class LargeScreenServiceImpl implements LargeScreenService {
 
     @Override
     public List<ProjectTypeDTO> obtainProjectType(Long startTime, Long endTime) {
-        return List.of();
+        List<ProjectTypeDTO> projectTypeDTOS = bizProjectRecordMapper.queryProjectType(startTime, endTime);
+
+        if (ObjectUtil.isNotEmpty(projectTypeDTOS)) {
+            // 收集所有 drillType
+            List<String> drillTypes = projectTypeDTOS.stream()
+                    .map(ProjectTypeDTO::getDrillType)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .collect(Collectors.toList());
+            // 批量查询字典标签
+            Map<String, String> dictLabelMap = sysDictDataMapper.selectDictLabels(ConstantsInfo.DRILL_TYPE_DICT_TYPE, drillTypes);
+            // 设置格式化字段
+            projectTypeDTOS.forEach(projectTypeDTO -> {
+                String drillType = projectTypeDTO.getDrillType();
+                if (drillType != null) {
+                    projectTypeDTO.setDrillTypeFmt(dictLabelMap.getOrDefault(drillType, ""));
+                }
+            });
+        }
+        return projectTypeDTOS;
     }
 
     private List<ProjectDTO> enrichProjectDTOsWithConstructionSite(List<ProjectDTO> projectDTOS) {

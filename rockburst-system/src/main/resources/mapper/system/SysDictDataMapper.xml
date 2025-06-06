@@ -50,6 +50,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		select dict_label from sys_dict_data
 		where dict_type = #{dictType} and dict_value = #{dictValue}
 	</select>
+
+	<select id="selectDictLabels" resultType="java.util.Map">
+		select dict_label from sys_dict_data
+		where dict_type = #{dictType}
+		and dict_value in
+		<foreach collection="values" item="value" open="(" separator="," close=")">
+			#{value}
+		</foreach>
+	</select>
 	
 	<select id="selectDictDataById" parameterType="Long" resultMap="SysDictDataResult">
 		<include refid="selectDictDataVo"/>
@@ -59,7 +68,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<select id="countDictDataByType" resultType="Integer">
 	    select count(1) from sys_dict_data where dict_type=#{dictType}  
 	</select>
-	
+
 	<delete id="deleteDictDataById" parameterType="Long">
  		delete from sys_dict_data where dict_code = #{dictCode}
  	</delete>

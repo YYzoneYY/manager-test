@@ -39,6 +39,11 @@ public class PlanEntity extends BusinessBaseEntity implements Serializable {
     @TableField("annual")
     private String annual;
 
+    @ApiModelProperty(value = "归属月")
+    @NotBlank(groups = {ParameterValidationOther.class}, message = "月份不能为空")
+    @TableField("monthly")
+    private String monthly;
+
     @ApiModelProperty(value = "所属工作面")
     @NotNull(groups = {ParameterValidationOther.class}, message = "工作面id不能为空")
     @TableField("workface_id")

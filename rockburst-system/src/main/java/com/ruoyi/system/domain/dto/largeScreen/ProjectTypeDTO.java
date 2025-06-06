@@ -15,6 +15,9 @@ public class ProjectTypeDTO {
     @ApiModelProperty(value = "钻孔类型")
     private String drillType;
 
+    @ApiModelProperty(value = "钻孔类型格式化")
+    private String drillTypeFmt;
+
     @ApiModelProperty(value = "数量")
     private Integer count;
 }

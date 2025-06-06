@@ -54,7 +54,7 @@
         order by bpr.construct_time desc
     </select>
 
-    <select id="queryProjectOfAudit" resultType="com.ruoyi.system.domain.dto.largeScreen.ProjectDTO">
+    <select id="queryProjectOfUnaudited" resultType="com.ruoyi.system.domain.dto.largeScreen.ProjectDTO">
         select
         bpr.project_id as projectId,
         bpr.construct_type as constructType,
@@ -78,6 +78,18 @@
             and bpr.status in (1,2)
         </where>
         order by bpr.construct_time desc
+    </select>
+
+    <select id="queryProjectType" resultType="com.ruoyi.system.domain.dto.largeScreen.ProjectTypeDTO">
+        select drill_type as drillType,
+               count(*) as count
+        from biz_project_record
+        where del_flag = '0',
+            <if test="startTime != null and endTime != null">
+                and construct_time between #{startTime} and #{endTime}
+            </if>
+        group by
+            drill_type
     </select>
 
 </mapper>

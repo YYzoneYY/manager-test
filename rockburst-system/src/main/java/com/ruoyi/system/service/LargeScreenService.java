@@ -21,5 +21,11 @@ public interface LargeScreenService {
      */
     List<ProjectDTO> obtainProject(String tag, Select1DTO select1DTO);
 
+    /**
+     * 获取施工类型分类统计
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 结果
+     */
     List<ProjectTypeDTO> obtainProjectType(Long startTime, Long endTime);
 }

@@ -1,6 +1,7 @@
 package com.ruoyi.system.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -37,6 +38,15 @@ public interface SysDictDataMapper extends BaseMapper<SysDictData>
      * @return 字典标签
      */
     public String selectDictLabel(@Param("dictType") String dictType, @Param("dictValue") String dictValue);
+
+    /**
+     * 根据字典类型和字典键值批量查询字典数据信息
+     *
+     * @param dictType 字典类型
+     * @param values 字典键值数组
+     * @return 字典标签
+     */
+    Map<String, String> selectDictLabels(@Param("dictType") String dictType, @Param("values") List<String> values);
 
     /**
      * 根据字典数据ID查询信息

@@ -6,6 +6,7 @@
         select distinct
             p.plan_id as planId,
             p.annual as annual,
+            p.monthly as monthly,
             p.workface_id as workFaceId,
             p.plan_type as planType,
             p.type as type,
