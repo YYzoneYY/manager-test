@@ -483,7 +483,7 @@ public class BiztravePointController extends BaseController
             List<BizTravePointDto> ds = DeepCopyUtil.deepCopyList(dtos);
             for (int i = 0; i < dtos.size(); i++) {
                 if (listname != null && listname.contains(dtos.get(0).getPointName())) {
-                    ds.remove(i);
+                    ds.remove(dtos.get(i));
                     no = no+1;
                     continue;
                 }
@@ -568,11 +568,24 @@ public class BiztravePointController extends BaseController
                     .min(Comparator.comparing(BizTravePoint::getNo));
             Optional<BizTravePoint> maxPoint = points.stream()
                     .max(Comparator.comparing(BizTravePoint::getNo));
+
+
+
+
+
             BigDecimal ll = GeometryUtil.calculateAngleFromYAxis(minPoint.get().getAxisx(), minPoint.get().getAxisy(),maxPoint.get().getAxisx(), maxPoint.get().getAxisy());
             QueryWrapper<BizTunnelBar> queryWrapper2 = new QueryWrapper<>();
             queryWrapper2.lambda().eq(BizTunnelBar::getTunnelId,tunnel.getTunnelId());
             List<BizTunnelBar> bars =  bizTunnelBarService.getBaseMapper().selectList(queryWrapper2);
 
+            BigDecimal[] mindians =  GeometryUtil.getClosestPointOnSegment(minPoint.get().getAxisx(),minPoint.get().getAxisy(),bars.get(0).getStartx(),bars.get(0).getStarty(),bars.get(0).getEndx(),bars.get(0).getEndy());
+
+            BigDecimal[] maxdians =  GeometryUtil.getClosestPointOnSegment(maxPoint.get().getAxisx(),maxPoint.get().getAxisy(),bars.get(0).getStartx(),bars.get(0).getStarty(),bars.get(0).getEndx(),bars.get(0).getEndy());
+
+            if(mindians != null && mindians[0] != null && mindians[1] != null && maxdians != null && maxdians[0] != null && maxdians[1] != null){
+                ll = GeometryUtil.calculateAngleFromYAxis(mindians[0]+"", mindians[1]+"",maxdians[0]+"", maxdians[1]+"");
+
+            }
             BigDecimal[][] pss = new BigDecimal[4][2];
 
 
@@ -582,6 +595,10 @@ public class BiztravePointController extends BaseController
             BigDecimal[] lll = GeometryUtil.parsePoint(workface.getCenter());
             for (int i = 0; i < bars.size(); i++) {
                 bars.get(i).setTowardAngle(ll.doubleValue());
+                BigDecimal[] sage =  GeometryUtil.getOrder(new BigDecimal(bars.get(i).getStartx()),new BigDecimal(bars.get(i).getStarty()),
+                                    new BigDecimal(bars.get(i).getEndx()),new BigDecimal(bars.get(i).getEndy()),ll.doubleValue());
+                bars.get(i).setStartx(sage[0]+"").setStarty(sage[1]+"").setEndx(sage[2]+"").setEndy(sage[3]+"");
+
                 if(bars.get(i).getType().equals("fscb")){
                     BigDecimal[] aa = new BigDecimal[2];
                     aa[0] = new BigDecimal(bars.get(i).getStartx());
@@ -608,20 +625,22 @@ public class BiztravePointController extends BaseController
                             .setYtAngle((int)ll.doubleValue());
                 }
                 bizTunnelBarService.updateById(bars.get(i));
-                BigDecimal[] ps = new BigDecimal[2];
-                ps[0] = new BigDecimal(bars.get(i).getStartx());
-                ps[1] = new BigDecimal(bars.get(i).getStarty());
-                pss[i*2] =  ps;
-                BigDecimal[] ps1 = new BigDecimal[2];
-                ps1[0] = new BigDecimal(bars.get(i).getEndx());
-                ps1[1] = new BigDecimal(bars.get(i).getEndy());
-                pss[i*2+1] = ps1;
+//                BigDecimal[] ps = new BigDecimal[2];
+//                ps[0] = new BigDecimal(bars.get(i).getStartx());
+//                ps[1] = new BigDecimal(bars.get(i).getStarty());
+//                pss[i*2] =  ps;
+//                BigDecimal[] ps1 = new BigDecimal[2];
+//                ps1[0] = new BigDecimal(bars.get(i).getEndx());
+//                ps1[1] = new BigDecimal(bars.get(i).getEndy());
+//                pss[i*2+1] = ps1;
             }
 
-            BigDecimal[] mn = new BigDecimal[2];
-            mn[0] = new BigDecimal(minPoint.get().getAxisx());
-            mn[1] = new BigDecimal(minPoint.get().getAxisy());
-            BigDecimal[] min =  GeometryUtil.findNearestPoint(pss,mn);
+//            BigDecimal[] mn = new BigDecimal[2];
+//            mn[0] = new BigDecimal(minPoint.get().getAxisx());
+//            mn[1] = new BigDecimal(minPoint.get().getAxisy());
+            BigDecimal[] min = new BigDecimal[2];
+            min[0] = new BigDecimal(bars.get(0).getStartx());
+            min[1] = new BigDecimal(bars.get(1).getStartx());
 
 
             QueryWrapper<BizDangerArea> queryWrapper3 = new QueryWrapper<>();
@@ -640,10 +659,10 @@ public class BiztravePointController extends BaseController
                     BigDecimal dance1 = GeometryUtil.calculateDistance(s1,min);
                     BigDecimal dance2 = GeometryUtil.calculateDistance(s2,min);
                     if(dance1.compareTo(dance2) > 0){
-                        area.setScbStartx(area.getScbEndx())
-                                .setScbStarty(area.getScbEndy())
-                                .setScbEndx(area.getScbStartx())
-                                .setScbEndy(area.getScbStarty());
+                        area.setScbStartx(s2[0]+"")
+                                .setScbStarty(s2[1]+"")
+                                .setScbEndx(s1[0]+"")
+                                .setScbEndy(s1[1]+"");
                     }
 
                     s1[0] = new BigDecimal(area.getFscbStartx());
@@ -655,10 +674,10 @@ public class BiztravePointController extends BaseController
                     dance2 = GeometryUtil.calculateDistance(s2,min);
 
                     if(dance1.compareTo(dance2) > 0){
-                        area.setFscbStartx(area.getFscbEndx())
-                                .setFscbStarty(area.getFscbEndy())
-                                .setFscbEndx(area.getFscbStartx())
-                                .setFscbEndy(area.getFscbStarty());
+                        area.setFscbStartx(s2[0]+"")
+                                .setFscbStarty(s2[1]+"")
+                                .setFscbEndx(s1[0]+"")
+                                .setFscbEndy(s1[1]+"");
                     }
                 }
 

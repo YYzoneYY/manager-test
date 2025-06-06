@@ -498,6 +498,55 @@ public class GeometryUtil {
         return BigDecimal.valueOf(dist);
     }
 
+    /**
+     * 判断在指定方向角下，点 A 和 B 的前后顺序
+     *
+     * @param xa 点 A 的 X 坐标（BigDecimal）
+     * @param ya 点 A 的 Y 坐标（BigDecimal）
+     * @param xb 点 B 的 X 坐标（BigDecimal）
+     * @param yb 点 B 的 Y 坐标（BigDecimal）
+     * @param towardAngleDeg 与 Y 轴的夹角，单位为度（0 表示正北方向，顺时针为正）
+     * @return "A → B" 表示 A 在前，"B → A" 表示 B 在前，重合则返回提示
+     */
+    public static BigDecimal[] getOrder(BigDecimal xa, BigDecimal ya, BigDecimal xb, BigDecimal yb, double towardAngleDeg) {
+        MathContext mc = new MathContext(15, RoundingMode.HALF_UP); // 精度可调
+
+        // 角度转换为弧度（用 double 计算即可）
+        double theta = Math.toRadians(towardAngleDeg);
+        BigDecimal dx = new BigDecimal(Math.sin(theta), mc);
+        BigDecimal dy = new BigDecimal(Math.cos(theta), mc);
+
+        // 向量 AB = (xb - xa, yb - ya)
+        BigDecimal abx = xb.subtract(xa);
+        BigDecimal aby = yb.subtract(ya);
+
+        // 点积 dot = abx * dx + aby * dy
+        BigDecimal dot = abx.multiply(dx, mc).add(aby.multiply(dy, mc), mc);
+
+        int cmp = dot.compareTo(BigDecimal.ZERO);
+        if (cmp > 0) {
+            BigDecimal[] sge = new BigDecimal[4];
+            sge[0] = xa;
+            sge[1] = ya;
+            sge[2] = xb;
+            sge[3] = ya;
+            return sge;
+        } else if (cmp < 0) {
+            BigDecimal[] sge = new BigDecimal[4];
+            sge[0] = xb;
+            sge[1] = yb;
+            sge[2] = xa;
+            sge[3] = ya;
+            return sge;
+        } else {
+            BigDecimal[] sge = new BigDecimal[4];
+            sge[0] = xa;
+            sge[1] = ya;
+            sge[2] = xb;
+            sge[3] = ya;
+            return sge;
+        }
+    }
 
     /**
      * 计算点m到直线ab的垂线方向与Y轴正方向夹角

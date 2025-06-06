@@ -110,6 +110,8 @@ public class BizDangerAreaDto
     @EntityMapping(thisField = "level" , joinField = "level")
     private BizDangerLevel dangerLevel;
 
+    @ApiModelProperty(value = "是否生成预设点")
+    private Integer prePointStatus;
 
 
 
