@@ -1,5 +1,6 @@
 package com.ruoyi.system.service;
 
+import com.ruoyi.system.domain.dto.largeScreen.PlanCountDTO;
 import com.ruoyi.system.domain.dto.largeScreen.ProjectDTO;
 import com.ruoyi.system.domain.dto.largeScreen.ProjectTypeDTO;
 import com.ruoyi.system.domain.dto.largeScreen.Select1DTO;
@@ -28,4 +29,6 @@ public interface LargeScreenService {
      * @return 结果
      */
     List<ProjectTypeDTO> obtainProjectType(Long startTime, Long endTime);
+
+    List<PlanCountDTO> obtainPlanCount();
 }

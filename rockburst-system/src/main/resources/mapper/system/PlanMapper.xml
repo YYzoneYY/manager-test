@@ -63,4 +63,12 @@
         order by p.create_time desc
     </select>
 
+    <select id="queryPlanCount" resultType="com.ruoyi.system.domain.dto.largeScreen.PlanCountDTO">
+        select p.monthly as monthly,
+               group_count(p.plan_id) as planIds
+        from plan as p
+        where del_flag = '0'
+        group by p.monthly
+    </select>
+
 </mapper>

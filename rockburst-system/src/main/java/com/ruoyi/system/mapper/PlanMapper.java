@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.pagehelper.Page;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.dto.SelectNewPlanDTO;
+import com.ruoyi.system.domain.dto.largeScreen.PlanCountDTO;
 import com.ruoyi.system.domain.vo.PlanVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -23,5 +24,7 @@ public interface PlanMapper extends BaseMapper<PlanEntity>{
                            @Param("deptIds") List<Long> deptIds,
                            @Param("dateScopeSelf") Integer dateScopeSelf,
                            @Param("userName") String userName);
+
+    List<PlanCountDTO> queryPlanCount();
 
 }

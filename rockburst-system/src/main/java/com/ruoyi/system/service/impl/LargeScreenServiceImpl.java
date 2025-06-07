@@ -1,25 +1,31 @@
 package com.ruoyi.system.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.system.domain.BizPresetPoint;
+import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
+import com.ruoyi.system.domain.Entity.PlanAreaEntity;
+import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
+import com.ruoyi.system.domain.dto.largeScreen.PlanCountDTO;
 import com.ruoyi.system.domain.dto.largeScreen.ProjectDTO;
 import com.ruoyi.system.domain.dto.largeScreen.ProjectTypeDTO;
 import com.ruoyi.system.domain.dto.largeScreen.Select1DTO;
-import com.ruoyi.system.mapper.BizProjectRecordMapper;
-import com.ruoyi.system.mapper.BizWorkfaceMapper;
-import com.ruoyi.system.mapper.SysDictDataMapper;
-import com.ruoyi.system.mapper.TunnelMapper;
+import com.ruoyi.system.mapper.*;
+import com.ruoyi.system.service.IBizTravePointService;
 import com.ruoyi.system.service.LargeScreenService;
+import com.ruoyi.system.service.PlanAreaService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +48,18 @@ public class LargeScreenServiceImpl implements LargeScreenService {
 
     @Resource
     private SysDictDataMapper sysDictDataMapper;
+
+    @Resource
+    private PlanMapper planMapper;
+
+    @Resource
+    private BizProjectRecordMapper projectRecordMapper;
+
+    @Resource
+    private IBizTravePointService bizTravePointService;
+
+    @Resource
+    private PlanAreaService planAreaService;
 
 
     @Override
@@ -80,6 +98,51 @@ public class LargeScreenServiceImpl implements LargeScreenService {
         }
         return projectTypeDTOS;
     }
+
+    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
+
+    @Override
+    public List<PlanCountDTO> obtainPlanCount() {
+        List<PlanCountDTO> planCountDTOS = planMapper.queryPlanCount();
+        if (planCountDTOS != null && !planCountDTOS.isEmpty()) {
+            for (PlanCountDTO planCountDTO : planCountDTOS) {
+                int i = 0;
+                List<Long> planIds = planCountDTO.getPlanIds();
+                if (planIds != null && !planIds.isEmpty()) {
+                    planCountDTO.setPlanTotal(planIds.size());
+
+                    // 批量查询 PlanEntity
+                    List<PlanEntity> planEntities = planMapper.selectList(new LambdaQueryWrapper<PlanEntity>()
+                            .in(PlanEntity::getPlanId, planIds)
+                            .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+                    Map<Long, PlanEntity> planMap = planEntities.stream()
+                            .collect(Collectors.toMap(PlanEntity::getPlanId, Function.identity()));
+
+                    for (Long planId : planIds) {
+                        PlanEntity planEntity = planMap.get(planId);
+                        if (planEntity == null) {
+                            continue; // 跳过无效 planId
+                        }
+
+                        BigDecimal schedule = getSchedule(
+                                planId,
+                                planEntity.getStartTime(),
+                                planEntity.getEndTime(),
+                                planEntity.getTotalDrillNumber()
+                        );
+
+                        if (schedule.compareTo(HUNDRED) == 0) {
+                            i++;
+                        }
+                    }
+                }
+                planCountDTO.setPlanCompleted(i);
+            }
+        }
+        return planCountDTOS;
+    }
+
 
     private List<ProjectDTO> enrichProjectDTOsWithConstructionSite(List<ProjectDTO> projectDTOS) {
         if (projectDTOS == null || projectDTOS.isEmpty()) {
@@ -131,6 +194,135 @@ public class LargeScreenServiceImpl implements LargeScreenService {
         }
 
         return projectDTOS;
+    }
+
+
+    /**
+     * 计算计划进度
+     */
+    private BigDecimal getSchedule(Long planId, Long startTime, Long endTime, Integer totalDrillNumber) {
+        BigDecimal schedule = new BigDecimal(0);
+        List<Long> projectIds = new ArrayList<>();
+        QueryWrapper<PlanAreaEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(PlanAreaEntity::getPlanId,planId);
+        List<PlanAreaEntity> areaEntities =  planAreaService.list(queryWrapper);
+        if(areaEntities != null &&  areaEntities.size() > 0){
+            for (PlanAreaEntity areaEntity : areaEntities) {
+                List<Long> points = bizTravePointService.getInPointListNoStartEnd(areaEntity.getStartTraversePointId(),Double.valueOf(areaEntity.getStartDistance()),areaEntity.getEndTraversePointId(),Double.valueOf(areaEntity.getEndDistance()));
+                List<BizProjectRecord> records1 = getSatrtEndPoint(points, DateUtil.date(startTime),DateUtil.date(startTime));
+                List<BizProjectRecord> records2 = getSatrtDistance(areaEntity.getStartTraversePointId(),DateUtil.date(startTime),DateUtil.date(endTime),new BigDecimal(areaEntity.getStartDistance()));
+                List<BizProjectRecord> records3 = getEndDistance(areaEntity.getEndTraversePointId(),DateUtil.date(startTime),DateUtil.date(endTime),new BigDecimal(areaEntity.getEndDistance()));
+                records1.addAll(records2);
+                records1.addAll(records3);
+                records1 = records1.stream()
+                        .collect(Collectors.collectingAndThen(
+                                Collectors.toMap(BizProjectRecord::getProjectId, r -> r, (r1, r2) -> r1),
+                                map -> new ArrayList<>(map.values())
+                        ));
+                projectIds.addAll(records1.stream().map(BizProjectRecord::getProjectId).collect(Collectors.toList()));
+            }
+        }
+        schedule = BigDecimal.valueOf(projectIds.size()).divide(BigDecimal.valueOf(totalDrillNumber), 2, RoundingMode.HALF_UP);
+        return schedule;
+    }
+
+
+    private List<BizProjectRecord> getSatrtEndPoint(List<Long> points, Date startDate, Date endDate){
+        if (points == null || points.isEmpty()){
+            return new ArrayList<>();
+        }
+        QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().in(points != null && !points.isEmpty(),BizProjectRecord::getTravePointId, points)
+                .between(BizProjectRecord::getConstructTime, startDate, endDate);
+        List<BizProjectRecord> list = projectRecordMapper.selectList(queryWrapper);
+        return list;
+    }
+
+    private List<BizProjectRecord> getSatrtDistance(Long point,Date startDate, Date endDate, BigDecimal distance){
+        if(distance.compareTo(BigDecimal.ZERO) > 0){
+            QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizProjectRecord::getTravePointId, point)
+                    .between(BizProjectRecord::getConstructTime, startDate, endDate)
+                    .gt(BizProjectRecord::getConstructRange, distance);
+            List<BizProjectRecord> lista = projectRecordMapper.selectList(queryWrapper);
+
+            BizPresetPoint nextPoint =  bizTravePointService.getPointPre(point,distance.doubleValue());
+            if(nextPoint == null){
+                return lista;
+            }
+            queryWrapper.clear();
+            queryWrapper.lambda().eq(BizProjectRecord::getTravePointId, nextPoint.getPointId())
+                    .between(BizProjectRecord::getConstructTime, startDate, endDate)
+                    .gt(BizProjectRecord::getConstructRange, distance);
+            List<BizProjectRecord> listb = projectRecordMapper.selectList(queryWrapper);
+            lista.addAll(listb);
+            return lista;
+        }
+        if(distance.compareTo(BigDecimal.ZERO) < 0){
+            QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizProjectRecord::getTravePointId, point)
+                    .between(BizProjectRecord::getConstructTime, startDate, endDate)
+                    .gt(BizProjectRecord::getConstructRange, distance);
+            List<BizProjectRecord> lista = projectRecordMapper.selectList(queryWrapper);
+
+            BizPresetPoint nextPoint =  bizTravePointService.getPointFront(point,distance.doubleValue());
+            if(nextPoint == null){
+                return lista;
+            }
+            queryWrapper.clear();
+            queryWrapper.lambda().eq(BizProjectRecord::getTravePointId, nextPoint.getPointId())
+                    .between(BizProjectRecord::getConstructTime, startDate, endDate)
+                    .lt(BizProjectRecord::getConstructRange, distance)
+                    .gt(BizProjectRecord::getConstructRange, 0);
+            List<BizProjectRecord> listb = projectRecordMapper.selectList(queryWrapper);
+            lista.addAll(listb);
+            return lista;
+        }
+        return new ArrayList<>();
+    }
+
+
+    private List<BizProjectRecord> getEndDistance(Long point, Date startDate, Date endDate, BigDecimal distance){
+        if(distance.compareTo(BigDecimal.ZERO) > 0){
+            QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizProjectRecord::getTravePointId, point)
+                    .between(BizProjectRecord::getConstructTime, startDate, endDate)
+                    .lt(BizProjectRecord::getConstructRange, distance);
+            List<BizProjectRecord> lista = projectRecordMapper.selectList(queryWrapper);
+
+            BizPresetPoint nextPoint =  bizTravePointService.getPointPre(point,distance.doubleValue());
+            if(nextPoint == null){
+                return lista;
+            }
+            queryWrapper.clear();
+            queryWrapper.lambda().eq(BizProjectRecord::getTravePointId, nextPoint.getPointId())
+                    .between(BizProjectRecord::getConstructTime, startDate, endDate)
+                    .lt(BizProjectRecord::getConstructRange, distance);
+            List<BizProjectRecord> listb = projectRecordMapper.selectList(queryWrapper);
+            lista.addAll(listb);
+            return lista;
+        }
+        if(distance.compareTo(BigDecimal.ZERO) < 0){
+            QueryWrapper<BizProjectRecord> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(BizProjectRecord::getTravePointId, point)
+                    .between(BizProjectRecord::getConstructTime, startDate, endDate)
+                    .lt(BizProjectRecord::getConstructRange, distance);
+            List<BizProjectRecord> lista = projectRecordMapper.selectList(queryWrapper);
+
+            BizPresetPoint nextPoint =  bizTravePointService.getPointFront(point,distance.doubleValue());
+            if(nextPoint == null){
+                return lista;
+            }
+            queryWrapper.clear();
+            queryWrapper.lambda().eq(BizProjectRecord::getTravePointId, nextPoint.getPointId())
+                    .between(BizProjectRecord::getConstructTime, startDate, endDate)
+                    .lt(BizProjectRecord::getConstructRange, distance)
+                    .gt(BizProjectRecord::getConstructRange, 0);
+            List<BizProjectRecord> listb = projectRecordMapper.selectList(queryWrapper);
+            lista.addAll(listb);
+            return lista;
+        }
+        return new ArrayList<>();
     }
 
 
