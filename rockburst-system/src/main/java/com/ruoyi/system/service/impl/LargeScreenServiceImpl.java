@@ -4,21 +4,22 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.BizVideo;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.PlanAreaEntity;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
-import com.ruoyi.system.domain.dto.largeScreen.PlanCountDTO;
-import com.ruoyi.system.domain.dto.largeScreen.ProjectDTO;
-import com.ruoyi.system.domain.dto.largeScreen.ProjectTypeDTO;
-import com.ruoyi.system.domain.dto.largeScreen.Select1DTO;
+import com.ruoyi.system.domain.dto.TunnelChoiceListDTO;
+import com.ruoyi.system.domain.dto.largeScreen.*;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizTravePointService;
 import com.ruoyi.system.service.LargeScreenService;
 import com.ruoyi.system.service.PlanAreaService;
+import com.ruoyi.system.service.TunnelService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -60,6 +61,12 @@ public class LargeScreenServiceImpl implements LargeScreenService {
 
     @Resource
     private PlanAreaService planAreaService;
+
+    @Resource
+    private TunnelService tunnelService;
+
+    @Resource
+    private BizVideoMapper bizVideoMapper;
 
 
     @Override
@@ -141,6 +148,227 @@ public class LargeScreenServiceImpl implements LargeScreenService {
             }
         }
         return planCountDTOS;
+    }
+
+    @Override
+    public DataDTO obtainUrl(Long projectId) {
+        DataDTO dataDTO = new DataDTO();
+        List<BizVideo> bizVideos = bizVideoMapper.selectList(new LambdaQueryWrapper<BizVideo>()
+                .eq(BizVideo::getProjectId, projectId)
+                .eq(BizVideo::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+        List<String> urls = new ArrayList<>();
+        List<String> aiUrls = new ArrayList<>();
+
+        if (bizVideos != null && !bizVideos.isEmpty()) {
+            for (BizVideo video : bizVideos) {
+                urls.add(video.getFileUrl());
+                aiUrls.add(video.getAiFileUrl());
+            }
+        }
+
+        dataDTO.setUrls(urls);
+        dataDTO.setAIUrls(aiUrls);
+        return dataDTO;
+    }
+
+
+    @Override
+    public List<SimpleTreeDTO> obtainProjectTree() {
+        List<ReturnTreeDTO> returnTreeDTOS = new ArrayList<>();
+        List<BizWorkface> bizWorkFaces = bizWorkfaceMapper.selectList(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+        if (CollectionUtils.isEmpty(bizWorkFaces)) {
+            return Collections.emptyList();
+        }
+
+        // 获取所有 workFaceId 的 tunnelChoiceList 并扁平化为 map
+        Map<Long, List<TunnelChoiceListDTO>> tunnelMap = new HashMap<>();
+        for (BizWorkface bizWorkface : bizWorkFaces) {
+            List<TunnelChoiceListDTO> tunnels = tunnelService.getTunnelChoiceList(bizWorkface.getWorkfaceId());
+            tunnelMap.put(bizWorkface.getWorkfaceId(), tunnels);
+        }
+
+        // 所有 tunnelId 收集用于批量查询
+        List<Long> allTunnelIds = tunnelMap.values().stream()
+                .flatMap(List::stream)
+                .map(TunnelChoiceListDTO::getValue)
+                .distinct().collect(Collectors.toList());
+
+        // 批量查询所有 middleDTOS
+        Map<Long, List<MiddleDTO>> tunnelToMiddleMap = new HashMap<>();
+        if (!allTunnelIds.isEmpty()) {
+            List<MiddleDTO> allMiddleDTOS = bizProjectRecordMapper.queryProjectCountBatch(allTunnelIds);
+            for (MiddleDTO dto : allMiddleDTOS) {
+                tunnelToMiddleMap.computeIfAbsent(dto.getTunnelId(), k -> new ArrayList<>()).add(dto);
+            }
+        }
+
+        // 构建 ReturnTreeDTO 结构
+        for (BizWorkface bizWorkface : bizWorkFaces) {
+            ReturnTreeDTO returnTreeDTO = new ReturnTreeDTO();
+            returnTreeDTO.setWorkFaceId(bizWorkface.getWorkfaceId());
+            returnTreeDTO.setWorkFaceName(bizWorkface.getWorkfaceName());
+
+            List<TunnelChoiceListDTO> tunnelChoiceList = tunnelMap.getOrDefault(bizWorkface.getWorkfaceId(), Collections.emptyList());
+            List<TunnelReturnDTO> tunnelReturnDTOS = new ArrayList<>();
+
+            for (TunnelChoiceListDTO tunnelChoiceListDTO : tunnelChoiceList) {
+                TunnelReturnDTO tunnelReturnDTO = new TunnelReturnDTO();
+                tunnelReturnDTO.setTunnelId(tunnelChoiceListDTO.getValue());
+                tunnelReturnDTO.setTunnelName(tunnelChoiceListDTO.getLabel());
+
+                List<MiddleDTO> middleDTOS = tunnelToMiddleMap.getOrDefault(tunnelChoiceListDTO.getValue(), Collections.emptyList());
+
+                List<ProjectDataDTO> miningProjects = new ArrayList<>();
+                List<ProjectDataDTO> excavationProjects = new ArrayList<>();
+
+                if (CollectionUtils.isNotEmpty(middleDTOS)) {
+                    // 收集所有 projectIds
+                    Set<Long> allProjectIds = middleDTOS.stream()
+                            .map(MiddleDTO::getProjectIds)
+                            .flatMap(List::stream)
+                            .collect(Collectors.toSet());
+
+                    Map<Long, List<MiddleDTO>> projectIdToMiddleMap = new HashMap<>();
+                    for (MiddleDTO middleDTO : middleDTOS) {
+                        for (Long projectId : middleDTO.getProjectIds()) {
+                            projectIdToMiddleMap.computeIfAbsent(projectId, k -> new ArrayList<>()).add(middleDTO);
+                        }
+                    }
+
+                    List<DataDTO> dataDTOS = fetchDataDTOsByProjectIds(new ArrayList<>(allProjectIds));
+                    Map<Long, DataDTO> dataDTOMap = dataDTOS.stream()
+                            .collect(Collectors.toMap(DataDTO::getProjectId, d -> d));
+
+                    for (MiddleDTO middleDTO : middleDTOS) {
+                        String constructType = middleDTO.getConstructType();
+                        ProjectDataDTO projectDataDTO = new ProjectDataDTO();
+                        projectDataDTO.setProjectType(constructType);
+
+                        List<DataDTO> filteredData = middleDTO.getProjectIds().stream()
+                                .map(dataDTOMap::get)
+                                .filter(Objects::nonNull).collect(Collectors.toList());
+
+                        projectDataDTO.setData(filteredData);
+
+                        if (constructType.equals(ConstantsInfo.STOPE)) {
+                            miningProjects.add(projectDataDTO);
+                        } else if (constructType.equals(ConstantsInfo.TUNNELING)) {
+                            excavationProjects.add(projectDataDTO);
+                        }
+                    }
+                }
+
+                tunnelReturnDTO.setMiningProjects(miningProjects);
+                tunnelReturnDTO.setExcavationProjects(excavationProjects);
+                tunnelReturnDTOS.add(tunnelReturnDTO);
+            }
+
+            returnTreeDTO.setTunnelReturnDTOS(tunnelReturnDTOS);
+            returnTreeDTOS.add(returnTreeDTO);
+        }
+
+        return buildUnifiedSimpleTreeStructure(returnTreeDTOS);
+    }
+
+    private List<DataDTO> fetchDataDTOsByProjectIds(List<Long> projectIds) {
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return Collections.emptyList();
+        }
+
+        List<DataDTO> dataDTOS = new ArrayList<>();
+
+        // 批量查询 BizProjectRecord
+        List<BizProjectRecord> records = bizProjectRecordMapper.selectList(new LambdaQueryWrapper<BizProjectRecord>()
+                .in(BizProjectRecord::getProjectId, projectIds)
+                .eq(BizProjectRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+        Map<Long, String> drillNumMap = new HashMap<>();
+        Map<Long, Date> constructTimeMap = new HashMap<>();
+
+        for (BizProjectRecord record : records) {
+            Long projectId = record.getProjectId();
+            drillNumMap.put(projectId, record.getDrillNum());
+            constructTimeMap.put(projectId, record.getConstructTime());
+        }
+
+        // 批量查询 BizVideo
+        List<BizVideo> videos = bizVideoMapper.selectList(new LambdaQueryWrapper<BizVideo>()
+                .in(BizVideo::getProjectId, projectIds)
+                .eq(BizVideo::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+        Map<Long, List<String>> urlMap = new HashMap<>();
+        Map<Long, List<String>> aiUrlMap = new HashMap<>();
+
+        for (BizVideo video : videos) {
+            Long projectId = video.getProjectId();
+            urlMap.computeIfAbsent(projectId, k -> new ArrayList<>()).add(video.getFileUrl());
+            aiUrlMap.computeIfAbsent(projectId, k -> new ArrayList<>()).add(video.getAiFileUrl());
+        }
+
+        for (Long projectId : projectIds) {
+            DataDTO dataDTO = new DataDTO();
+            dataDTO.setProjectId(projectId);
+            dataDTO.setDrillNum(drillNumMap.getOrDefault(projectId, "0"));
+            dataDTO.setConstructTime(constructTimeMap.getOrDefault(projectId, null));
+            dataDTO.setUrls(urlMap.getOrDefault(projectId, Collections.emptyList()));
+            dataDTO.setAIUrls(aiUrlMap.getOrDefault(projectId, Collections.emptyList()));
+            dataDTOS.add(dataDTO);
+        }
+
+        return dataDTOS;
+    }
+
+    private List<SimpleTreeDTO> buildUnifiedSimpleTreeStructure(List<ReturnTreeDTO> returnTreeDTOS) {
+        List<SimpleTreeDTO> result = new ArrayList<>();
+
+        for (ReturnTreeDTO returnTreeDTO : returnTreeDTOS) {
+            SimpleTreeDTO workFaceNode = new SimpleTreeDTO(
+                    returnTreeDTO.getWorkFaceName(),
+                    returnTreeDTO.getWorkFaceId()
+            );
+
+            for (TunnelReturnDTO tunnelReturnDTO : returnTreeDTO.getTunnelReturnDTOS()) {
+                SimpleTreeDTO tunnelNode = new SimpleTreeDTO(
+                        tunnelReturnDTO.getTunnelName(),
+                        tunnelReturnDTO.getTunnelId()
+                );
+
+                // 始终保留“回采”和“掘进”节点，即使它们的 children 为空
+                processProjectType(tunnelReturnDTO.getMiningProjects(), tunnelNode, "回采", ConstantsInfo.STOPE);
+                processProjectType(tunnelReturnDTO.getExcavationProjects(), tunnelNode, "掘进", ConstantsInfo.TUNNELING);
+
+                workFaceNode.getChildren().add(tunnelNode); // 始终添加 tunnelNode
+            }
+
+            if (!workFaceNode.getChildren().isEmpty()) {
+                result.add(workFaceNode);
+            }
+        }
+
+        return result;
+    }
+
+    private void processProjectType(List<ProjectDataDTO> projects, SimpleTreeDTO parentNode, String typeName, String typeValue) {
+        SimpleTreeDTO projectTypeNode = new SimpleTreeDTO(typeName, typeValue);
+
+        if (CollectionUtils.isNotEmpty(projects)) {
+            for (ProjectDataDTO project : projects) {
+                for (DataDTO dataDTO : project.getData()) {
+                    String dateStr = "";
+                    if (dataDTO.getConstructTime() != null) {
+                        dateStr = DateUtil.format(dataDTO.getConstructTime(), "yyyy-MM-dd");
+                    }
+                    String label = String.format("%s, 编号: %s", dateStr, dataDTO.getDrillNum());
+                    SimpleTreeDTO projectNode = new SimpleTreeDTO(label, dataDTO.getProjectId());
+                    projectTypeNode.getChildren().add(projectNode);
+                }
+            }
+        }
+
+        parentNode.getChildren().add(projectTypeNode); // 始终添加该类型节点
     }
 
 
@@ -324,6 +552,5 @@ public class LargeScreenServiceImpl implements LargeScreenService {
         }
         return new ArrayList<>();
     }
-
 
 }

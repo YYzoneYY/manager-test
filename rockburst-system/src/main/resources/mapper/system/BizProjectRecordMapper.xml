@@ -2,6 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.BizProjectRecordMapper">
 
+    <resultMap id="ProjectResultMap" type="com.ruoyi.system.domain.dto.largeScreen.MiddleDTO">
+        <result property="constructType" column="constructType"/>
+        <result property="tunnelId" column="tunnelId"/>
+        <result column="projectIds" property="projectIds" typeHandler="com.ruoyi.system.handler.ListLongTypeHandler"/>
+    </resultMap>
 
     <select id="queryDateByPage" resultType="com.ruoyi.system.domain.dto.ReportFormsDTO">
         select
@@ -91,5 +96,31 @@
         group by
             drill_type
     </select>
+
+    <select id="queryProjectCount" resultMap="ProjectResultMap">
+        select
+            bpr.construct_type as constructType,
+            bpr.tunnel_id as tunnelId,
+            GROUP_CONCAT(bpr.project_id) as projectIds
+        from biz_project_record as bpr
+        where bpr.tunnel_id = #{tunnelId} and bpr.del_flag = '0'
+        group by bpr.construct_type
+    </select>
+
+    <select id="queryProjectCountBatch" resultMap="ProjectResultMap">
+        SELECT
+        project_id AS projectId,
+        tunnel_id AS tunnelId,
+        construct_type AS constructType,
+        GROUP_CONCAT(project_id) AS projectIds
+        FROM biz_project_record
+        WHERE del_flag = 0
+        AND tunnel_id IN
+        <foreach collection="tunnelIds" item="tunnelId" open="(" separator="," close=")">
+            #{tunnelId}
+        </foreach>
+        GROUP BY construct_type
+    </select>
+
 
 </mapper>

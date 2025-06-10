@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.yulichang.base.MPJBaseMapper;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.dto.ReportFormsDTO;
+import com.ruoyi.system.domain.dto.largeScreen.MiddleDTO;
 import com.ruoyi.system.domain.dto.largeScreen.ProjectDTO;
 import com.ruoyi.system.domain.dto.largeScreen.ProjectTypeDTO;
 import com.ruoyi.system.domain.dto.largeScreen.Select1DTO;
@@ -85,4 +86,9 @@ public interface BizProjectRecordMapper extends MPJBaseMapper<BizProjectRecord>
     List<ProjectDTO> queryProjectOfUnaudited(Select1DTO select1DTO);
 
     List<ProjectTypeDTO> queryProjectType(Long startTime, Long endTime);
+
+    List<MiddleDTO> queryProjectCount(Long tunnelId);
+
+    List<MiddleDTO> queryProjectCountBatch(@Param("tunnelIds") List<Long> tunnelIds);
+
 }
