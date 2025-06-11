@@ -54,7 +54,7 @@
             <if test="startTime != null and endTime != null">
                 and bpr.construct_time between #{startTime} and #{endTime}
             </if>
-            and bpr.status = 3
+            and bpr.status = 6
         </where>
         order by bpr.construct_time desc
     </select>
@@ -80,7 +80,7 @@
             <if test="startTime != null and endTime != null">
                 and bpr.construct_time between #{startTime} and #{endTime}
             </if>
-            and bpr.status in (1,2)
+            and bpr.status in (1,2,3,5)
         </where>
         order by bpr.construct_time desc
     </select>

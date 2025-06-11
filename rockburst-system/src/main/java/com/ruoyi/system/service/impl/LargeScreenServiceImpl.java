@@ -373,11 +373,10 @@ public class LargeScreenServiceImpl implements LargeScreenService {
 
 
     private List<ProjectDTO> enrichProjectDTOsWithConstructionSite(List<ProjectDTO> projectDTOS) {
-        if (projectDTOS == null || projectDTOS.isEmpty()) {
+        if (CollectionUtils.isEmpty(projectDTOS)) {
             return projectDTOS;
         }
 
-        // 收集需要查询的 ID
         List<Long> tunnelIds = new ArrayList<>();
         List<Long> workFaceIds = new ArrayList<>();
 
@@ -390,40 +389,56 @@ public class LargeScreenServiceImpl implements LargeScreenService {
             }
         }
 
-        // 批量查询 TunnelEntity 和 BizWorkface
-        List<TunnelEntity> tunnels = tunnelMapper.selectList(new LambdaQueryWrapper<TunnelEntity>()
-                .in(TunnelEntity::getTunnelId, tunnelIds)
-                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        Map<Long, String> tunnelMap = tunnels.stream()
-                .collect(Collectors.toMap(
-                        TunnelEntity::getTunnelId,
-                        TunnelEntity::getTunnelName,
-                        (existing, replacement) -> existing));
+        Map<Long, String> tunnelMap = buildTunnelMap(tunnelIds);
+        Map<Long, String> workfaceMap = buildWorkfaceMap(workFaceIds);
 
-        List<BizWorkface> workfaces = bizWorkfaceMapper.selectList(new LambdaQueryWrapper<BizWorkface>()
-                .in(BizWorkface::getWorkfaceId, workFaceIds)
-                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
-        Map<Long, String> workfaceMap = workfaces.stream()
-                .collect(Collectors.toMap(
-                        BizWorkface::getWorkfaceId,
-                        BizWorkface::getWorkfaceName,
-                        (existing, replacement) -> existing));
-
-        // 设置 ConstructionSite
         for (ProjectDTO projectDTO : projectDTOS) {
             String constructType = projectDTO.getConstructType();
             String constructionSite = "";
+
             if (ConstantsInfo.TUNNELING.equals(constructType)) {
                 constructionSite = tunnelMap.getOrDefault(projectDTO.getTunnelId(), "");
             } else if (ConstantsInfo.STOPE.equals(constructType)) {
                 constructionSite = workfaceMap.getOrDefault(projectDTO.getWorkFaceId(), "");
             }
+
             projectDTO.setConstructionSite(constructionSite);
         }
 
         return projectDTOS;
     }
 
+    private Map<Long, String> buildTunnelMap(List<Long> tunnelIds) {
+        if (CollectionUtils.isEmpty(tunnelIds)) {
+            return Collections.emptyMap();
+        }
+
+        List<TunnelEntity> tunnels = tunnelMapper.selectList(new LambdaQueryWrapper<TunnelEntity>()
+                .in(TunnelEntity::getTunnelId, tunnelIds)
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+        return tunnels.stream()
+                .collect(Collectors.toMap(
+                        TunnelEntity::getTunnelId,
+                        TunnelEntity::getTunnelName,
+                        (existing, replacement) -> existing));
+    }
+
+    private Map<Long, String> buildWorkfaceMap(List<Long> workFaceIds) {
+        if (CollectionUtils.isEmpty(workFaceIds)) {
+            return Collections.emptyMap();
+        }
+
+        List<BizWorkface> workfaces = bizWorkfaceMapper.selectList(new LambdaQueryWrapper<BizWorkface>()
+                .in(BizWorkface::getWorkfaceId, workFaceIds)
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+        return workfaces.stream()
+                .collect(Collectors.toMap(
+                        BizWorkface::getWorkfaceId,
+                        BizWorkface::getWorkfaceName,
+                        (existing, replacement) -> existing));
+    }
 
     /**
      * 计算计划进度

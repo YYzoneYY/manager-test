@@ -3,6 +3,8 @@ package com.ruoyi.system.domain.dto.largeScreen;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @author: shikai
  * @date: 2025/5/29
@@ -22,7 +24,7 @@ public class ProjectDTO {
     private Long constructUnitId;
 
     @ApiModelProperty(value = "施工时间")
-    private Long  constructTime;
+    private Date constructTime;
 
     @ApiModelProperty(value = "施工地点")
     private String constructionSite;
