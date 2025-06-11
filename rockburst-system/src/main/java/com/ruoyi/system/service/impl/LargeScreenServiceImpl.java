@@ -83,7 +83,7 @@ public class LargeScreenServiceImpl implements LargeScreenService {
     }
 
     @Override
-    public List<ProjectTypeDTO> obtainProjectType(Long startTime, Long endTime) {
+    public List<ProjectTypeDTO> obtainProjectType(Date startTime, Date endTime) {
         List<ProjectTypeDTO> projectTypeDTOS = bizProjectRecordMapper.queryProjectType(startTime, endTime);
 
         if (ObjectUtil.isNotEmpty(projectTypeDTOS)) {
@@ -99,7 +99,7 @@ public class LargeScreenServiceImpl implements LargeScreenService {
             projectTypeDTOS.forEach(projectTypeDTO -> {
                 String drillType = projectTypeDTO.getDrillType();
                 if (drillType != null) {
-                    projectTypeDTO.setDrillTypeFmt(dictLabelMap.getOrDefault(drillType, ""));
+                    projectTypeDTO.setDrillTypeFmt(dictLabelMap.getOrDefault("dict_label", ""));
                 }
             });
         }

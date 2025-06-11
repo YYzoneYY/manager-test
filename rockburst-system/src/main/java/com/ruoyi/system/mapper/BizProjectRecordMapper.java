@@ -85,9 +85,10 @@ public interface BizProjectRecordMapper extends MPJBaseMapper<BizProjectRecord>
 
     List<ProjectDTO> queryProjectOfUnaudited(Select1DTO select1DTO);
 
-    List<ProjectTypeDTO> queryProjectType(Long startTime, Long endTime);
+    List<ProjectTypeDTO> queryProjectType(@Param("startTime") Date startTime,
+                                          @Param("endTime") Date endTime);
 
-    List<MiddleDTO> queryProjectCount(Long tunnelId);
+    List<MiddleDTO> queryProjectCount(@Param("tunnelId") Long tunnelId);
 
     List<MiddleDTO> queryProjectCountBatch(@Param("tunnelIds") List<Long> tunnelIds);
 

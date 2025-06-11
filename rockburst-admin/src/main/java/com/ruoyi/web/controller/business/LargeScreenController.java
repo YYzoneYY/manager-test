@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public class LargeScreenController {
     @GetMapping(value = "/obtainProjectType")
     public R<List<ProjectTypeDTO>> obtainProjectType(@ApiParam(name = "startTime", value = "开始时间") @RequestParam(required = false) Long startTime,
                                                      @ApiParam(name = "endTime", value = "结束时间") @RequestParam(required = false) Long endTime) {
-        return R.ok(this.largeScreenService.obtainProjectType(startTime, endTime));
+        return R.ok(this.largeScreenService.obtainProjectType(new Date(startTime), new Date(endTime)));
     }
 
     @ApiOperation(value = "获取施工计划统计", notes = "获取施工计划统计")

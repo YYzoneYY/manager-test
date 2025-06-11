@@ -2,6 +2,7 @@ package com.ruoyi.system.service;
 
 import com.ruoyi.system.domain.dto.largeScreen.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,7 +26,7 @@ public interface LargeScreenService {
      * @param endTime 结束时间
      * @return 结果
      */
-    List<ProjectTypeDTO> obtainProjectType(Long startTime, Long endTime);
+    List<ProjectTypeDTO> obtainProjectType(Date startTime, Date endTime);
 
     /**
      * 获取计划统计

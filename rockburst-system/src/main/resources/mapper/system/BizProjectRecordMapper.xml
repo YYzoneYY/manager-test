@@ -87,14 +87,16 @@
 
     <select id="queryProjectType" resultType="com.ruoyi.system.domain.dto.largeScreen.ProjectTypeDTO">
         select drill_type as drillType,
-               count(*) as count
+        count(*) as count
         from biz_project_record
-        where del_flag = '0',
+        <where>
             <if test="startTime != null and endTime != null">
                 and construct_time between #{startTime} and #{endTime}
             </if>
+            and del_flag = '0'
+        </where>
         group by
-            drill_type
+        drill_type
     </select>
 
     <select id="queryProjectCount" resultMap="ProjectResultMap">
