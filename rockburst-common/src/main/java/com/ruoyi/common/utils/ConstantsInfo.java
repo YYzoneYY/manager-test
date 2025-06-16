@@ -122,6 +122,20 @@ public class ConstantsInfo {
     public static final String CUE_WORD_THREE = "间距不大于";
     public static final String CUE_WORD_FOUR = "米的要求，发生预警!!";
 
+    // 报警屏蔽状态
+    public static final String SHIELD_STATUS = "1"; //屏蔽状态
+    public static final String UN_SHIELD_STATUS = "0"; //未屏蔽状态
+
+    public static final String ALARM_IN = "1"; //报警中
+    public static final String ALARM_SHIELD_IN = "2"; //报警屏蔽中
+    public static final String ALARM_END = "0"; //报警结束
+
+    public static final String QUANTITY_ALARM = "quantity_alarm"; //工程量报警
+    public static final String DRILL_SPACE_ALARM = "drill_space_alarm"; //钻孔间距报警
+
+    public static final String ALARM_TYPE = "alarm_type"; // 报警类型
+    public static final String ALARM_STATUS = "alarm_status"; // 报警状态
+
     //只取200条监测数据
     public static final  int SUB = 200;
 

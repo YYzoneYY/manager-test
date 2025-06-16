@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizVideo;
 import com.ruoyi.system.domain.BizWorkface;
+import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.Entity.PlanAreaEntity;
 import com.ruoyi.system.domain.Entity.PlanEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
@@ -67,6 +69,12 @@ public class LargeScreenServiceImpl implements LargeScreenService {
 
     @Resource
     private BizVideoMapper bizVideoMapper;
+
+    @Resource
+    private ConstructionUnitMapper constructionUnitMapper;
+
+    @Resource
+    private AlarmRecordMapper alarmRecordMapper;
 
 
     @Override
@@ -171,6 +179,26 @@ public class LargeScreenServiceImpl implements LargeScreenService {
         dataDTO.setAIUrls(aiUrls);
         return dataDTO;
     }
+
+    @Override
+    public List<AlarmRecordDTO> obtainAlarmRecord(String alarmType, Long startTime, Long endTime) {
+        List<AlarmRecordDTO> alarmRecordDTOS = alarmRecordMapper.selectAlarmRecord(alarmType, startTime, endTime);
+        if (ListUtils.isNotNull(alarmRecordDTOS)) {
+            for (AlarmRecordDTO alarmRecordDTO : alarmRecordDTOS) {
+                String at = alarmRecordDTO.getAlarmType() != null
+                        ? obtainDicLabel(ConstantsInfo.ALARM_TYPE, alarmRecordDTO.getAlarmType())
+                        : null;
+                alarmRecordDTO.setAlarmTypeFmt(at);
+
+                String as = alarmRecordDTO.getAlarmStatus() != null
+                        ? obtainDicLabel(ConstantsInfo.ALARM_STATUS, alarmRecordDTO.getAlarmStatus())
+                        : null;
+                alarmRecordDTO.setAlarmStatusFmt(as);
+            }
+        }
+        return alarmRecordDTOS;
+    }
+
 
 
     @Override
@@ -387,6 +415,15 @@ public class LargeScreenServiceImpl implements LargeScreenService {
             } else if (ConstantsInfo.STOPE.equals(constructType)) {
                 workFaceIds.add(projectDTO.getWorkFaceId());
             }
+            ConstructionUnitEntity constructionUnitEntity = constructionUnitMapper.selectOne(new LambdaQueryWrapper<ConstructionUnitEntity>()
+                    .eq(ConstructionUnitEntity::getConstructionUnitId, projectDTO.getConstructUnitId())
+                    .eq(ConstructionUnitEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (constructionUnitEntity != null) {
+                projectDTO.setConstructUnitFmt(constructionUnitEntity.getConstructionUnitName());
+            }
+            String drillType = obtainDicLabel(ConstantsInfo.DRILL_TYPE_DICT_TYPE, projectDTO.getDrillType());
+            projectDTO.setDrillTypeFmt(drillType);
+            projectDTO.setConstructTypeFmt(obtainDicLabel(ConstantsInfo.TYPE_DICT_TYPE, projectDTO.getConstructType()));
         }
 
         Map<Long, String> tunnelMap = buildTunnelMap(tunnelIds);
@@ -566,6 +603,15 @@ public class LargeScreenServiceImpl implements LargeScreenService {
             return lista;
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * 获取字典标签
+     */
+    private String obtainDicLabel(String dicType, String dicValue) {
+        String label = "";
+        label = sysDictDataMapper.selectDictLabel(dicType, dicValue);
+        return label == null ? "" : label;
     }
 
 }

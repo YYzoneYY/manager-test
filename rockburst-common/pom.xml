@@ -17,6 +17,11 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
 <!--        <dependency>-->
 <!--            <groupId>com.amazonaws</groupId>-->
@@ -192,6 +197,12 @@
             <groupId>com.getui.push</groupId>
             <artifactId>restful-sdk</artifactId>
             <version>1.0.6.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>1.6.2</version>
             <scope>compile</scope>
         </dependency>
 

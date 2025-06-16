@@ -87,6 +87,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
         planEntity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
         planEntity.setCreateTime(System.currentTimeMillis());
         planEntity.setCreateBy(SecurityUtils.getUserId());
+        planEntity.setShieldStatus(ConstantsInfo.UN_SHIELD_STATUS);
         SysUser sysUser = sysUserMapper.selectUserById(SecurityUtils.getUserId());
         planEntity.setDeptId(sysUser.getDeptId());
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
@@ -138,6 +139,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
         planEntity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
         planEntity.setCreateTime(System.currentTimeMillis());
         planEntity.setCreateBy(SecurityUtils.getUserId());
+        planEntity.setShieldStatus(ConstantsInfo.UN_SHIELD_STATUS);
         SysUser sysUser = sysUserMapper.selectUserById(SecurityUtils.getUserId());
         planEntity.setDeptId(sysUser.getDeptId());
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);

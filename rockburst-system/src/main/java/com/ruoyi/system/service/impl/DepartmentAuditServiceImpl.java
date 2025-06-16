@@ -1,7 +1,9 @@
 package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -10,6 +12,7 @@ import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.TableData;
+import com.ruoyi.common.message.WebSocketServer;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
@@ -17,25 +20,25 @@ import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.common.warnPush.WarnPush;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizWorkface;
-import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
-import com.ruoyi.system.domain.Entity.DepartmentAuditEntity;
-import com.ruoyi.system.domain.Entity.TeamAuditEntity;
-import com.ruoyi.system.domain.Entity.TunnelEntity;
-import com.ruoyi.system.domain.dto.DepartAuditDTO;
-import com.ruoyi.system.domain.dto.DepartAuditHistoryDTO;
-import com.ruoyi.system.domain.dto.SelectDeptAuditDTO;
-import com.ruoyi.system.domain.dto.SelectProjectDTO;
+import com.ruoyi.system.domain.Entity.*;
+import com.ruoyi.system.domain.dto.*;
+import com.ruoyi.system.domain.dto.largeScreen.SpaceAlarmPushDTO;
 import com.ruoyi.system.domain.dto.project.DepartmentAuditDTO;
 import com.ruoyi.system.domain.utils.DrillSpacingWarnUtil;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.domain.vo.ProjectVO;
 import com.ruoyi.system.mapper.*;
+import com.ruoyi.system.service.AlarmRecordService;
 import com.ruoyi.system.service.DepartmentAuditService;
 import com.ruoyi.system.service.IBizProjectRecordService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,6 +52,8 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMapper, DepartmentAuditEntity> implements DepartmentAuditService {
+
+    private static final Logger log = LoggerFactory.getLogger(DepartmentAuditServiceImpl.class);
 
     @Resource
     private DepartmentAuditMapper departmentAuditMapper;
@@ -92,6 +97,14 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
 
     @Resource
     private WarnPush warnPush;
+
+    @Resource
+    private AlarmRecordMapper alarmRecordMapper;
+
+    @Resource
+    private AlarmRecordService alarmRecordService;
+
+    private static final String ALARM_CONTENT_TEMPLATE = "%s号钻孔与%s号钻孔之间的距离为%s米，超过当前卸压计划中间距%s米的要求，发生报警！";
 
     /**
      * 点击审核按钮
@@ -189,18 +202,120 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 throw new DepartmentAuditException("审核失败,请联系管理员");
             } else {
                 // 间距判断
-                String logic = DrillSpacingWarnUtil.warningLogic(departAuditDTO.getProjectId(), bizProjectRecordMapper,
+                List<WarningDTO> warningDTOS = DrillSpacingWarnUtil.warningLogic(departAuditDTO.getProjectId(), bizProjectRecordMapper,
                         bizDangerAreaMapper, bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper,
                         cacheDataMapper, bizDangerLevelMapper, sysDictDataMapper);
+                // 查询已存在的钻孔间距报警记录
+                List<AlarmRecordEntity> alarmRecords = alarmRecordMapper.selectList(new LambdaQueryWrapper<AlarmRecordEntity>()
+                        .eq(AlarmRecordEntity::getAlarmType, ConstantsInfo.DRILL_SPACE_ALARM));
+                if (alarmRecords.isEmpty()) {
+                    // 没有历史报警记录，批量新增
+                    List<AlarmRecordEntity> newRecords = new ArrayList<>();
+                    for (WarningDTO warningDTO : warningDTOS) {
+                        AlarmRecordEntity record = buildAlarmRecord(warningDTO);
+                        newRecords.add(record);
+                    }
+                    if (!newRecords.isEmpty()) {
+                        alarmRecordService.saveBatch(newRecords);
+                    }
+                } else {
+                    // 存在历史报警记录，逐条处理
+                    for (WarningDTO warningDTO : warningDTOS) {
+                        AlarmRecordEntity newRecord = buildAlarmRecord(warningDTO);
+                        if (warningDTO.isBetweenDrills()) {
+                            // 是两个钻孔之间的报警，先关闭旧记录
+                            String relatedDrillNum = warningDTO.getRelatedDrillNum();
+                            // 查找作为对比钻孔或当前钻孔的历史记录
+                            List<AlarmRecordEntity> oldRecords = alarmRecordMapper.selectList(new LambdaQueryWrapper<AlarmRecordEntity>()
+                                    .eq(AlarmRecordEntity::getContrastDrillNum, relatedDrillNum)
+                                    .or()
+                                    .eq(AlarmRecordEntity::getCurrentDrillNum, relatedDrillNum));
+
+                            if (!oldRecords.isEmpty()) {
+                                // 关闭旧记录
+                                for (AlarmRecordEntity oldRecord : oldRecords) {
+                                    alarmRecordMapper.update(oldRecord, new LambdaUpdateWrapper<AlarmRecordEntity>()
+                                            .eq(AlarmRecordEntity::getAlarmId, oldRecord.getAlarmId())
+                                            .set(AlarmRecordEntity::getEndTime, System.currentTimeMillis())
+                                            .set(AlarmRecordEntity::getAlarmStatus, ConstantsInfo.ALARM_END));
+                                }
+                            }
+                            // 新增当前记录
+                            alarmRecordMapper.insert(newRecord);
+                        } else {
+                            // 非钻孔间问题，直接新增
+                            alarmRecordMapper.insert(newRecord);
+                        }
+                    }
+                }
+                // 异步推送报警通知(大屏webSocket推送)
+                asyncSendAlarmNotifications(warningDTOS);
+
                 // todo 后续调整,目前先写死一个cid
                 SysUser sysUser = sysUserMapper.selectUserById(1L);
                 String cid = sysUser.getCid();
                 List<String> cids = new ArrayList<>();
                 cids.add(cid);
-                warnPush.pushMsg(cids, "施工钻孔间距预警推送通知", logic);
+                warnPush.pushMsg(cids, "施工钻孔间距预警推送通知", warningDTOS.toString());
             }
         }
         return flag;
+    }
+
+    /**
+     * 构造报警记录
+     */
+    private AlarmRecordEntity buildAlarmRecord(WarningDTO warningDTO) {
+        AlarmRecordEntity record = new AlarmRecordEntity();
+        record.setAlarmType(ConstantsInfo.DRILL_SPACE_ALARM);
+        record.setProjectId(warningDTO.getCurrentProjectId());
+        record.setContrastDrillNum(warningDTO.getCurrentDrillNum());
+        record.setCurrentDrillNum(warningDTO.getRelatedDrillNum());
+        record.setSpaced(warningDTO.getSpaced());
+        record.setActualDistance(warningDTO.getActualDistance());
+        // 构建报警内容
+        String alarmContent = String.format(ALARM_CONTENT_TEMPLATE,
+                warningDTO.getCurrentDrillNum(),
+                warningDTO.getRelatedDrillNum(),
+                warningDTO.getActualDistance(),
+                warningDTO.getSpaced());
+        record.setAlarmContent(alarmContent);
+        record.setAlarmStatus(ConstantsInfo.ALARM_IN);
+        record.setStartTime(System.currentTimeMillis());
+        return record;
+    }
+    /**
+     * 异步发送报警通知
+     */
+    @Async
+    public void asyncSendAlarmNotifications(List<WarningDTO> warnings) {
+        try {
+            List<SpaceAlarmPushDTO> pushMessages = convertToPushDTOs(warnings);
+            String message = JSON.toJSONString(pushMessages);
+            WebSocketServer.sendInfoAll(message);
+            log.info("WebSocket推送钻孔间距报警成功，数量: {}", pushMessages.size());
+        } catch (IOException e) {
+            log.error("WebSocket推送钻孔间距报警失败，影响数据量: {}", warnings.size(), e);
+        }
+    }
+    /**
+     * 转换为推送DTO
+     */
+    private List<SpaceAlarmPushDTO> convertToPushDTOs(List<WarningDTO> warnings) {
+        List<SpaceAlarmPushDTO> spaceAlarmPushDTOS = new ArrayList<>();
+        for (WarningDTO warningDTO : warnings) {
+            SpaceAlarmPushDTO spaceAlarmPushDTO = new SpaceAlarmPushDTO();
+            spaceAlarmPushDTO.setAlarmType(ConstantsInfo.DRILL_SPACE_ALARM);
+            spaceAlarmPushDTO.setAlarmTime(warningDTO.getAlarmTime());
+            spaceAlarmPushDTO.setCurrentProjectId(warningDTO.getCurrentProjectId());
+            spaceAlarmPushDTO.setCurrentDrillNum(warningDTO.getCurrentDrillNum());
+            spaceAlarmPushDTO.setContrastDrillNum(warningDTO.getRelatedDrillNum());
+            spaceAlarmPushDTO.setDangerLevelName(warningDTO.getDangerLevelName());
+            spaceAlarmPushDTO.setSpaced(warningDTO.getSpaced());
+            spaceAlarmPushDTO.setActualDistance(warningDTO.getActualDistance());
+            spaceAlarmPushDTOS.add(spaceAlarmPushDTO);
+        }
+        return spaceAlarmPushDTOS;
     }
 
     /**

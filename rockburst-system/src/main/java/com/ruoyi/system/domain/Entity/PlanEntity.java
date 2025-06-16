@@ -110,4 +110,8 @@ public class PlanEntity extends BusinessBaseEntity implements Serializable {
     @TableField("del_flag")
     @TableLogic(value = "0", delval = "2")
     private String delFlag;
+
+    @ApiModelProperty(value = "报警屏蔽状态")
+    @TableField("shield_status")
+    private String shieldStatus;
 }

@@ -32,6 +32,15 @@ public class ProjectDTO {
     @ApiModelProperty(value = "状态")
     private Integer status;
 
+    @ApiModelProperty(value = "钻孔类型格式化")
+    private String drillTypeFmt;
+
+    @ApiModelProperty(value = "施工单位格式化")
+    private String constructUnitFmt;
+
+    @ApiModelProperty(value = "施工类型格式化")
+    private String constructTypeFmt;
+
     private String constructType;
     private Long tunnelId;
     private Long workFaceId;

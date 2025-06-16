@@ -5,34 +5,39 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson2.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.redis.RedisCache;
+import com.ruoyi.common.message.WebSocketServer;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.quartz.task.IRyTask;
 import com.ruoyi.system.constant.ModelFlaskConstant;
-import com.ruoyi.system.domain.BizPresetPoint;
-import com.ruoyi.system.domain.BizProjectRecord;
-import com.ruoyi.system.domain.BizVideo;
-import com.ruoyi.system.domain.Entity.PlanAlarm;
-import com.ruoyi.system.domain.Entity.PlanAreaEntity;
-import com.ruoyi.system.domain.Entity.PlanEntity;
-import com.ruoyi.system.domain.Entity.ProjectWarnSchemeEntity;
-import com.ruoyi.system.domain.SysFileInfo;
+import com.ruoyi.system.domain.*;
+import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.aimodel.TaskStatus;
 import com.ruoyi.system.domain.aimodel.TaskStatusResponse;
+import com.ruoyi.system.domain.dto.largeScreen.PlanPushDTO;
 import com.ruoyi.system.mapper.*;
+import com.ruoyi.system.service.AlarmRecordService;
 import com.ruoyi.system.service.IBizTravePointService;
 import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.system.service.ISysDictTypeService;
 import com.ruoyi.system.service.impl.handle.AiModelHandle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -81,6 +86,17 @@ public class RyTaskServiceImpl implements IRyTask
 
     @Autowired
     private ISysConfigService configService;
+
+    @Resource
+    private AlarmRecordMapper alarmRecordMapper;
+
+    @Resource
+    private AlarmRecordService alarmRecordService;
+
+    @Resource
+    private BizWorkfaceMapper bizWorkfaceMapper;
+
+    private static final Logger log = LoggerFactory.getLogger(RyTaskServiceImpl.class);
 
 
     @Override
@@ -197,6 +213,7 @@ public class RyTaskServiceImpl implements IRyTask
     }
 
 
+    @Transactional
     @Override
     public void alarmProject() {
         long timestamp = DateUtil.date().getTime();
@@ -236,7 +253,23 @@ public class RyTaskServiceImpl implements IRyTask
                     isreturn = false;
                 }
             }
-            if (isreturn){
+            if (isreturn) {
+                // 当数据不符合报警触发阈值时，结束报警，更新报警状态
+                final List<String> validStatuses = Arrays.asList("1", "2");
+                final String alarmEndStatus = ConstantsInfo.ALARM_END;
+                final long endTime = System.currentTimeMillis();
+                List<AlarmRecordEntity> recordsToUpdate = alarmRecordMapper.selectList(
+                        new LambdaQueryWrapper<AlarmRecordEntity>()
+                                .eq(AlarmRecordEntity::getPlanId, entity.getPlanId())
+                                .eq(AlarmRecordEntity::getQuantityAlarmThreshold, workloadProportion)
+                                .in(AlarmRecordEntity::getAlarmStatus, validStatuses));
+                if (!CollectionUtils.isEmpty(recordsToUpdate)) {
+                    recordsToUpdate.forEach(record -> {
+                        record.setAlarmStatus(alarmEndStatus);
+                        record.setEndTime(endTime);
+                    });
+                    boolean updateSuccess = alarmRecordService.updateBatchById(recordsToUpdate);
+                }
                 continue;
             }
             QueryWrapper<PlanAreaEntity> areaEntityQueryWrapper = new QueryWrapper<>();
@@ -260,6 +293,61 @@ public class RyTaskServiceImpl implements IRyTask
             projectIds = projectIds.stream()
                     .distinct()
                     .collect(Collectors.toList());
+
+            // 报警数据插入 alarm_record 表
+            // 1. 准备基础数据
+            long currentTime = System.currentTimeMillis();
+            int actualCompleted = projectIds.size();
+            String alarmContent = String.format("总计划钻孔量为:%d 规定%s的时间， 计划完成总数的:%.2f ，实际完成:%d个，没有达到预期计划，触发报警",
+                    entity.getTotalDrillNumber(), current, workloadProportion, actualCompleted);
+
+            // 2. 检查是否已存在相同报警记录
+            boolean existsSameRecord = alarmRecordMapper.exists(new LambdaQueryWrapper<AlarmRecordEntity>()
+                    .eq(AlarmRecordEntity::getPlanId, entity.getPlanId())
+                    .eq(AlarmRecordEntity::getQuantityAlarmThreshold, workloadProportion)
+                    .eq(AlarmRecordEntity::getQuantityAlarmValue, actualCompleted));
+            if (existsSameRecord) {
+                return; // 存在相同记录，不再处理
+            }
+            // 3. 构建报警记录实体
+            AlarmRecordEntity alarmRecord = new AlarmRecordEntity()
+                    .setAlarmType(ConstantsInfo.QUANTITY_ALARM)
+                    .setPlanId(entity.getPlanId())
+                    .setQuantityAlarmValue(actualCompleted)
+                    .setQuantityAlarmThreshold(workloadProportion)
+                    .setAlarmContent(alarmContent)
+                    .setStartTime(currentTime)
+                    .setCreateTime(currentTime)
+                    .setAlarmStatus(ConstantsInfo.ALARM_IN);
+            // 4. 确定并设置报警序号
+            Integer maxNum = alarmRecordMapper.selectMaxNumber(entity.getPlanId(), workloadProportion);
+            alarmRecord.setNum(maxNum == null ? 1 : maxNum + 1);
+            // 5. 插入新记录
+            alarmRecordMapper.insert(alarmRecord);
+            // 6. 发送WebSocket消息
+            PlanPushDTO planPushDTO = new PlanPushDTO();
+            planPushDTO.setAlarmType(ConstantsInfo.QUANTITY_ALARM);
+            planPushDTO.setAlarmTime(System.currentTimeMillis());
+            planPushDTO.setPlanId(entity.getPlanId());
+            planPushDTO.setPlanStartTime(entity.getStartTime());
+            planPushDTO.setPlanEndTime(entity.getEndTime());
+            planPushDTO.setWorkFaceId(entity.getWorkFaceId());
+            BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                    .eq(BizWorkface::getWorkfaceId, entity.getWorkFaceId())
+                    .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            String workFaceName = "";
+            if (bizWorkface != null) {
+                workFaceName = bizWorkface.getWorkfaceName();
+            }
+            planPushDTO.setWorkFaceName(workFaceName);
+            planPushDTO.setPlanQuantity(entity.getTotalDrillNumber());
+            planPushDTO.setActualCompleteQuantity(actualCompleted);
+            String message = JSON.toJSONString(planPushDTO); // 可根据需求添加 SerializerFeature 配置
+            try {
+                WebSocketServer.sendInfoAll(message);
+            } catch (IOException e) {
+                log.error("WebSocket消息推送失败，内容：{}", message, e);
+            }
 
             PlanAlarm planAlarm = new PlanAlarm();
             planAlarm.setPlanId(entity.getPlanId())

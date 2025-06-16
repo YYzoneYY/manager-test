@@ -46,4 +46,7 @@ public interface LargeScreenService {
      * @return 结果
      */
     DataDTO obtainUrl(Long projectId);
+
+
+    List<AlarmRecordDTO> obtainAlarmRecord(String alarmType, Long startTime, Long endTime);
 }

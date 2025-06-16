@@ -137,6 +137,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         planEntity.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
         SysUser sysUser = sysUserMapper.selectUserById(SecurityUtils.getUserId());
         planEntity.setDeptId(sysUser.getDeptId());
+        planEntity.setShieldStatus(ConstantsInfo.UN_SHIELD_STATUS);
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = planMapper.insert(planEntity);
         if (flag > 0) {

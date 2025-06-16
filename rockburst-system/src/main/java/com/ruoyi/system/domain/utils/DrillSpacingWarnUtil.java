@@ -1,6 +1,5 @@
 package com.ruoyi.system.domain.utils;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.utils.ConstantsInfo;
@@ -8,9 +7,11 @@ import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.CacheDataEntity;
 import com.ruoyi.system.domain.dto.CoordinatePointDTO;
+import com.ruoyi.system.domain.dto.WarningDTO;
 import com.ruoyi.system.mapper.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -19,24 +20,25 @@ import java.util.List;
  * @description:
  */
 public class DrillSpacingWarnUtil {
-
     /**
      * 钻孔 spacing(间距) 危险判断逻辑
      */
-    public static String warningLogic(Long projectId, BizProjectRecordMapper bizProjectRecordMapper,
-                                      BizDangerAreaMapper bizDangerAreaMapper,
-                                      BizTunnelBarMapper bizTunnelBarMapper,
-                                      BizTravePointMapper bizTravePointMapper,
-                                      SysConfigMapper sysConfigMapper,
-                                      CacheDataMapper cacheDataMapper,
-                                      BizDangerLevelMapper bizDangerLevelMapper,
-                                      SysDictDataMapper sysDictDataMapper) {
-        StringBuilder tag = new StringBuilder();
+    public static List<WarningDTO> warningLogic(Long projectId,
+                                                BizProjectRecordMapper bizProjectRecordMapper,
+                                                BizDangerAreaMapper bizDangerAreaMapper,
+                                                BizTunnelBarMapper bizTunnelBarMapper,
+                                                BizTravePointMapper bizTravePointMapper,
+                                                SysConfigMapper sysConfigMapper,
+                                                CacheDataMapper cacheDataMapper,
+                                                BizDangerLevelMapper bizDangerLevelMapper,
+                                                SysDictDataMapper sysDictDataMapper) {
+        List<WarningDTO> warnings = new ArrayList<>();
+
         BizProjectRecord projectRecord = bizProjectRecordMapper.selectOne(new LambdaQueryWrapper<BizProjectRecord>()
                 .eq(BizProjectRecord::getProjectId, projectId));
 
         if (projectRecord == null) {
-            return "";
+            return warnings;
         }
 
         // 获取当前施工钻孔坐标
@@ -44,13 +46,12 @@ public class DrillSpacingWarnUtil {
                 projectRecord.getTravePointId(), projectRecord.getConstructRange(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
 
         if (StringUtils.isBlank(obtainCoordinate)) {
-            return "";
+            return warnings;
         }
 
         String[] coordinate = StringUtils.split(obtainCoordinate, ',');
         if (coordinate.length < 2) {
-            // 坐标格式错误
-            return "";
+            return warnings;
         }
 
         double x;
@@ -59,10 +60,9 @@ public class DrillSpacingWarnUtil {
             x = Double.parseDouble(coordinate[0]);
             y = Double.parseDouble(coordinate[1]);
         } catch (NumberFormatException e) {
-            // 解析失败
-            return "";
+            return warnings;
         }
-        ;
+
         List<BizProjectRecord> bizProjectRecords = bizProjectRecordMapper.selectList(new LambdaQueryWrapper<BizProjectRecord>()
                 .eq(BizProjectRecord::getStatus, ConstantsInfo.AUDITED_DICT_VALUE)
                 .ne(BizProjectRecord::getProjectId, projectId)
@@ -75,99 +75,195 @@ public class DrillSpacingWarnUtil {
         List<BizDangerArea> bizDangerAreas = bizDangerAreaMapper.selectJoinList(queryWrapper);
 
         if (bizDangerAreas == null || bizDangerAreas.isEmpty()) {
-            return "";
+            return warnings;
         }
 
         for (BizDangerArea bizDangerArea : bizDangerAreas) {
             List<CoordinatePointDTO> coordinatePointDTOS = buildCoordinatePoints(bizDangerArea);
-            // 判断施工钻孔是否在此危险区之内
             boolean pointInPolygon = AlgorithmUtils.isPointInPolygon(coordinatePointDTOS, new CoordinatePointDTO(x, y));
             if (pointInPolygon) {
-                String result = algorithm(bizProjectRecords, bizDangerArea, projectId, coordinate, cacheDataMapper,
+                List<WarningDTO> results = algorithm(bizProjectRecords, bizDangerArea, projectId, coordinate, cacheDataMapper,
                         bizProjectRecordMapper, bizDangerLevelMapper, sysDictDataMapper,
                         bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
-                tag.append(result);
+                warnings.addAll(results);
             }
         }
-        return tag.toString();
+
+        return warnings;
     }
 
-    private static String algorithm(List<BizProjectRecord> bizProjectRecords, BizDangerArea bizDangerArea, Long projectId, String[] currentCoordinate,
-                                    CacheDataMapper cacheDataMapper, BizProjectRecordMapper bizProjectRecordMapper,
-                                    BizDangerLevelMapper bizDangerLevelMapper, SysDictDataMapper sysDictDataMapper,
-                                    BizTunnelBarMapper bizTunnelBarMapper, BizTravePointMapper bizTravePointMapper,
-                                    SysConfigMapper sysConfigMapper) {
-        String tag = "";
-        if (ObjectUtil.isNull(bizProjectRecords)) {
-            // todo 后续与开门口进行对比，开门口处于危险区内则进行对比，在危险区外则与危险区开始边界进行对比
-            // method()
+    private static List<WarningDTO> algorithm(List<BizProjectRecord> bizProjectRecords, BizDangerArea bizDangerArea, Long projectId, String[] currentCoordinate,
+                                              CacheDataMapper cacheDataMapper, BizProjectRecordMapper bizProjectRecordMapper,
+                                              BizDangerLevelMapper bizDangerLevelMapper, SysDictDataMapper sysDictDataMapper,
+                                              BizTunnelBarMapper bizTunnelBarMapper, BizTravePointMapper bizTravePointMapper,
+                                              SysConfigMapper sysConfigMapper) {
+        List<WarningDTO> warnings = new ArrayList<>();
 
-            addCacheData(projectId, bizDangerArea.getDangerAreaId(), cacheDataMapper);
-        } else {
-            // 该钻孔处于当前危险区前一个钻孔
-            CacheDataEntity cacheDataEntity = cacheDataMapper.selectOne(
-                    new LambdaQueryWrapper<CacheDataEntity>()
-                            .eq(CacheDataEntity::getDangerAreaId, bizDangerArea.getDangerAreaId())
-                            .orderByDesc(CacheDataEntity::getNo)
-                            .last("LIMIT 1"));
+        // 1. 获取当前危险区内的所有缓存记录（按 no 升序）
+        List<CacheDataEntity> allCacheRecords = cacheDataMapper.selectList(
+                new LambdaQueryWrapper<CacheDataEntity>()
+                        .eq(CacheDataEntity::getDangerAreaId, bizDangerArea.getDangerAreaId())
+                        .orderByAsc(CacheDataEntity::getNo)
+        );
 
-            if (cacheDataEntity == null) {
-                addCacheData(projectId, bizDangerArea.getDangerAreaId(), cacheDataMapper);
-                return tag;
+        // 2. 构建当前钻孔坐标
+        double currentX = Double.parseDouble(currentCoordinate[0]);
+
+        // 3. 创建 DrillInfo 列表，包含所有历史钻孔 + 当前钻孔
+        List<DrillInfo> drillInfos = new ArrayList<>();
+
+        // 添加历史钻孔
+        for (CacheDataEntity entity : allCacheRecords) {
+            BizProjectRecord record = bizProjectRecordMapper.selectOne(
+                    new LambdaQueryWrapper<BizProjectRecord>()
+                            .eq(BizProjectRecord::getProjectId, entity.getProjectId())
+            );
+            if (record == null) continue;
+
+            String coord = AlgorithmUtils.obtainCoordinate(
+                    record.getWorkfaceId(), record.getTunnelId(),
+                    record.getTravePointId(), record.getConstructRange(),
+                    bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper
+            );
+
+            if (StringUtils.isBlank(coord)) continue;
+
+            String[] parts = StringUtils.split(coord, ',');
+            if (parts.length < 2) continue;
+
+            try {
+                double x = Double.parseDouble(parts[0]);
+                drillInfos.add(new DrillInfo(entity.getProjectId(), x));
+            } catch (NumberFormatException e) {
+                continue;
             }
+        }
 
-            // 前一个孔
-            Long priorProjectId = cacheDataEntity.getProjectId();
-            BizProjectRecord priorRecord = bizProjectRecordMapper.selectOne(new LambdaQueryWrapper<BizProjectRecord>()
-                    .eq(BizProjectRecord::getProjectId, priorProjectId));
+        // 添加当前钻孔
+        drillInfos.add(new DrillInfo(projectId, currentX));
 
-            String obtainPriorCoordinate = AlgorithmUtils.obtainCoordinate(priorRecord.getWorkfaceId(), priorRecord.getTunnelId(),
-                    priorRecord.getTravePointId(), priorRecord.getConstructRange(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
-            // 前一个孔坐标(x,y)
-            String[] priorCoordinate = StringUtils.split(obtainPriorCoordinate, ',');
-            double priorX = Double.parseDouble(priorCoordinate[0]); // 前一个孔x坐标
+        // 4. 按 x 坐标排序
+        drillInfos.sort(Comparator.comparingDouble(d -> d.x));
 
-            // 当前孔
-            BizProjectRecord currentProject = bizProjectRecordMapper.selectOne(new LambdaQueryWrapper<BizProjectRecord>()
-                    .eq(BizProjectRecord::getProjectId, projectId));
-            double currentX = Double.parseDouble(currentCoordinate[0]); // 当前孔x坐标
+        // 5. 找出当前钻孔的位置索引
+        int insertIndex = -1;
+        for (int i = 0; i < drillInfos.size(); i++) {
+            if (drillInfos.get(i).projectId.equals(projectId)) {
+                insertIndex = i;
+                break;
+            }
+        }
 
-            // 获取危险区等级
-            String level = bizDangerArea.getLevel();
-            // 获取危险区名称
-            String levelName = sysDictDataMapper.selectDictLabel(ConstantsInfo.DANGER_AREA_LEVEL_DICT_TYPE, level);
-            BizDangerLevel bizDangerLevel = bizDangerLevelMapper.selectOne(new LambdaQueryWrapper<BizDangerLevel>()
-                    .eq(BizDangerLevel::getLevel, level));
-            // 获取规定危险区间隔
-            Double spaced = bizDangerLevel.getSpaced();
-            // 当前钻孔是否在前一个钻孔的后方 ?
-            if (currentX > priorX) {
-                double doingPoorly = DataJudgeUtils.doingPoorly(currentX, priorX);
-                if (doingPoorly > spaced) {
-                    tag = buildTagMessage(currentProject, priorRecord, levelName, spaced);
+        if (insertIndex == -1) {
+            return warnings;
+        }
+
+        // 6. 获取当前钻孔实体
+        BizProjectRecord currentProject = bizProjectRecordMapper.selectOne(
+                new LambdaQueryWrapper<BizProjectRecord>()
+                        .eq(BizProjectRecord::getProjectId, projectId)
+        );
+
+        // 7. 获取安全规则
+        String level = bizDangerArea.getLevel();
+        String levelName = sysDictDataMapper.selectDictLabel(ConstantsInfo.DANGER_AREA_LEVEL_DICT_TYPE, level);
+        BizDangerLevel dangerLevel = bizDangerLevelMapper.selectOne(
+                new LambdaQueryWrapper<BizDangerLevel>().eq(BizDangerLevel::getLevel, level)
+        );
+        Double spaced = dangerLevel.getSpaced();
+
+        // 标记是否是两孔之间的插入
+        boolean isBetweenDrills = insertIndex > 0 && insertIndex < drillInfos.size() - 1;
+
+        // 8. 判断前一个钻孔
+        if (insertIndex > 0) {
+            DrillInfo priorDrill = drillInfos.get(insertIndex - 1);
+            BizProjectRecord priorRecord = bizProjectRecordMapper.selectOne(
+                    new LambdaQueryWrapper<BizProjectRecord>()
+                            .eq(BizProjectRecord::getProjectId, priorDrill.projectId)
+            );
+            if (priorRecord != null) {
+                double distance = DataJudgeUtils.doingPoorly(currentX, priorDrill.x);
+                if (distance > spaced) {
+                    WarningDTO dto = buildWarningDTO(currentProject, priorRecord, levelName, spaced, distance);
+                    dto.setBetweenDrills(isBetweenDrills); // 设置标识字段
+                    warnings.add(dto);
                 }
-            } else {
-                tag = buildTagMessage(currentProject, priorRecord, levelName, spaced);
             }
-            // 将当前钻孔存储到缓冲表中，方便下次使用
-            addCacheData(projectId, bizDangerArea.getDangerAreaId(), cacheDataMapper);
         }
-        return tag;
+
+        // 9. 判断后一个钻孔：只在中间插入时才判断
+        if (insertIndex < drillInfos.size() - 1 && insertIndex > 0) {
+            DrillInfo nextDrill = drillInfos.get(insertIndex + 1);
+            BizProjectRecord nextRecord = bizProjectRecordMapper.selectOne(
+                    new LambdaQueryWrapper<BizProjectRecord>()
+                            .eq(BizProjectRecord::getProjectId, nextDrill.projectId)
+            );
+            if (nextRecord != null) {
+                double distance = DataJudgeUtils.doingPoorly(nextDrill.x, currentX);
+                if (distance > spaced) {
+                    WarningDTO dto = buildWarningDTO(currentProject, nextRecord, levelName, spaced, distance);
+                    dto.setBetweenDrills(isBetweenDrills); // 设置标识字段
+                    warnings.add(dto);
+                }
+            }
+        }
+
+        // 10. 缓存当前钻孔（带排序插入）
+        addCacheData(projectId, bizDangerArea.getDangerAreaId(), cacheDataMapper, drillInfos);
+
+        return warnings;
     }
 
-    private static void addCacheData(Long projectId, Long dangerAreaId, CacheDataMapper cacheDataMapper) {
+    private static WarningDTO buildWarningDTO(BizProjectRecord current, BizProjectRecord other,
+                                              String levelName, Double spaced, Double actual) {
+        WarningDTO dto = new WarningDTO();
+        dto.setCurrentProjectId(current.getProjectId());
+        dto.setCurrentDrillNum(current.getDrillNum());
+        dto.setRelatedDrillNum(other.getDrillNum());
+        dto.setRelatedProjectId(other.getProjectId());
+        dto.setDangerLevelName(levelName);
+        dto.setSpaced(spaced);
+        dto.setActualDistance(actual);
+        dto.setAlarmTime(System.currentTimeMillis());
+        return dto;
+    }
+
+    private static void addCacheData(Long projectId, Long dangerAreaId, CacheDataMapper cacheDataMapper, List<DrillInfo> drillInfos) {
+        CacheDataEntity existing = cacheDataMapper.selectOne(
+                new LambdaQueryWrapper<CacheDataEntity>()
+                        .eq(CacheDataEntity::getProjectId, projectId)
+                        .eq(CacheDataEntity::getDangerAreaId, dangerAreaId)
+        );
+        if (existing != null){
+            return;
+        }
+
         CacheDataEntity cacheDataEntity = new CacheDataEntity();
         cacheDataEntity.setProjectId(projectId);
         cacheDataEntity.setDangerAreaId(dangerAreaId);
-        Integer i = cacheDataMapper.selectMaxNumber(dangerAreaId);
-        if (i.equals(0)) {
+
+        if (drillInfos == null || drillInfos.isEmpty()) {
             cacheDataEntity.setNo(ConstantsInfo.NUMBER);
         } else {
-            cacheDataEntity.setNo(i + ConstantsInfo.NUMBER);
+            int insertIndex = -1;
+            for (int i = 0; i < drillInfos.size(); i++) {
+                if (drillInfos.get(i).projectId.equals(projectId)) {
+                    insertIndex = i;
+                    break;
+                }
+            }
+
+            if (insertIndex != -1) {
+                cacheDataEntity.setNo(insertIndex + ConstantsInfo.NUMBER);
+            } else {
+                Integer maxNo = cacheDataMapper.selectMaxNumber(dangerAreaId);
+                cacheDataEntity.setNo(maxNo == null ? ConstantsInfo.NUMBER : maxNo + ConstantsInfo.NUMBER);
+            }
         }
+
         cacheDataMapper.insert(cacheDataEntity);
     }
-
 
     private static List<CoordinatePointDTO> buildCoordinatePoints(BizDangerArea area) {
         List<CoordinatePointDTO> points = new ArrayList<>();
@@ -178,12 +274,14 @@ public class DrillSpacingWarnUtil {
         return points;
     }
 
+    // 辅助类：存储钻孔 ID 和 x 坐标
+    private static class DrillInfo {
+        Long projectId;
+        double x;
 
-    private static String buildTagMessage(BizProjectRecord currentProject, BizProjectRecord priorRecord,
-                                          String levelName, Double spaced) {
-        return currentProject.getDrillNum() + ConstantsInfo.CUE_WORD_ONE +
-                priorRecord.getDrillNum() + ConstantsInfo.CUE_WORD_TWO +
-                levelName + ConstantsInfo.CUE_WORD_THREE +
-                spaced + ConstantsInfo.CUE_WORD_FOUR;
+        public DrillInfo(Long projectId, double x) {
+            this.projectId = projectId;
+            this.x = x;
+        }
     }
 }
