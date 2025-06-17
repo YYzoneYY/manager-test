@@ -28,4 +28,7 @@ public class WarningDTO {
     private Long alarmTime;
     // 是否为前后两个钻孔中间的孔
     private boolean betweenDrills;
+
+    private String tunnelName;
+    private String workFaceName;
 }

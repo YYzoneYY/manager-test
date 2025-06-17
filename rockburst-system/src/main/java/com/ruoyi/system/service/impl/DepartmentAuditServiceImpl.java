@@ -104,7 +104,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
     @Resource
     private AlarmRecordService alarmRecordService;
 
-    private static final String ALARM_CONTENT_TEMPLATE = "%s号钻孔与%s号钻孔之间的距离为%s米，超过当前卸压计划中间距%s米的要求，发生报警！";
+    private static final String ALARM_CONTENT_TEMPLATE = "%s下的%s内，%s号钻孔与%s号钻孔之间的距离为%s米，超过当前卸压计划中间距%s米的要求，发生报警！";
 
     /**
      * 点击审核按钮
@@ -204,7 +204,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 // 间距判断
                 List<WarningDTO> warningDTOS = DrillSpacingWarnUtil.warningLogic(departAuditDTO.getProjectId(), bizProjectRecordMapper,
                         bizDangerAreaMapper, bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper,
-                        cacheDataMapper, bizDangerLevelMapper, sysDictDataMapper);
+                        cacheDataMapper, bizDangerLevelMapper, sysDictDataMapper, tunnelMapper, bizWorkfaceMapper);
                 // 查询已存在的钻孔间距报警记录
                 List<AlarmRecordEntity> alarmRecords = alarmRecordMapper.selectList(new LambdaQueryWrapper<AlarmRecordEntity>()
                         .eq(AlarmRecordEntity::getAlarmType, ConstantsInfo.DRILL_SPACE_ALARM));
@@ -275,6 +275,8 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
         record.setActualDistance(warningDTO.getActualDistance());
         // 构建报警内容
         String alarmContent = String.format(ALARM_CONTENT_TEMPLATE,
+                warningDTO.getWorkFaceName(),
+                warningDTO.getTunnelName(),
                 warningDTO.getCurrentDrillNum(),
                 warningDTO.getRelatedDrillNum(),
                 warningDTO.getActualDistance(),
@@ -313,6 +315,8 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
             spaceAlarmPushDTO.setDangerLevelName(warningDTO.getDangerLevelName());
             spaceAlarmPushDTO.setSpaced(warningDTO.getSpaced());
             spaceAlarmPushDTO.setActualDistance(warningDTO.getActualDistance());
+            spaceAlarmPushDTO.setTunnelName(warningDTO.getTunnelName());
+            spaceAlarmPushDTO.setWorkFaceName(warningDTO.getWorkFaceName());
             spaceAlarmPushDTOS.add(spaceAlarmPushDTO);
         }
         return spaceAlarmPushDTOS;

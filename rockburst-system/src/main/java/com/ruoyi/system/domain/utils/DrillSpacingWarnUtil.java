@@ -6,6 +6,7 @@ import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.CacheDataEntity;
+import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.CoordinatePointDTO;
 import com.ruoyi.system.domain.dto.WarningDTO;
 import com.ruoyi.system.mapper.*;
@@ -31,7 +32,8 @@ public class DrillSpacingWarnUtil {
                                                 SysConfigMapper sysConfigMapper,
                                                 CacheDataMapper cacheDataMapper,
                                                 BizDangerLevelMapper bizDangerLevelMapper,
-                                                SysDictDataMapper sysDictDataMapper) {
+                                                SysDictDataMapper sysDictDataMapper,
+                                                TunnelMapper tunnelMapper, BizWorkfaceMapper bizWorkfaceMapper) {
         List<WarningDTO> warnings = new ArrayList<>();
 
         BizProjectRecord projectRecord = bizProjectRecordMapper.selectOne(new LambdaQueryWrapper<BizProjectRecord>()
@@ -84,7 +86,7 @@ public class DrillSpacingWarnUtil {
             if (pointInPolygon) {
                 List<WarningDTO> results = algorithm(bizProjectRecords, bizDangerArea, projectId, coordinate, cacheDataMapper,
                         bizProjectRecordMapper, bizDangerLevelMapper, sysDictDataMapper,
-                        bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
+                        bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper, tunnelMapper, bizWorkfaceMapper);
                 warnings.addAll(results);
             }
         }
@@ -96,7 +98,7 @@ public class DrillSpacingWarnUtil {
                                               CacheDataMapper cacheDataMapper, BizProjectRecordMapper bizProjectRecordMapper,
                                               BizDangerLevelMapper bizDangerLevelMapper, SysDictDataMapper sysDictDataMapper,
                                               BizTunnelBarMapper bizTunnelBarMapper, BizTravePointMapper bizTravePointMapper,
-                                              SysConfigMapper sysConfigMapper) {
+                                              SysConfigMapper sysConfigMapper, TunnelMapper tunnelMapper, BizWorkfaceMapper bizWorkfaceMapper) {
         List<WarningDTO> warnings = new ArrayList<>();
 
         // 1. 获取当前危险区内的所有缓存记录（按 no 升序）
@@ -185,7 +187,7 @@ public class DrillSpacingWarnUtil {
             if (priorRecord != null) {
                 double distance = DataJudgeUtils.doingPoorly(currentX, priorDrill.x);
                 if (distance > spaced) {
-                    WarningDTO dto = buildWarningDTO(currentProject, priorRecord, levelName, spaced, distance);
+                    WarningDTO dto = buildWarningDTO(currentProject, priorRecord, levelName, spaced, distance, bizWorkfaceMapper, tunnelMapper);
                     dto.setBetweenDrills(isBetweenDrills); // 设置标识字段
                     warnings.add(dto);
                 }
@@ -202,7 +204,7 @@ public class DrillSpacingWarnUtil {
             if (nextRecord != null) {
                 double distance = DataJudgeUtils.doingPoorly(nextDrill.x, currentX);
                 if (distance > spaced) {
-                    WarningDTO dto = buildWarningDTO(currentProject, nextRecord, levelName, spaced, distance);
+                    WarningDTO dto = buildWarningDTO(currentProject, nextRecord, levelName, spaced, distance, bizWorkfaceMapper, tunnelMapper);
                     dto.setBetweenDrills(isBetweenDrills); // 设置标识字段
                     warnings.add(dto);
                 }
@@ -216,7 +218,8 @@ public class DrillSpacingWarnUtil {
     }
 
     private static WarningDTO buildWarningDTO(BizProjectRecord current, BizProjectRecord other,
-                                              String levelName, Double spaced, Double actual) {
+                                              String levelName, Double spaced, Double actual,BizWorkfaceMapper bizWorkfaceMapper,
+                                              TunnelMapper tunnelMapper) {
         WarningDTO dto = new WarningDTO();
         dto.setCurrentProjectId(current.getProjectId());
         dto.setCurrentDrillNum(current.getDrillNum());
@@ -226,6 +229,14 @@ public class DrillSpacingWarnUtil {
         dto.setSpaced(spaced);
         dto.setActualDistance(actual);
         dto.setAlarmTime(System.currentTimeMillis());
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceId, current.getWorkfaceId())
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        dto.setWorkFaceName(bizWorkface.getWorkfaceName());
+        TunnelEntity tunnelEntity = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getTunnelId, current.getTunnelId())
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        dto.setTunnelName(tunnelEntity.getTunnelName());
         return dto;
     }
 

@@ -118,6 +118,8 @@ public class LargeScreenController {
                 dto1.setDangerLevelName("中危险区");
                 dto1.setSpaced(2.0);
                 dto1.setActualDistance(2.5);
+                dto1.setTunnelName("403回风巷");
+                dto1.setWorkFaceName("403工作面");
                 dtoList.add(dto1);
                 // 第二条数据
                 SpaceAlarmPushDTO dto2 = new SpaceAlarmPushDTO();
@@ -129,6 +131,8 @@ public class LargeScreenController {
                 dto2.setDangerLevelName("高危险区");
                 dto2.setSpaced(1.0);
                 dto2.setActualDistance(1.5);
+                dto2.setTunnelName("403回风巷");
+                dto2.setWorkFaceName("403工作面");
                 dtoList.add(dto2);
                 // 发送整个列表（前端需配合解析为数组）
                 sendMessage(dtoList);

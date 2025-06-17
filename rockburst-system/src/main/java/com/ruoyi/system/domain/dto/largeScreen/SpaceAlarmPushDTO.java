@@ -27,4 +27,7 @@ public class SpaceAlarmPushDTO {
     private Double spaced;
     // 实际距离
     private Double actualDistance;
+
+    private String tunnelName;
+    private String workFaceName;
 }
