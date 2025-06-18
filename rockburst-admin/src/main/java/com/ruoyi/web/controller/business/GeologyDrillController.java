@@ -5,12 +5,18 @@ import com.ruoyi.system.domain.dto.GeologyDrillDTO;
 import com.ruoyi.system.service.GeologyDrillService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -31,5 +37,51 @@ public class GeologyDrillController {
     @PostMapping(value = "/batchInsert")
     public R<Object> batchInsert(@RequestBody List<GeologyDrillDTO> geologyDrillDTOS) {
         return R.ok(this.geologyDrillService.batchInsert(geologyDrillDTOS));
+    }
+
+    @ApiOperation(value = "查询地质钻孔信息", notes = "查询地质钻孔信息")
+    @GetMapping(value = "/obtainGeologyDrillInfo")
+    public R<Object> obtainGeologyDrillInfo(@RequestParam("drillName") String drillName) {
+        return R.ok(this.geologyDrillService.obtainGeologyDrillInfo(drillName));
+    }
+
+    @ApiOperation(value = "下载导入模板", notes = "下载导入模板")
+    @GetMapping("/downloadTemplate")
+    public ResponseEntity<InputStreamResource> downloadTemplate() throws IOException {
+        // 1. 加载模板文件资源
+        ClassPathResource resource = new ClassPathResource("excel/地质钻孔关联信息导入模板.xlsx");
+
+        // 2. 处理文件名编码问题（解决中文乱码）
+        String fileName = "地质钻孔关联信息导入模板.xlsx";
+        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+                .replaceAll("\\+", "%20");
+
+        // 3. 设置响应头
+        HttpHeaders headers = new HttpHeaders();
+        // 兼容各种浏览器的文件名编码方式
+        headers.add(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + encodedFileName + "\"; " +
+                        "filename*=UTF-8''" + encodedFileName);
+
+        // 4. 设置正确的Content-Type
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentLength(resource.contentLength());
+
+        // 5. 构建响应实体
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(resource.contentLength())
+                .body(new InputStreamResource(resource.getInputStream()));
+    }
+
+    @ApiOperation(value = "导入地质钻孔关联信息", notes = "导入地质钻孔关联信息")
+    @PostMapping(value = "/importData")
+    public R<Object> importData(@RequestPart("file") MultipartFile file, @RequestParam("geologyDrillId") Long geologyDrillId) {
+        try {
+            return R.ok(this.geologyDrillService.importData(file, geologyDrillId));
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
     }
 }

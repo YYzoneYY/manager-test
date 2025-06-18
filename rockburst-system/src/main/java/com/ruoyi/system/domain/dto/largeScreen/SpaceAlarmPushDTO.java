@@ -27,7 +27,8 @@ public class SpaceAlarmPushDTO {
     private Double spaced;
     // 实际距离
     private Double actualDistance;
-
+    // 巷道名称
     private String tunnelName;
+    // 工作面名称
     private String workFaceName;
 }
