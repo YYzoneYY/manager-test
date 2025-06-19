@@ -89,8 +89,8 @@ public class GeologyDrillController {
     }
 
     @ApiOperation(value = "导入地质钻孔关联信息", notes = "导入地质钻孔关联信息")
-    @PostMapping(value = "/importData")
-    public R<Object> importData(@RequestPart("file") MultipartFile file, @RequestParam("geologyDrillId") Long geologyDrillId) {
+    @PostMapping(value = "/importData/{geologyDrillId}")
+    public R<Object> importData(@RequestPart("file") MultipartFile file, @PathVariable("geologyDrillId") Long geologyDrillId) {
         try {
             return R.ok(this.geologyDrillService.importData(file, geologyDrillId));
         } catch (Exception e) {
