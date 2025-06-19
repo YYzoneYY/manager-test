@@ -1,8 +1,11 @@
 package com.ruoyi.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.pagehelper.Page;
 import com.ruoyi.system.domain.Entity.GeologyDrillEntity;
+import com.ruoyi.system.domain.vo.GeologyDrillVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author: shikai
@@ -12,4 +15,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface GeologyDrillMapper extends BaseMapper<GeologyDrillEntity> {
+
+    Page<GeologyDrillVO> queryByPage(@Param("drillName") String drillName);
+
+    int truncateTable();
+    int resetAutoIncrement();
 }

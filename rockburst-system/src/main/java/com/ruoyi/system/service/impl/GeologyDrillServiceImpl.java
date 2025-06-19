@@ -6,7 +6,11 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.Entity.DrillMappingEntity;
@@ -16,6 +20,7 @@ import com.ruoyi.system.domain.dto.GeologyDrillDTO;
 import com.ruoyi.system.domain.dto.GeologyDrillInfoDTO;
 import com.ruoyi.system.domain.dto.ImportDrillMappingDTO;
 import com.ruoyi.system.domain.utils.TrimUtils;
+import com.ruoyi.system.domain.vo.GeologyDrillVO;
 import com.ruoyi.system.mapper.DrillMappingMapper;
 import com.ruoyi.system.mapper.GeologyDrillMapper;
 import com.ruoyi.system.service.DrillMappingService;
@@ -70,17 +75,12 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
         Map<String, GeologyDrillEntity> existingMap = geologyDrillMapper.selectList(
                 new LambdaQueryWrapper<GeologyDrillEntity>()
                         .in(GeologyDrillEntity::getDataName, dataNames)
-                        .eq(GeologyDrillEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
         ).stream().collect(Collectors.toMap(GeologyDrillEntity::getDataName, Function.identity()));
 
         // 4. 处理每条数据
         for (GeologyDrillDTO dto : geologyDrillDTOList) {
             GeologyDrillEntity entity = existingMap.getOrDefault(dto.getDataName(), new GeologyDrillEntity());
 
-            // 如果是新增数据，设置删除标志
-            if (entity.getGeologyDrillId() == null) {
-                entity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
-            }
             // 属性拷贝
             BeanUtils.copyProperties(dto, entity);
             entityList.add(entity);
@@ -95,8 +95,7 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
             throw new RuntimeException("参数错误,钻孔名称不能为空");
         }
         GeologyDrillEntity geologyDrillEntity = geologyDrillMapper.selectOne(new LambdaQueryWrapper<GeologyDrillEntity>()
-                .eq(GeologyDrillEntity::getDataName, drillName)
-                .eq(GeologyDrillEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                .eq(GeologyDrillEntity::getDataName, drillName));
         if (ObjectUtil.isNull(geologyDrillEntity)) {
             throw new RuntimeException("钻孔不存在");
         }
@@ -105,6 +104,27 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
         List<DrillPropertiesDTO> drillProperties = drillMappingService.getDrillProperties(geologyDrillEntity.getGeologyDrillId());
         geologyDrillInfoDTO.setDrillPropertiesDTOS(drillProperties);
         return geologyDrillInfoDTO;
+    }
+
+    @Override
+    public TableData pageQueryList(String drillName, Integer pageNum, Integer pageSize) {
+        TableData result = new TableData();
+        if (null == pageNum || pageNum < 1) {
+            pageNum = 1;
+        }
+        if (null == pageSize || pageSize < 1) {
+            pageSize = 10;
+        }
+        PageHelper.startPage(pageNum, pageSize);
+        Page<GeologyDrillVO> page = geologyDrillMapper.queryByPage(drillName);
+        if (ListUtils.isNotNull(page.getResult())) {
+            page.getResult().forEach(geologyDrillVO -> {
+                geologyDrillVO.setDrillPropertiesDTOS(drillMappingService.getDrillProperties(geologyDrillVO.getGeologyDrillId()));
+            });
+        }
+        result.setTotal(page.getTotal());
+        result.setRows(page.getResult());
+        return result;
     }
 
     @Override
@@ -136,10 +156,24 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
         }
         // 批量插入
         if (!entities.isEmpty()) {
-            drillMappingService.saveBatch( entities); // 假设存在 insertBatch 方法
+            drillMappingService.saveBatch(entities); // 假设存在 insertBatch 方法
         }
         return "导入成功";
     }
+
+    @Override
+    @Transactional
+    public boolean oneClickDelete() {
+        try {
+            geologyDrillMapper.truncateTable();
+            geologyDrillMapper.resetAutoIncrement();
+            return true;
+        } catch (Exception e) {
+            log.error("清空地质钻孔表并重置自增失败", e);
+            throw new RuntimeException("清空数据失败，请联系管理员");
+        }
+    }
+
 
 
 }

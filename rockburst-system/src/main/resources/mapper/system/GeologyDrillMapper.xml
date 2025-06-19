@@ -2,4 +2,26 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.GeologyDrillMapper">
 
+    <select id="queryByPage" resultType="com.ruoyi.system.domain.vo.GeologyDrillVO">
+        select
+        g.geology_drill_id as geologyDrillId,
+        g.data_name as dataName,
+        g.ground_elevation as groundElevation,
+        g.base_elevation as baseElevation,
+        g.coal_thickness as coalThickness
+        from geology_drill as g
+        <where>
+            <if test="drillName != null and drillName != ''">
+                and g.data_name like concat('%',#{drillName},'%')
+            </if>
+        </where>
+    </select>
+
+    <update id="truncateTable">
+        TRUNCATE TABLE geology_drill;
+    </update>
+
+    <update id="resetAutoIncrement">
+        ALTER TABLE geology_drill AUTO_INCREMENT = 1;
+    </update>
 </mapper>

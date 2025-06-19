@@ -1,10 +1,11 @@
 package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.page.TableData;
+import com.ruoyi.system.domain.dto.ClassesSelectDTO;
 import com.ruoyi.system.domain.dto.GeologyDrillDTO;
 import com.ruoyi.system.service.GeologyDrillService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -45,6 +46,18 @@ public class GeologyDrillController {
         return R.ok(this.geologyDrillService.obtainGeologyDrillInfo(drillName));
     }
 
+    @ApiOperation(value = "根据条件参数分页查询数据列表接口", notes = "根据条件参数分页查询数据列表接口")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
+            @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
+    })
+    @PostMapping(value = "/pageQueryList")
+    public R<TableData> pageQueryList(@ApiParam(name = "drillName", value = "钻孔名称") @RequestParam(name = "drillName", required = false) String drillName,
+                                      @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
+                                      @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize){
+        return R.ok(geologyDrillService.pageQueryList(drillName, pageNum, pageSize));
+    }
+
     @ApiOperation(value = "下载导入模板", notes = "下载导入模板")
     @GetMapping("/downloadTemplate")
     public ResponseEntity<InputStreamResource> downloadTemplate() throws IOException {
@@ -83,5 +96,11 @@ public class GeologyDrillController {
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }
+    }
+
+    @ApiOperation(value = "一键删除", notes = "一键删除")
+    @DeleteMapping(value = "/oneClickDelete")
+    public R<Object> oneClickDelete() {
+        return R.ok(this.geologyDrillService.oneClickDelete());
     }
 }

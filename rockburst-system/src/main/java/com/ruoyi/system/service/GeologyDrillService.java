@@ -1,6 +1,7 @@
 package com.ruoyi.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.GeologyDrillEntity;
 import com.ruoyi.system.domain.dto.GeologyDrillDTO;
 import com.ruoyi.system.domain.dto.GeologyDrillInfoDTO;
@@ -19,6 +20,8 @@ public interface GeologyDrillService extends IService<GeologyDrillEntity> {
 
     GeologyDrillInfoDTO obtainGeologyDrillInfo(String drillName);
 
+    TableData pageQueryList(String drillName, Integer pageNum, Integer pageSize);
+
     /**
      * 批量导入
      * @param file 文件
@@ -26,4 +29,10 @@ public interface GeologyDrillService extends IService<GeologyDrillEntity> {
      * @throws Exception
      */
     String importData(MultipartFile file, Long geologyDrillId) throws Exception;
+
+    /**
+     * 一键删除
+     * @return 删除结果
+     */
+    boolean oneClickDelete();
 }
