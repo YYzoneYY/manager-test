@@ -8,7 +8,7 @@ import java.util.List;
 @Setter
 @Getter
 public class DrawAll {
-    List<Draw> draws;
+    private List<Draw> draws;
     private Double xmin;
     private Double ymin;
     private Double xmax;

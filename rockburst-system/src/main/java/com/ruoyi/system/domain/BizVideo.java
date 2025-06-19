@@ -71,4 +71,8 @@ public class BizVideo extends BaseSelfEntity
     @ApiModelProperty(name = "子视频")
     private String aiFileUrl;
 
+    /** 工程id */
+    @ApiModelProperty(name = "子视频首页")
+    private String aiFileImageUrl;
+
 }

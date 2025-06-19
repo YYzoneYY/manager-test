@@ -2,8 +2,14 @@ package com.ruoyi.quartz.task.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import org.jcodec.api.JCodecException;
+import org.jcodec.common.io.NIOUtils;
+import org.jcodec.common.io.SeekableByteChannel;
+import org.jcodec.common.model.Picture;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -29,16 +35,25 @@ import com.ruoyi.system.domain.utils.SendMessageUtils;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
 import com.ruoyi.system.service.impl.handle.AiModelHandle;
+import org.jcodec.api.FrameGrab;
+import org.jcodec.common.io.NIOUtils;
+import org.jcodec.common.io.SeekableByteChannel;
+import org.jcodec.common.model.Picture;
+import org.jcodec.scale.AWTUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -426,11 +441,113 @@ public class RyTaskServiceImpl implements IRyTask
             if(taskStatus != null && StrUtil.isNotEmpty(taskStatus.getStatus()) &&  taskStatus.getStatus().equals(ModelFlaskConstant.ai_model_done)){
                 SysFileInfo sysFileInfo = aiModelHandle.uploadVieoMinio(ModelFlaskConstant.bucket_name, uploadUrl+ModelFlaskConstant.static_video_url+taskStatus.getOutput_path());
                 video.setAiFileUrl(sysFileInfo.getFileUrl()).setStatus(ModelFlaskConstant.ai_model_done);
+                try {
+                    MultipartFile file = urlToMultipartFile(uploadUrl+ModelFlaskConstant.static_video_url+taskStatus.getOutput_path());
+                    // 获取视频的第一帧作为预览图
+                    File realFile = multipartToTempFile(file);
+                    SeekableByteChannel channel = NIOUtils.readableChannel(realFile);
+                    FrameGrab grab = FrameGrab.createFrameGrab(channel);
+                    grab.seekToFramePrecise(1); // 取第1帧
+                    Picture picture = grab.getNativeFrame();
+                    BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(bufferedImage, "jpg", baos);  // 也可以是 png
+                    baos.flush();
+                    MultipartFile multipartFile = new MockMultipartFile("slt"+ UUID.randomUUID(),"slt","image/jpeg",baos.toByteArray());
+                    SysFileInfo sysFileInfo1 = aiModelHandle.uploadimageMinio(file,ModelFlaskConstant.bucket_name);
+                    video.setAiFileImageUrl(sysFileInfo1.getFileUrl());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 bizVideoMapper.updateById(video);
             }
         }
 
     }
+
+    public  MultipartFile urlToMultipartFile(String fileUrl) {
+        try {
+            // 直接通过 Hutool 获取输入流
+            InputStream inputStream = HttpUtil.createGet(fileUrl).execute().bodyStream();
+
+            // 截取文件名
+            String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+
+            // 这里可以根据需要固定 contentType，也可以动态获取
+            String contentType = "video/mp4"; // 你可以自己设为 "video/mp4"，更保险
+
+            // 创建 MultipartFile
+            MultipartFile multipartFile = new MockMultipartFile(fileName, fileName, contentType, IoUtil.readBytes(inputStream));
+
+            IoUtil.close(inputStream); // 关闭流
+            return multipartFile;
+
+        } catch (Exception e) {
+            throw new RuntimeException("文件转换失败", e);
+        }
+    }
+
+//    public static void main(String[] args) {
+//        try {
+//            // 视频文件路径
+//            File videoFile = new File("C:\\Users\\ASUS\\Desktop\\TEXT\\processed_4b4acc47982eba3f2355bb00eee17028.mp4");
+//
+//            // 获取视频的第一帧作为预览图
+//            Picture frame = FrameGrab.getFrameFromFile(videoFile, 1);
+//
+//            // 将视频帧转换为BufferedImage
+//            BufferedImage image = AWTUtil.toBufferedImage(frame);
+//
+//            // 保存生成的预览图
+//            File outputImageFile = new File("C:\\Users\\ASUS\\Desktop\\TEXT\\path_to_output_image_file.jpg");
+//            ImageIO.write(image, "jpg", outputImageFile);
+//
+//            System.out.println("预览图生成成功：" + outputImageFile.getAbsolutePath());
+//        } catch (IOException | JCodecException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    // 2. MultipartFile 转 File（JCodec 只能读 File 或 Channel）
+    public  File multipartToTempFile(MultipartFile multipartFile) throws IOException {
+        File tempFile = File.createTempFile("video_", ".mp4");
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            fos.write(multipartFile.getBytes());
+        }
+        return tempFile;
+    }
+
+    public  void generateThumbnail(File videoFile, String outputImagePath) throws Exception {
+        try (SeekableByteChannel channel = NIOUtils.readableChannel(videoFile)) {
+            FrameGrab grab = FrameGrab.createFrameGrab(channel);
+            grab.seekToFramePrecise(1); // 取第1帧
+            Picture picture = grab.getNativeFrame();
+            BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
+            ImageIO.write(bufferedImage, "jpg", new File(outputImagePath));
+        }
+    }
+//    public static void main(String[] args) {
+//        try {
+//            // 视频文件路径
+//            MultipartFile file = urlToMultipartFile("http://192.168.31.156:17186/down/6OcPKkIYw6Vs.mp4");
+//
+//            // 获取视频的第一帧作为预览图
+//            File realFile = multipartToTempFile(file);
+//
+//            generateThumbnail(realFile, "C:\\Users\\ASUS\\Desktop\\TEXT\\xxxxxxx.jpg");
+//
+//
+////            // 保存生成的预览图
+////            ImageIO.write(image, "jpg", outputImageFile);
+////
+////            System.out.println("预览图生成成功：" + outputImageFile.getAbsolutePath());
+//        } catch (IOException | JCodecException e) {
+//            e.printStackTrace();
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
 
     /**
      * 解析并排序规则

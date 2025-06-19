@@ -37,7 +37,11 @@
             <artifactId>spring-test</artifactId>
             <version>5.2.9.RELEASE</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.jcodec</groupId>
+            <artifactId>jcodec</artifactId>
+            <version>0.2.3</version>
+        </dependency>
 
         <dependency>
             <groupId>com.getui.push</groupId>

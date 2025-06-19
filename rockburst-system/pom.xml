@@ -83,6 +83,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jcodec</groupId>
+            <artifactId>jcodec</artifactId>
+            <version>0.2.5</version>
+            <scope>compile</scope>
+        </dependency>
 
         <!--        <dependency>-->
 <!--            <groupId>com.alibaba</groupId>-->
