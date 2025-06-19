@@ -174,9 +174,16 @@ public class AiModelHandle  {
 	 * @return
 	 */
 	public SysFileInfo uploadVieoMinio(String bucketName, String url) {
-		SysFileInfo sysFileInfo = sysFileInfoService.upload(urlToMultipartFile(url),bucketName,null);
+		MultipartFile file = urlToMultipartFile(url);
+		SysFileInfo sysFileInfo = sysFileInfoService.upload(file,bucketName,null);
 		return sysFileInfo;
 	}
+
+	public SysFileInfo uploadimageMinio(MultipartFile multipartFile , String bucketName) {
+		SysFileInfo sysFileInfo = sysFileInfoService.upload(multipartFile,bucketName,null);
+		return sysFileInfo;
+	}
+
 
 
 	/**

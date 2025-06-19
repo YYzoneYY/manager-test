@@ -14,13 +14,16 @@ import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
 import com.ruoyi.system.domain.BizMiningArea;
+import com.ruoyi.system.domain.BizTunnelBar;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.BizWorkfaceDto;
 import com.ruoyi.system.domain.dto.BizWorkfaceSchemeDto;
 import com.ruoyi.system.domain.dto.BizWorkfaceSvg;
+import com.ruoyi.system.domain.utils.GeometryUtil;
 import com.ruoyi.system.domain.vo.BizWorkfaceVo;
 import com.ruoyi.system.domain.vo.JsonVo;
+import com.ruoyi.system.mapper.BizTunnelBarMapper;
 import com.ruoyi.system.mapper.TunnelMapper;
 import com.ruoyi.system.service.IBizMiningAreaService;
 import com.ruoyi.system.service.IBizWorkfaceService;
@@ -60,6 +63,8 @@ public class BizWorkfaceController extends BaseController
 
     @Autowired
     private TunnelMapper tunnelMapper;
+    @Autowired
+    private BizTunnelBarMapper bizTunnelBarMapper;
 
 
     @ApiOperation("获取工作面all")
@@ -148,7 +153,12 @@ public class BizWorkfaceController extends BaseController
         if(area != null){
             entity.setMineId(area.getMineId());
         }
-        return R.ok(bizWorkfaceService.insertBizWorkface(entity));
+
+
+        long id =bizWorkfaceService.insertBizWorkface(entity);
+
+
+        return R.ok();
     }
 
     @ApiOperation("添加工作面规划")

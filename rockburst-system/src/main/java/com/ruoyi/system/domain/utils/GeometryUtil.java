@@ -67,6 +67,97 @@ public class GeometryUtil {
                 .abs()
                 .divide(new BigDecimal("2.0"), 10, BigDecimal.ROUND_HALF_UP);
     }
+
+
+        /**
+         * 判断点 A 是否在点 B 的某个角度方向上且更远
+         *
+         * @param x1       点 A 的 x 坐标
+         * @param y1       点 A 的 y 坐标
+         * @param x2       点 B 的 x 坐标
+         * @param y2       点 B 的 y 坐标
+         * @param n        目标角度（与 y 轴正方向的夹角，单位：度）
+         * @param tolerance 角度误差范围（单位：度）
+         * @return true 如果 A 在 B 的 n° 方向上且更远，否则 false
+         */
+        public static boolean isPointABeyondBInDirection(
+                BigDecimal x1, BigDecimal y1,
+                BigDecimal x2, BigDecimal y2,
+                BigDecimal n,
+                BigDecimal tolerance
+        ) {
+            // 1. 计算 A 相对于 B 的偏移量 Δx, Δy
+            BigDecimal deltaX = x1.subtract(x2, MC);
+            BigDecimal deltaY = y1.subtract(y2, MC);
+
+            // 2. 如果 A == B，直接返回 false
+            if (deltaX.compareTo(BigDecimal.ZERO) == 0 && deltaY.compareTo(BigDecimal.ZERO) == 0) {
+                return false;
+            }
+
+            // 3. 计算 A 相对于 B 的角度（弧度制）
+            BigDecimal angleRad = atan2(deltaY, deltaX); // 注意：这里用 (Δy, Δx) 以匹配 atan2 定义
+            BigDecimal angleDeg = radiansToDegrees(angleRad);
+
+            // 4. 计算目标角度的最小和最大范围
+            BigDecimal minAngle = n.subtract(tolerance, MC);
+            BigDecimal maxAngle = n.add(tolerance, MC);
+
+            // 5. 判断 A 是否在 n° ± tolerance 范围内
+            if (angleDeg.compareTo(minAngle) >= 0 && angleDeg.compareTo(maxAngle) <= 0) {
+                // 6. 计算 A 到 B 的距离
+                BigDecimal distanceSquared = deltaX.pow(2, MC).add(deltaY.pow(2, MC), MC);
+                BigDecimal distance = sqrt(distanceSquared, MC);
+
+                // 7. 判断 A 是否比 B 更远（B 到自身的距离是 0）
+                return distance.compareTo(BigDecimal.ZERO) > 0;
+            } else {
+                return false;
+            }
+        }
+
+        // ===== 辅助方法 ===== //
+
+        /**
+         * 计算 atan2(y, x) 的近似值（返回弧度制）
+         */
+        private static BigDecimal atan2(BigDecimal y, BigDecimal x) {
+            // 转换为 double 计算（BigDecimal 没有原生 atan2 实现）
+            double angleRad = Math.atan2(y.doubleValue(), x.doubleValue());
+            return BigDecimal.valueOf(angleRad);
+        }
+
+        /**
+         * 弧度转角度
+         */
+        private static BigDecimal radiansToDegrees(BigDecimal radians) {
+            return radians.multiply(BigDecimal.valueOf(180 / Math.PI), MC);
+        }
+
+        /**
+         * 计算平方根（使用牛顿迭代法）
+         */
+        private static BigDecimal sqrt(BigDecimal x, MathContext mc) {
+            if (x.compareTo(BigDecimal.ZERO) < 0) {
+                throw new ArithmeticException("负数不能开平方");
+            }
+            if (x.compareTo(BigDecimal.ZERO) == 0) {
+                return BigDecimal.ZERO;
+            }
+
+            BigDecimal guess = x.divide(BigDecimal.valueOf(2), mc);
+            BigDecimal lastGuess;
+            do {
+                lastGuess = guess;
+                guess = x.divide(guess, mc).add(guess, mc).divide(BigDecimal.valueOf(2), mc);
+            } while (guess.subtract(lastGuess, mc).abs().compareTo(BigDecimal.valueOf(1E-20)) > 0);
+
+            return guess;
+        }
+
+
+
+
     /**
      * 根据角度与距离计算延伸后的点坐标
      *
@@ -332,12 +423,6 @@ public class GeometryUtil {
         return d1.min(d2).min(d3).min(d4);
     }
 
-    private static BigDecimal sqrt(BigDecimal value, MathContext mc) {
-
-        BigDecimal x = new BigDecimal(Math.sqrt(value.doubleValue()), mc);
-//        System.out.println("x = " + x);
-        return x.add(new BigDecimal(value.subtract(x.multiply(x, mc), mc).doubleValue() / (x.doubleValue() * 2.0), mc));
-    }
 
 
 

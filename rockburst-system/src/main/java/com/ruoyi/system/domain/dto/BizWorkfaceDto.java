@@ -171,6 +171,12 @@ public class BizWorkfaceDto
     private String firstWeighting;
 
 
+
+    @ApiModelProperty(value = "见方位置 ")
+    @TableField()
+    private String squarePosition;
+
+
     @ApiModelProperty(value = "循环来压")
     @TableField()
     private String circulateWeighting;
