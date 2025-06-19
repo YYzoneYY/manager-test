@@ -122,6 +122,7 @@ public class LargeScreenController {
     private List<PlanPushDTO> buildPlanPushList() {
         List<PlanPushDTO> list = new ArrayList<>();
         PlanPushDTO dto = new PlanPushDTO();
+        dto.setAlarmType(ConstantsInfo.QUANTITY_ALARM);
         dto.setAlarmId(1L);
         dto.setPlanId(1L);
         dto.setAlarmTime(System.currentTimeMillis());
@@ -137,6 +138,7 @@ public class LargeScreenController {
         List<SpaceAlarmPushDTO> list = new ArrayList<>();
 
         SpaceAlarmPushDTO dto1 = new SpaceAlarmPushDTO();
+        dto1.setAlarmType(ConstantsInfo.DRILL_SPACE_ALARM);
         dto1.setAlarmId(2L);
         dto1.setAlarmTime(System.currentTimeMillis());
         dto1.setCurrentProjectId(1L);
@@ -150,6 +152,7 @@ public class LargeScreenController {
         list.add(dto1);
 
         SpaceAlarmPushDTO dto2 = new SpaceAlarmPushDTO();
+        dto2.setAlarmType(ConstantsInfo.DRILL_SPACE_ALARM);
         dto2.setAlarmId(3L);
         dto2.setAlarmTime(System.currentTimeMillis() + 1000); // 时间略后移
         dto2.setCurrentProjectId(2L);
