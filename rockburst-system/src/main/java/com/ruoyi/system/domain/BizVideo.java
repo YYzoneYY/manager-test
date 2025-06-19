@@ -30,6 +30,9 @@ public class BizVideo extends BaseSelfEntity
     /** 文件大小 */
     @ApiModelProperty(name = "文件大小")
     private String fileSize;
+    /** 文件大小 */
+    @ApiModelProperty(name = "fileId")
+    private Long fileId;
 
     /** 文件名 */
     @ApiModelProperty(name = "文件名")
