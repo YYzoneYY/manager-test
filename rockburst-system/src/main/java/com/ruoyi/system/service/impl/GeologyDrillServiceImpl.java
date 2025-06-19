@@ -146,7 +146,7 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
                 TrimUtils.trimBean(dto);
 
                 DrillMappingEntity drillMappingEntity = new DrillMappingEntity();
-                BeanUtil.copyProperties(drillMappingEntity, dto);
+                BeanUtils.copyProperties(dto, drillMappingEntity);
                 drillMappingEntity.setGeologyDrillId(geologyDrillId);
                 entities.add(drillMappingEntity);
                 currentLine++;
