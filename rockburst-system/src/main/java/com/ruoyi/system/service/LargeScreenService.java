@@ -47,6 +47,18 @@ public interface LargeScreenService {
      */
     DataDTO obtainUrl(Long projectId);
 
-
+    /**
+     * 获取报警记录
+     * @param alarmType 报警类型
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 结果
+     */
     List<AlarmRecordDTO> obtainAlarmRecord(String alarmType, Long startTime, Long endTime);
+
+    /**
+     * 报警处理
+     * @return 结果
+     */
+    boolean alarmHandle(HandleDTO handleDTO);
 }

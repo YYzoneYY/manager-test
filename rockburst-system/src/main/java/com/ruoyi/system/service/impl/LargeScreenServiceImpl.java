@@ -2,19 +2,19 @@ package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.domain.BizPresetPoint;
 import com.ruoyi.system.domain.BizProjectRecord;
 import com.ruoyi.system.domain.BizVideo;
 import com.ruoyi.system.domain.BizWorkface;
-import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
-import com.ruoyi.system.domain.Entity.PlanAreaEntity;
-import com.ruoyi.system.domain.Entity.PlanEntity;
-import com.ruoyi.system.domain.Entity.TunnelEntity;
+import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.dto.TunnelChoiceListDTO;
 import com.ruoyi.system.domain.dto.largeScreen.*;
 import com.ruoyi.system.mapper.*;
@@ -23,6 +23,7 @@ import com.ruoyi.system.service.LargeScreenService;
 import com.ruoyi.system.service.PlanAreaService;
 import com.ruoyi.system.service.TunnelService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -75,6 +76,9 @@ public class LargeScreenServiceImpl implements LargeScreenService {
 
     @Resource
     private AlarmRecordMapper alarmRecordMapper;
+
+    @Resource
+    private AlarmHandleHistoryMapper alarmHandleHistoryMapper;
 
 
     @Override
@@ -197,6 +201,58 @@ public class LargeScreenServiceImpl implements LargeScreenService {
             }
         }
         return alarmRecordDTOS;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean alarmHandle(HandleDTO handleDTO) {
+        if (ObjectUtil.isNull(handleDTO)) {
+            throw new IllegalArgumentException("参数错误：参数不能为空！");
+        }
+        if (ObjectUtil.isNull(handleDTO.getAlarmId())) {
+            throw new IllegalArgumentException("参数错误：alarmId 不能为空！");
+        }
+        if (StrUtil.isBlank(handleDTO.getHandleStatus())) {
+            throw new IllegalArgumentException("参数错误：handleStatus 不能为空！");
+        }
+        if (handleDTO.getHandleStatus().equals(ConstantsInfo.TURN_OFF_ALARM)) {
+            if (ObjectUtil.isNull(handleDTO.getRemarks())) {
+                throw new IllegalArgumentException("参数错误：remarks 不能为空！");
+            }
+        }
+
+        Long userId = SecurityUtils.getUserId();
+        if (ObjectUtil.isNull(userId)) {
+            throw new IllegalArgumentException("当前用户未登录，无法进行操作");
+        }
+
+        LambdaUpdateWrapper<AlarmRecordEntity> wrapper = new LambdaUpdateWrapper<AlarmRecordEntity>()
+                .eq(AlarmRecordEntity::getAlarmId, handleDTO.getAlarmId());
+
+        AlarmRecordEntity updateEntity = new AlarmRecordEntity()
+                .setHandleStatus(handleDTO.getHandleStatus());
+        if (handleDTO.getHandleStatus().equals(ConstantsInfo.TURN_OFF_ALARM)) {
+            updateEntity.setAlarmStatus(ConstantsInfo.ALARM_END);
+        }
+
+        int update = alarmRecordMapper.update(updateEntity, wrapper);
+        if (update <= 0) {
+            return false;
+        }
+
+        AlarmHandleHistoryEntity historyEntity = new AlarmHandleHistoryEntity()
+                .setAlarmId(handleDTO.getAlarmId())
+                .setHandlePerson(userId)
+                .setHandleTime(System.currentTimeMillis())
+                .setOperate(handleDTO.getHandleStatus())
+                .setRemarks(handleDTO.getRemarks());
+
+        int insert = alarmHandleHistoryMapper.insert(historyEntity);
+        if (insert <= 0) {
+            throw new RuntimeException("插入告警处理历史记录失败");
+        }
+
+        return true;
     }
 
 

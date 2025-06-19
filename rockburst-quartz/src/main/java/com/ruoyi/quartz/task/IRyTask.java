@@ -20,6 +20,11 @@ public interface IRyTask
     public void alarmProject();
 
     /**
+     * 预警某段时间间隔后重新推送
+     */
+    public void alarmAgainPush();
+
+    /**
      * 视频识别
      */
     public void ai_model();

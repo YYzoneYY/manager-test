@@ -13,10 +13,14 @@ import java.math.BigDecimal;
 @Data
 public class PlanPushDTO {
 
+    // 预警id
+    private Long alarmId;
     // 预警类型
     private String alarmType;
     // 预警时间
     private Long alarmTime;
+    // 告警内容
+    private String alarmContent;
     // 计划id
     private Long planId;
     // 计划开始时间

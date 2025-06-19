@@ -44,11 +44,15 @@ public class AlarmRecordEntity implements Serializable {
     @TableField(value = "project_id")
     private Long projectId;
 
-    @ApiModelProperty("报警值")
+    @ApiModelProperty("总工程量")
+    @TableField(value = "quantity_total")
+    private Integer quantityTotal;
+
+    @ApiModelProperty("工程量报警值(实际工程量)")
     @TableField(value = "quantity_alarm_value")
     private Integer quantityAlarmValue;
 
-    @ApiModelProperty("报警阈值")
+    @ApiModelProperty("报警阈值(工程量的百分比)")
     @TableField(value = "quantity_alarm_threshold")
     private BigDecimal quantityAlarmThreshold;
 
@@ -87,6 +91,10 @@ public class AlarmRecordEntity implements Serializable {
     @ApiModelProperty("次数")
     @TableField(value = "num")
     private Integer num;
+
+    @ApiModelProperty("处理状态")
+    @TableField(value = "handle_status")
+    private String handleStatus;
 
     @ApiModelProperty("创建时间")
     @TableField(value = "create_time")

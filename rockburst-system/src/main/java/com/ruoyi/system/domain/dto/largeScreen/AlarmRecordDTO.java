@@ -1,7 +1,6 @@
 package com.ruoyi.system.domain.dto.largeScreen;
 
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.annotations.ApiOperation;
 import lombok.Data;
 
 /**

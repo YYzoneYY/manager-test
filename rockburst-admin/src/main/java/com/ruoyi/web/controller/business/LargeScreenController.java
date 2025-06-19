@@ -3,8 +3,10 @@ package com.ruoyi.web.controller.business;
 import com.alibaba.fastjson2.JSON;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.message.WebSocketServer;
+import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.quartz.task.impl.RyTaskServiceImpl;
 import com.ruoyi.system.domain.dto.largeScreen.*;
+import com.ruoyi.system.domain.utils.SendMessageUtils;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.service.IBizProjectRecordService;
 import com.ruoyi.system.service.LargeScreenService;
@@ -86,67 +88,76 @@ public class LargeScreenController {
         return R.ok(this.largeScreenService.obtainAlarmRecord(alarmType, startTime, endTime));
     }
 
+    @ApiOperation(value = "报警处理", notes = "报警处理")
+    @PostMapping(value = "/alarmHandle")
+    public R<Object> alarmHandle(@RequestBody HandleDTO handleDTO) {
+        return R.ok(this.largeScreenService.alarmHandle(handleDTO));
+    }
+
     @ApiOperation(value = "测试 WebSocket 推送消息", notes = "测试 WebSocket 推送消息")
     @GetMapping(value = "/pushMessageTest")
-    public R<String> pushMessageTest(String tag) {
-        if (!"1".equals(tag) && !"2".equals(tag)) {
-            return R.fail("无效的 tag 参数");
-        }
+    public R<String> pushMessageTest() {
         try {
-            if ("1".equals(tag)) {
-                PlanPushDTO planPushDTO = new PlanPushDTO();
-                planPushDTO.setAlarmType("quantity_alarm");
-                planPushDTO.setPlanId(1L);
-                planPushDTO.setAlarmTime(System.currentTimeMillis());
-                planPushDTO.setPlanStartTime(1748766419000L);
-                planPushDTO.setPlanEndTime(1751358419000L);
-                planPushDTO.setWorkFaceId(1930163301041434625L);
-                planPushDTO.setWorkFaceName("403工作面");
-                planPushDTO.setPlanQuantity(50);
-                planPushDTO.setActualCompleteQuantity(20);
-                sendMessage(planPushDTO);
-            } else {
-                // 构造多个 SpaceAlarmPushDTO 数据
-                List<SpaceAlarmPushDTO> dtoList = new ArrayList<>();
-                // 第一条数据
-                SpaceAlarmPushDTO dto1 = new SpaceAlarmPushDTO();
-                dto1.setAlarmType("drill_space_alarm");
-                dto1.setAlarmTime(System.currentTimeMillis());
-                dto1.setCurrentProjectId(1L);
-                dto1.setCurrentDrillNum("2");
-                dto1.setContrastDrillNum("1");
-                dto1.setDangerLevelName("中危险区");
-                dto1.setSpaced(2.0);
-                dto1.setActualDistance(2.5);
-                dto1.setTunnelName("403回风巷");
-                dto1.setWorkFaceName("403工作面");
-                dtoList.add(dto1);
-                // 第二条数据
-                SpaceAlarmPushDTO dto2 = new SpaceAlarmPushDTO();
-                dto2.setAlarmType("drill_space_alarm");
-                dto2.setAlarmTime(System.currentTimeMillis() + 1000); // 时间略后移
-                dto2.setCurrentProjectId(2L);
-                dto2.setCurrentDrillNum("4");
-                dto2.setContrastDrillNum("3");
-                dto2.setDangerLevelName("高危险区");
-                dto2.setSpaced(1.0);
-                dto2.setActualDistance(1.5);
-                dto2.setTunnelName("403回风巷");
-                dto2.setWorkFaceName("403工作面");
-                dtoList.add(dto2);
-                // 发送整个列表（前端需配合解析为数组）
-                sendMessage(dtoList);
-            }
+            // 发送 PlanPushDTO 数据
+            List<PlanPushDTO> planList = buildPlanPushList();
+            String message = SendMessageUtils.sendMessage(ConstantsInfo.QUANTITY_ALARM, planList);
+            WebSocketServer.sendInfoAll(message);
+
+            // 发送 SpaceAlarmPushDTO 数据
+            List<SpaceAlarmPushDTO> alarmList = buildSpaceAlarmList();
+            String message1 = SendMessageUtils.sendMessage(ConstantsInfo.DRILL_SPACE_ALARM, alarmList);
+            WebSocketServer.sendInfoAll(message1);
+
         } catch (Exception e) {
-            log.error("WebSocket消息推送失败，tag: {}", tag, e);
+            log.error("WebSocket消息推送失败", e);
             return R.fail("推送失败：" + e.getMessage());
         }
         return R.ok("推送成功");
     }
 
-    private void sendMessage(Object dto) throws IOException {
-        String message = JSON.toJSONString(dto);
-        WebSocketServer.sendInfoAll(message);
+    private List<PlanPushDTO> buildPlanPushList() {
+        List<PlanPushDTO> list = new ArrayList<>();
+        PlanPushDTO dto = new PlanPushDTO();
+        dto.setAlarmId(1L);
+        dto.setPlanId(1L);
+        dto.setAlarmTime(System.currentTimeMillis());
+        dto.setWorkFaceName("403工作面");
+        dto.setPlanQuantity(50);
+        dto.setActualCompleteQuantity(20);
+        dto.setAlarmContent("1301工作面：在2025年6月15~2025年6月30日期间，计划完成总钻孔量为10个。规定在50%的时间内，完成总数的50% 。当前实际完成3个，没有达到预期计划，触发报警");
+        list.add(dto);
+        return list;
+    }
+
+    private List<SpaceAlarmPushDTO> buildSpaceAlarmList() {
+        List<SpaceAlarmPushDTO> list = new ArrayList<>();
+
+        SpaceAlarmPushDTO dto1 = new SpaceAlarmPushDTO();
+        dto1.setAlarmId(2L);
+        dto1.setAlarmTime(System.currentTimeMillis());
+        dto1.setCurrentProjectId(1L);
+        dto1.setCurrentDrillNum("2");
+        dto1.setContrastDrillNum("1");
+        dto1.setSpaced(2.0);
+        dto1.setActualDistance(2.5);
+        dto1.setTunnelName("403回风巷");
+        dto1.setWorkFaceName("403工作面");
+        dto1.setAlarmContent("403工作面下的403回风巷内，2号钻孔与1号钻孔之间的距离为2.5米，超过当前卸压计划中间距2.0米的要求，发生报警！");
+        list.add(dto1);
+
+        SpaceAlarmPushDTO dto2 = new SpaceAlarmPushDTO();
+        dto2.setAlarmId(3L);
+        dto2.setAlarmTime(System.currentTimeMillis() + 1000); // 时间略后移
+        dto2.setCurrentProjectId(2L);
+        dto2.setCurrentDrillNum("4");
+        dto2.setContrastDrillNum("3");
+        dto2.setSpaced(1.0);
+        dto2.setActualDistance(1.5);
+        dto2.setTunnelName("403回风巷");
+        dto2.setWorkFaceName("403工作面");
+        dto2.setAlarmContent("403工作面下的403回风巷内，4号钻孔与3号钻孔之间的距离为1.5米，超过当前卸压计划中间距1.0米的要求，发生报警！");
+        list.add(dto2);
+        return list;
     }
 
 }

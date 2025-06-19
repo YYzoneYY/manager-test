@@ -135,6 +135,15 @@ public class ConstantsInfo {
 
     public static final String ALARM_TYPE = "alarm_type"; // 报警类型
     public static final String ALARM_STATUS = "alarm_status"; // 报警状态
+    public static final String HANDLE_STATUS = "handle_status"; // 处理状态
+
+    public static final String UNTREATED = "0"; //未处理
+    public static final String PROCESSING = "1"; //处理中
+    public static final String TURN_OFF_ALARM = "2"; //关闭报警;
+
+    public static final Long ALARM_SYSTEM = 9999L;
+    public static final String REMARKS_SYSTEM = "系统自动关闭报警";
+
 
     //只取200条监测数据
     public static final  int SUB = 200;

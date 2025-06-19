@@ -11,18 +11,22 @@ import lombok.Data;
 @Data
 public class SpaceAlarmPushDTO {
 
+    // 告警id
+    private Long alarmId;
     // 告警类型
     private String alarmType;
     // 告警时间
     private Long alarmTime;
+    // 告警内容
+    private String alarmContent;
     // 当前钻孔所属工程id
     private Long currentProjectId;
     // 当前钻孔编号
     private String currentDrillNum;
     // 对比钻孔编号
     private String contrastDrillNum;
-    // 危险区等级名称
-    private String dangerLevelName;
+//    // 危险区等级名称
+//    private String dangerLevelName;
     // 安全间距
     private Double spaced;
     // 实际距离
