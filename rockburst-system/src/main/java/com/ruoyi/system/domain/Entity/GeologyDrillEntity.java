@@ -43,9 +43,4 @@ public class GeologyDrillEntity implements Serializable {
     @ApiModelProperty("煤层厚度")
     @TableField(value = "coal_thickness")
     private String coalThickness;
-
-    @ApiModelProperty(value = "删除标志(0存在2删除)")
-    @TableField("del_flag")
-    @TableLogic(value = "0", delval = "2")
-    private String delFlag;
 }
