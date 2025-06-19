@@ -94,26 +94,30 @@ public class LargeScreenController {
         return R.ok(this.largeScreenService.alarmHandle(handleDTO));
     }
 
-    @ApiOperation(value = "测试 WebSocket 推送消息", notes = "测试 WebSocket 推送消息")
+    @ApiOperation(value = "测试 WebSocket 推送消息（统一格式）", notes = "测试 WebSocket 推送消息")
     @GetMapping(value = "/pushMessageTest")
-    public R<String> pushMessageTest() {
+    public R<String> pushMessageTestUnified() {
         try {
-            // 发送 PlanPushDTO 数据
-            List<PlanPushDTO> planList = buildPlanPushList();
-            String message = SendMessageUtils.sendMessage(ConstantsInfo.QUANTITY_ALARM, planList);
-            WebSocketServer.sendInfoAll(message);
 
-            // 发送 SpaceAlarmPushDTO 数据
+            // 添加工程量报警数据
+            List<PlanPushDTO> planList = buildPlanPushList();
+            List<AlarmMessage> unifiedList = new ArrayList<>(planList);
+
+            // 添加钻孔间距报警数据
             List<SpaceAlarmPushDTO> alarmList = buildSpaceAlarmList();
-            String message1 = SendMessageUtils.sendMessage(ConstantsInfo.DRILL_SPACE_ALARM, alarmList);
-            WebSocketServer.sendInfoAll(message1);
+            unifiedList.addAll(alarmList);
+
+            // 统一发送
+            String message = SendMessageUtils.sendMessage(unifiedList);
+            WebSocketServer.sendInfoAll(message);
 
         } catch (Exception e) {
             log.error("WebSocket消息推送失败", e);
             return R.fail("推送失败：" + e.getMessage());
         }
-        return R.ok("推送成功");
+        return R.ok("统一格式推送成功");
     }
+
 
     private List<PlanPushDTO> buildPlanPushList() {
         List<PlanPushDTO> list = new ArrayList<>();

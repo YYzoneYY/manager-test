@@ -22,6 +22,7 @@ import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.aimodel.TaskStatus;
 import com.ruoyi.system.domain.aimodel.TaskStatusResponse;
 import com.ruoyi.system.domain.dto.RuleDTO;
+import com.ruoyi.system.domain.dto.largeScreen.AlarmMessage;
 import com.ruoyi.system.domain.dto.largeScreen.PlanPushDTO;
 import com.ruoyi.system.domain.dto.largeScreen.SpaceAlarmPushDTO;
 import com.ruoyi.system.domain.utils.SendMessageUtils;
@@ -333,69 +334,55 @@ public class RyTaskServiceImpl implements IRyTask
     public void alarmAgainPush() {
         final List<String> validHandleStatus = Arrays.asList("0", "1");
 
-        // 合并查询，减少数据库访问次数
         List<AlarmRecordEntity> recordEntities = alarmRecordMapper.selectList(new LambdaQueryWrapper<AlarmRecordEntity>()
-                .eq(AlarmRecordEntity::getAlarmType, ConstantsInfo.DRILL_SPACE_ALARM)
-                .or()
-                .eq(AlarmRecordEntity::getAlarmType, ConstantsInfo.QUANTITY_ALARM)
+                .in(AlarmRecordEntity::getAlarmType, ConstantsInfo.DRILL_SPACE_ALARM, ConstantsInfo.QUANTITY_ALARM)
                 .in(AlarmRecordEntity::getHandleStatus, validHandleStatus));
 
-        List<PlanPushDTO> planPushDTOS = new ArrayList<>();
-        List<SpaceAlarmPushDTO> spaceAlarmPushDTOS = new ArrayList<>();
+        if (CollectionUtils.isEmpty(recordEntities)) {
+            return;
+        }
 
-        if (ListUtils.isNotNull(recordEntities)) {
-            for (AlarmRecordEntity recordEntity : recordEntities) {
-                String alarmType = recordEntity.getAlarmType();
-                if (ConstantsInfo.DRILL_SPACE_ALARM.equals(alarmType)) {
-                    SpaceAlarmPushDTO dto = new SpaceAlarmPushDTO();
-                    dto.setAlarmId(recordEntity.getAlarmId());
-                    dto.setAlarmType(ConstantsInfo.DRILL_SPACE_ALARM);
-                    dto.setAlarmTime(recordEntity.getStartTime());
-                    dto.setCurrentProjectId(recordEntity.getProjectId());
-                    dto.setCurrentDrillNum(recordEntity.getCurrentDrillNum());
-                    dto.setContrastDrillNum(recordEntity.getContrastDrillNum());
-                    dto.setAlarmContent(recordEntity.getAlarmContent());
-                    dto.setSpaced(recordEntity.getSpaced());
-                    dto.setActualDistance(recordEntity.getActualDistance());
+        List<AlarmMessage> unifiedDTOS = new ArrayList<>();
 
-                    String workFaceName = getWorkFaceName(recordEntity.getProjectId(), "project");
-                    dto.setWorkFaceName(workFaceName);
-                    dto.setTunnelName(getTunnelName(recordEntity.getProjectId()));
-                    spaceAlarmPushDTOS.add(dto);
-                } else if (ConstantsInfo.QUANTITY_ALARM.equals(alarmType)) {
-                    PlanPushDTO dto = new PlanPushDTO();
-                    dto.setAlarmId(recordEntity.getAlarmId());
-                    dto.setAlarmType(ConstantsInfo.QUANTITY_ALARM);
-                    dto.setAlarmTime(recordEntity.getStartTime());
-                    dto.setAlarmContent(recordEntity.getAlarmContent());
-                    dto.setPlanId(recordEntity.getPlanId());
+        for (AlarmRecordEntity recordEntity : recordEntities) {
+            String alarmType = recordEntity.getAlarmType();
 
-                    String workFaceName = getWorkFaceName(recordEntity.getPlanId(), "plan");
-                    dto.setWorkFaceName(workFaceName);
-                    dto.setPlanQuantity(recordEntity.getQuantityTotal());
-                    dto.setActualCompleteQuantity(recordEntity.getQuantityAlarmValue());
-                    planPushDTOS.add(dto);
-                }
+            if (ConstantsInfo.DRILL_SPACE_ALARM.equals(alarmType)) {
+                SpaceAlarmPushDTO dto = new SpaceAlarmPushDTO();
+                dto.setAlarmId(recordEntity.getAlarmId());
+                dto.setAlarmTime(recordEntity.getStartTime());
+                dto.setAlarmContent(recordEntity.getAlarmContent());
+                dto.setCurrentProjectId(recordEntity.getProjectId());
+                dto.setCurrentDrillNum(recordEntity.getCurrentDrillNum());
+                dto.setContrastDrillNum(recordEntity.getContrastDrillNum());
+                dto.setSpaced(recordEntity.getSpaced());
+                dto.setActualDistance(recordEntity.getActualDistance());
+                dto.setWorkFaceName(getWorkFaceName(recordEntity.getProjectId(), "project"));
+                dto.setTunnelName(getTunnelName(recordEntity.getProjectId()));
+                unifiedDTOS.add(dto);
+            } else if (ConstantsInfo.QUANTITY_ALARM.equals(alarmType)) {
+                PlanPushDTO dto = new PlanPushDTO();
+                dto.setAlarmId(recordEntity.getAlarmId());
+                dto.setAlarmTime(recordEntity.getStartTime());
+                dto.setAlarmContent(recordEntity.getAlarmContent());
+                dto.setPlanId(recordEntity.getPlanId());
+                dto.setWorkFaceName(getWorkFaceName(recordEntity.getPlanId(), "plan"));
+                dto.setPlanQuantity(recordEntity.getQuantityTotal());
+                dto.setActualCompleteQuantity(recordEntity.getQuantityAlarmValue());
+                unifiedDTOS.add(dto);
             }
         }
-        // 分开处理发送逻辑，便于异常定位
-        if (!spaceAlarmPushDTOS.isEmpty()) {
+
+        if (!unifiedDTOS.isEmpty()) {
             try {
-                String message = SendMessageUtils.sendMessage(ConstantsInfo.DRILL_SPACE_ALARM, spaceAlarmPushDTOS);
+                String message = SendMessageUtils.sendMessage(unifiedDTOS);
                 WebSocketServer.sendInfoAll(message);
             } catch (IOException e) {
-                log.error("钻孔间距WebSocket推送失败", e);
-            }
-        }
-        if (!planPushDTOS.isEmpty()) {
-            try {
-                String message = SendMessageUtils.sendMessage(ConstantsInfo.QUANTITY_ALARM, planPushDTOS);
-                WebSocketServer.sendInfoAll(message);
-            } catch (IOException e) {
-                log.error("工程量报警WebSocket推送失败", e);
+                log.error("统一格式WebSocket推送失败", e);
             }
         }
     }
+
 
 
     public  BigDecimal calculateProgress(long startTime, long endTime, long currentTime) {
@@ -574,7 +561,7 @@ public class RyTaskServiceImpl implements IRyTask
 
         List<PlanPushDTO> planPushDTOS = Collections.singletonList(planPushDTO);
         try {
-            message = SendMessageUtils.sendMessage(ConstantsInfo.QUANTITY_ALARM, planPushDTOS);
+            message = SendMessageUtils.sendMessage(planPushDTOS);
             WebSocketServer.sendInfoAll(message);
         } catch (IOException e) {
             log.error("WebSocket消息推送失败，内容：{}", message, e);

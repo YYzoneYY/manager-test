@@ -11,7 +11,7 @@ import java.math.BigDecimal;
  */
 
 @Data
-public class PlanPushDTO {
+public class PlanPushDTO implements AlarmMessage{
 
     // 预警id
     private Long alarmId;
@@ -23,10 +23,6 @@ public class PlanPushDTO {
     private String alarmContent;
     // 计划id
     private Long planId;
-    // 计划开始时间
-    private Long planStartTime;
-    // 计划结束时间
-    private Long planEndTime;
     // 工作面id
     private Long workFaceId;
     // 工作面名称

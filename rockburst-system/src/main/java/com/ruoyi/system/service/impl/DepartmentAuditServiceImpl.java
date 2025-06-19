@@ -313,7 +313,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
     @Async
     public void asyncSendAlarmNotifications(List<SpaceAlarmPushDTO> alarmPushDTOS) {
         try {
-            String message = SendMessageUtils.sendMessage(ConstantsInfo.DRILL_SPACE_ALARM, alarmPushDTOS);;
+            String message = SendMessageUtils.sendMessage(alarmPushDTOS);
             WebSocketServer.sendInfoAll(message);
             log.info("WebSocket推送钻孔间距报警成功，数量: {}", alarmPushDTOS.size());
         } catch (IOException e) {

@@ -9,7 +9,7 @@ import lombok.Data;
  */
 
 @Data
-public class SpaceAlarmPushDTO {
+public class SpaceAlarmPushDTO implements AlarmMessage{
 
     // 告警id
     private Long alarmId;
