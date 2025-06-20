@@ -34,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -156,7 +157,11 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
         }
         // 批量插入
         if (!entities.isEmpty()) {
-            drillMappingService.saveBatch(entities); // 假设存在 insertBatch 方法
+            // 1. 删除旧数据
+            drillMappingMapper.delete(new LambdaQueryWrapper<DrillMappingEntity>()
+                    .eq(DrillMappingEntity::getGeologyDrillId, geologyDrillId));
+            // 2. 批量插入新数据
+            drillMappingService.saveBatch(entities);
         }
         return "导入成功";
     }

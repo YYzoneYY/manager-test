@@ -10,6 +10,8 @@ import com.ruoyi.system.domain.Entity.TunnelEntity;
 import com.ruoyi.system.domain.dto.CoordinatePointDTO;
 import com.ruoyi.system.domain.dto.WarningDTO;
 import com.ruoyi.system.mapper.*;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -88,6 +90,30 @@ public class DrillSpacingWarnUtil {
                         bizProjectRecordMapper, bizDangerLevelMapper, sysDictDataMapper,
                         bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper, tunnelMapper, bizWorkfaceMapper);
                 warnings.addAll(results);
+            }
+        }
+
+        List<Pair<BizDangerArea, BizDangerArea>> dangerAreaPairs = getAdjacentDangerAreaPairs(bizDangerAreas);
+        for (Pair<BizDangerArea, BizDangerArea> pair : dangerAreaPairs) {
+            BizDangerArea prevArea = pair.getLeft();
+            BizDangerArea nextArea = pair.getRight();
+
+            if (!prevArea.getLevel().equals(nextArea.getLevel())) {
+                List<WarningDTO> crossWarnings = crossAreaRuleCheck(
+                        projectId,
+                        prevArea,
+                        nextArea,
+                        x,
+                        bizProjectRecordMapper,
+                        cacheDataMapper,
+                        bizDangerLevelMapper,
+                        tunnelMapper,
+                        bizWorkfaceMapper,
+                        bizTunnelBarMapper,
+                        bizTravePointMapper,
+                        sysConfigMapper
+                );
+                warnings.addAll(crossWarnings);
             }
         }
 
@@ -217,6 +243,23 @@ public class DrillSpacingWarnUtil {
         return warnings;
     }
 
+    /**
+     * 获取相邻危险区对 (生成相邻BizDangerArea对象的配对列表,
+     * 遍历allAreas列表，将每两个相邻元素构造成一个Pair，存入结果列表中返回。)
+     * @param allAreas 危险区列表
+     * @return 配对列表
+     */
+    private static List<Pair<BizDangerArea, BizDangerArea>> getAdjacentDangerAreaPairs(List<BizDangerArea> allAreas) {
+        List<Pair<BizDangerArea, BizDangerArea>> pairs = new ArrayList<>();
+        for (int i = 0; i < allAreas.size() - 1; i++) {
+            pairs.add(new ImmutablePair<>(allAreas.get(i), allAreas.get(i + 1)));
+        }
+        return pairs;
+    }
+
+    /**
+     * 跨危险区边界钻孔间距预警
+     */
     private static List<WarningDTO> crossAreaRuleCheck(
             Long currentProjectId,
             BizDangerArea prevArea,
@@ -225,7 +268,8 @@ public class DrillSpacingWarnUtil {
             BizProjectRecordMapper bizProjectRecordMapper,
             CacheDataMapper cacheDataMapper,
             BizDangerLevelMapper bizDangerLevelMapper,
-            SysDictDataMapper sysDictDataMapper,
+            TunnelMapper tunnelMapper,
+            BizWorkfaceMapper bizWorkfaceMapper,
             BizTunnelBarMapper bizTunnelBarMapper,
             BizTravePointMapper bizTravePointMapper,
             SysConfigMapper sysConfigMapper
@@ -237,28 +281,40 @@ public class DrillSpacingWarnUtil {
                 new LambdaQueryWrapper<BizProjectRecord>().eq(BizProjectRecord::getProjectId, currentProjectId)
         );
 
-        if (currentProject == null) return warnings;
+        if (currentProject == null) {
+            return warnings;
+        }
 
         // 获取前一个和后一个危险区的安全间距
         String prevLevel = prevArea.getLevel();
         String nextLevel = nextArea.getLevel();
+
+        if (StringUtils.isAnyBlank(prevLevel, nextLevel)) {
+            return warnings;
+        }
         Double prevSpaced = getSpacingByLevel(prevLevel, bizDangerLevelMapper);
         Double nextSpaced = getSpacingByLevel(nextLevel, bizDangerLevelMapper);
 
-        // 获取前一个危险区最后一个历史钻孔
-        List<CacheDataEntity> prevCacheRecords = cacheDataMapper.selectList(
+        if (prevSpaced == null || nextSpaced == null) {
+            return warnings;
+        }
+
+        // 获取前一个危险区最后一个历史钻孔（限制只取一条）
+        CacheDataEntity latestCacheRecord = cacheDataMapper.selectOne(
                 new LambdaQueryWrapper<CacheDataEntity>()
                         .eq(CacheDataEntity::getDangerAreaId, prevArea.getDangerAreaId())
                         .orderByDesc(CacheDataEntity::getNo)
         );
-        if (prevCacheRecords.isEmpty()) return warnings;
+        if (latestCacheRecord == null) return warnings;
 
-        Long lastDrillId = prevCacheRecords.get(0).getProjectId();
+        Long lastDrillId = latestCacheRecord.getProjectId();
         BizProjectRecord lastDrillRecord = bizProjectRecordMapper.selectOne(
                 new LambdaQueryWrapper<BizProjectRecord>().eq(BizProjectRecord::getProjectId, lastDrillId)
         );
-        if (lastDrillRecord == null) return warnings;
-
+        if (lastDrillRecord == null) {
+            return warnings;
+        }
+        // 获取前最后一个历史钻孔的坐标
         String coord = AlgorithmUtils.obtainCoordinate(
                 lastDrillRecord.getWorkfaceId(),
                 lastDrillRecord.getTunnelId(),
@@ -266,10 +322,14 @@ public class DrillSpacingWarnUtil {
                 lastDrillRecord.getConstructRange(),
                 bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper
         );
-        if (StringUtils.isBlank(coord)) return warnings;
+        if (StringUtils.isBlank(coord)) {
+            return warnings;
+        }
 
         String[] parts = StringUtils.split(coord, ',');
-        if (parts.length < 2) return warnings;
+        if (parts.length < 2) {
+            return warnings;
+        }
 
         double lastDrillX;
         try {
@@ -278,8 +338,16 @@ public class DrillSpacingWarnUtil {
             return warnings;
         }
 
-        // 获取下一个危险区生产帮开始点的 X 坐标
-        double nextStartX = Double.parseDouble(nextArea.getScbStartx());
+        // 获取下一个危险区生产帮开始点 X 坐标
+        String scbStartx = nextArea.getScbStartx();
+        if (StringUtils.isBlank(scbStartx)) return warnings;
+
+        double nextStartX;
+        try {
+            nextStartX = Double.parseDouble(scbStartx);
+        } catch (NumberFormatException e) {
+            return warnings;
+        }
 
         // 计算距离
         double distanceBetween = DataJudgeUtils.doingPoorly(lastDrillX, nextStartX);
@@ -288,13 +356,13 @@ public class DrillSpacingWarnUtil {
         if (prevSpaced > nextSpaced) {
             if (distanceBetween > nextSpaced) {
                 if (Math.abs(currentX - nextStartX) > 0.001) {
-                    WarningDTO dto = buildCrossWarningDTO(currentProject, lastDrillRecord, "Rule1A", nextSpaced, distanceBetween);
+                    WarningDTO dto = buildCrossWarningDTO(currentProject, lastDrillRecord, "Rule1A", nextSpaced, distanceBetween, bizWorkfaceMapper, tunnelMapper);
                     warnings.add(dto);
                 }
             } else if (distanceBetween < nextSpaced) {
                 double expectedX = lastDrillX + nextSpaced;
                 if (Math.abs(currentX - expectedX) > 0.001) {
-                    WarningDTO dto = buildCrossWarningDTO(currentProject, lastDrillRecord, "Rule1B", nextSpaced, distanceBetween);
+                    WarningDTO dto = buildCrossWarningDTO(currentProject, lastDrillRecord, "Rule1B", nextSpaced, distanceBetween, bizWorkfaceMapper, tunnelMapper);
                     dto.setExpectedPosition(expectedX);
                     warnings.add(dto);
                 }
@@ -304,7 +372,7 @@ public class DrillSpacingWarnUtil {
         else if (prevSpaced < nextSpaced) {
             if (distanceBetween < prevSpaced) {
                 if (Math.abs(currentX - nextStartX) > 0.001) {
-                    WarningDTO dto = buildCrossWarningDTO(currentProject, lastDrillRecord, "Rule2", prevSpaced, distanceBetween);
+                    WarningDTO dto = buildCrossWarningDTO(currentProject, lastDrillRecord, "Rule2", prevSpaced, distanceBetween, bizWorkfaceMapper, tunnelMapper);
                     warnings.add(dto);
                 }
             }
@@ -326,9 +394,18 @@ public class DrillSpacingWarnUtil {
         return dangerLevel != null ? dangerLevel.getSpaced() : 0.0;
     }
 
-
+    /**
+     * 构建跨区域警告信息
+     * @param current 当前钻孔
+     * @param lastDrill 前一个钻孔
+     * @param ruleType 规则类型
+     * @param requiredSpaced 危险等级的间距
+     * @param actualDistance 实际距离
+     * @return 警告信息
+     */
     private static WarningDTO buildCrossWarningDTO(BizProjectRecord current, BizProjectRecord lastDrill,
-                                                   String ruleType, Double requiredSpaced, Double actualDistance) {
+                                                   String ruleType, Double requiredSpaced, Double actualDistance,
+                                                   BizWorkfaceMapper bizWorkfaceMapper,TunnelMapper tunnelMapper) {
         WarningDTO dto = new WarningDTO();
         dto.setCurrentProjectId(current.getProjectId());
         dto.setCurrentDrillNum(current.getDrillNum());
@@ -338,11 +415,17 @@ public class DrillSpacingWarnUtil {
         dto.setSpaced(requiredSpaced);
         dto.setActualDistance(actualDistance);
         dto.setAlarmTime(System.currentTimeMillis());
+        dto.setTunnelName(tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getTunnelId, current.getTunnelId())
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+        ).getTunnelName());
+        dto.setWorkFaceName(bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceId, current.getWorkfaceId())
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+        ).getWorkfaceName());
+        dto.setBetweenDrills(false);
         return dto;
     }
-
-
-
 
     private static WarningDTO buildWarningDTO(BizProjectRecord current, BizProjectRecord other,
                                               String levelName, Double spaced, Double actual,BizWorkfaceMapper bizWorkfaceMapper,
