@@ -1,5 +1,6 @@
 package com.ruoyi.out;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -27,6 +28,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -59,7 +61,8 @@ public class SetOutController extends BaseController
     public RedisTemplate<String, byte[]> redisByteTemplate;
 
     // 上传到服务器的目标路径（确保有写权限）
-    private static final String UPLOAD_DIR = "/home/imgfask/dxf_to_contour_map/static/"; // Windows 示例路径
+    private static final String UPLOAD_DIR = "/home/imgfask/dxf_to_contour_map/"; // Windows 示例路径
+//    private static final String UPLOAD_DIR = "D:\\PycharmProjects"; // Windows 示例路径
 
 
     @ApiOperation("shangc")
@@ -173,12 +176,113 @@ public class SetOutController extends BaseController
         }
     }
 
-//    @GetMapping("/draw-all")
+
+    public byte[] getCroppedImage1( Double x_min, Double y_max, Double x_max, Double y_min, String type) {
+
+        //获取图像大小
+        String josn = getconfigbykey("config");
+        DrawAll alll  =  JSONUtil.toBean(josn,DrawAll.class);
+        if(x_max  >= alll.getXmax() || x_min  <= alll.getXmin() || y_max  >= alll.getYmax() || y_min  <= alll.getYmin()){
+            // 比矿图大
+        }
+        //计算裁剪 参数
+        int minx = (int) (x_min - alll.getXmin());
+        int miny = (int) (y_min - alll.getYmin());
+        int maxx = (int) (alll.getXmax() - x_max);
+        int maxy = (int) (alll.getYmax() - y_max);
+
+        String fastApiUrl = String.format(fastApiBaseUrl+"/crop-image"+"?x_min=%d&y_max=%d&x_max=%d&y_min=%d&dxf_type=%s",
+                minx, maxy, maxx, miny,type);
+        RestTemplate restTemplate = new RestTemplate();
+
+        ResponseEntity<byte[]> response = restTemplate.getForEntity(fastApiUrl, byte[].class);
+
+// 检查 FastAPI 是否返回成功
+        if (response.getStatusCode() == HttpStatus.OK) {
+            byte[] imageBytes = response.getBody();
+
+
+            return imageBytes;
+        } else {
+            // 如果 FastAPI 返回错误，直接转发错误信息
+            return null;
+        }
+    }
+
+
+    public  double calculateArea(double xMin, double yMax, double xMax, double yMin) {
+        double width = Math.abs(xMax - xMin);
+        double height = Math.abs(yMax - yMin);
+        return width * height;
+    }
+
+
+    //    @GetMapping("/draw-all")
     @ApiOperation("draw-all")
     @PostMapping("/draw-all")
     public ResponseEntity<byte[]> drawAll(@RequestBody DrawAll all) {
+        Map<String, Object> request = new HashMap<>();
+        String josn = getconfigbykey("config");
+
+        if(all.getXmin() != null){
+            double get_area  = calculateArea(all.getXmin(),all.getYmax(),all.getXmax(),all.getYmin());
+
+            DrawAll aa = JSONUtil.toBean(josn,DrawAll.class);
+            double org_area  = calculateArea(aa.getXmin(),aa.getYmax(),aa.getXmax(),aa.getYmin());
+
+            if(org_area/get_area <= 5 && org_area/get_area >= 1){
+                String type = "";
+                for (Draw draw : all.getDraws()) {
+                    if(StrUtil.isNotEmpty( draw.getName()) && !draw.getName().equals("[]")){
+                        type = draw.getName();
+                    }
+                }
+                byte[] sstypes = getCroppedImage1(all.getXmin(), all.getYmax(), all.getXmax(), all.getYmin(),type);
+
+//                redisByteTemplate.opsForValue().set("all", sstypes);
+                // 构建响应
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.IMAGE_PNG);
+                headers.setContentDisposition(ContentDisposition.inline().filename("result.png").build());
+                return new ResponseEntity<>(sstypes, headers, HttpStatus.OK);
+            }
+
+        }else if(all.getXmax() == null) {
+            String type = "";
+            for (Draw draw : all.getDraws()) {
+                if(StrUtil.isNotEmpty( draw.getName()) && !draw.getName().equals("[]")){
+                    type = draw.getName();
+                }
+            }
+            String fastApiUrl = String.format(fastApiBaseUrl+"/get-image"+"?dxf_type=%s", type);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<byte[]> response = restTemplate.getForEntity(fastApiUrl, byte[].class);
+            // 如果成功，则返回图片流
+            if (response.getStatusCode() == HttpStatus.OK) {
+                byte[] imageBytes = response.getBody();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.IMAGE_PNG);
+                headers.setContentDisposition(ContentDisposition.inline().filename("result.png").build());
+                return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+            }
+        }
+
         try {
-            Map<String, Object> request = new HashMap<>();
+
+
+            Map<String,Object> map =  JSONUtil.toBean(josn,Map.class);
+            request.putAll(map);
+            if(all.getXmin() != null ){
+                request.put("xmin", all.getXmin());
+                request.put("xmax", all.getXmax());
+                request.put("ymin", all.getYmin());
+                request.put("ymax", all.getYmax());
+                request.put("multiple", all.getMultiple());
+                request.put("start_level", all.getStartLevel());
+                request.put("end_level", all.getEndLevel());
+                request.put("level", all.getLevel());
+
+            }
 
             String bigJson = "";
             String smallJson = "";
@@ -233,61 +337,11 @@ public class SetOutController extends BaseController
             }
 
 
-//             bigJson = redisCache.getCacheObject("big_fault_result");
-//             smallJson = redisCache.getCacheObject("small_fault_result");
-//             gobJson = redisCache.getCacheObject("gob_result");
-//             contourJson = redisCache.getCacheObject("contour_result");
-//
-//             bigData = JSONUtil.toList(new JSONArray(bigJson), Map.class);
-//             smallData = JSONUtil.toList(new JSONArray(smallJson), Map.class);
-//             gobData = JSONUtil.toList(new JSONArray(gobJson), Map.class);
-//             contourData = JSONUtil.toList(new JSONArray(contourJson), Map.class);
-
-
-//            request.put("big_data", bigData);
-//            request.put("small_data", smallData);
-//            request.put("gob_data", gobData);
-//            request.put("contour_data", contourData);
-
-
-//            request.put("xmin", 19363737.718);
-//            request.put("xmax", 19371371.734);
-//            request.put("ymin", 4305393.654);
-//            request.put("ymax", 4317845.213);
-//            request.put("multiple", 0.4);
-//            request.put("start_level", 20);
-//            request.put("end_level", 200);
-//            request.put("level", 25);
-            String josn = getconfigbykey("config");
-            Map<String,Object> map =  JSONUtil.toBean(josn,Map.class);
-            request.putAll(map);
-            if(all.getXmin() != null ){
-                request.put("xmin", all.getXmin());
-                request.put("xmax", all.getXmax());
-                request.put("ymin", all.getYmin());
-                request.put("ymax", all.getYmax());
-                request.put("multiple", all.getMultiple());
-                request.put("start_level", all.getStartLevel());
-                request.put("end_level", all.getEndLevel());
-                request.put("level", all.getLevel());
-
-            }
-//            request.put("xmin", all.getXmin() != null ? all.getXmin() : 19363737.718);
-//            request.put("xmax", all.getXmax() != null ? all.getXmax() : 19371371.734);
-//            request.put("ymin", all.getYmin() != null ? all.getYmin() : 4305393.654);
-//            request.put("ymax", all.getYmax() != null ? all.getYmax() : 4317845.213);
-//            request.put("multiple", all.getMultiple() != null ? all.getMultiple() : 0.4);
-//            request.put("start_level", all.getStartLevel() != null ? all.getStartLevel() : 20);
-//            request.put("end_level", all.getEndLevel() != null ? all.getEndLevel() : 200);
-//            request.put("level", all.getLevel() != null ? all.getLevel() : 25);
 
             // 请求绘图服务
             byte[] imageBytes = callDrawAllAndGetStream(fastApiBaseUrl+"/draw-all/", request);
-//            RedisTemplate<String, byte[]> redisByteTemplate = new RedisTemplate<>();
-//            String base64Str = Base64.getEncoder().encodeToString(imageBytes);
 
             redisByteTemplate.opsForValue().set("all", imageBytes);
-//            redisCache.setCacheObject("all",imageBytes);
             // 构建响应
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.IMAGE_PNG);
