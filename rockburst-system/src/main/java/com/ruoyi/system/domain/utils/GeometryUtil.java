@@ -344,6 +344,48 @@ public class GeometryUtil {
         return BigDecimal.valueOf(dist);
     }
 
+    /**
+     * 对传入的 4 个点按顺时针方向排序
+     * @param points 原始点列表（4 个）
+     * @return 按顺时针排序后的点列表
+     */
+    public static List<Point2D> sortPointsClockwise(List<Point2D> points) {
+        // 计算中心点
+        BigDecimal centerX = BigDecimal.ZERO;
+        BigDecimal centerY = BigDecimal.ZERO;
+        for (Point2D p : points) {
+            centerX = centerX.add(p.getX());
+            centerY = centerY.add(p.getY());
+        }
+        centerX = centerX.divide(BigDecimal.valueOf(points.size()), 10, BigDecimal.ROUND_HALF_UP);
+        centerY = centerY.divide(BigDecimal.valueOf(points.size()), 10, BigDecimal.ROUND_HALF_UP);
+        final double cx = centerX.doubleValue();
+        final double cy = centerY.doubleValue();
+
+        // 按角度顺时针排序
+        points.sort((p1, p2) -> {
+            double angle1 = Math.atan2(p1.getY().doubleValue() - cy, p1.getX().doubleValue() - cx);
+            double angle2 = Math.atan2(p2.getY().doubleValue() - cy, p2.getX().doubleValue() - cx);
+            return Double.compare(angle2, angle1); // 顺时针，从大到小
+        });
+
+        return points;
+    }
+
+    public static String toPointListString(List<Point2D> points) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (int i = 0; i < points.size(); i++) {
+            Point2D p = points.get(i);
+            sb.append("[").append(p.getX().toPlainString()).append(",").append(p.getY().toPlainString()).append("]");
+            if (i < points.size() - 1) {
+                sb.append(",");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
 
     public static List<List<Point2D>> buildRegionsFromSortedSegments(List<Segment> sorted) {
         List<List<Point2D>> quyus = new ArrayList<>();
@@ -429,7 +471,7 @@ public class GeometryUtil {
     /**
          * 从 List<BigDecimal[]> 创建线段，并返回长度最短的两条
          * @param bigDecimals 共4个元素，每个元素是长度为2的数组 [x, y]
-         * @return 最长的两个 Segment（降序排列）
+         * @return 最短的个 Segment（降序排列）
          */
     public static Segment findShortestTwoSegments(List<BigDecimal[]> bigDecimals) {
         if (bigDecimals == null || bigDecimals.size() != 4) {
