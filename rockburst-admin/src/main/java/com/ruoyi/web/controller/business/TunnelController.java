@@ -254,6 +254,10 @@ public class TunnelController {
                                 new Point2D(new BigDecimal(bar.getEndx()),new BigDecimal(bar.getEndy())));
                         if(jiaodian != null){
                             jiaodian.setBarType(bar.getType());
+                            jiaodian.setOrg_s_x(segment.getStart().getX());
+                            jiaodian.setOrg_s_y(segment.getStart().getY());
+                            jiaodian.setOrg_e_x(segment.getEnd().getX());
+                            jiaodian.setOrg_e_y(segment.getEnd().getY());
                             point2DS.add(jiaodian);
                         }
                     }
@@ -290,8 +294,22 @@ public class TunnelController {
                 Point2D center = GeometryUtil.getCenterPoint(quyu);
                 BizDangerArea area = new BizDangerArea();
                 //塞入 画线段的区域
+                Set<String> uniqueKeys = new HashSet<>();
+                List<Point2D> resultsss = new ArrayList<>();
+
+                for (Point2D p : quyu) {
+                    String key = p.getOrg_s_x() + "," + p.getOrg_s_y() + "," + p.getOrg_e_x() + "," + p.getOrg_e_y();
+                    if (!uniqueKeys.contains(key)) {
+                        uniqueKeys.add(key);
+                        resultsss.add(p);
+                    }
+                }
+                String quyulist =  GeometryUtil.getOrderedPolygonPoints(resultsss);
+
+
+
                 List<Point2D> xx   = GeometryUtil.sortPointsClockwise(quyu_see);
-                area.setQuyuList(GeometryUtil.toPointListString(xx));
+                area.setQuyuList(quyulist);
                 area.setTunnelId(tunnelEntity.getTunnelId())
                         .setWorkfaceId(tunnelEntity.getWorkFaceId());
                 area.setCenter(center.getX()+","+center.getY());
@@ -328,6 +346,9 @@ public class TunnelController {
                     area.setFscbEndx(fscb1.getX()+"")
                             .setFscbEndy(fscb1.getY()+"");
                 }
+//                String xxxxxxx = "";
+//                area.setQuyuList("[["+area.getScbStartx()+","+area.getScbStarty()+"]"+","+"["+area.getScbEndx()+","+area.getScbEndy()+"],"+
+//                                "["+area.getFscbStartx()+","+area.getFscbStarty()+"]"+","+"["+area.getFscbEndx()+","+area.getFscbEndy()+"]]");
                 BizDangerAreaDto dto = new BizDangerAreaDto();
                 BeanUtils.copyProperties(area,dto);
                 areas.add(area);

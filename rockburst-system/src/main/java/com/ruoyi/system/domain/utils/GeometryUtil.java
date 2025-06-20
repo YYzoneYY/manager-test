@@ -385,6 +385,60 @@ public class GeometryUtil {
         sb.append("]");
         return sb.toString();
     }
+    // 获取闭合四边形的四个点，并按顺时针顺序返回字符串 [[x,y],[x,y],[x,y],[x,y]]
+    public static String getOrderedPolygonPoints(List<Point2D> result) {
+        // 使用 Set 去重
+        Set<String> pointSet = new HashSet<>();
+        List<Point2D> rawPoints = new ArrayList<>();
+
+        for (Point2D p : result) {
+            Point2D[] pts = {
+                    new Point2D(p.getOrg_s_x(), p.getOrg_s_y()),
+                    new Point2D(p.getOrg_e_x(), p.getOrg_e_y())
+            };
+            for (Point2D pt : pts) {
+                String key = pt.getX().toPlainString() + "," + pt.getY().toPlainString();
+                if (pointSet.add(key)) {
+                    rawPoints.add(pt);
+                }
+            }
+        }
+
+        if (rawPoints.size() != 4) {
+            throw new IllegalArgumentException("点数不足4个或重复数据异常！");
+        }
+
+        // 计算中心点
+        BigDecimal sumX = BigDecimal.ZERO;
+        BigDecimal sumY = BigDecimal.ZERO;
+        for (Point2D pt : rawPoints) {
+            sumX = sumX.add(pt.getX());
+            sumY = sumY.add(pt.getY());
+        }
+        BigDecimal cx = sumX.divide(BigDecimal.valueOf(4), 10, RoundingMode.HALF_UP);
+        BigDecimal cy = sumY.divide(BigDecimal.valueOf(4), 10, RoundingMode.HALF_UP);
+
+        // 顺时针排序
+        rawPoints.sort((p1, p2) -> {
+            double angle1 = Math.atan2(p1.getY().subtract(cy).doubleValue(), p1.getX().subtract(cx).doubleValue());
+            double angle2 = Math.atan2(p2.getY().subtract(cy).doubleValue(), p2.getX().subtract(cx).doubleValue());
+            return Double.compare(angle2, angle1); // 顺时针
+        });
+
+        // 拼接成字符串 [[x,y],[x,y],...]
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < rawPoints.size(); i++) {
+            Point2D pt = rawPoints.get(i);
+            sb.append("[")
+                    .append(pt.getX().stripTrailingZeros().toPlainString())
+                    .append(",")
+                    .append(pt.getY().stripTrailingZeros().toPlainString())
+                    .append("]");
+            if (i != rawPoints.size() - 1) sb.append(",");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 
 
     public static List<List<Point2D>> buildRegionsFromSortedSegments(List<Segment> sorted) {

@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.R;
@@ -85,6 +86,8 @@ public class BiztravePointController extends BaseController
 
     @Autowired
     private IBizTunnelBarService bizTunnelBarService;
+    @Autowired
+    MiningService miningService;
 
 
 
@@ -692,7 +695,84 @@ public class BiztravePointController extends BaseController
                 }
             }
         }
+        try {
+            asdsa();
+        }catch (Exception e){
+            R.fail("设置见方位置......失败");
+        }
+
+
         return R.ok();
+    }
+
+    public  void  asdsa(){
+        List<BizWorkface> workfaces = bizWorkfaceMapper.selectList(new QueryWrapper<>());
+        for (BizWorkface workface : workfaces) {
+            if(StrUtil.isNotEmpty(workface.getFirstWeighting()) && StrUtil.isNotEmpty(workface.getFirstWeightingPoints())){
+
+                MPJLambdaWrapper<BizTunnelBar> queryWrapper1 = new MPJLambdaWrapper<>();
+                queryWrapper1.leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizTunnelBar::getTunnelId)
+                        .in(TunnelEntity::getTunnelType,"SH","XH")
+                        .eq(BizTunnelBar::getType,"fscb");
+                List<BizTunnelBar> bars =  bizTunnelBarMapper.selectJoinList(queryWrapper1);
+                BigDecimal[] xx1 =  GeometryUtil.getExtendedPoint(bars.get(0).getStartx(),bars.get(0).getStarty(),bars.get(0).getTowardAngle(),Double.parseDouble(workface.getFirstWeighting()),1);
+                BigDecimal[] xx2 = GeometryUtil.getExtendedPoint(bars.get(1).getStartx(),bars.get(1).getStarty(),bars.get(1).getTowardAngle(),Double.parseDouble(workface.getFirstWeighting()),1);
+                workface.setFirstWeightingPoints(Arrays.toString(xx1)+Arrays.toString(xx2));
+            }
+
+            if(StrUtil.isNotEmpty(workface.getCirculateWeighting())&& StrUtil.isNotEmpty(workface.getCirculateWeightingPoints())){
+
+                MPJLambdaWrapper<BizTunnelBar> queryWrapper1 = new MPJLambdaWrapper<>();
+                queryWrapper1.leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizTunnelBar::getTunnelId)
+                        .in(TunnelEntity::getTunnelType,"SH","XH")
+                        .eq(BizTunnelBar::getType,"fscb");
+                List<BizTunnelBar> bars =  bizTunnelBarMapper.selectJoinList(queryWrapper1);
+
+                BigDecimal[] xx1 =  GeometryUtil.getExtendedPoint(bars.get(0).getStartx(),bars.get(0).getStarty(),bars.get(0).getTowardAngle(),Double.parseDouble(workface.getFirstWeighting()),1);
+                BigDecimal[] xx2 = GeometryUtil.getExtendedPoint(bars.get(1).getStartx(),bars.get(1).getStarty(),bars.get(1).getTowardAngle(),Double.parseDouble(workface.getFirstWeighting()),1);
+
+                Boolean iis = GeometryUtil.isPointABeyondBInDirection(new BigDecimal(bars.get(0).getEndx()),new BigDecimal(bars.get(0).getEndy()),xx1[0],xx1[1],new BigDecimal(bars.get(0).getTowardAngle()),new BigDecimal(5));
+
+                String culateWeightingPoints = "";
+                while(iis){
+                    xx1 =  GeometryUtil.getExtendedPoint(xx1[0].toString(),xx1[1].toString(),bars.get(0).getTowardAngle(),Double.parseDouble(workface.getCirculateWeighting()),1);
+                    xx2 = GeometryUtil.getExtendedPoint(xx2[0].toString(),xx2[1].toString(),bars.get(1).getTowardAngle(),Double.parseDouble(workface.getCirculateWeighting()),1);
+                    culateWeightingPoints = culateWeightingPoints + Arrays.toString(xx1)+Arrays.toString(xx2) + "/";
+                }
+                workface.setCirculateWeightingPoints(culateWeightingPoints);
+            }
+
+            if(StrUtil.isNotEmpty(workface.getSquarePosition()) && StrUtil.isNotEmpty(workface.getSquarePositionPoints())){
+
+                MPJLambdaWrapper<BizTunnelBar> queryWrapper1 = new MPJLambdaWrapper<>();
+                queryWrapper1.leftJoin(TunnelEntity.class,TunnelEntity::getTunnelId,BizTunnelBar::getTunnelId)
+                        .in(TunnelEntity::getTunnelType,"SH","XH")
+                        .eq(BizTunnelBar::getType,"fscb");
+                List<BizTunnelBar> bars =  bizTunnelBarMapper.selectJoinList(queryWrapper1);
+
+                BigDecimal[] xx1 =  GeometryUtil.getExtendedPoint(bars.get(0).getStartx(),bars.get(0).getStarty(),bars.get(0).getTowardAngle(),Double.parseDouble(workface.getSquarePosition()),1);
+                BigDecimal[] xx2 = GeometryUtil.getExtendedPoint(bars.get(1).getStartx(),bars.get(1).getStarty(),bars.get(1).getTowardAngle(),Double.parseDouble(workface.getSquarePosition()),1);
+
+                workface.setSquarePositionPoints(Arrays.toString(xx1)+Arrays.toString(xx2));
+            }
+
+            if(StrUtil.isNotEmpty(workface.getMiningProgress()) && StrUtil.isNotEmpty(workface.getFirstWeightingPoints())){
+
+                QueryWrapper<TunnelEntity> queryWrapper2 = new QueryWrapper<>();
+                queryWrapper2.lambda().in(TunnelEntity::getTunnelType,"SH","XH").eq(TunnelEntity::getWorkFaceId,workface.getWorkfaceId());
+                List<TunnelEntity> tunnels = tunnelMapper.selectList(queryWrapper2);
+                for (TunnelEntity tunnel : tunnels) {
+                    miningService.initData(workface.getWorkfaceId(),tunnel.getTunnelId(),System.currentTimeMillis(),new BigDecimal(workface.getMiningProgress()));
+                }
+
+
+
+            }
+
+
+            bizWorkfaceMapper.updateById(workface);
+        }
+
     }
 
     public List<BizDangerArea>  sortByDistance(List<BizDangerArea> areas, BigDecimal[] m) {

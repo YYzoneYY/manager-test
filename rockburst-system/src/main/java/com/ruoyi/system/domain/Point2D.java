@@ -14,6 +14,11 @@ public class Point2D {
     private Long areaId;
     private String barType;
 
+    private BigDecimal org_s_x;
+    private BigDecimal org_s_y;
+    private BigDecimal org_e_x;
+    private BigDecimal org_e_y;
+
     public double distance(Point2D other) {
         BigDecimal dx = x.subtract(other.x);
         BigDecimal dy = y.subtract(other.y);

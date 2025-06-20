@@ -100,6 +100,9 @@ public class BizDangerAreaDto
     private String pointList;
 
 
+    @ApiModelProperty(value = "区域坐标")
+    private String quyuList;
+
 
     @ApiModelProperty(value = "中心点")
     @TableField()

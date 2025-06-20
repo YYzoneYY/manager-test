@@ -60,7 +60,7 @@ public class SysFileInfoController {
     public R<SysFileInfo> fileUpload(@RequestParam(value = "file") MultipartFile file,
                                      @RequestParam(value = "bucketName", required = false) String bucketName,
                                      @RequestParam(value = "isTemplate", required = false) String isTemplate) throws IOException {
-        sysFileInfoService.upload(file, bucketName, isTemplate);
+        SysFileInfo in = sysFileInfoService.upload(file, bucketName, isTemplate);
         String currentDir = System.getProperty("user.dir");
 
 // 构造保存路径（当前目录/static/文件名）
@@ -79,7 +79,7 @@ public class SysFileInfoController {
 //        ExternalFileUploadService service = new ExternalFileUploadService();
         String result = uploadFileToExternalServer(tempPath);
 
-        return R.ok();
+        return R.ok(in);
     }
 
     public String uploadFileToExternalServer(String filePath) {
