@@ -48,7 +48,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -504,7 +507,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         return entity.getProjectId();
     }
 
-    private int insertVideos(BizProjectRecordAddDto dto,Long projectId) {
+    public int insertVideos(BizProjectRecordAddDto dto,Long projectId) {
         if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
             dto.getVideoList().forEach(bizVideo -> {
                 BizVideo video = new BizVideo();
@@ -513,19 +516,54 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
                 video.setStatus(ModelFlaskConstant.ai_model_pending);
                 bizVideoMapper.insert(video);
 
-                CompletableFuture.supplyAsync(()->{
-                    try {
-                        log.info("异步调用ai视频分析,视频名称:{}",bizVideo.getFileName());
-                        String taskId = aiModelHandle.modelAnalyByFileId(video.getVideoId(),bizVideo.getBucket(),bizVideo.getFileUrl(),bizVideo.getFileName());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                // 事务提交后执行异步任务
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        CompletableFuture.runAsync(() -> {
+                            try {
+                                log.info("启动AI分析: {}", bizVideo.getFileName());
+                                aiModelHandle.modelAnalyByFileId(
+                                        video.getVideoId(), // 使用已回填的ID
+                                        bizVideo.getBucket(),
+                                        bizVideo.getFileUrl(),
+                                        bizVideo.getFileName()
+                                );
+                            } catch (IOException e) {
+                                log.error("AI分析失败: {}", bizVideo.getFileName(), e);
+                            }
+                        });
                     }
-                    return 1;
                 });
             });
         }
         return 1;
     }
+
+
+//    public int insertVideos(BizProjectRecordAddDto dto,Long projectId) {
+//        if(dto.getVideoList() != null && dto.getVideoList().size() > 0){
+//            dto.getVideoList().forEach(bizVideo -> {
+//                BizVideo video = new BizVideo();
+//                BeanUtil.copyProperties(bizVideo, video);
+//                video.setProjectId(projectId);
+//                video.setStatus(ModelFlaskConstant.ai_model_pending);
+//                bizVideoMapper.insert(video);
+//
+//                CompletableFuture.supplyAsync(()->{
+//                    try {
+//                        BizVideo bbb  = bizVideoMapper.selectById(video.getVideoId());
+//                        log.info("异步调用ai视频分析,视频名称:{}",bizVideo.getFileName());
+//                        String taskId = aiModelHandle.modelAnalyByFileId(video.getVideoId(),bizVideo.getBucket(),bizVideo.getFileUrl(),bizVideo.getFileName());
+//                    } catch (IOException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                    return 1;
+//                });
+//            });
+//        }
+//        return 1;
+//    }
 
     private int insterDrills(BizProjectRecordAddDto dto,Long projectId){
         if(dto.getDrillRecords() != null && dto.getDrillRecords().size() > 0){

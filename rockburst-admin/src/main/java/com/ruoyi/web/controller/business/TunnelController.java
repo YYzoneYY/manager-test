@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.business;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.core.domain.R;
@@ -19,6 +20,7 @@ import com.ruoyi.system.service.IBizTunnelBarService;
 import com.ruoyi.system.service.TunnelService;
 import com.ruoyi.web.controller.basicInfo.SegmentIntersection;
 import io.swagger.annotations.*;
+import org.glassfish.json.JsonUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -258,20 +260,38 @@ public class TunnelController {
                     list.add(point2DS);
                 }
             }
+
+            //要求区域大一点,拿线段上的点
+            List<List<Point2D>> list1 = new ArrayList<>();
+            for (Segment segment : pointList) {
+                List<Point2D> point2DS = new ArrayList<>();
+                point2DS.add(segment.getStart());
+                point2DS.add(segment.getEnd());
+                list1.add(point2DS);
+            }
             List<BigDecimal[]> bigDecimals = getSegments(bars);
             Segment segment = GeometryUtil.findShortestTwoSegments(bigDecimals);
 
             List<Segment> sorted = GeometryUtil.findNearRectangleRegions(list, segment);
+            //原始的线段
+            List<Segment> sorted_org = GeometryUtil.findNearRectangleRegions(list1, segment);
 
             List<List<Point2D>> quyus = GeometryUtil.buildRegionsFromSortedSegments(sorted);
 
-            for (List<Point2D> quyu : quyus) {
 
+            List<List<Point2D>> quyus_see = GeometryUtil.buildRegionsFromSortedSegments(sorted_org);
+
+            for (int i=0; i < quyus.size(); i++) {
+                List<Point2D> quyu = quyus.get(i);
+                List<Point2D> quyu_see = quyus_see.get(i);
                 if(quyu == null || quyu.size() == 0){
                     continue;
                 }
                 Point2D center = GeometryUtil.getCenterPoint(quyu);
                 BizDangerArea area = new BizDangerArea();
+                //塞入 画线段的区域
+                List<Point2D> xx   = GeometryUtil.sortPointsClockwise(quyu_see);
+                area.setQuyuList(GeometryUtil.toPointListString(xx));
                 area.setTunnelId(tunnelEntity.getTunnelId())
                         .setWorkfaceId(tunnelEntity.getWorkFaceId());
                 area.setCenter(center.getX()+","+center.getY());
@@ -313,6 +333,55 @@ public class TunnelController {
                 areas.add(area);
 
             }
+
+//            for (List<Point2D> quyu : quyus) {
+//
+//                if(quyu == null || quyu.size() == 0){
+//                    continue;
+//                }
+//                Point2D center = GeometryUtil.getCenterPoint(quyu);
+//                BizDangerArea area = new BizDangerArea();
+//                area.setTunnelId(tunnelEntity.getTunnelId())
+//                        .setWorkfaceId(tunnelEntity.getWorkFaceId());
+//                area.setCenter(center.getX()+","+center.getY());
+//                Point2D scb1 = getscb(quyu);
+//                quyu.remove(scb1);
+//                area.setScbStartx(scb1.getX()+"")
+//                        .setScbStarty(scb1.getY()+"");
+//                Point2D scb2 = getscb(quyu);
+//                area.setScbEndx(scb2.getX()+"")
+//                        .setScbEndy(scb2.getY()+"");
+//
+//                BigDecimal dance1 = GeometryUtil.pointToSegmentDistance(scb1,segment.getStart(),segment.getEnd());
+//                BigDecimal dance2 = GeometryUtil.pointToSegmentDistance(scb2,segment.getStart(),segment.getEnd());
+//                if(dance1.compareTo(dance2) >=  0){
+//                    area.setScbStartx(scb2.getX()+"")
+//                            .setScbStarty(scb2.getY()+"");
+//                    area.setScbEndx(scb1.getX()+"")
+//                            .setScbEndy(scb1.getY()+"");
+//                }
+//
+//                Point2D fscb1 = getfscb(quyu);
+//                area.setFscbStartx(fscb1.getX()+"")
+//                        .setFscbStarty(fscb1.getY()+"");
+//                quyu.remove(fscb1);
+//                Point2D fscb2 = getfscb(quyu);
+//                area.setFscbEndx(fscb2.getX()+"")
+//                        .setFscbEndy(fscb2.getY()+"");
+//
+//                dance1 = GeometryUtil.pointToSegmentDistance(fscb1,segment.getStart(),segment.getEnd());
+//                dance2 = GeometryUtil.pointToSegmentDistance(fscb2,segment.getStart(),segment.getEnd());
+//                if(dance1.compareTo(dance2) >=  0){
+//                    area.setFscbStartx(fscb2.getX()+"")
+//                            .setFscbStarty(fscb2.getY()+"");
+//                    area.setFscbEndx(fscb1.getX()+"")
+//                            .setFscbEndy(fscb1.getY()+"");
+//                }
+//                BizDangerAreaDto dto = new BizDangerAreaDto();
+//                BeanUtils.copyProperties(area,dto);
+//                areas.add(area);
+//
+//            }
         }
         return areas;
     }

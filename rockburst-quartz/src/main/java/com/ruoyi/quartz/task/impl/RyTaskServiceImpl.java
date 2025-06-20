@@ -454,7 +454,7 @@ public class RyTaskServiceImpl implements IRyTask
                     ImageIO.write(bufferedImage, "jpg", baos);  // 也可以是 png
                     baos.flush();
                     MultipartFile multipartFile = new MockMultipartFile("slt"+ UUID.randomUUID(),"slt","image/jpeg",baos.toByteArray());
-                    SysFileInfo sysFileInfo1 = aiModelHandle.uploadimageMinio(file,ModelFlaskConstant.bucket_name);
+                    SysFileInfo sysFileInfo1 = aiModelHandle.uploadimageMinio(multipartFile,ModelFlaskConstant.bucket_name);
                     video.setAiFileImageUrl(sysFileInfo1.getFileUrl());
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.ruoyi.common.config.MinioConfig;
 import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.system.constant.ModelFlaskConstant;
 import com.ruoyi.system.domain.BizVideo;
@@ -63,7 +64,8 @@ public class AiModelHandle  {
 
 	@Autowired
 	private BizVideoMapper bizVideoMapper;
-
+	@Resource
+	private MinioConfig minioConfig;
 
 	/**
 	 * 视频分析
@@ -76,8 +78,14 @@ public class AiModelHandle  {
 			String uploadUrl = configService.selectConfigByKey(ModelFlaskConstant.pre_model_url);
 			uploadUrl = uploadUrl + ModelFlaskConstant.process_video;
 			Assert.isTrue(StrUtil.isNotEmpty(uploadUrl),"没有获取到视频分析网址地址,请检查参数配置:video.model.url");
-			InputStream inputStream = uploadService.getFileInputStream(fileName, bucketName);
+
+			String endpoint =  minioConfig.getEndpoint()+"/"+bucketName;
+			BizVideo bbb  = bizVideoMapper.selectById(videoId);
+			String filenbame = bbb.getFileUrl().replaceFirst(endpoint, "");
+			InputStream inputStream = uploadService.getFileInputStream(filenbame, bucketName);
 //			Assert.isTrue(inputStream.available() != 0,"视频为空");
+
+
 			FileSystemResource fileResource = convertInputStreamToFileSystemResource(inputStream,fileName );
 			// 3. 构造 multipart/form-data 请求
 			MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
