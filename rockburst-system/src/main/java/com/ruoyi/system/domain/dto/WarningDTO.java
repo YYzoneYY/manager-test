@@ -31,4 +31,7 @@ public class WarningDTO {
 
     private String tunnelName;
     private String workFaceName;
+
+    private Double expectedPosition;
+    private String ruleType;
 }
