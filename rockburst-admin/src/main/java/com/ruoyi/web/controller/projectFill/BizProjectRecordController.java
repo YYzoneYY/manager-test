@@ -223,7 +223,7 @@ public class BizProjectRecordController extends BaseController
     public R<?> removeById(@PathVariable Long projectId)
     {
         BizProjectRecord record =  bizProjectRecordService.getById(projectId);
-        Assert.isTrue(record.getStatus() == 1 || record.getStatus() == 4, "该状态下不能删除");
+        Assert.isTrue(record.getStatus() == 0 , "该状态下不能删除");
         UpdateWrapper<BizPresetPoint> updateWrapper = new UpdateWrapper<>();
         updateWrapper.lambda().set(BizPresetPoint::getDelFlag, BizBaseConstant.DELFLAG_Y)
                 .eq(BizPresetPoint::getProjectId,projectId);
@@ -243,7 +243,7 @@ public class BizProjectRecordController extends BaseController
     {
         for (Long projectId : projectIds) {
             BizProjectRecord record =  bizProjectRecordService.getById(projectId);
-            Assert.isTrue(record.getStatus() == 1 || record.getStatus() == 4, "该状态下不能删除");
+            Assert.isTrue(record.getStatus() == 0 , "该状态下不能删除");
         }
         UpdateWrapper<BizPresetPoint> updateWrapper = new UpdateWrapper<>();
         updateWrapper.lambda().set(BizPresetPoint::getDelFlag, BizBaseConstant.DELFLAG_Y)
