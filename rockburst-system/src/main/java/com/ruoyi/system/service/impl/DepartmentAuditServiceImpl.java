@@ -304,6 +304,7 @@ public class DepartmentAuditServiceImpl extends ServiceImpl<DepartmentAuditMappe
                 warningDTO.getSpaced());
         record.setAlarmContent(alarmContent);
         record.setAlarmStatus(ConstantsInfo.ALARM_IN);
+        record.setHandleStatus(ConstantsInfo.UNTREATED);
         record.setStartTime(System.currentTimeMillis());
         return record;
     }
