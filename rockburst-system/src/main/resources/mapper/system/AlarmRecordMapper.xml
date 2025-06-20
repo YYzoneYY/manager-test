@@ -32,7 +32,8 @@
         ar.alarm_content as alarmContent,
         ar.start_time as startTime,
         ar.end_time as endTime,
-        ar.alarm_status as alarmStatus
+        ar.alarm_status as alarmStatus,
+        ar.handle_status as handleStatus
         from alarm_record as ar
         <where>
             <if test="alarmType != null">

@@ -198,6 +198,10 @@ public class LargeScreenServiceImpl implements LargeScreenService {
                         ? obtainDicLabel(ConstantsInfo.ALARM_STATUS, alarmRecordDTO.getAlarmStatus())
                         : null;
                 alarmRecordDTO.setAlarmStatusFmt(as);
+                String hs = alarmRecordDTO.getHandleStatus() != null
+                        ? obtainDicLabel(ConstantsInfo.HANDLE_STATUS, alarmRecordDTO.getHandleStatus())
+                        : null;
+                        alarmRecordDTO.setHandleStatusFmt(hs);
             }
         }
         return alarmRecordDTOS;

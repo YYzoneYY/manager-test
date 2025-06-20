@@ -30,6 +30,12 @@ public class AlarmRecordDTO {
     @ApiModelProperty(value = "报警状态")
     private String alarmStatus;
 
+    @ApiModelProperty(value = "报警处理状态")
+    private String handleStatus;
+
+    @ApiModelProperty(value = "报警处理状态格式化")
+    private String handleStatusFmt;
+
     @ApiModelProperty(value = "报警类型格式化")
     private String alarmTypeFmt;
 
