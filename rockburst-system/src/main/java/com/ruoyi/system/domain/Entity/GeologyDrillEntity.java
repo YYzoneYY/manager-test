@@ -43,4 +43,8 @@ public class GeologyDrillEntity implements Serializable {
     @ApiModelProperty("煤层厚度")
     @TableField(value = "coal_thickness")
     private String coalThickness;
+
+    @ApiModelProperty("中心坐标")
+    @TableField(value = "center")
+    private String center;
 }

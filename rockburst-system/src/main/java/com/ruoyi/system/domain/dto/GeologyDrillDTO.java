@@ -24,4 +24,7 @@ public class GeologyDrillDTO {
 
     @ApiModelProperty("煤层厚度")
     private String coalThickness;
+
+    @ApiModelProperty("中心坐标")
+    private String center;
 }

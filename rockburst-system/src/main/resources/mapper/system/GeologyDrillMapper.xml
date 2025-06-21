@@ -8,7 +8,8 @@
         g.data_name as dataName,
         g.ground_elevation as groundElevation,
         g.base_elevation as baseElevation,
-        g.coal_thickness as coalThickness
+        g.coal_thickness as coalThickness,
+        g.center as center
         from geology_drill as g
         <where>
             <if test="drillName != null and drillName != ''">
