@@ -26,7 +26,9 @@ import com.ruoyi.system.mapper.GeologyDrillMapper;
 import com.ruoyi.system.service.DrillMappingService;
 import com.ruoyi.system.service.DrillingStressService;
 import com.ruoyi.system.service.GeologyDrillService;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,6 +60,9 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
 
     @Resource
     private DrillMappingService drillMappingService;
+
+    @Resource
+    private GeologyDrillService geologyDrillService;
 
     @Override
     public boolean batchInsert(List<GeologyDrillDTO> geologyDrillDTOList) {
@@ -167,18 +172,13 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
     }
 
     @Override
-    @Transactional
     public boolean oneClickDelete() {
         try {
             geologyDrillMapper.truncateTable();
-            geologyDrillMapper.resetAutoIncrement();
             return true;
         } catch (Exception e) {
             log.error("清空地质钻孔表并重置自增失败", e);
             throw new RuntimeException("清空数据失败，请联系管理员");
         }
     }
-
-
-
 }

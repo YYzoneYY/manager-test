@@ -58,4 +58,6 @@ public interface MiningMapper extends BaseMapper<MiningEntity> {
      */
     Long selectMinMiningTime(@Param("workFaceId") Long workFaceId);
 
+    List<MiningEntity> queryCurrentDay(@Param("startTime") Long startTime, @Param("endTime") Long endTime);
+
 }

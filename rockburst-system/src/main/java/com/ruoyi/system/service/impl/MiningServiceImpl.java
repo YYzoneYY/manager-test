@@ -580,6 +580,11 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         return flag;
     }
 
+    @Override
+    public List<MiningEntity> queryCurrentDay(Long startTime, Long endTime) {
+        return List.of();
+    }
+
     private static List<CoordinatePointDTO> buildCoordinatePoints(BizDangerArea area) {
         List<CoordinatePointDTO> points = new ArrayList<>();
         points.add(new CoordinatePointDTO(Double.parseDouble(area.getScbStartx()), Double.parseDouble(area.getScbStarty())));

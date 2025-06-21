@@ -86,4 +86,9 @@ public interface MiningService extends IService<MiningEntity> {
      * @return 返回结果
      */
     int initData(Long workFaceId, Long tunnelId,  Long time, BigDecimal sumPace);
+
+    /**
+     * 定时任务使用，查询当天是否有数据
+     */
+    public List<MiningEntity> queryCurrentDay(Long startTime, Long endTime);
 }
