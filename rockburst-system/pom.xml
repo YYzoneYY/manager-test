@@ -18,6 +18,11 @@
     <dependencies>
         <!-- 通用工具-->
         <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.9</version> <!-- 或最新版 -->
+        </dependency>
+        <dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>rockburst-common</artifactId>
         </dependency>

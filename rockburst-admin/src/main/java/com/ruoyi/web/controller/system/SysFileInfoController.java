@@ -17,6 +17,8 @@
 
 package com.ruoyi.web.controller.system;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONUtil;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.system.domain.SysFileInfo;
 import com.ruoyi.system.service.SysFileInfoService;
@@ -24,6 +26,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -36,8 +39,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.Map;
 
 
 @RestController
@@ -57,12 +60,14 @@ public class SysFileInfoController {
             @ApiImplicitParam(name = "bucketName", value = "桶名称", required = false, dataType = "String"),
             @ApiImplicitParam(name = "isTemplate", value = "是否是导入模版：0否，1是，默认否", required = false, dataType = "String")
     })
-    public R<SysFileInfo> fileUpload(@RequestParam(value = "file") MultipartFile file,
+    public R<?> fileUpload(@RequestParam(value = "file") MultipartFile file,
                                      @RequestParam(value = "bucketName", required = false) String bucketName,
-                                     @RequestParam(value = "isTemplate", required = false) String isTemplate) throws IOException {
+                                     @RequestParam(value = "isTemplate", required = false) String isTemplate) throws Exception {
         SysFileInfo in = sysFileInfoService.upload(file, bucketName, isTemplate);
+        int[] resolution = getVideoResolution(file);
         String currentDir = System.getProperty("user.dir");
-
+        Map<String,Object> map = BeanUtil.beanToMap(in);
+        map.put("resolution",resolution);
 // 构造保存路径（当前目录/static/文件名）
         String tempPath = currentDir + File.separator + "static" + File.separator + file.getOriginalFilename();
 
@@ -79,9 +84,37 @@ public class SysFileInfoController {
 //        ExternalFileUploadService service = new ExternalFileUploadService();
         String result = uploadFileToExternalServer(tempPath);
 
-        return R.ok(in);
+        return R.ok(map);
     }
+    /**
+     * 从 MultipartFile 获取视频分辨率
+     * @param file 上传的视频文件
+     * @return [宽度, 高度]
+     * @throws Exception 异常处理
+     */
+    public static int[] getVideoResolution(MultipartFile file) throws Exception {
+        // 创建临时文件并写入上传内容
+        File tempFile = File.createTempFile("upload_", ".mp4");
+        tempFile.deleteOnExit(); // JVM退出自动删除
 
+        try (InputStream in = file.getInputStream();
+             OutputStream out = new FileOutputStream(tempFile)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        }
+
+        // 使用 JavaCV 获取视频宽高
+        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile)) {
+            grabber.start();
+            int width = grabber.getImageWidth();
+            int height = grabber.getImageHeight();
+            grabber.stop();
+            return new int[]{width, height};
+        }
+    }
     public String uploadFileToExternalServer(String filePath) {
         String url = fastApiBaseUrl+"/upload"; // 外部接口地址
 

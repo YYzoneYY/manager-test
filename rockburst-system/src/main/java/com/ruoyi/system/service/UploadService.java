@@ -4,6 +4,7 @@ import com.ruoyi.system.domain.FileUploadInfo;
 import com.ruoyi.system.domain.utils.ResponseResult;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 public interface UploadService {
@@ -29,7 +30,7 @@ public interface UploadService {
      * @param  fileUploadInfo
      * @return boolean
      */
-    ResponseResult<Object> mergeMultipartUpload(FileUploadInfo fileUploadInfo);
+    ResponseResult<Object> mergeMultipartUpload(FileUploadInfo fileUploadInfo) throws Exception;
 
 
     ResponseResult<Object> mergeMultipartUploadNoToken(FileUploadInfo fileUploadInfo);

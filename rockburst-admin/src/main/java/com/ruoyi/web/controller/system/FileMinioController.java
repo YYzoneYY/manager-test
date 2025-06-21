@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 
 
 /**
@@ -72,7 +73,7 @@ public class FileMinioController {
 //    @Anonymous
     @ApiOperation("合并")
     @PostMapping("/multipart/merge")
-    public ResponseResult completeMultiPartUpload(@RequestBody FileUploadInfo fileUploadInfo) {
+    public ResponseResult completeMultiPartUpload(@RequestBody FileUploadInfo fileUploadInfo) throws Exception {
         log.info("REST: 通过 <{}> 合并上传任务", fileUploadInfo);
         return uploadService.mergeMultipartUpload(fileUploadInfo);
     }

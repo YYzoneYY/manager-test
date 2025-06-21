@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
@@ -13,13 +14,25 @@ import com.ruoyi.system.domain.utils.ResultCode;
 import com.ruoyi.system.mapper.SysFileInfoMapper;
 import com.ruoyi.system.service.UploadService;
 import lombok.extern.slf4j.Slf4j;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.InputStream;
+import java.io.*;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import static com.ruoyi.system.domain.utils.ResultCode.ACCESS_PARAMETER_INVALID;
 
@@ -34,6 +47,9 @@ public class UploadServiceImpl implements UploadService {
 
     @Resource
     private RedisRepo redisRepo;
+
+    @Resource
+    private RestTemplate restTemplate;
 
     @Resource
     SysFileInfoMapper sysFileInfoMapper;
@@ -122,7 +138,7 @@ public class UploadServiceImpl implements UploadService {
      * @return boolean
      */
     @Override
-    public ResponseResult mergeMultipartUpload(FileUploadInfo fileUploadInfo) {
+    public ResponseResult mergeMultipartUpload(FileUploadInfo fileUploadInfo) throws Exception {
 
         log.info("tip message: 通过 <{}> 开始合并<分片上传>任务", fileUploadInfo);
         LoginUser loginUser = SecurityUtils.getLoginUser();
@@ -151,16 +167,125 @@ public class UploadServiceImpl implements UploadService {
         if(result){
             String filePath = fileService.getFilePath(fileUploadInfo.getBucketName().toLowerCase(), fileUploadInfo.getFileName());
             sysFileInfo.setFileUrl(filePath);
+            InputStream inputStream = this.getFileInputStream(sysFileInfo.getFileNewName(), bucketName);
+            int[] resolution = getVideoResolution(inputStream);
             if (sysFileInfoMapper.insert(sysFileInfo) < 1) {
                 throw new RuntimeException("文件信息插入库失败!");
             }
-            return ResponseResult.success(sysFileInfoMapper.selectById(sysFileInfo.getFileId()));
+
+            CompletableFuture.supplyAsync(() -> {
+                try {
+                    asyncUpload(sysFileInfo.getFileNewName(),sysFileInfo.getFileNewName(),bucketName);
+
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            });
+//            asyncUpload(sysFileInfo.getFileNewName(),sysFileInfo.getFileNewName(),bucketName);
+//            asyncUpload(sysFileInfo.getFileNewName(), fileName, bucketName)
+//                    .thenAccept(result1 -> {
+//                        System.out.println("上传成功: " + result1);
+//                    })
+//                    .exceptionally(ex -> {
+//                        System.err.println("上传失败: " + ex.getMessage());
+//                        return null;
+//                    });
+
+            //下载 大视频 传到 155
+//            InputStream inputStream = this.getFileInputStream(filePath, bucketName);
+//            FileSystemResource fileResource = convertInputStreamToFileSystemResource(inputStream,fileName );
+//            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+//            body.add("file", fileResource); // file 是必须的
+//            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+//            factory.setConnectTimeout(30000); // 30秒
+//            factory.setReadTimeout(300000);   // 5分钟
+//            restTemplate.setRequestFactory(factory);
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+//            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+//            String apiResult = restTemplate.postForObject("http://192.168.31.155:7000/upload", requestEntity, String.class);
+            SysFileInfo ssa =  sysFileInfoMapper.selectById(sysFileInfo.getFileId());
+            Map<String,Object> map = BeanUtil.beanToMap(ssa);
+            map.put("resolution",resolution);
+            return ResponseResult.success(map);
 //            return ResponseResult.success(filePath);
         }
 
         log.error("error message: 文件合并异常");
 
         return  ResponseResult.error();
+    }
+
+//    @Async
+    public CompletableFuture<String> asyncUpload(String filePath, String fileName, String bucketName) {
+        try {
+            InputStream inputStream = this.getFileInputStream(filePath, bucketName);
+            FileSystemResource fileResource = convertInputStreamToFileSystemResource(inputStream, fileName);
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", fileResource);
+
+            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+            factory.setConnectTimeout(30000);
+            factory.setReadTimeout(300000);
+            restTemplate.setRequestFactory(factory);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            String apiResult = restTemplate.postForObject("http://192.168.31.155:7000/upload", requestEntity, String.class);
+            return CompletableFuture.completedFuture(apiResult);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    public static int[] getVideoResolution(InputStream inputStream) throws Exception {
+        // 将 InputStream 写入临时文件
+        File tempVideo = File.createTempFile("temp_video", ".mp4");
+        tempVideo.deleteOnExit();
+
+        try (OutputStream out = new FileOutputStream(tempVideo)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        }
+
+        // 使用 JavaCV 读取临时文件的视频信息
+        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempVideo)) {
+            grabber.start();
+            int width = grabber.getImageWidth();
+            int height = grabber.getImageHeight();
+            grabber.stop();
+            return new int[]{width, height};
+        }
+    }
+    /**
+     * 创建 FileSystemResource
+     * @param inputStream
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public FileSystemResource convertInputStreamToFileSystemResource(InputStream inputStream, String fileName) throws IOException {
+        // 创建临时文件
+        File tempFile = File.createTempFile("upload_", "_" + fileName);
+        tempFile.deleteOnExit(); // JVM 退出时删除临时文件
+
+        // 将 InputStream 的内容写入临时文件
+        try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        }
+
+        // 创建 FileSystemResource
+        return new FileSystemResource(tempFile);
     }
 
 
