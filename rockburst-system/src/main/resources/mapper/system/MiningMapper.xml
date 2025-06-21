@@ -110,14 +110,14 @@
         where mfn.workface_id = #{workFaceId} and mfn.del_flag = '0'
     </select>
 
-    <select id="queryCurrentDay" resultType="com.ruoyi.system.domain.MiningEntity">
+    <select id="queryCurrentDay" resultType="com.ruoyi.system.domain.Entity.MiningEntity">
         select
         m.mining_id as miningId,
         m.workface_id as workFaceId,
         m.tunnel_id as tunnelId,
         m.mining_time as miningTime,
         m.mining_pace as miningPace
-        from miningm m
+        from mining_footage_new m
         <where>
             m.mining_time BETWEEN #{startTime} and #{endTime}
             and m.del_flag = '0'
