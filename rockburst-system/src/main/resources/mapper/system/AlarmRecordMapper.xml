@@ -2,31 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.AlarmRecordMapper">
 
-    <resultMap id="AlarmRecordResultMap" type="com.ruoyi.system.domain.dto.largeScreen.AlarmRecordDTO">
-        <id property="alarmId" column="alarm_id"/>
-        <result property="alarmType" column="alarm_type"/>
-        <result property="alarmContent" column="alarm_content"/>
-        <result property="startTime" column="start_time"/>
-        <result property="endTime" column="end_time"/>
-        <result property="alarmStatus" column="alarm_status"/>
-    </resultMap>
-
-    <!--获取同一计划，最大的报警次数-->
-    <select id="selectMaxNumber" resultType="java.lang.Integer">
-        select ifnull(max(number), 0)
-        from alarm_record as ar
-        where ar.plan_id = #{planId} and ar.alarm_threshold = #{alarmThreshold}
-    </select>
-
-    <!--获取同一工程，最大的报警次数-->
-    <select id="selectMaxNumberT" resultType="java.lang.Integer">
-        select ifnull(max(number), 0)
-        from alarm_record as ar
-        where ar.project_id = #{projectId}
-    </select>
-
     <!-- 查询告警记录 -->
-    <select id="selectAlarmRecord" resultMap="AlarmRecordResultMap">
+    <select id="selectAlarmRecord" resultType = "com.ruoyi.system.domain.dto.largeScreen.AlarmRecordDTO">
         select ar.alarm_id as alarmId,
         ar.alarm_type as alarmType,
         ar.alarm_content as alarmContent,
@@ -49,4 +26,17 @@
         order by ar.start_time desc
     </select>
 
+    <!--获取同一计划，最大的报警次数-->
+    <select id="selectMaxNumber" resultType="java.lang.Integer">
+        select ifnull(max(number), 0)
+        from alarm_record as ar
+        where ar.plan_id = #{planId} and ar.alarm_threshold = #{alarmThreshold}
+    </select>
+
+    <!--获取同一工程，最大的报警次数-->
+    <select id="selectMaxNumberT" resultType="java.lang.Integer">
+        select ifnull(max(number), 0)
+        from alarm_record as ar
+        where ar.project_id = #{projectId}
+    </select>
 </mapper>
