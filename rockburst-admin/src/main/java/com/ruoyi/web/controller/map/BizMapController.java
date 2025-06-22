@@ -355,7 +355,7 @@ public class BizMapController extends BaseController
 
             projectRecordQueryWrapper.lambda().in(BizProjectRecord::getProjectId,projectIds)
                     .eq(BizProjectRecord::getConstructType,constructType)
-                    .in(BizProjectRecord::getIsHead,true);
+                    .ne(BizProjectRecord::getIsHead,true);
             List<BizProjectRecord> records = bizProjectRecordService.listDeep(projectRecordQueryWrapper);
 
 //            List<BizProjectRecord> records = bizProjectRecordService.listByIdsDeep(projectIds);
