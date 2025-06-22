@@ -303,18 +303,18 @@ public class BizTunnelBarController extends BaseController
                 workface.setSquarePositionPoints(Arrays.toString(xx1)+Arrays.toString(xx2));
             }
 
-            if(StrUtil.isNotEmpty(workface.getMiningProgress()) && StrUtil.isNotEmpty(workface.getFirstWeightingPoints())){
-
-                QueryWrapper<TunnelEntity> queryWrapper2 = new QueryWrapper<>();
-                queryWrapper2.lambda().in(TunnelEntity::getTunnelType,"SH","XH").eq(TunnelEntity::getWorkFaceId,workface.getWorkfaceId());
-                List<TunnelEntity> tunnels = tunnelMapper.selectList(queryWrapper2);
-                    for (TunnelEntity tunnel : tunnels) {
-                        miningService.initData(workface.getWorkfaceId(),tunnel.getTunnelId(),System.currentTimeMillis(),new BigDecimal(workface.getMiningProgress()));
-                    }
-
-
-
-            }
+//            if(StrUtil.isNotEmpty(workface.getMiningProgress()) && StrUtil.isNotEmpty(workface.getFirstWeightingPoints())){
+//
+//                QueryWrapper<TunnelEntity> queryWrapper2 = new QueryWrapper<>();
+//                queryWrapper2.lambda().in(TunnelEntity::getTunnelType,"SH","XH").eq(TunnelEntity::getWorkFaceId,workface.getWorkfaceId());
+//                List<TunnelEntity> tunnels = tunnelMapper.selectList(queryWrapper2);
+//                    for (TunnelEntity tunnel : tunnels) {
+//                        miningService.initData(workface.getWorkfaceId(),tunnel.getTunnelId(),System.currentTimeMillis(),new BigDecimal(workface.getMiningProgress()));
+//                    }
+//
+//
+//
+//            }
 
 
             bizWorkfaceMapper.updateById(workface);

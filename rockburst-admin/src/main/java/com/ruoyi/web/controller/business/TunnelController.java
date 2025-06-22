@@ -103,7 +103,6 @@ public class TunnelController {
 
         TunnelDTO tunnelDTO = new TunnelDTO();
         BeanUtils.copyProperties(dto,tunnelDTO);
-        tunnelDTO.setMiningProgress(workfaces.get(0).getMiningProgress());
         Long tunnelId =  tunnelService.insertTunnel(tunnelDTO);
 
 
@@ -473,14 +472,14 @@ public class TunnelController {
         tunnelService.updateById(tunnel);
 
 
-        try {
-            if(StrUtil.isNotEmpty(dto.getMiningProgress())){
-                miningService.initData(dto.getWorkFaceId(),dto.getTunnelId(),System.currentTimeMillis(),new BigDecimal(dto.getMiningProgress()));
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+//        try {
+//            if(StrUtil.isNotEmpty(dto.getMiningProgress())){
+//                miningService.initData(dto.getWorkFaceId(),dto.getTunnelId(),System.currentTimeMillis(),new BigDecimal(dto.getMiningProgress()));
+//            }
+//
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
 
         if(StringUtils.isNotEmpty(dto.getPointsList()) && StringUtils.isNotEmpty(dto.getWorkFaceCenter())) {
             List<BigDecimal[]> bigDecimals = GeometryUtil.parseToBigDecimalArrayList(dto.getPointsList());

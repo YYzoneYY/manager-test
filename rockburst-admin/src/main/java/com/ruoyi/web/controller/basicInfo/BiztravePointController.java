@@ -756,14 +756,14 @@ public class BiztravePointController extends BaseController
                 workface.setSquarePositionPoints(Arrays.toString(xx1)+Arrays.toString(xx2));
             }
 
-            QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(TunnelEntity::getWorkFaceId,workface.getWorkfaceId());
-            List<TunnelEntity> rs =  tunnelMapper.selectList(queryWrapper);
-            for (TunnelEntity r : rs) {
-                if(StrUtil.isNotEmpty(r.getMiningProgress())){
-                    miningService.initData(workface.getWorkfaceId(),r.getTunnelId(),System.currentTimeMillis(),new BigDecimal(r.getMiningProgress()));
-                }
-            }
+//            QueryWrapper<TunnelEntity> queryWrapper = new QueryWrapper<>();
+//            queryWrapper.lambda().eq(TunnelEntity::getWorkFaceId,workface.getWorkfaceId());
+//            List<TunnelEntity> rs =  tunnelMapper.selectList(queryWrapper);
+//            for (TunnelEntity r : rs) {
+//                if(StrUtil.isNotEmpty(r.getMiningProgress())){
+//                    miningService.initData(workface.getWorkfaceId(),r.getTunnelId(),System.currentTimeMillis(),new BigDecimal(r.getMiningProgress()));
+//                }
+//            }
 //            if(StrUtil.isNotEmpty(workface.getMiningProgress()) && StrUtil.isNotEmpty(workface.getFirstWeightingPoints())){
 //
 //                QueryWrapper<TunnelEntity> queryWrapper2 = new QueryWrapper<>();
