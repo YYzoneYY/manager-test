@@ -623,6 +623,36 @@ public class GeometryUtil {
         boolean result = isInside(a, polygon);
         return result;
     }
+
+//    //示例测试
+//    public static boolean getisInside(String x, String y,String fsx,String fsy,String fex,String fey,String ssx,String ssy,String sex,String sey ) {
+//        Point2D a = new Point2D(new BigDecimal(x), new BigDecimal(y));
+//
+//        Point2D[] polygon = new Point2D[] {
+//                new Point2D(new BigDecimal(fsx), new BigDecimal(fsy)),
+//                new Point2D(new BigDecimal(fex), new BigDecimal(fey)),
+//                new Point2D(new BigDecimal(ssx), new BigDecimal(ssy)),
+//                new Point2D(new BigDecimal(sex), new BigDecimal(sey))
+//        };
+//        boolean result = isInRectangle(a, new Point2D(new BigDecimal(fsx), new BigDecimal(fsy)),new Point2D(new BigDecimal(fex), new BigDecimal(fey)),
+//        new Point2D(new BigDecimal(ssx), new BigDecimal(ssy)),new Point2D(new BigDecimal(sex), new BigDecimal(sey)));
+//        return result;
+//    }
+    public static double cross(Point2D a, Point2D b, Point2D c) {
+        BigDecimal abx = b.getX().subtract(a.getX());
+        BigDecimal aby = b.getY().subtract(a.getY());
+        BigDecimal acx = c.getX().subtract(a.getX());
+        BigDecimal acy = c.getY().subtract( a.getY());
+        return abx .multiply(acy) .subtract(aby.multiply(acx)).doubleValue();
+    }
+
+    // 判断点p是否在矩形内（A-B-C-D为矩形四点，顺时针或逆时针）
+    public static boolean isInRectangle(Point2D A, Point2D B, Point2D C, Point2D D, Point2D P) {
+        return cross(A, B, P) * cross(A, B, C) >= 0 &&
+                cross(B, C, P) * cross(B, C, D) >= 0 &&
+                cross(C, D, P) * cross(C, D, A) >= 0 &&
+                cross(D, A, P) * cross(D, A, B) >= 0;
+    }
 //
 //    // 示例测试
 //    public static void main(String[] args) {

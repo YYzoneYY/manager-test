@@ -103,8 +103,13 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
             for (BizDangerArea area : areas) {
 
                 boolean inside = GeometryUtil.getisInside(x,y,area.getFscbStartx(),area.getFscbStarty(),area.getFscbEndx(),area.getFscbEndy()
-                                                            ,area.getScbStartx(),area.getScbStarty(),area.getScbEndx(),area.getScbEndy());
+                                                            ,area.getScbEndx(),area.getScbEndy(),area.getScbStartx(),area.getScbStarty());
+                boolean inside1 = GeometryUtil.getisInside(x,y,area.getScbStartx(),area.getScbStarty(),area.getScbEndx(),area.getScbEndy()
+                        ,area.getFscbEndx(),area.getFscbEndy(),area.getFscbStartx(),area.getFscbStarty());
                 if(inside){
+                    return area.getDangerAreaId();
+                }
+                if(inside1){
                     return area.getDangerAreaId();
                 }
             }
