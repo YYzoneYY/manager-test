@@ -626,6 +626,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
             BigDecimal[] pointssass = getExtendedPoint(pointssasss[0].toString(), pointssasss[1].toString(), bar.getYtAngle(), dto.getDrillRecords().get(0).getRealDeep().doubleValue(), Double.parseDouble(uploadUrl));
 
+            BigDecimal[] pointssaarea = getExtendedPoint(point.getAxisx(), point.getAxisy(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
 
             List<Map<String,Object>> list = new ArrayList<>();
             Map<String,Object> map = new HashMap<>();
@@ -642,7 +643,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             list.add(map1);
             //新版本,曲折一一对应
             if(point != null && point.getPointId() != null){
-                Long dangerAreaId = bizTravePointService.judgeXYInArea(bigDecimals[0].toString(),bigDecimals[1].toString(),dto.getTunnelId());
+                Long dangerAreaId = bizTravePointService.judgeXYInArea(pointssaarea[0].toString(),pointssaarea[1].toString(),dto.getTunnelId());
 
                 BizPresetPoint presetPoint = new BizPresetPoint();
                 String str = JSONUtil.parseArray(list).toString();
@@ -683,6 +684,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             BigDecimal[] pointssa = getExtendedPoint(bigDecimals[0].toString(), bigDecimals[1].toString(), bar.getDirectAngle()+180, Double.parseDouble(dto.getBarRange()), Double.parseDouble(uploadUrl));
 
 
+            BigDecimal[] pointssaarea = getExtendedPoint(point.getAxisx(), point.getAxisy(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
 
 
             BigDecimal[] pointssasss = getExtendedPoint(pointssa[0].toString(), pointssa[1].toString(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
@@ -706,7 +708,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             list.add(map1);
             //新版本,曲折一一对应
             if(point != null && point.getPointId() != null){
-                Long dangerAreaId = bizTravePointService.judgeXYInArea(bigDecimals[0].toString(),bigDecimals[1].toString(),dto.getTunnelId());
+                Long dangerAreaId = bizTravePointService.judgeXYInArea(pointssaarea[0].toString(),pointssaarea[1].toString(),dto.getTunnelId());
 
                 BizPresetPoint presetPoint = new BizPresetPoint();
                 String str = JSONUtil.parseArray(list).toString();
@@ -742,6 +744,9 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             String uploadUrl = configService.selectConfigByKey(MapConfigConstant.map_bili);
 
             BigDecimal[] pointssa = getExtendedPoint(bigDecimals[0].toString(), bigDecimals[1].toString(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
+
+
+            BigDecimal[] pointssaarea = getExtendedPoint(point.getAxisx(), point.getAxisy(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
 
             //根据 方位角 和 每米的 方位角 获取下一个点的坐标 ,
             //返回坐标组
@@ -779,7 +784,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
             //新版本,曲折一一对应
             if(point != null && point.getPointId() != null){
-                Long dangerAreaId = bizTravePointService.judgeXYInArea(bigDecimals[0].toString(),bigDecimals[1].toString(),dto.getTunnelId());
+                Long dangerAreaId = bizTravePointService.judgeXYInArea(pointssaarea[0].toString(),pointssaarea[1].toString(),dto.getTunnelId());
 //                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
 
                 presetPoint.setConstructTime(dto.getConstructTime())
@@ -1001,7 +1006,11 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
             //坐标获取 帮上的对应点   获取比例  根据走向 获取 孔在 帮上的坐标
             BigDecimal[] bigDecimals = getClosestPointOnSegment(point.getAxisx(),point.getAxisy(),bar.getStartx(), bar.getStarty(), bar.getEndx(), bar.getEndy());
 
+
             String uploadUrl = configService.selectConfigByKey(MapConfigConstant.map_bili);
+
+            BigDecimal[] pointssaarea = getExtendedPoint(point.getAxisx(), point.getAxisy(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
+
 
             BigDecimal[] pointssa = getExtendedPoint(bigDecimals[0].toString(), bigDecimals[1].toString(), bar.getTowardAngle(), Double.parseDouble(dto.getConstructRange()), Double.parseDouble(uploadUrl));
 
@@ -1041,7 +1050,7 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
             //新版本,曲折一一对应
             if(point != null && point.getPointId() != null){
-                Long dangerAreaId = bizTravePointService.judgeXYInArea(bigDecimals[0].toString(),bigDecimals[1].toString(),dto.getTunnelId());
+                Long dangerAreaId = bizTravePointService.judgeXYInArea(pointssaarea[0].toString(),pointssaarea[1].toString(),dto.getTunnelId());
 //                Double ddd = new BigDecimal(bar.getDirectRange()).doubleValue();
 
                 presetPoint.setConstructTime(dto.getConstructTime())

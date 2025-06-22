@@ -175,7 +175,7 @@ public class UploadServiceImpl implements UploadService {
 
             CompletableFuture.supplyAsync(() -> {
                 try {
-                    asyncUpload(sysFileInfo.getFileNewName(),sysFileInfo.getFileNewName(),bucketName);
+                    asyncUpload(sysFileInfo.getFileNewName(),fileName,bucketName);
 
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -217,11 +217,14 @@ public class UploadServiceImpl implements UploadService {
         return  ResponseResult.error();
     }
 
-//    @Async
     public CompletableFuture<String> asyncUpload(String filePath, String fileName, String bucketName) {
+        File tempFile = null;
+
         try {
             InputStream inputStream = this.getFileInputStream(filePath, bucketName);
             FileSystemResource fileResource = convertInputStreamToFileSystemResource(inputStream, fileName);
+            tempFile = fileResource.getFile(); // 获取实际的临时文件
+
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("file", fileResource);
 
@@ -238,8 +241,38 @@ public class UploadServiceImpl implements UploadService {
             return CompletableFuture.completedFuture(apiResult);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
+        } finally {
+            // ✅ 上传完成或失败后删除临时文件
+            if (tempFile != null && tempFile.exists()) {
+                boolean deleted = tempFile.delete();
+                System.out.println("上传完成，临时文件已删除: " + deleted);
+            }
         }
     }
+
+
+//    public CompletableFuture<String> asyncUpload(String filePath, String fileName, String bucketName) {
+//        try {
+//            InputStream inputStream = this.getFileInputStream(filePath, bucketName);
+//            FileSystemResource fileResource = convertInputStreamToFileSystemResource(inputStream, fileName);
+//            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+//            body.add("file", fileResource);
+//
+//            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+//            factory.setConnectTimeout(30000);
+//            factory.setReadTimeout(300000);
+//            restTemplate.setRequestFactory(factory);
+//
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+//            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+//
+//            String apiResult = restTemplate.postForObject("http://192.168.31.155:7000/upload", requestEntity, String.class);
+//            return CompletableFuture.completedFuture(apiResult);
+//        } catch (Exception e) {
+//            return CompletableFuture.failedFuture(e);
+//        }
+//    }
 
     public static int[] getVideoResolution(InputStream inputStream) throws Exception {
         // 将 InputStream 写入临时文件
@@ -263,6 +296,30 @@ public class UploadServiceImpl implements UploadService {
             return new int[]{width, height};
         }
     }
+
+    public FileSystemResource convertInputStreamToFileSystemResource(InputStream inputStream, String fileName) throws IOException {
+        // 指定临时文件目录 + 指定文件名
+        File tempFile = File.createTempFile("upload_", "_" + fileName);
+        try (OutputStream outStream = new FileOutputStream(tempFile)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outStream.write(buffer, 0, bytesRead);
+            }
+        }
+        // ✅ 重命名为你想要的名字（保留扩展名）
+        File renamedFile = new File(tempFile.getParent(), fileName);
+        if (renamedFile.exists()) {
+            renamedFile.delete(); // 删除已存在的
+        }
+        boolean success = tempFile.renameTo(renamedFile);
+        if (!success) {
+            throw new IOException("重命名文件失败");
+        }
+
+        return new FileSystemResource(renamedFile);
+    }
+
     /**
      * 创建 FileSystemResource
      * @param inputStream
@@ -270,7 +327,7 @@ public class UploadServiceImpl implements UploadService {
      * @return
      * @throws IOException
      */
-    public FileSystemResource convertInputStreamToFileSystemResource(InputStream inputStream, String fileName) throws IOException {
+    public FileSystemResource convertInputStreamToFileSystemResource1(InputStream inputStream, String fileName) throws IOException {
         // 创建临时文件
         File tempFile = File.createTempFile("upload_", "_" + fileName);
         tempFile.deleteOnExit(); // JVM 退出时删除临时文件

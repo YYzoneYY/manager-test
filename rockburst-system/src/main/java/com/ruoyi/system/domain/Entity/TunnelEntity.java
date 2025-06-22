@@ -99,7 +99,9 @@ public class TunnelEntity extends BusinessBaseEntity implements Serializable {
     @TableField("del_flag")
     @TableLogic(value = "0", delval = "2")
     private String delFlag;
-
+    @ApiModelProperty(value = "初始回采进尺位置")
+    @TableField()
+    private String miningProgress;
 
 
 

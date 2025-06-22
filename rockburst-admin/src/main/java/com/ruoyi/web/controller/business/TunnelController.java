@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.business;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -17,6 +18,7 @@ import com.ruoyi.system.domain.utils.RectangleRegionFinder;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.IBizDangerAreaService;
 import com.ruoyi.system.service.IBizTunnelBarService;
+import com.ruoyi.system.service.MiningService;
 import com.ruoyi.system.service.TunnelService;
 import com.ruoyi.web.controller.basicInfo.SegmentIntersection;
 import io.swagger.annotations.*;
@@ -41,7 +43,8 @@ import java.util.*;
 @RestController
 @RequestMapping(value = "/tunnel")
 public class TunnelController {
-
+    @Autowired
+    MiningService miningService;
     @Resource
     private TunnelService tunnelService;
     @Autowired
@@ -100,7 +103,21 @@ public class TunnelController {
 
         TunnelDTO tunnelDTO = new TunnelDTO();
         BeanUtils.copyProperties(dto,tunnelDTO);
+        tunnelDTO.setMiningProgress(workfaces.get(0).getMiningProgress());
         Long tunnelId =  tunnelService.insertTunnel(tunnelDTO);
+
+
+        try{
+            if(StrUtil.isNotEmpty(tunnelDTO.getMiningProgress())){
+                miningService.initData(tunnelDTO.getWorkFaceId(),tunnelId,System.currentTimeMillis(),new BigDecimal(tunnelDTO.getMiningProgress()));
+                tunnelDTO.setMiningProgress(tunnelDTO.getMiningProgress());
+                tunnelService.updateTunnel(tunnelDTO);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
 
         if(StringUtils.isNotEmpty(dto.getPointsList()) && StringUtils.isNotEmpty(dto.getWorkFaceCenter())){
             List<BigDecimal[]> bigDecimals = GeometryUtil.parseToBigDecimalArrayList(dto.getPointsList());
@@ -454,6 +471,16 @@ public class TunnelController {
         TunnelEntity tunnel = new TunnelEntity();
         BeanUtils.copyProperties(dto,tunnel);
         tunnelService.updateById(tunnel);
+
+
+        try {
+            if(StrUtil.isNotEmpty(dto.getMiningProgress())){
+                miningService.initData(dto.getWorkFaceId(),dto.getTunnelId(),System.currentTimeMillis(),new BigDecimal(dto.getMiningProgress()));
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         if(StringUtils.isNotEmpty(dto.getPointsList()) && StringUtils.isNotEmpty(dto.getWorkFaceCenter())) {
             List<BigDecimal[]> bigDecimals = GeometryUtil.parseToBigDecimalArrayList(dto.getPointsList());

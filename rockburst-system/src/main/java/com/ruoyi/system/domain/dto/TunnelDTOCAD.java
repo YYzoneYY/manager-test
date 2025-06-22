@@ -112,5 +112,7 @@ public class TunnelDTOCAD  {
     @JsonSerialize(using = ToStringSerializer.class)
     private BigDecimal headDistance;
 
+    @ApiModelProperty(value = "初始回采进尺位置")
+    private String miningProgress;
 
 }
