@@ -23,7 +23,7 @@ public class AlgorithmUtils {
     // 使用更大的容差值，避免浮点数精度问题
     private static final double EPSILON = 1e-4;
     // 明确内部点的最小距离阈值
-    private static final double CLEAR_INSIDE_THRESHOLD = 0.1;
+    private static final double CLEAR_INSIDE_THRESHOLD = 0.01;
 
     /**
      * 通过 导线点+距离 获取相应坐标
