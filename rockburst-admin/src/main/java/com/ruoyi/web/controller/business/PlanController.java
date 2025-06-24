@@ -83,6 +83,13 @@ public class PlanController {
         return R.ok(this.planService.withdraw(planId));
     }
 
+    @ApiOperation(value = "提交审核", notes = "提交审核")
+    @PreAuthorize("@ss.hasPermi('engineeringPlan:submitForReview')")
+    @GetMapping("/submitForReview")
+    public R<Object> submitForReview(@ApiParam(name = "planId", value = "计划id", required = true) @RequestParam Long planId) {
+        return R.ok(this.planService.submitForReview(planId));
+    }
+
     @ApiOperation(value = "删除计划", notes = "删除计划")
     @PreAuthorize("@ss.hasPermi('engineeringPlan:deletePlan')")
     @DeleteMapping(value = "/deletePlan")

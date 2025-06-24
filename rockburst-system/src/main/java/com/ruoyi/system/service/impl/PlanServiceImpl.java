@@ -475,6 +475,25 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     }
 
     @Override
+    public String submitForReview(Long planId) {
+        String flag = "";
+        if (ObjectUtil.isNull(planId)) {
+            throw new RuntimeException("参数错误,计划id不能为空！");
+        }
+        PlanEntity planEntity = planMapper.selectOne(new LambdaQueryWrapper<PlanEntity>()
+                .eq(PlanEntity::getPlanId, planId)
+                .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(planEntity)) {
+            throw new RuntimeException("未找到此计划！无法进行提交");
+        }
+        PlanEntity plan = new PlanEntity();
+        BeanUtils.copyProperties(planEntity, plan);
+        plan.setState(ConstantsInfo.AUDIT_STATUS_DICT_VALUE);
+        flag = planMapper.updateById(plan) > 0 ? "提交审核成功" : "提交审核失败,请联系管理员";
+        return flag;
+    }
+
+    @Override
     public boolean deletePlan(Long[] planIds) {
         boolean flag = false;
         if (planIds.length == 0) {

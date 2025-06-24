@@ -59,6 +59,13 @@ public interface PlanService extends IService<PlanEntity> {
     String withdraw(Long planId);
 
     /**
+     * 提交审核
+     * @param planId 主键id
+     * @return 返回结果
+     */
+    String submitForReview(Long planId);
+
+    /**
      * 批量删除
      * @param planIds 主键id数组
      * @return 返回结果
