@@ -14,6 +14,7 @@ import com.ruoyi.quartz.task.IRyTask;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.ModelFlaskConstant;
 import com.ruoyi.system.domain.BizVideo;
+import com.ruoyi.system.domain.YtFactor;
 import com.ruoyi.system.domain.dto.BizVideoDto;
 import com.ruoyi.system.service.IBizVideoService;
 import com.ruoyi.system.service.ISysConfigService;
@@ -75,6 +76,19 @@ public class BizVideoController extends BaseController
 
     @Autowired
     private IRyTask iRyTask;
+
+
+
+    @ApiOperation("获取已经识别完成的视频")
+    @GetMapping("/getDone")
+    public R getyt()
+    {
+        QueryWrapper<BizVideo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(BizVideo::getStatus, ModelFlaskConstant.ai_model_done);
+        List<BizVideo>  videos  =  bizVideoService.list(queryWrapper);
+        return R.ok(videos);
+    }
 
     /**
      * 查询工程视频列表

@@ -67,7 +67,13 @@ public class BizTravePoint extends BaseSelfEntity
 //    @TableField()
 //    private String axisz;
 
+    @ApiModelProperty(value = "0 起始点  1 结束点 2 普通点")
+    @TableField()
+    private Integer isVertex;
 
+    @ApiModelProperty(value = "距前导线点距离")
+    @TableField()
+    private Double afterPointDistance;
 
     @ApiModelProperty(value = "编号")
     @TableField()

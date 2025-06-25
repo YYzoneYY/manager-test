@@ -81,18 +81,18 @@ public class BizTravePointDto implements Serializable
     @TableField()
     private Double prePointDistance;
 
-    @ApiModelProperty(value = "顶点 1 是 0 否")
+    @ApiModelProperty(value = "0 起始点  1 结束点 2 普通点")
     @TableField()
-    private Boolean isVertex;
+    private Integer isVertex;
 
 
     @ApiModelProperty(value = "切眼标记点id")
     @TableField()
     private Long bestNearPointId;
 
-    @ApiModelProperty(value = "距标记点距离")
+    @ApiModelProperty(value = "距前导线点距离")
     @TableField()
-    private Double distance;
+    private Double afterPointDistance;
 
 
     @ApiModelProperty(value = "纬度")

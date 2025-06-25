@@ -550,8 +550,67 @@ public class BiztravePointController extends BaseController
                         bizTravePointService.updateById(point);
                     }
                 }
+
+
             }
             set_toward_angle();
+            for (TunnelEntity tunnel : tunnelEntityList) {
+                QueryWrapper<BizTravePoint> wrapper = new QueryWrapper<>();
+                wrapper.lambda().in(BizTravePoint::getTunnelId,tunnel.getTunnelId()).orderByDesc(BizTravePoint::getNo);
+                List<BizTravePoint> pointList = bizTravePointService.list(wrapper);
+                //获取帮
+                QueryWrapper<BizTunnelBar> queryWrapper1 = new QueryWrapper<>();
+                queryWrapper1.lambda().eq(BizTunnelBar::getTunnelId,tunnel.getTunnelId());
+                List<BizTunnelBar> bars = bizTunnelBarMapper.selectList(queryWrapper1);
+                Segment startSeg = new Segment();
+                Segment endSeg = new Segment();
+                if(bars != null && bars.size()>0 && bars.size() == 2){
+                    Point2D startSegStart = new Point2D();
+                    startSegStart.setX(new BigDecimal(bars.get(0).getStartx()));
+                    startSegStart.setY(new BigDecimal(bars.get(0).getStarty()));
+                    Point2D startSegSEnd = new Point2D();
+                    startSegSEnd.setX(new BigDecimal(bars.get(1).getStartx()));
+                    startSegSEnd.setY(new BigDecimal(bars.get(1).getStarty()));
+                    startSeg.setEnd(startSegSEnd);
+                    startSeg.setStart(startSegStart);
+
+                    Point2D endSegStart = new Point2D();
+                    endSegStart.setX(new BigDecimal(bars.get(0).getEndx()));
+                    endSegStart.setY(new BigDecimal(bars.get(0).getEndy()));
+                    Point2D endSegSEnd = new Point2D();
+                    endSegSEnd.setX(new BigDecimal(bars.get(1).getEndx()));
+                    endSegSEnd.setY(new BigDecimal(bars.get(1).getEndy()));
+                    endSeg.setEnd(endSegSEnd);
+                    endSeg.setStart(endSegStart);
+
+                }
+                pointList =  pointList.stream() .sorted(Comparator.comparing(BizTravePoint::getNo))
+                        .collect(Collectors.toList());
+                BigDecimal predistancestart = GeometryUtil.pointToSegmentDistance(new Point2D(new BigDecimal(pointList.get(0).getAxisx()), new BigDecimal(pointList.get(0).getAxisy())),startSeg.getStart(),startSeg.getEnd());
+                pointList.get(0).setIsVertex(0).setPrePointDistance(predistancestart.doubleValue());
+
+                BigDecimal afterdistanceend = GeometryUtil.pointToSegmentDistance(
+                        new Point2D(new BigDecimal(pointList.get(pointList.size()-1).getAxisx()), new BigDecimal(pointList.get(pointList.size()-1).getAxisy())),endSeg.getStart(),endSeg.getEnd());
+
+                pointList.get(pointList.size()-1).setIsVertex(1).setAfterPointDistance(afterdistanceend.doubleValue());
+
+                for (BizTravePoint point : pointList) {
+                    if(point.getAfterPointDistance() != null){
+                        continue;
+                    }
+                    //巷道帮上的点
+                    QueryWrapper<BizTravePoint> queryWrapper2 = new QueryWrapper<>();
+                    queryWrapper2.lambda().eq(BizTravePoint::getTunnelId,tunnel.getTunnelId()).eq(BizTravePoint::getNo,point.getNo()+1);
+                    List<BizTravePoint> afterPoints = bizTravePointService.getBaseMapper().selectList(queryWrapper2);
+                    if(afterPoints != null && afterPoints.size()>0){
+                        point.setIsVertex(2).setAfterPointDistance(afterPoints.get(0).getPrePointDistance());
+                    }
+
+                }
+                bizTravePointService.updateBatchById(pointList);
+
+
+            }
             return R.ok();
         }
         return R.fail("空数据");
@@ -571,9 +630,6 @@ public class BiztravePointController extends BaseController
                     .min(Comparator.comparing(BizTravePoint::getNo));
             Optional<BizTravePoint> maxPoint = points.stream()
                     .max(Comparator.comparing(BizTravePoint::getNo));
-
-
-
 
 
             BigDecimal ll = GeometryUtil.calculateAngleFromYAxis(minPoint.get().getAxisx(), minPoint.get().getAxisy(),maxPoint.get().getAxisx(), maxPoint.get().getAxisy());
@@ -628,6 +684,10 @@ public class BiztravePointController extends BaseController
                             .setYtAngle((int)ll.doubleValue());
                 }
                 bizTunnelBarService.updateById(bars.get(i));
+                // set
+
+
+
 //                BigDecimal[] ps = new BigDecimal[2];
 //                ps[0] = new BigDecimal(bars.get(i).getStartx());
 //                ps[1] = new BigDecimal(bars.get(i).getStarty());
@@ -637,6 +697,32 @@ public class BiztravePointController extends BaseController
 //                ps1[1] = new BigDecimal(bars.get(i).getEndy());
 //                pss[i*2+1] = ps1;
             }
+
+
+            String startx = "";
+            BigDecimal startx0 = new BigDecimal(bars.get(0).getStartx());
+            BigDecimal startx1 = new BigDecimal(bars.get(1).getStartx());
+            startx = startx0.add(startx1).divide(new BigDecimal(2),6, BigDecimal.ROUND_HALF_UP).toString();
+
+            String endx = "";
+            BigDecimal endx0 = new BigDecimal(bars.get(0).getEndx());
+            BigDecimal endx1 = new BigDecimal(bars.get(1).getEndx());
+            endx = endx0.add(endx1).divide(new BigDecimal(2),6, BigDecimal.ROUND_HALF_UP).toString();
+
+            String starty = "";
+            BigDecimal starty0 = new BigDecimal(bars.get(0).getStarty());
+            BigDecimal starty1 = new BigDecimal(bars.get(1).getStarty());
+            starty = starty0.add(starty1).divide(new BigDecimal(2),6, BigDecimal.ROUND_HALF_UP).toString();
+
+            String endy = "";
+            BigDecimal endy0 = new BigDecimal(bars.get(0).getEndy());
+            BigDecimal endy1 = new BigDecimal(bars.get(1).getEndy());
+            endy = endy0.add(endy1).divide(new BigDecimal(2),6, BigDecimal.ROUND_HALF_UP).toString();
+
+            ll = GeometryUtil.calculateAngleFromYAxis(startx,starty,endx,endy);
+            bars.get(0).setTowardAngle(ll.doubleValue());
+            bars.get(1).setTowardAngle(ll.doubleValue());
+            bizTunnelBarService.updateBatchById(bars);
 
 //            BigDecimal[] mn = new BigDecimal[2];
 //            mn[0] = new BigDecimal(minPoint.get().getAxisx());

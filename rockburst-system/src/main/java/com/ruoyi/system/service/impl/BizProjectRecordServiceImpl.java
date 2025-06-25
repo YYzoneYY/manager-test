@@ -483,6 +483,9 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
         BizProjectRecord entity = new BizProjectRecord();
         BeanUtil.copyProperties(dto, entity);
+        if(entity.getIsHead() == null){
+            entity.setIsHead(false);
+        }
         entity.setTag(ConstantsInfo.INITIAL_TAG);
 
         entity.setStatus(BizBaseConstant.FILL_STATUS_PEND).setIsRead(0).setDeptId(currentUser.getDeptId());

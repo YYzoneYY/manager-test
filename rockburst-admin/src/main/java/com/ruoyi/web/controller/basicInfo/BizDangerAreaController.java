@@ -463,7 +463,7 @@ public class BizDangerAreaController extends BaseController
 
 
     @ApiOperation("生成预设点")
-//    @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:sss')")
+    @PreAuthorize("@ss.hasPermi('basicInfo:dangerArea:addpre')")
     @Log(title = "危险区管理", businessType = BusinessType.INSERT)
     @PostMapping("/addpre")
     public R addpre( String workfaceName,String drillType)

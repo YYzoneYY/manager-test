@@ -46,8 +46,9 @@ public class SetOutController extends BaseController
 {
     @Autowired
     private IBizProjectRecordService bizProjectRecordService;
-//    private final String fastApiBaseUrl = "http://127.0.0.1:8000"; // 替换为实际 IP
-    private final String fastApiBaseUrl = "http://192.168.31.156:38000"; // 替换为实际 IP
+    private final String fastApiBaseUrl = "http://127.0.0.1:8000"; // 替换为实际 IP
+//    private final String fastApiBaseUrl = "http://192.168.31.156:38000"; // 替换为实际 IP
+//    private final String fastApiBaseUrl = "http://192.168.31.186:8000"; // 替换为实际 IP
 
     @Autowired
     private SysDxfConfigMapper dxfConfigMapper;
@@ -61,8 +62,8 @@ public class SetOutController extends BaseController
     public RedisTemplate<String, byte[]> redisByteTemplate;
 
     // 上传到服务器的目标路径（确保有写权限）
-    private static final String UPLOAD_DIR = "/home/imgfask/dxf_to_contour_map/"; // Windows 示例路径
-//    private static final String UPLOAD_DIR = "D:\\PycharmProjects"; // Windows 示例路径
+//    private static final String UPLOAD_DIR = "/home/imgfask/dxf_to_contour_map/"; // Windows 示例路径
+    private static final String UPLOAD_DIR = "D:\\PycharmProjects"; // Windows 示例路径
 
 
     @ApiOperation("shangc")
@@ -89,25 +90,25 @@ public class SetOutController extends BaseController
         String contour_layers = getconfigbykey("contour_config");
         req.setLayer_names(JSONUtil.parseArray(contour_layers).toList(String.class));
         String sx1 = fastApiCaller.callContourDxf(fastApiBaseUrl, req);
-        redisCache.setCacheObject("contour_result", sx1);
+//        redisCache.setCacheObject("contour_result", sx1);
         setvalueBykey("contour_result",sx1);
 
         String big_layers = getconfigbykey("big_fault_config");
         req.setLayer_names(JSONUtil.parseArray(big_layers).toList(String.class));
         String sx2 = fastApiCaller.callBigFault(fastApiBaseUrl, req);
-        redisCache.setCacheObject("big_fault_result", sx2);
+//        redisCache.setCacheObject("big_fault_result", sx2);
         setvalueBykey("big_fault_result",sx2);
-
+//
         String small_layers = getconfigbykey("small_fault_config");
         req.setLayer_names(JSONUtil.parseArray(small_layers).toList(String.class));
         String sx3 = fastApiCaller.callSmallFault(fastApiBaseUrl, req);
-        redisCache.setCacheObject("small_fault_result", sx3);
+//        redisCache.setCacheObject("small_fault_result", sx3);
         setvalueBykey("small_fault_result",sx3);
-
+//
         String gob_layers = getconfigbykey("gob_config");
         req.setLayer_names(JSONUtil.parseArray(gob_layers).toList(String.class));
         String sx4 = fastApiCaller.callGob(fastApiBaseUrl, req);
-        redisCache.setCacheObject("gob_result", sx4);
+//        redisCache.setCacheObject("gob_result", sx4);
         setvalueBykey("gob_result",sx4);
         return sx;
     }
@@ -224,48 +225,48 @@ public class SetOutController extends BaseController
         Map<String, Object> request = new HashMap<>();
         String josn = getconfigbykey("config");
 
-        if(all.getXmin() != null){
-            double get_area  = calculateArea(all.getXmin(),all.getYmax(),all.getXmax(),all.getYmin());
-
-            DrawAll aa = JSONUtil.toBean(josn,DrawAll.class);
-            double org_area  = calculateArea(aa.getXmin(),aa.getYmax(),aa.getXmax(),aa.getYmin());
-
-            if(org_area/get_area <= 5 && org_area/get_area >= 1){
-                String type = "";
-                for (Draw draw : all.getDraws()) {
-                    if(StrUtil.isNotEmpty( draw.getName()) && !draw.getName().equals("[]")){
-                        type = draw.getName();
-                    }
-                }
-                byte[] sstypes = getCroppedImage1(all.getXmin(), all.getYmax(), all.getXmax(), all.getYmin(),type);
-
-//                redisByteTemplate.opsForValue().set("all", sstypes);
-                // 构建响应
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.IMAGE_PNG);
-                headers.setContentDisposition(ContentDisposition.inline().filename("result.png").build());
-                return new ResponseEntity<>(sstypes, headers, HttpStatus.OK);
-            }
-
-        }else if(all.getXmax() == null) {
-            String type = "";
-            for (Draw draw : all.getDraws()) {
-                if(StrUtil.isNotEmpty( draw.getName()) && !draw.getName().equals("[]")){
-                    type = draw.getName();
-                }
-            }
-            String fastApiUrl = String.format(fastApiBaseUrl+"/get-image"+"?dxf_type=%s", type);
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<byte[]> response = restTemplate.getForEntity(fastApiUrl, byte[].class);
-            // 如果成功，则返回图片流
-            if (response.getStatusCode() == HttpStatus.OK) {
-                byte[] imageBytes = response.getBody();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.IMAGE_PNG);
-                headers.setContentDisposition(ContentDisposition.inline().filename("result.png").build());
-                return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
-            }
-        }
+//        if(all.getXmin() != null){
+//            double get_area  = calculateArea(all.getXmin(),all.getYmax(),all.getXmax(),all.getYmin());
+//
+//            DrawAll aa = JSONUtil.toBean(josn,DrawAll.class);
+//            double org_area  = calculateArea(aa.getXmin(),aa.getYmax(),aa.getXmax(),aa.getYmin());
+//
+//            if(org_area/get_area <= 5 && org_area/get_area >= 1){
+//                String type = "";
+//                for (Draw draw : all.getDraws()) {
+//                    if(StrUtil.isNotEmpty( draw.getName()) && !draw.getName().equals("[]")){
+//                        type = draw.getName();
+//                    }
+//                }
+//                byte[] sstypes = getCroppedImage1(all.getXmin(), all.getYmax(), all.getXmax(), all.getYmin(),type);
+//
+////                redisByteTemplate.opsForValue().set("all", sstypes);
+//                // 构建响应
+//                HttpHeaders headers = new HttpHeaders();
+//                headers.setContentType(MediaType.IMAGE_PNG);
+//                headers.setContentDisposition(ContentDisposition.inline().filename("result.png").build());
+//                return new ResponseEntity<>(sstypes, headers, HttpStatus.OK);
+//            }
+//
+//        }else if(all.getXmax() == null) {
+//            String type = "";
+//            for (Draw draw : all.getDraws()) {
+//                if(StrUtil.isNotEmpty( draw.getName()) && !draw.getName().equals("[]")){
+//                    type = draw.getName();
+//                }
+//            }
+//            String fastApiUrl = String.format(fastApiBaseUrl+"/get-image"+"?dxf_type=%s", type);
+//            RestTemplate restTemplate = new RestTemplate();
+//            ResponseEntity<byte[]> response = restTemplate.getForEntity(fastApiUrl, byte[].class);
+//            // 如果成功，则返回图片流
+//            if (response.getStatusCode() == HttpStatus.OK) {
+//                byte[] imageBytes = response.getBody();
+//                HttpHeaders headers = new HttpHeaders();
+//                headers.setContentType(MediaType.IMAGE_PNG);
+//                headers.setContentDisposition(ContentDisposition.inline().filename("result.png").build());
+//                return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+//            }
+//        }
 
         try {
 
@@ -336,12 +337,10 @@ public class SetOutController extends BaseController
                 }
             }
 
-
-
             // 请求绘图服务
             byte[] imageBytes = callDrawAllAndGetStream(fastApiBaseUrl+"/draw-all/", request);
 
-            redisByteTemplate.opsForValue().set("all", imageBytes);
+//            redisByteTemplate.opsForValue().set("all", imageBytes);
             // 构建响应
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.IMAGE_PNG);

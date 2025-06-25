@@ -1,6 +1,8 @@
 package com.ruoyi.system.domain.excel;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.ruoyi.common.annotation.Excel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -53,13 +55,18 @@ public class BiztravePointExcel
     @Excel(name = "距前导线点距离")
     private Double prePointDistance;
 
-    @Excel(name = "顶点 1 是 0 否")
-    private Boolean isVertex;
+    @ApiModelProperty(value = "0 起始点  1 结束点 2 普通点")
+    @TableField()
+    private Integer isVertex;
+
+    @ApiModelProperty(value = "距前导线点距离")
+    @TableField()
+    private Double afterPointDistance;
 
 //    @Excel(name = "切眼标记点id")
 //    private Long bestNearPointId;
-
-    @Excel(name = "距标记点距离")
-    private Double distance;
+//
+//    @Excel(name = "距标记点距离")
+//    private Double distance;
 
 }

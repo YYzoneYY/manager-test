@@ -108,7 +108,7 @@ public class BizDangerLevelController extends BaseController
      * 删除危险等级管理
      */
     @ApiOperation("删除危险等级管理")
-    @PreAuthorize("@ss.hasPermi('basicInfo:dangerLevel:remove')")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:dangerLevel:remove')")
     @Log(title = "危险等级管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/one/{dangerLevelId}")
     public R remove(@PathVariable("dangerLevelId") Long dangerLevelId)
