@@ -997,6 +997,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
      * 校验距离
      */
     private void checkDistance(Long tunnelId, PlanAreaDTO planAreaDTO) {
+        BizTravePoint point = new BizTravePoint();
         if (planAreaDTO.getStartDistance().charAt(0) == '-') {
             BizTravePoint sTraPoint = obtainBizTravePoint(planAreaDTO.getStartTraversePointId());
             Double prePointDistance = sTraPoint.getPrePointDistance();
@@ -1016,19 +1017,23 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         if (planAreaDTO.getStartDistance().charAt(0) != '-') {
             BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
                     .eq(BizTravePoint::getPointId, planAreaDTO.getStartTraversePointId()));
-            Long no = bizTravePoint.getNo();
-            BizTravePoint bizTraPointTwo = obtainBizTravePointT(tunnelId, no);
-            Double prePointDistance = bizTraPointTwo.getPrePointDistance();
-            if (planAreaDTO.getEndTraversePointId().equals(bizTraPointTwo.getPointId())) {
+            BizTravePoint travePoint = obtainBizTravePoint(tunnelId, bizTravePoint);
+            if (ObjectUtil.isNull(travePoint)) {
+                point = bizTravePoint;
+            } else {
+                point = travePoint;
+            }
+            Double PointDistance = obtainBizTravePointT(tunnelId, bizTravePoint);
+            if (planAreaDTO.getEndTraversePointId().equals(point.getPointId())) {
                 double sd = Double.parseDouble(planAreaDTO.getStartDistance());
                 double ed = Double.parseDouble(planAreaDTO.getEndDistance());
                 double abs = Math.abs(ed);
                 double td = sd + abs;
-                if (td > prePointDistance) {
+                if (td > PointDistance) {
                     throw new RuntimeException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
                 }
             }
-            boolean b = DataJudgeUtils.absoluteValueCompareTwo(prePointDistance, planAreaDTO.getStartDistance());
+            boolean b = DataJudgeUtils.absoluteValueCompareTwo(PointDistance, planAreaDTO.getStartDistance());
             if (!b) {
                 throw new RuntimeException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
             }
@@ -1037,9 +1042,14 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
             BizTravePoint bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
                     .eq(BizTravePoint::getPointId, planAreaDTO.getEndTraversePointId()));
             Long no = bizTravePoint.getNo();
-            BizTravePoint bizTraPointTwo = obtainBizTravePointT(tunnelId, no);
-            Double endPointDistance = bizTraPointTwo.getPrePointDistance();
-            boolean b1 = DataJudgeUtils.absoluteValueCompareTwo(endPointDistance, planAreaDTO.getEndDistance());
+            BizTravePoint travePoint = obtainBizTravePoint(tunnelId, bizTravePoint);
+            if (ObjectUtil.isNull(travePoint)) {
+                point = bizTravePoint;
+            } else {
+                point = travePoint;
+            }
+            Double PointDistance = obtainBizTravePointT(tunnelId, bizTravePoint);
+            boolean b1 = DataJudgeUtils.absoluteValueCompareTwo(PointDistance, planAreaDTO.getEndDistance());
             if (!b1) {
                 throw new RuntimeException("不允许输入的距离超过两个导线点之间的距离,请重新输入！");
             }
@@ -1062,16 +1072,26 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     /**
      * 获取导线点二
      */
-    private BizTravePoint obtainBizTravePointT(Long tunnelId, Long no) {
-        BizTravePoint bizTravePoint = new BizTravePoint();
-        bizTravePoint = bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
-                .eq(BizTravePoint::getTunnelId, tunnelId)
-                .eq(BizTravePoint::getNo, no + 1)
-                .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+    private Double obtainBizTravePointT(Long tunnelId, BizTravePoint crrentBizTravePoint) {
+        Double distance = 0.0;
+        BizTravePoint bizTravePoint = obtainBizTravePoint(tunnelId, crrentBizTravePoint);
         if (ObjectUtil.isNull(bizTravePoint)) {
-            throw new RuntimeException("获取导线点异常(2)！");
+            Double afterPointDistance = crrentBizTravePoint.getAfterPointDistance();
+            if (ObjectUtil.isNull(afterPointDistance)) {
+                throw new RuntimeException("获取导线点异常(2)！");
+            }
+            distance = afterPointDistance;
+           return distance;
         }
-        return bizTravePoint;
+        distance = bizTravePoint.getPrePointDistance();
+        return distance;
+    }
+
+    private BizTravePoint obtainBizTravePoint(Long tunnelId, BizTravePoint crrentBizTravePoint) {
+        return bizTravePointMapper.selectOne(new LambdaQueryWrapper<BizTravePoint>()
+                .eq(BizTravePoint::getTunnelId, tunnelId)
+                .eq(BizTravePoint::getNo, crrentBizTravePoint.getNo() + 1)
+                .eq(BizTravePoint::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
     }
 
 

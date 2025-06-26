@@ -126,10 +126,10 @@ public class LargeScreenController {
         dto.setAlarmId(1L);
         dto.setPlanId(1L);
         dto.setAlarmTime(System.currentTimeMillis());
-        dto.setWorkFaceName("403工作面");
+        dto.setWorkFaceName("11-2101工作面");
         dto.setPlanQuantity(50);
         dto.setActualCompleteQuantity(20);
-        dto.setAlarmContent("1301工作面：在2025年6月15~2025年6月30日期间，计划完成总钻孔量为10个。规定在50%的时间内，完成总数的50% 。当前实际完成3个，没有达到预期计划，触发报警");
+        dto.setAlarmContent("11-2101工作面：在2025年6月15~2025年6月30日期间，计划完成总钻孔量为10个。规定在50%的时间内，完成总数的50% 。当前实际完成3个，没有达到预期计划，触发报警");
         list.add(dto);
         return list;
     }
@@ -146,9 +146,9 @@ public class LargeScreenController {
         dto1.setContrastDrillNum("1");
         dto1.setSpaced(2.0);
         dto1.setActualDistance(2.5);
-        dto1.setTunnelName("403回风巷");
-        dto1.setWorkFaceName("403工作面");
-        dto1.setAlarmContent("403工作面下的403回风巷内，2号钻孔与1号钻孔之间的距离为2.5米，超过当前卸压计划中间距2.0米的要求，发生报警！");
+        dto1.setTunnelName("11-2101回风巷");
+        dto1.setWorkFaceName("11-2101工作面");
+        dto1.setAlarmContent("11-2101工作面下的11-2101回风巷内，2号钻孔与1号钻孔之间的距离为2.5米，超过当前卸压计划中间距2.0米的要求，发生报警！");
         list.add(dto1);
 
         SpaceAlarmPushDTO dto2 = new SpaceAlarmPushDTO();
@@ -160,9 +160,9 @@ public class LargeScreenController {
         dto2.setContrastDrillNum("3");
         dto2.setSpaced(1.0);
         dto2.setActualDistance(1.5);
-        dto2.setTunnelName("403回风巷");
-        dto2.setWorkFaceName("403工作面");
-        dto2.setAlarmContent("403工作面下的403回风巷内，4号钻孔与3号钻孔之间的距离为1.5米，超过当前卸压计划中间距1.0米的要求，发生报警！");
+        dto2.setTunnelName("11-2101回风巷");
+        dto2.setWorkFaceName("11-2101工作面");
+        dto2.setAlarmContent("11-2101工作面下的11-2101回风巷内，4号钻孔与3号钻孔之间的距离为1.5米，超过当前卸压计划中间距1.0米的要求，发生报警！");
         list.add(dto2);
         return list;
     }

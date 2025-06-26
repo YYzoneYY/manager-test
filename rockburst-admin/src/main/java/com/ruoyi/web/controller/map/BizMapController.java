@@ -465,7 +465,7 @@ public class BizMapController extends BaseController
 
         QueryWrapper<PlanEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().select(PlanEntity::getPlanId,PlanEntity::getPlanName,PlanEntity::getType)
-                .eq(StrUtil.isNotEmpty(year),PlanEntity::getAnnual,year)
+//                .eq(StrUtil.isNotEmpty(year),PlanEntity::getAnnual,year)
                 .eq(workfaceId != null, PlanEntity::getWorkFaceId,workfaceId)
                 .eq(PlanEntity::getType, constructType)
                 .eq(StrUtil.isNotEmpty(drillType),PlanEntity::getDrillType,drillType)
