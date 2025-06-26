@@ -41,7 +41,7 @@ import java.util.*;
  */
 @Api(tags = "basic-危险区111")
 @RestController
-@RequestMapping("/configContour1111")
+@RequestMapping("/configContour")
 public class SetOutController extends BaseController
 {
     @Autowired
