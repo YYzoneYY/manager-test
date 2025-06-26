@@ -603,6 +603,9 @@ public class BiztravePointController extends BaseController
                     queryWrapper2.lambda().eq(BizTravePoint::getTunnelId,tunnel.getTunnelId()).eq(BizTravePoint::getNo,point.getNo()+1);
                     List<BizTravePoint> afterPoints = bizTravePointService.getBaseMapper().selectList(queryWrapper2);
                     if(afterPoints != null && afterPoints.size()>0){
+                        if(point.getIsVertex() == 0){
+                            point.setAfterPointDistance(afterPoints.get(0).getPrePointDistance());
+                        }
                         point.setIsVertex(2).setAfterPointDistance(afterPoints.get(0).getPrePointDistance());
                     }
 

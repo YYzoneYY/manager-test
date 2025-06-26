@@ -71,7 +71,7 @@ public class BizTravePoint extends BaseSelfEntity
     @TableField()
     private Integer isVertex;
 
-    @ApiModelProperty(value = "距前导线点距离")
+    @ApiModelProperty(value = "距后导线点距离")
     @TableField()
     private Double afterPointDistance;
 

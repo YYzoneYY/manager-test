@@ -39,15 +39,15 @@ import java.util.*;
  * @author ruoyi
  * @date 2024-11-09
  */
-@Api(tags = "basic-危险区")
+@Api(tags = "basic-危险区111")
 @RestController
-@RequestMapping("/configContour")
+@RequestMapping("/configContour1111")
 public class SetOutController extends BaseController
 {
     @Autowired
     private IBizProjectRecordService bizProjectRecordService;
-    private final String fastApiBaseUrl = "http://127.0.0.1:8000"; // 替换为实际 IP
-//    private final String fastApiBaseUrl = "http://192.168.31.156:38000"; // 替换为实际 IP
+//    private final String fastApiBaseUrl = "http://127.0.0.1:8000"; // 替换为实际 IP
+    private final String fastApiBaseUrl = "http://192.168.31.156:38000"; // 替换为实际 IP
 //    private final String fastApiBaseUrl = "http://192.168.31.186:8000"; // 替换为实际 IP
 
     @Autowired
@@ -62,8 +62,8 @@ public class SetOutController extends BaseController
     public RedisTemplate<String, byte[]> redisByteTemplate;
 
     // 上传到服务器的目标路径（确保有写权限）
-//    private static final String UPLOAD_DIR = "/home/imgfask/dxf_to_contour_map/"; // Windows 示例路径
-    private static final String UPLOAD_DIR = "D:\\PycharmProjects"; // Windows 示例路径
+    private static final String UPLOAD_DIR = "/home/imgfask/dxf_to_contour_map/"; // Windows 示例路径
+//    private static final String UPLOAD_DIR = "D:\\PycharmProjects\\"; // Windows 示例路径
 
 
     @ApiOperation("shangc")
