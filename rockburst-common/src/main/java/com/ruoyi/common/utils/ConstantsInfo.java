@@ -144,6 +144,10 @@ public class ConstantsInfo {
     public static final Long ALARM_SYSTEM = 9999L;
     public static final String REMARKS_SYSTEM = "系统自动关闭报警";
 
+    public static final String TEAM_AUDIT_PUSH = "team";
+    public static final String DEPT_AUDIT_PUSH = "dept";
+    public static final  String ALARM_PUSH = "alarm_push";
+
 
     //只取200条监测数据
     public static final  int SUB = 200;

@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -24,6 +25,7 @@ import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.common.warnPush.WarnPush;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.MapConfigConstant;
 import com.ruoyi.system.constant.ModelFlaskConstant;
@@ -141,6 +143,13 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Autowired
     private ISysConfigService configService;
+
+    @Resource
+    private WarnPush warnPush;
+
+    @Resource
+    private PushConfigMapper pushConfigMapper;
+
 
 
     @DataScopeSelf
@@ -1494,6 +1503,22 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         bizProject.setStatus(Integer.valueOf(ConstantsInfo.AUDIT_STATUS_DICT_VALUE));
         bizProject.setTag(ConstantsInfo.TEAM_TAG);
         flag = bizProjectRecordMapper.updateById(bizProject) > 0 ? "提交审核成功" : "提交审核失败,请联系管理员";
+        if (flag.equals("提交审核成功")) {
+            List<PushConfigEntity> pushConfigEntities = pushConfigMapper.selectList(new LambdaQueryWrapper<PushConfigEntity>()
+                    .eq(PushConfigEntity::getTag, ConstantsInfo.TEAM_AUDIT_PUSH));
+            if (ObjectUtil.isNotNull(pushConfigEntities)) {
+                for (PushConfigEntity pushConfigEntity : pushConfigEntities) {
+                    String userIdGroup = pushConfigEntity.getUserIdGroup();
+                    List<String> userIdGroups = JSON.parseArray(userIdGroup, String.class);
+                    List<String> cIds = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>()
+                                    .in(SysUser::getUserId, userIdGroups))
+                            .stream()
+                            .map(SysUser::getCid)
+                            .collect(Collectors.toList());
+                    warnPush.pushMsg(cIds, "工程填报审核推送通知", projectId.toString());
+                }
+            }
+        }
         return flag;
     }
 
