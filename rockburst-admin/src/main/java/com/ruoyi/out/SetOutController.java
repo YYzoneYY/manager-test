@@ -11,6 +11,7 @@ import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
@@ -20,14 +21,17 @@ import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -48,7 +52,10 @@ public class SetOutController extends BaseController
     private IBizProjectRecordService bizProjectRecordService;
 //    private final String fastApiBaseUrl = "http://127.0.0.1:8000"; // 替换为实际 IP
     private final String fastApiBaseUrl = "http://192.168.31.156:38000"; // 替换为实际 IP
-//    private final String fastApiBaseUrl = "http://192.168.31.186:8000"; // 替换为实际 IP
+
+    // 上传到服务器的目标路径（确保有写权限）
+    private static final String UPLOAD_DIR = "/home/imgfask/dxf_to_contour_map/"; // Windows 示例路径
+//    private static final String UPLOAD_DIR = "D:\\PycharmProjects\\"; // Windows 示例路径
 
     @Autowired
     private SysDxfConfigMapper dxfConfigMapper;
@@ -61,9 +68,7 @@ public class SetOutController extends BaseController
     @Qualifier("redisByteTemplate")
     public RedisTemplate<String, byte[]> redisByteTemplate;
 
-    // 上传到服务器的目标路径（确保有写权限）
-    private static final String UPLOAD_DIR = "/home/imgfask/dxf_to_contour_map/"; // Windows 示例路径
-//    private static final String UPLOAD_DIR = "D:\\PycharmProjects\\"; // Windows 示例路径
+
 
 
     @ApiOperation("shangc")
@@ -110,6 +115,18 @@ public class SetOutController extends BaseController
         String sx4 = fastApiCaller.callGob(fastApiBaseUrl, req);
 //        redisCache.setCacheObject("gob_result", sx4);
         setvalueBykey("gob_result",sx4);
+
+        String fold_layers = getconfigbykey("fold_config");
+        req.setLayer_names(JSONUtil.parseArray(fold_layers).toList(String.class));
+        String sx5 = fastApiCaller.callFold(fastApiBaseUrl, req);
+//        redisCache.setCacheObject("gob_result", sx4);
+        setvalueBykey("fold_result",sx5);
+
+        String coal_pillar_layers = getconfigbykey("coal_pillar_config");
+        req.setLayer_names(JSONUtil.parseArray(coal_pillar_layers).toList(String.class));
+        String sx6 = fastApiCaller.callCoalPillar(fastApiBaseUrl, req);
+//        redisCache.setCacheObject("gob_result", sx4);
+        setvalueBykey("coal_pillar_result",sx6);
         return sx;
     }
 
@@ -218,6 +235,86 @@ public class SetOutController extends BaseController
     }
 
 
+    // 获取规则
+    @ApiOperation("rules-get")
+    @GetMapping("/rules/{ruleName}")
+    public ResponseEntity<?> getRule(@PathVariable String ruleName) {
+        try {
+            String url = fastApiBaseUrl + "/rules/" + ruleName;
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            return ResponseEntity.ok(response.getBody());
+        } catch (HttpClientErrorException.NotFound e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("未找到规则：" + ruleName);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("调用失败：" + e.getMessage());
+        }
+    }
+
+    // 更新规则
+    @ApiOperation("rules-update")
+    @PostMapping("/rules")
+    public ResponseEntity<?> updateRule( @RequestBody RuleData ruleData) {
+        try {
+            String url = fastApiBaseUrl + "/rules/" + ruleData.getRuleName();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            if("FAULT_DROP_RULES".equals(ruleData.getRuleName())){
+                HttpEntity<Object> request = new HttpEntity<>(ruleData.getRules(), headers);
+                RestTemplate restTemplate = new RestTemplate();
+                ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+                return ResponseEntity.ok(response.getBody());
+            }
+            HttpEntity<Object> request = new HttpEntity<>(ruleData.getRuleData(), headers);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            return ResponseEntity.ok(response.getBody());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("更新失败：" + e.getMessage());
+        }
+    }
+
+    @ApiOperation("get-cropped-image1")
+    @GetMapping("/get-cropped-image1")
+    public ResponseEntity<byte[]> getCroppedImageCute(@ParameterObject CutImage cutImage) {
+        System.out.println("values = " + cutImage);
+        String url = fastApiBaseUrl + "/cut-image/" ;
+
+        // 构建带列表参数的 URL
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+        cutImage.getShapes().forEach(shape -> builder.queryParam("shapes", shape));
+        cutImage.getPoints().forEach(p -> builder.queryParam("points",p ));
+
+        URI uri = builder.build().encode().toUri();
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<byte[]> response = restTemplate.getForEntity(uri, byte[].class);
+
+        // 检查 FastAPI 是否返回成功
+        if (response.getStatusCode() == HttpStatus.OK) {
+            byte[] imageBytes = response.getBody();
+
+            // 动态获取 FastAPI 返回的 Content-Type，如果无效则默认 PNG
+            MediaType contentType = response.getHeaders().getContentType();
+            if (contentType == null) {
+                contentType = MediaType.IMAGE_PNG; // 默认值
+            }
+
+            // 设置响应头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(contentType);
+            headers.setContentLength(imageBytes.length);
+            headers.setContentDisposition(ContentDisposition.inline().filename("cropped.png").build());
+
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } else {
+            // 如果 FastAPI 返回错误，直接转发错误信息
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+        }
+
+    }
+
+
+
     //    @GetMapping("/draw-all")
     @ApiOperation("draw-all")
     @PostMapping("/draw-all")
@@ -294,10 +391,14 @@ public class SetOutController extends BaseController
             List<Map> smallData = new ArrayList<>();
             List<Map> gobData = new ArrayList<>();
             List<Map> contourData = new ArrayList<>();
+            List<Map> foldData= new ArrayList<>();
+            List<Map> coalPillarData= new ArrayList<>();
             request.put("big_data", bigData);
             request.put("small_data", smallData);
             request.put("gob_data", gobData);
             request.put("contour_data", contourData);
+            request.put("fold_data", foldData);
+            request.put("coal_pillar_data", coalPillarData);
 
 
             if(all != null && all.getDraws() != null && all.getDraws().size() > 0){
@@ -332,6 +433,21 @@ public class SetOutController extends BaseController
 
                         contourData = JSONUtil.toList(new JSONArray(contourJson), Map.class);
                         request.put("contour_data", contourData);
+
+                    }
+                    if(draw.getName().equals("fold_result")){
+//                        contourJson = redisCache.getCacheObject("contour_result");
+                        contourJson = getentitybykey("fold_result");
+
+                        contourData = JSONUtil.toList(new JSONArray(contourJson), Map.class);
+                        request.put("fold_data", contourData);
+
+                    }if(draw.getName().equals("coal_pillar_result")){
+//                        contourJson = redisCache.getCacheObject("contour_result");
+                        contourJson = getentitybykey("coal_pillar_result");
+
+                        contourData = JSONUtil.toList(new JSONArray(contourJson), Map.class);
+                        request.put("coal_pillar_data", contourData);
 
                     }
                 }

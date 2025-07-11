@@ -55,4 +55,28 @@ public class FastApiCaller {
 
         return response.getBody();
     }
+
+    public String callFold(String serverUrl, ContourRequest request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<ContourRequest> httpEntity = new HttpEntity<>(request, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                serverUrl + "/fold-dxf/", httpEntity, String.class);
+
+        return response.getBody();
+    }
+
+    public String callCoalPillar(String serverUrl, ContourRequest request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<ContourRequest> httpEntity = new HttpEntity<>(request, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                serverUrl + "/coal-pillar-dxf/", httpEntity, String.class);
+
+        return response.getBody();
+    }
 }
