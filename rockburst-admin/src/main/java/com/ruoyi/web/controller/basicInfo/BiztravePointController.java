@@ -492,6 +492,13 @@ public class BiztravePointController extends BaseController
                 }
                 BizTravePoint bizTravePoint = new BizTravePoint();
                 BeanUtils.copyProperties(dtos.get(i),bizTravePoint);
+                bizTravePoint.setIsVertex(2);
+                if(no == 1l){
+                    bizTravePoint.setIsVertex(0);
+                }
+                if(no == dtos.size()){
+                    bizTravePoint.setIsVertex(2);
+                }
                 bizTravePoint.setNo(Long.parseLong(no+""));
                 no = no+1;
                 for (TunnelEntity tunnel : tunnelEntityList) {

@@ -40,6 +40,14 @@ public class SysUser extends BaseEntity
     @Excel(name = "用户名称")
     private String nickName;
 
+    /** 用户账号 */
+    @Excel(name = "公司")
+    private Long companyId;
+
+    /** 用户账号 */
+    @Excel(name = "煤矿")
+    private Long mineId;
+
     /** 用户邮箱 */
     @Excel(name = "用户邮箱")
     private String email;
@@ -334,5 +342,21 @@ public class SysUser extends BaseEntity
 
     public void setCid(String cid) {
         this.cid = cid;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Long getMineId() {
+        return mineId;
+    }
+
+    public void setMineId(Long mineId) {
+        this.mineId = mineId;
     }
 }

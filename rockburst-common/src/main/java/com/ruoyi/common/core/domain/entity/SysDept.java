@@ -1,5 +1,6 @@
 package com.ruoyi.common.core.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.ruoyi.common.core.domain.BaseEntity;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -28,6 +29,12 @@ public class SysDept extends BaseEntity
     /** 父部门ID */
     private Long parentId;
 
+    /** 矿井ID */
+    private Long mineId;
+
+    /** 公司ID */
+    private Long companyId;
+
     /** 祖级列表 */
     private String ancestors;
 
@@ -53,14 +60,31 @@ public class SysDept extends BaseEntity
     private String delFlag;
 
     /** 父部门名称 */
+    @TableField(exist = false)
     private String parentName;
 
     /** 施工单位 */
     private Long constructionUnitId;
     
     /** 子部门 */
+    @TableField(exist = false)
     private List<SysDept> children = new ArrayList<SysDept>();
 
+    public Long getMineId() {
+        return mineId;
+    }
+
+    public void setMineId(Long mineId) {
+        this.mineId = mineId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
 
     public Long getConstructionUnitId() {
         return constructionUnitId;

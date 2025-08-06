@@ -39,6 +39,10 @@ public class BizMine extends BaseSelfEntity
     private String mineCode;
 
     /** 矿井名称 */
+    @ApiModelProperty(value = "坐标")
+    private String axis;
+
+    /** 矿井名称 */
     @ApiModelProperty(value = "矿井名称")
     @TableField("mine_name")
     private String mineName;
@@ -227,5 +231,10 @@ public class BizMine extends BaseSelfEntity
     @ApiModelProperty(value = "中心点")
     @TableField()
     private String center;
+
+
+    /** 矿图id */
+    @ApiModelProperty(value = "jituanid")
+    private Long companyId;
 
 }

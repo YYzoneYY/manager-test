@@ -315,6 +315,120 @@ public class SetOutController extends BaseController
 
 
 
+
+    //    @GetMapping("/draw-all")
+    @ApiOperation("draw-all-colorbar")
+    @PostMapping("/draw-all-colorbar")
+    public ResponseEntity<byte[]> drawAllColorbar(@RequestBody DrawAll all) {
+        Map<String, Object> request = new HashMap<>();
+        String josn = getconfigbykey("config");
+
+        try {
+
+
+            Map<String,Object> map =  JSONUtil.toBean(josn,Map.class);
+            request.putAll(map);
+            if(all.getXmin() != null ){
+                request.put("xmin", all.getXmin());
+                request.put("xmax", all.getXmax());
+                request.put("ymin", all.getYmin());
+                request.put("ymax", all.getYmax());
+                request.put("multiple", all.getMultiple());
+                request.put("start_level", all.getStartLevel());
+                request.put("end_level", all.getEndLevel());
+                request.put("level", all.getLevel());
+
+            }
+
+            String bigJson = "";
+            String smallJson = "";
+            String gobJson = "";
+            String contourJson = "";
+
+            List<Map> bigData = new ArrayList<>();
+            List<Map> smallData = new ArrayList<>();
+            List<Map> gobData = new ArrayList<>();
+            List<Map> contourData = new ArrayList<>();
+            List<Map> foldData= new ArrayList<>();
+            List<Map> coalPillarData= new ArrayList<>();
+            request.put("big_data", bigData);
+            request.put("small_data", smallData);
+            request.put("gob_data", gobData);
+            request.put("contour_data", contourData);
+            request.put("fold_data", foldData);
+            request.put("coal_pillar_data", coalPillarData);
+
+
+            if(all != null && all.getDraws() != null && all.getDraws().size() > 0){
+                for (Draw draw : all.getDraws()) {
+                    if(draw.getName().equals("big_fault_result")){
+                        getentitybykey("big_fault_result");
+//                        bigJson = redisCache.getCacheObject("big_fault_result");
+                        bigJson = getentitybykey("big_fault_result");
+                        bigData = JSONUtil.toList(new JSONArray(bigJson), Map.class);
+                        request.put("big_data", bigData);
+
+                    }
+                    if(draw.getName().equals("small_fault_result")){
+//                        smallJson = redisCache.getCacheObject("small_fault_result");
+                        smallJson = getentitybykey("small_fault_result");
+
+                        smallData = JSONUtil.toList(new JSONArray(smallJson), Map.class);
+                        request.put("small_data", smallData);
+
+                    }
+                    if(draw.getName().equals("gob_result")){
+//                        gobJson = redisCache.getCacheObject("gob_result");
+                        gobJson = getentitybykey("gob_result");
+
+                        gobData = JSONUtil.toList(new JSONArray(gobJson), Map.class);
+                        request.put("gob_data", gobData);
+
+                    }
+                    if(draw.getName().equals("contour_result")){
+//                        contourJson = redisCache.getCacheObject("contour_result");
+                        contourJson = getentitybykey("contour_result");
+
+                        contourData = JSONUtil.toList(new JSONArray(contourJson), Map.class);
+                        request.put("contour_data", contourData);
+
+                    }
+                    if(draw.getName().equals("fold_result")){
+//                        contourJson = redisCache.getCacheObject("contour_result");
+                        contourJson = getentitybykey("fold_result");
+
+                        contourData = JSONUtil.toList(new JSONArray(contourJson), Map.class);
+                        request.put("fold_data", contourData);
+
+                    }if(draw.getName().equals("coal_pillar_result")){
+//                        contourJson = redisCache.getCacheObject("contour_result");
+                        contourJson = getentitybykey("coal_pillar_result");
+
+                        contourData = JSONUtil.toList(new JSONArray(contourJson), Map.class);
+                        request.put("coal_pillar_data", contourData);
+
+                    }
+                }
+            }
+
+            // 请求绘图服务
+            byte[] imageBytes = callDrawAllAndGetStream(fastApiBaseUrl+"/draw-all-colorbar/", request);
+
+//            redisByteTemplate.opsForValue().set("all", imageBytes);
+            // 构建响应
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+            headers.setContentDisposition(ContentDisposition.inline().filename("result.png").build());
+
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
     //    @GetMapping("/draw-all")
     @ApiOperation("draw-all")
     @PostMapping("/draw-all")

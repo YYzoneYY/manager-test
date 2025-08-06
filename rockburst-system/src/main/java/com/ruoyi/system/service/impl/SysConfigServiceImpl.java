@@ -6,6 +6,7 @@ import javax.annotation.PostConstruct;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.token.TokenService;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.annotation.DataSource;
 import com.ruoyi.common.constant.CacheConstants;
@@ -32,6 +33,7 @@ public class SysConfigServiceImpl implements ISysConfigService
 
     @Autowired
     private RedisCache redisCache;
+
 
     /**
      * 项目启动时，初始化参数到缓存
@@ -66,19 +68,57 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public String selectConfigByKey(String configKey)
     {
-        String configValue = Convert.toStr(redisCache.getCacheObject(getCacheKey(configKey)));
-        if (StringUtils.isNotEmpty(configValue))
-        {
-            return configValue;
-        }
+//        String configValue = Convert.toStr(redisCache.getCacheObject(getCacheKey(configKey)));
+//        if (StringUtils.isNotEmpty(configValue))
+//        {
+//            return configValue;
+//        }
+
         SysConfig config = new SysConfig();
         config.setConfigKey(configKey);
+
         SysConfig retConfig = configMapper.selectConfig(config);
         if (StringUtils.isNotNull(retConfig))
         {
-            redisCache.setCacheObject(getCacheKey(configKey), retConfig.getConfigValue());
+//            redisCache.setCacheObject(getCacheKey(configKey), retConfig.getConfigValue());
             return retConfig.getConfigValue();
         }
+        return StringUtils.EMPTY;
+    }
+
+    @Override
+    public String selectConfigByKeyByMine(String configKey, Long mineId, Long companyId) {
+        //        String configValue = Convert.toStr(redisCache.getCacheObject(getCacheKey(configKey)));
+//        if (StringUtils.isNotEmpty(configValue))
+//        {
+//            return configValue;
+//        }
+
+        QueryWrapper<SysConfig> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(SysConfig::getConfigType, "Y");
+        List<SysConfig> sysConfigs = configMapper.selectList(queryWrapper);
+        boolean contains = sysConfigs.stream()
+                .anyMatch(config -> configKey.equals(config.getConfigKey()));
+        if (contains){
+            SysConfig config = new SysConfig();
+            config.setConfigKey(configKey);
+            SysConfig retConfig = configMapper.selectConfig(config);
+            return retConfig.getConfigValue();
+        }else {
+            SysConfig config = new SysConfig();
+            config.setConfigKey(configKey);
+            config.setMineId(mineId);
+            config.setCompanyId(companyId);
+
+            SysConfig retConfig = configMapper.selectConfig(config);
+
+            if (StringUtils.isNotNull(retConfig))
+            {
+//            redisCache.setCacheObject(getCacheKey(configKey), retConfig.getConfigValue());
+                return retConfig.getConfigValue();
+            }
+        }
+
         return StringUtils.EMPTY;
     }
 

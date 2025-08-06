@@ -1,6 +1,7 @@
 package com.ruoyi.system.domain.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -9,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 矿井管理对象 biz_mine
@@ -26,13 +28,22 @@ public class BizMineDto
     @TableId(type = IdType.AUTO)
     private Long mineId;
 
+    /** 矿井的唯一标识符 */
+    @ApiModelProperty(value = "矿井ids")
+    private List<Long> mineIds;
+
     /** 焊矿编码 */
     @ApiModelProperty(value = "焊矿编码")
     private String mineCode;
 
+
     /** 矿井名称 */
     @ApiModelProperty(value = "矿井名称")
     private String mineName;
+
+    /** 矿井名称 */
+    @ApiModelProperty(value = "坐标")
+    private String axis;
 
     /** 社会统一代码 */
     @ApiModelProperty(value = "社会统一代码")
@@ -178,8 +189,18 @@ public class BizMineDto
     private String remark;
 
     /** 矿图id */
+    @ApiModelProperty(value = "jituanid")
+    private Long companyId;
+
+    /** 矿图id */
     @ApiModelProperty(value = "矿图id")
     private Long tableId;
 
+    @ApiModelProperty(value = "svg")
+    @TableField()
+    private String svg;
 
+    @ApiModelProperty(value = "中心点")
+    @TableField()
+    private String center;
 }

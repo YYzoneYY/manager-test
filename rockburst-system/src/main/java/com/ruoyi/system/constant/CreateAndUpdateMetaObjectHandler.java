@@ -3,6 +3,7 @@ package com.ruoyi.system.constant;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpStatus;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import com.ruoyi.common.config.TenantContext;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
 import com.ruoyi.common.core.domain.BaseToLongEntity;
 import com.ruoyi.common.core.domain.entity.SysUser;
@@ -28,6 +29,12 @@ public class CreateAndUpdateMetaObjectHandler implements MetaObjectHandler {
     public void insertFill(MetaObject metaObject) {
         log.info("公共字段自动填充[insert]...param: {}", metaObject);
         try {
+            Long mineId = TenantContext.getMineId();
+            if (mineId != null) {
+                // 如果实体类中存在 mineId 字段，自动填充
+                this.strictInsertFill(metaObject, "mineId", Long.class, mineId);
+            }
+
             if (ObjectUtil.isNotNull(metaObject) && metaObject.getOriginalObject() instanceof BaseSelfEntity) {
                 BaseSelfEntity baseEntity = (BaseSelfEntity) metaObject.getOriginalObject();
                 Date current = ObjectUtil.isNotNull(baseEntity.getCreateTime())

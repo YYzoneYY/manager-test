@@ -1,5 +1,7 @@
 package com.ruoyi.web.controller.system;
 
+import io.swagger.annotations.ApiOperation;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -111,23 +113,47 @@ public class SysProfileController extends BaseController
         return error("修改密码异常，请联系管理员");
     }
 
+//    /**
+//     * 头像上传
+//     */
+//    @Log(title = "用户头像", businessType = BusinessType.UPDATE)
+//    @PostMapping("/avatar")
+//    public AjaxResult avatar(@RequestParam("avatarfile") MultipartFile file) throws Exception
+//    {
+//        if (!file.isEmpty())
+//        {
+//            LoginUser loginUser = getLoginUser();
+//            String avatar = FileUploadUtils1.upload(RuoYiConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION);
+//            if (userService.updateUserAvatar(loginUser.getUsername(), avatar))
+//            {
+//                AjaxResult ajax = AjaxResult.success();
+//                ajax.put("imgUrl", avatar);
+//                // 更新缓存用户头像
+//                loginUser.getUser().setAvatar(avatar);
+//                tokenService.setLoginUser(loginUser);
+//                return ajax;
+//            }
+//        }
+//        return error("上传图片异常，请联系管理员");
+//    }
+
     /**
      * 头像上传
      */
+    @ApiOperation("查询工程视频列表")
     @Log(title = "用户头像", businessType = BusinessType.UPDATE)
     @PostMapping("/avatar")
-    public AjaxResult avatar(@RequestParam("avatarfile") MultipartFile file) throws Exception
+    public AjaxResult avatar(@ParameterObject SysUser user) throws Exception
     {
-        if (!file.isEmpty())
+        if (StringUtils.isNotEmpty(user.getAvatar()))
         {
             LoginUser loginUser = getLoginUser();
-            String avatar = FileUploadUtils1.upload(RuoYiConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION);
-            if (userService.updateUserAvatar(loginUser.getUsername(), avatar))
+            if (userService.updateUserAvatar(loginUser.getUsername(), user.getAvatar()))
             {
                 AjaxResult ajax = AjaxResult.success();
-                ajax.put("imgUrl", avatar);
+                ajax.put("imgUrl", user.getAvatar());
                 // 更新缓存用户头像
-                loginUser.getUser().setAvatar(avatar);
+                loginUser.getUser().setAvatar(user.getAvatar());
                 tokenService.setLoginUser(loginUser);
                 return ajax;
             }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.system.service.ISysUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,8 @@ public class SysDictDataController extends BaseController
     @Autowired
     private ISysDictDataService dictDataService;
 
+    @Autowired
+    private ISysUserService userService;
     @Autowired
     private ISysDictTypeService dictTypeService;
 
@@ -97,6 +101,8 @@ public class SysDictDataController extends BaseController
     @PostMapping
     public AjaxResult add(@Validated @RequestBody SysDictData dict)
     {
+        SysUser usercurrent = userService.selectUserById(getUserId());
+        dict.setCompanyId(usercurrent.getCompanyId());
         dict.setCreateBy(getUsername());
         return toAjax(dictDataService.insertDictData(dict));
     }

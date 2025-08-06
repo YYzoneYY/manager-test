@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
+
+import com.ruoyi.common.core.domain.entity.SysDept;
+import com.ruoyi.framework.web.domain.server.Sys;
+import com.ruoyi.system.mapper.SysDeptMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +57,8 @@ public class TokenService
 
     @Autowired
     private RedisCache redisCache;
+    @Autowired
+    private SysDeptMapper sysDeptMapper;
 
     /**
      * 获取用户身份信息
@@ -111,7 +117,7 @@ public class TokenService
      * @param loginUser 用户信息
      * @return 令牌
      */
-    public String createToken(LoginUser loginUser)
+    public String createToken(LoginUser loginUser,Long mineId)
     {
         String token = IdUtils.fastUUID();
         loginUser.setToken(token);
@@ -120,6 +126,14 @@ public class TokenService
 
         Map<String, Object> claims = new HashMap<>();
         claims.put(Constants.LOGIN_USER_KEY, token);
+
+        SysDept sysDept = sysDeptMapper.selectById(loginUser.getDeptId());
+        if(sysDept != null && sysDept.getMineId() != null){
+            claims.put("mineId", sysDept.getMineId());
+        }
+        if(mineId != null){
+            claims.put("mineId", mineId);
+        }
         return createToken(claims);
     }
 
@@ -176,6 +190,8 @@ public class TokenService
      */
     private String createToken(Map<String, Object> claims)
     {
+//        Map<String, Object> claims = new HashMap<>();
+//        claims.put("mineId", mineId);
         String token = Jwts.builder()
                 .setClaims(claims)
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
@@ -208,13 +224,30 @@ public class TokenService
         return claims.getSubject();
     }
 
+
+    /**
+     * 从令牌中获取用户名
+     *
+     * @param token 令牌
+     * @return 用户名
+     */
+    public Long getMineIdFromToken(String token)
+    {
+        Claims claims = parseToken(token);
+        Object mineIdObj = claims.get("mineId"); // 这里 key 必须和你生成 token 时存入的 key 一致
+        if (mineIdObj != null) {
+            return Long.valueOf(mineIdObj.toString());
+        }
+        return null;
+    }
+
     /**
      * 获取请求token
      *
      * @param request
      * @return token
      */
-    private String getToken(HttpServletRequest request)
+    public String getToken(HttpServletRequest request)
     {
         String token = request.getHeader(header);
         if (StringUtils.isNotEmpty(token) && token.startsWith(Constants.TOKEN_PREFIX))

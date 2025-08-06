@@ -26,7 +26,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
+//import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -64,10 +64,10 @@ public class SysFileInfoController {
                                      @RequestParam(value = "bucketName", required = false) String bucketName,
                                      @RequestParam(value = "isTemplate", required = false) String isTemplate) throws Exception {
         SysFileInfo in = sysFileInfoService.upload(file, bucketName, isTemplate);
-        int[] resolution = getVideoResolution(file);
+//        int[] resolution = getVideoResolution(file);
         String currentDir = System.getProperty("user.dir");
         Map<String,Object> map = BeanUtil.beanToMap(in);
-        map.put("resolution",resolution);
+//        map.put("resolution",resolution);
 // 构造保存路径（当前目录/static/文件名）
         String tempPath = currentDir + File.separator + "static" + File.separator + file.getOriginalFilename();
 
@@ -88,33 +88,33 @@ public class SysFileInfoController {
     }
     /**
      * 从 MultipartFile 获取视频分辨率
-     * @param file 上传的视频文件
+//     * @param file 上传的视频文件
      * @return [宽度, 高度]
      * @throws Exception 异常处理
      */
-    public static int[] getVideoResolution(MultipartFile file) throws Exception {
-        // 创建临时文件并写入上传内容
-        File tempFile = File.createTempFile("upload_", ".mp4");
-        tempFile.deleteOnExit(); // JVM退出自动删除
-
-        try (InputStream in = file.getInputStream();
-             OutputStream out = new FileOutputStream(tempFile)) {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-        }
-
-        // 使用 JavaCV 获取视频宽高
-        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile)) {
-            grabber.start();
-            int width = grabber.getImageWidth();
-            int height = grabber.getImageHeight();
-            grabber.stop();
-            return new int[]{width, height};
-        }
-    }
+//    public static int[] getVideoResolution(MultipartFile file) throws Exception {
+//        // 创建临时文件并写入上传内容
+//        File tempFile = File.createTempFile("upload_", ".mp4");
+//        tempFile.deleteOnExit(); // JVM退出自动删除
+//
+//        try (InputStream in = file.getInputStream();
+//             OutputStream out = new FileOutputStream(tempFile)) {
+//            byte[] buffer = new byte[8192];
+//            int bytesRead;
+//            while ((bytesRead = in.read(buffer)) != -1) {
+//                out.write(buffer, 0, bytesRead);
+//            }
+//        }
+//
+//        // 使用 JavaCV 获取视频宽高
+//        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempFile)) {
+//            grabber.start();
+//            int width = grabber.getImageWidth();
+//            int height = grabber.getImageHeight();
+//            grabber.stop();
+//            return new int[]{width, height};
+//        }
+//    }
     public String uploadFileToExternalServer(String filePath) {
         String url = fastApiBaseUrl+"/upload"; // 外部接口地址
 

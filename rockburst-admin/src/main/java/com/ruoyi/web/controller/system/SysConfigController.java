@@ -1,9 +1,14 @@
 package com.ruoyi.web.controller.system;
 
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.dto.SysConfigDto;
+import com.ruoyi.system.mapper.SysUserMapper;
+import com.ruoyi.system.service.ISysUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +41,15 @@ public class SysConfigController extends BaseController
 {
     @Autowired
     private ISysConfigService configService;
+
+    @Autowired
+    TokenService tokenService;
+
+    @Autowired
+    private ISysUserService userService;
+    @Autowired
+    private SysUserMapper sysUserMapper;
+
 
     /**
      * 获取参数配置列表
@@ -73,9 +87,15 @@ public class SysConfigController extends BaseController
      * 根据参数键名查询参数值
      */
     @GetMapping(value = "/configKey/{configKey}")
-    public AjaxResult getConfigKey(@PathVariable String configKey)
+    public AjaxResult getConfigKey(@PathVariable String configKey,HttpServletRequest request)
     {
-        return success(configService.selectConfigByKey(configKey));
+        String token = tokenService.getToken(request);
+        Long mineId = tokenService.getMineIdFromToken(token);
+        Long userId = getUserId();
+        SysUser user = sysUserMapper.selectUserById(userId);
+        String value = configService.selectConfigByKeyByMine(configKey,mineId,user.getCompanyId());
+        return success(value);
+//        return success(configService.selectConfigByKey(configKey));
     }
 
     /**
@@ -97,13 +117,22 @@ public class SysConfigController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:config:add')")
     @Log(title = "参数管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@Validated @RequestBody SysConfig config)
+    public AjaxResult add(@Validated @RequestBody SysConfig config, HttpServletRequest request)
     {
+
         if (!configService.checkConfigKeyUnique(config))
         {
             return error("新增参数'" + config.getConfigName() + "'失败，参数键名已存在");
         }
+        String token = tokenService.getToken(request);
+        Long mineId = tokenService.getMineIdFromToken(token);
+        if(mineId != null ){
+            config.setMineId(mineId);
+        }
+
+        SysUser usercurrent = userService.selectUserById(getUserId());
         config.setCreateBy(getUsername());
+        config.setCompanyId(usercurrent.getCompanyId());
         return toAjax(configService.insertConfig(config));
     }
 
@@ -113,12 +142,17 @@ public class SysConfigController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:config:edit')")
     @Log(title = "参数管理", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@Validated @RequestBody SysConfig config)
+    public AjaxResult edit(@Validated @RequestBody SysConfig config, HttpServletRequest request)
     {
         if (!configService.checkConfigKeyUnique(config))
         {
             return error("修改参数'" + config.getConfigName() + "'失败，参数键名已存在");
         }
+//        String token = tokenService.getToken(request);
+//        Long mineId = tokenService.getMineIdFromToken(token);
+//        if(mineId != null ){
+//            config.setMineId(mineId);
+//        }
         config.setUpdateBy(getUsername());
         return toAjax(configService.updateConfig(config));
     }

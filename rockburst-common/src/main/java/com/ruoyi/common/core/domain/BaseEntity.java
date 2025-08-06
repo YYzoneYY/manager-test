@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ruoyi.common.annotation.Excel;
 
 /**
  * Entity基类
@@ -23,6 +24,9 @@ public class BaseEntity implements Serializable
     @JsonIgnore
     @TableField(exist = false)
     private String searchValue;
+
+//    @Excel(name = "公司")
+    private Long companyId;
 
     /** 创建者 */
     private String createBy;
@@ -118,5 +122,13 @@ public class BaseEntity implements Serializable
     public void setParams(Map<String, Object> params)
     {
         this.params = params;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 }

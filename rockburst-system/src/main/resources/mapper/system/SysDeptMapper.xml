@@ -7,6 +7,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<resultMap type="SysDept" id="SysDeptResult">
 		<id     property="deptId"     column="dept_id"     />
 		<result property="parentId"   column="parent_id"   />
+		<result property="mineId"   column="mine_id"   />
+		<result property="companyId"   column="company_id"   />
 		<result property="constructionUnitId"   column="construction_unit_id"   />
 		<result property="ancestors"  column="ancestors"   />
 		<result property="deptName"   column="dept_name"   />
@@ -37,6 +39,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="parentId != null and parentId != 0">
 			AND parent_id = #{parentId}
 		</if>
+		<if test="mineId != null">
+			AND mine_id = #{mineId}
+		</if>
+		<if test="mineId == null">
+			AND mine_id is null
+		</if>
+		<if test="companyId != null">
+			AND company_id = #{companyId}
+		</if>
 		<if test="deptName != null and deptName != ''">
 			AND dept_name like concat('%', #{deptName}, '%')
 		</if>
@@ -60,7 +71,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</select>
     
     <select id="selectDeptById" parameterType="Long" resultMap="SysDeptResult">
-		select d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.phone, d.email, d.status,
+		select d.dept_id, d.mine_id, d.company_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.phone, d.email, d.status,
 			(select dept_name from sys_dept where dept_id = d.parent_id) parent_name
 		from sys_dept d
 		where d.dept_id = #{deptId}
@@ -92,6 +103,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  		insert into sys_dept(
  			<if test="deptId != null and deptId != 0">dept_id,</if>
  			<if test="parentId != null and parentId != 0">parent_id,</if>
+ 			<if test="mineId != null and mineId != 0">mine_id,</if>
+ 			<if test="companyId != null and companyId != 0">company_id,</if>
  			<if test="deptName != null and deptName != ''">dept_name,</if>
  			<if test="ancestors != null and ancestors != ''">ancestors,</if>
  			<if test="orderNum != null">order_num,</if>
@@ -104,6 +117,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  		)values(
  			<if test="deptId != null and deptId != 0">#{deptId},</if>
  			<if test="parentId != null and parentId != 0">#{parentId},</if>
+ 			<if test="mineId != null and mineId != 0">#{mineId},</if>
+ 			<if test="companyId != null and companyId != 0">#{companyId},</if>
  			<if test="deptName != null and deptName != ''">#{deptName},</if>
  			<if test="ancestors != null and ancestors != ''">#{ancestors},</if>
  			<if test="orderNum != null">#{orderNum},</if>

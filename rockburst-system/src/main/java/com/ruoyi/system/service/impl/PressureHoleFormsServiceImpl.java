@@ -168,7 +168,13 @@ public class PressureHoleFormsServiceImpl implements PressureHoleFormsService {
                 .collect(Collectors.toList());
         drillTypes.removeIf(c -> c.equals("CD"));
         PageHelper.startPage(pageNum, pageSize);
-        Page<ReportFormsDTO> page = bizProjectRecordMapper.queryDateByPage(startTime, endTime, drillTypes);
+        Page<ReportFormsDTO> page = new Page<>();
+        try {
+             page = bizProjectRecordMapper.queryDateByPage(startTime, endTime, drillTypes);
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         if (ListUtils.isNotNull(page.getResult())) {
             page.getResult().forEach(reportFormsDTO -> {
                 String constructionPersonnel = "";

@@ -8,6 +8,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     	<id     property="configId"      column="config_id"      />
         <result property="configName"    column="config_name"    />
         <result property="configKey"     column="config_key"     />
+        <result property="mineId"     column="mine_id"     />
+        <result property="companyId"     column="company_id"     />
         <result property="configValue"   column="config_value"   />
         <result property="configType"    column="config_type"    />
         <result property="createBy"      column="create_by"      />
@@ -27,6 +29,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="configId !=null">
 				and config_id = #{configId}
 			</if>
+            <if test="mineId !=null">
+                and mine_id = #{mineId}
+            </if>
+            <if test="companyId !=null">
+                and company_id = #{companyId}
+            </if>
 			<if test="configKey !=null and configKey != ''">
 				and config_key = #{configKey}
 			</if>

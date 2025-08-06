@@ -11,6 +11,7 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.service.ISysDeptService;
 import com.ruoyi.system.service.ISysPostService;
 import com.ruoyi.system.service.ISysRoleService;
@@ -23,6 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,16 +50,26 @@ public class SysUserController extends BaseController
 
     @Autowired
     private ISysPostService postService;
-
+    @Autowired
+    TokenService tokenService;
     /**
      * 获取用户列表
      */
     @ApiOperation("获取用户列表")
     @PreAuthorize("@ss.hasPermi('system:user:list')")
     @GetMapping("/list")
-    public TableDataInfo list(SysUser user)
+    public TableDataInfo list(SysUser user, HttpServletRequest request)
     {
         startPage();
+//        String token = tokenService.getToken(request);
+//        Long mineId = tokenService.getMineIdFromToken(token);
+//        if(mineId != null ){
+//            user.setMineId(mineId);
+//        }
+        SysUser usercurrent = userService.selectUserById(getUserId());
+//        user.setCreateBy(getUsername());
+        user.setCompanyId(usercurrent.getCompanyId());
+        user.setMineId(usercurrent.getMineId());
         List<SysUser> list = userService.selectUserList(user);
         return getDataTable(list);
     }
@@ -137,6 +149,9 @@ public class SysUserController extends BaseController
         }
         user.setCreateBy(getUsername());
         user.setPassword(SecurityUtils.encryptPassword(user.getPassword()));
+        SysUser usercurrent = userService.selectUserById(getUserId());
+        user.setCompanyId(usercurrent.getCompanyId());
+        user.setMineId(usercurrent.getMineId());
         return toAjax(userService.insertUser(user));
     }
 
@@ -248,6 +263,10 @@ public class SysUserController extends BaseController
     @GetMapping("/deptTree")
     public AjaxResult deptTree(SysDept dept)
     {
+        SysUser usercurrent = userService.selectUserById(getUserId());
+//        user.setCreateBy(getUsername());
+        dept.setCompanyId(usercurrent.getCompanyId());
+        dept.setMineId(usercurrent.getMineId());
         return success(deptService.selectDeptTreeList(dept));
     }
 }

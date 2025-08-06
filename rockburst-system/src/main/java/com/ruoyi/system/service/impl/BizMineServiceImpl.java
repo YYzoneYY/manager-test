@@ -55,6 +55,11 @@ public class BizMineServiceImpl  extends ServiceImpl<BizMineMapper, BizMine> imp
                 .like(StrUtil.isNotEmpty(bizMine.getMineCode()),BizMine::getMineCode,bizMine.getMineCode())
                 .like(StrUtil.isNotEmpty(bizMine.getSocialCreditCode()),BizMine::getSocialCreditCode,bizMine.getSocialCreditCode())
                 .like(StrUtil.isNotEmpty( bizMine.getMineName()), BizMine::getMineName, bizMine.getMineName())
+                .eq(bizMine.getCompanyId() != null , BizMine::getCompanyId, bizMine.getCompanyId())
+                .and(bizMine.getMineId() != null || (bizMine.getMineIds() != null && bizMine.getMineIds().size() > 0),  i->i.eq(bizMine.getMineId() != null , BizMine::getMineId,bizMine.getMineId())
+                        .or()
+                        .in(bizMine.getMineIds() != null, BizMine::getMineId,bizMine.getMineIds())
+                )
                 .eq(BizMine::getDelFlag, BizBaseConstant.DELFLAG_N);
         IPage<BizMine> list = bizMineMapper.selectPage(pagination,queryWrapper);
         return new MPage<>(list);

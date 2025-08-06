@@ -14,7 +14,7 @@ import com.ruoyi.system.domain.utils.ResultCode;
 import com.ruoyi.system.mapper.SysFileInfoMapper;
 import com.ruoyi.system.service.UploadService;
 import lombok.extern.slf4j.Slf4j;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
+//import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -168,7 +168,8 @@ public class UploadServiceImpl implements UploadService {
             String filePath = fileService.getFilePath(fileUploadInfo.getBucketName().toLowerCase(), fileUploadInfo.getFileName());
             sysFileInfo.setFileUrl(filePath);
             InputStream inputStream = this.getFileInputStream(sysFileInfo.getFileNewName(), bucketName);
-            int[] resolution = getVideoResolution(inputStream);
+//            int[] resolution = getVideoResolution(inputStream);
+//            int[] resolution = new int[0,0];
             if (sysFileInfoMapper.insert(sysFileInfo) < 1) {
                 throw new RuntimeException("文件信息插入库失败!");
             }
@@ -207,7 +208,7 @@ public class UploadServiceImpl implements UploadService {
 //            String apiResult = restTemplate.postForObject("http://192.168.31.155:7000/upload", requestEntity, String.class);
             SysFileInfo ssa =  sysFileInfoMapper.selectById(sysFileInfo.getFileId());
             Map<String,Object> map = BeanUtil.beanToMap(ssa);
-            map.put("resolution",resolution);
+//            map.put("resolution",resolution);
             return ResponseResult.success(map);
 //            return ResponseResult.success(filePath);
         }
@@ -274,28 +275,28 @@ public class UploadServiceImpl implements UploadService {
 //        }
 //    }
 
-    public static int[] getVideoResolution(InputStream inputStream) throws Exception {
-        // 将 InputStream 写入临时文件
-        File tempVideo = File.createTempFile("temp_video", ".mp4");
-        tempVideo.deleteOnExit();
-
-        try (OutputStream out = new FileOutputStream(tempVideo)) {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-        }
-
-        // 使用 JavaCV 读取临时文件的视频信息
-        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempVideo)) {
-            grabber.start();
-            int width = grabber.getImageWidth();
-            int height = grabber.getImageHeight();
-            grabber.stop();
-            return new int[]{width, height};
-        }
-    }
+//    public static int[] getVideoResolution(InputStream inputStream) throws Exception {
+//        // 将 InputStream 写入临时文件
+//        File tempVideo = File.createTempFile("temp_video", ".mp4");
+//        tempVideo.deleteOnExit();
+//
+//        try (OutputStream out = new FileOutputStream(tempVideo)) {
+//            byte[] buffer = new byte[8192];
+//            int bytesRead;
+//            while ((bytesRead = inputStream.read(buffer)) != -1) {
+//                out.write(buffer, 0, bytesRead);
+//            }
+//        }
+//
+//        // 使用 JavaCV 读取临时文件的视频信息
+//        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(tempVideo)) {
+//            grabber.start();
+//            int width = grabber.getImageWidth();
+//            int height = grabber.getImageHeight();
+//            grabber.stop();
+//            return new int[]{width, height};
+//        }
+//    }
 
     public FileSystemResource convertInputStreamToFileSystemResource(InputStream inputStream, String fileName) throws IOException {
         // 指定临时文件目录 + 指定文件名

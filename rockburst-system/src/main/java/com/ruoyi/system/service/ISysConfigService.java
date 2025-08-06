@@ -26,6 +26,8 @@ public interface ISysConfigService
      */
     public String selectConfigByKey(String configKey);
 
+    public String selectConfigByKeyByMine(String configKey,Long mineId,Long companyId);
+
     /**
      * 获取验证码开关
      * 

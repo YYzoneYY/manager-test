@@ -98,6 +98,11 @@ public class Constants
     /**
      * 令牌
      */
+    public static final String IDENTITY = "identity";
+
+    /**
+     * 令牌
+     */
     public static final String TOKEN = "token";
 
     /**

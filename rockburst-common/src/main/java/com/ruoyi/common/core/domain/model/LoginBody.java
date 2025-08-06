@@ -7,6 +7,11 @@ package com.ruoyi.common.core.domain.model;
  */
 public class LoginBody
 {
+
+    /**
+     * 用户名
+     */
+    private Long mineId;
     /**
      * 用户名
      */
@@ -36,6 +41,14 @@ public class LoginBody
      * 唯一标识
      */
     private String uuid;
+
+    public Long getMineId() {
+        return mineId;
+    }
+
+    public void setMineId(Long mineId) {
+        this.mineId = mineId;
+    }
 
     public String getUsername()
     {

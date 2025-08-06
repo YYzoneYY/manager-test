@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.ruoyi.common.config.TenantWrapper;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.system.domain.BizTravePoint;
@@ -41,7 +42,7 @@ public class BizTunnerlBarServiceImpl extends ServiceImpl<BizTunnelBarMapper, Bi
 
     @Override
     public MPage<BizTunnelBarVo> selectEntityList(BizTunnelBarDto dto, Pagination pagination) {
-        MPJLambdaWrapper<BizTunnelBar> queryWrapper = new MPJLambdaWrapper<>();
+        TenantWrapper<BizTunnelBar> queryWrapper = new TenantWrapper<>();
         queryWrapper
                 .selectAll(BizTunnelBar.class)
                 .selectAs("t1",BizTravePoint::getPointName,BizTunnelBarVo::getStartPointName)

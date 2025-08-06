@@ -3,6 +3,12 @@ package com.ruoyi.framework.interceptor;
 import java.lang.reflect.Method;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.constant.Constants;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.config.TenantContext;
+import com.ruoyi.framework.web.service.TokenService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -18,10 +24,41 @@ import com.ruoyi.common.utils.ServletUtils;
  */
 @Component
 public abstract class RepeatSubmitInterceptor implements HandlerInterceptor
+
 {
+    @Autowired
+    private TokenService tokenService;
+
+
+    private String getToken(HttpServletRequest request)
+    {
+        String token = request.getHeader("Authorization");
+        if (StringUtils.isNotEmpty(token) && token.startsWith(Constants.TOKEN_PREFIX))
+        {
+            token = token.replace(Constants.TOKEN_PREFIX, "");
+        }
+        return token;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception
     {
+        String uri = request.getRequestURI();
+        System.out.println("uri = " + uri);
+        if (uri.contains("/login") || uri.contains("/doc.html")
+                || uri.endsWith(".js") || uri.endsWith(".css")
+                || uri.endsWith(".png") || uri.endsWith(".jpg")
+                || uri.endsWith(".jpeg") || uri.endsWith(".ico")
+                || uri.contains("/swagger") || uri.contains("/webjars")
+                || uri.contains("/swagger-resources") || uri.contains("/v3/api-docs")
+                || uri.contains("/v2/api-docs") || uri.contains("/swagger-ui")) {
+            return true; // 登录、文档、静态资源直接放行
+        }
+        String token = getToken(request);
+        System.out.println("token = " + token);
+        Long mineId = tokenService.getMineIdFromToken(token);
+//        String mineId = tokenService.getUsernameFromToken(token);
+        TenantContext.setMineId(mineId);
         if (handler instanceof HandlerMethod)
         {
             HandlerMethod handlerMethod = (HandlerMethod) handler;

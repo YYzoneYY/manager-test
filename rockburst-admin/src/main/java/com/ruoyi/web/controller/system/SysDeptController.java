@@ -5,15 +5,19 @@ import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysDept;
+import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.service.ISysDeptService;
+import com.ruoyi.system.service.ISysUserService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -28,6 +32,11 @@ public class SysDeptController extends BaseController
     @Autowired
     private ISysDeptService deptService;
 
+
+    @Autowired
+    private ISysUserService userService;
+    @Autowired
+    TokenService tokenService;
     /**
      * 获取部门列表
      */
@@ -35,6 +44,10 @@ public class SysDeptController extends BaseController
     @GetMapping("/list")
     public AjaxResult list(SysDept dept)
     {
+        SysUser usercurrent = userService.selectUserById(getUserId());
+//        user.setCreateBy(getUsername());
+        dept.setCompanyId(usercurrent.getCompanyId());
+        dept.setMineId(usercurrent.getMineId());
         List<SysDept> depts = deptService.selectDeptList(dept);
         return success(depts);
     }
@@ -68,7 +81,7 @@ public class SysDeptController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:dept:add')")
     @Log(title = "部门管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@Validated @RequestBody SysDept dept)
+    public AjaxResult add(@Validated @RequestBody SysDept dept, HttpServletRequest request)
     {
         if (!deptService.checkDeptNameUnique(dept))
         {
@@ -78,7 +91,13 @@ public class SysDeptController extends BaseController
         {
             return error("新增部门'" + dept.getDeptName() + "'失败，施工单位已存在");
         }
-
+        String token = tokenService.getToken(request);
+        Long mineId = tokenService.getMineIdFromToken(token);
+        if(mineId != null ){
+            dept.setMineId(mineId);
+        }
+        SysUser usercurrent = userService.selectUserById(getUserId());
+        dept.setCompanyId(usercurrent.getCompanyId());
         dept.setCreateBy(getUsername());
         return toAjax(deptService.insertDept(dept));
     }

@@ -59,7 +59,7 @@ public class SysLoginService
      * @param uuid 唯一标识
      * @return 结果
      */
-    public String login(String username, String password, String code, String uuid, String cid)
+    public String login(String username, String password, String code, String uuid, String cid,Long mineId)
     {
         // 验证码校验
 //        validateCaptcha(username, code, uuid);
@@ -99,7 +99,7 @@ public class SysLoginService
 
         }
         // 生成token
-        return tokenService.createToken(loginUser);
+        return tokenService.createToken(loginUser,mineId);
     }
 
 

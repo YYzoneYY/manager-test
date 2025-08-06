@@ -2,6 +2,9 @@ package com.ruoyi.system.domain;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
@@ -28,6 +31,10 @@ public class SysConfig extends BaseEntity
     /** 参数键名 */
     @Excel(name = "参数键名")
     private String configKey;
+
+
+    private Long mineId;
+
 
     /** 参数键值 */
     @Excel(name = "参数键值")
@@ -92,7 +99,15 @@ public class SysConfig extends BaseEntity
     {
         this.configType = configType;
     }
-    
+
+    public Long getMineId() {
+        return mineId;
+    }
+
+    public void setMineId(Long mineId) {
+        this.mineId = mineId;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
