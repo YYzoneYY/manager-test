@@ -61,8 +61,18 @@ public class WarnSchemeEntity extends BusinessBaseEntity implements Serializable
     @TableField(value = "growth_rate_config", typeHandler = JsonListTypeHandler.class)
     private List<Map<String, Object>> growthRateConfig;
 
+    @ApiModelProperty("状态")
+    @TableField(value = "status")
+    private String status;
+
     @ApiModelProperty("删除标志(0存在2删除)")
     @TableField("del_flag")
     @TableLogic(value = "0", delval = "2")
     private String delFlag;
+
+    @ApiModelProperty("所属矿")
+    private Long mineId;
+
+    @ApiModelProperty("所属公司")
+    private Long companyId;
 }

@@ -16,6 +16,11 @@ public class ConstantsInfo {
     //禁用
     public static final String DISABLE = "1";
 
+    // 方案启用
+    public static final String SCHEME_ENABLE = "1";
+    // 方案未启用
+    public static final String SCHEME_DISABLE = "0";
+
     //未删除(逻辑)
     public static final String ZERO_DEL_FLAG = "0";
     //已删除(逻辑)

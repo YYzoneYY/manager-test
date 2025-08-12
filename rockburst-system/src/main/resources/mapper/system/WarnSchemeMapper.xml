@@ -2,4 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.WarnSchemeMapper">
 
+    <select id="queryPage" resultType="com.ruoyi.system.domain.vo.WarnSchemeVO">
+        select ws.warn_scheme_id as warnSchemeId,
+               ws.warn_scheme_name as warnSchemeName,
+               ws.scene_type as sceneType,
+               ws.workface_id as workFaceId,
+               ws.threshold_config as thresholdConfig,
+               ws.increment_config as incrementConfig,
+               ws.growth_rate_config as growthRateConfig,
+               ws.status as status
+        from warn_scheme as ws
+        <where>
+            <if test="warnSchemeSelectDTO.workFaceId != null and warnSchemeSelectDTO.workFaceId != ''">
+                and ws.workface_id = #{warnSchemeSelectDTO.workFaceId}
+            </if>
+            <if test="warnSchemeSelectDTO.sceneType != null and warnSchemeSelectDTO.sceneType != ''">
+                and ws.scene_type = #{warnSchemeSelectDTO.sceneType}
+            </if>
+            <if test="warnSchemeSelectDTO.status != null and warnSchemeSelectDTO.status != ''">
+                and ws.status = #{warnSchemeSelectDTO.status}
+            </if>
+            and ws.mine_id = #{mineId} and ws.del_flag = '0'
+        </where>
+        order by ws.create_time desc
+    </select>
 </mapper>

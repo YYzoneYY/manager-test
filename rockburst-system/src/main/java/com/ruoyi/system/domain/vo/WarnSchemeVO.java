@@ -1,6 +1,8 @@
-package com.ruoyi.system.domain.dto;
+package com.ruoyi.system.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.TableField;
+import com.ruoyi.system.domain.dto.GrowthRateConfigDTO;
+import com.ruoyi.system.domain.dto.IncrementConfigDTO;
+import com.ruoyi.system.domain.dto.ThresholdConfigDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -9,12 +11,12 @@ import java.util.Map;
 
 /**
  * @author: shikai
- * @date: 2024/12/2
+ * @date: 2025/8/11
  * @description:
  */
 
 @Data
-public class WarnSchemeDTO {
+public class WarnSchemeVO {
 
     @ApiModelProperty("预警方案id")
     private Long warnSchemeId;
@@ -28,8 +30,11 @@ public class WarnSchemeDTO {
     @ApiModelProperty("工作面id")
     private Long workFaceId;
 
-    @ApiModelProperty("静默时间")
-    private String quietHour;
+    private List<Map<String, Object>> thresholdConfig;
+
+    private List<Map<String, Object>> incrementConfig;
+
+    private List<Map<String, Object>> growthRateConfig;
 
     @ApiModelProperty(value = "预警阈值配置")
     private List<ThresholdConfigDTO> thresholdConfigDTOS;
@@ -40,7 +45,12 @@ public class WarnSchemeDTO {
     @ApiModelProperty(value = "预警增速配置")
     private List<GrowthRateConfigDTO> growthRateConfigDTOS;
 
+    @ApiModelProperty("增量/速计算H")
+    private String duration;
+
     @ApiModelProperty("状态")
     private String status;
 
+    @ApiModelProperty("所属工作面名称")
+    private String workFaceNameFmt;
 }
