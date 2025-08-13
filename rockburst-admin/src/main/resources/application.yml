@@ -100,6 +100,14 @@ spring:
     rest:
       uris: localhost:9200
 
+easy-es:
+  enable: true
+  address: 192.168.31.156:9200
+  global-config:
+    print-dsl: true
+    process_index_mode: smoothly
+    enable-index-alias: false
+
 # token配置
 token:
   # 令牌自定义标识

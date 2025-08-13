@@ -1,5 +1,6 @@
 package com.ruoyi;
 
+import org.dromara.easyes.spring.annotation.EsMapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
  * @author ruoyi
  */
 @SpringBootApplication(exclude = { DataSourceAutoConfiguration.class },scanBasePackages = "com.ruoyi")
+@EsMapperScan("com.ruoyi.system.EsMapper")
 public class RockBurstApplication
 {
     public static void main(String[] args)
