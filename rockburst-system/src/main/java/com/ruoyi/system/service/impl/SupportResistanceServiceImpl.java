@@ -59,7 +59,7 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
      * @return 返回结果
      */
     @Override
-    public int addMeasure(SupportResistanceDTO supportResistanceDTO) {
+    public int addMeasure(SupportResistanceDTO supportResistanceDTO, Long mineId) {
         int flag = 0;
         if (ObjectUtil.isNull(supportResistanceDTO)) {
             throw new RuntimeException("参数错误,不能为空");
@@ -73,7 +73,7 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         }
         SupportResistanceEntity supportResistanceEntity = new SupportResistanceEntity();
         BeanUtils.copyProperties(supportResistanceDTO, supportResistanceEntity);
-        String maxMeasureNum = supportResistanceMapper.selectMaxMeasureNum();
+        String maxMeasureNum = supportResistanceMapper.selectMaxMeasureNum(mineId);
         if (maxMeasureNum.equals("0")) {
             supportResistanceEntity.setMeasureNum(ConstantsInfo.SUPPORT_RESISTANCE_INITIAL_VALUE);
         } else {
@@ -83,6 +83,7 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
         supportResistanceEntity.setCreateTime(System.currentTimeMillis());
         supportResistanceEntity.setCreateBy(SecurityUtils.getUserId());
         supportResistanceEntity.setTag(ConstantsInfo.MANUALLY_ADD);
+        supportResistanceEntity.setMineId(mineId);
         supportResistanceEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = supportResistanceMapper.insert(supportResistanceEntity);
         if (flag <= 0) {
@@ -146,7 +147,7 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
      * @return 返回结果
      */
     @Override
-    public TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Integer pageNum, Integer pageSize) {
+    public TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Long mineId, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -155,7 +156,7 @@ public class SupportResistanceServiceImpl extends ServiceImpl<SupportResistanceM
             pageSize = 10;
         }
         PageHelper.startPage(pageNum, pageSize);
-        Page<SupportResistanceVO> page = supportResistanceMapper.selectQueryPage(measureSelectDTO);
+        Page<SupportResistanceVO> page = supportResistanceMapper.selectQueryPage(measureSelectDTO, mineId);
         Page<SupportResistanceVO> resistanceVOPage = getListFmt(page);
         result.setTotal(resistanceVOPage.getTotal());
         result.setRows(resistanceVOPage.getResult());

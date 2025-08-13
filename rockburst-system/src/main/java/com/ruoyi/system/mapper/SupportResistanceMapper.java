@@ -6,6 +6,7 @@ import com.ruoyi.system.domain.Entity.SupportResistanceEntity;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
 import com.ruoyi.system.domain.vo.SupportResistanceVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author: shikai
@@ -16,7 +17,8 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface SupportResistanceMapper extends BaseMapper<SupportResistanceEntity> {
 
-    String selectMaxMeasureNum();
+    String selectMaxMeasureNum(@Param("mineId") Long mineId);
 
-    Page<SupportResistanceVO> selectQueryPage(MeasureSelectDTO measureSelectDTO);
+    Page<SupportResistanceVO> selectQueryPage(@Param("measureSelectDTO") MeasureSelectDTO measureSelectDTO,
+                                              @Param("mineId") Long mineId);
 }

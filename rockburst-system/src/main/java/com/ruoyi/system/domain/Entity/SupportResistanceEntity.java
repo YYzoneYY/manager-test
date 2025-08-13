@@ -118,4 +118,12 @@ public class SupportResistanceEntity extends BusinessBaseEntity implements Seria
     @ApiModelProperty("标识(1-手动新增，2-数采自动接入)")
     @TableField(value = "tag")
     private String tag;
+
+    @ApiModelProperty("所属矿")
+    @TableField(value = "mine_id")
+    private Long mineId;
+
+    @ApiModelProperty("所属公司")
+    @TableField(value = "company_id")
+    private Long companyId;
 }

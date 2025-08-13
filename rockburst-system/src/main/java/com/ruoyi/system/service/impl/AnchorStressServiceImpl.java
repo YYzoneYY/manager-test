@@ -59,14 +59,14 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
      * @return 返回结果
      */
     @Override
-    public int addMeasure(AnchorCableStressDTO anchorCableStressDTO) {
+    public int addMeasure(AnchorCableStressDTO anchorCableStressDTO, Long mineId) {
         int flag = 0;
         if (ObjectUtil.isNull(anchorCableStressDTO)) {
             throw new RuntimeException("参数错误,不能为空");
         }
         AnchorCableStressEntity anchorCableStressEntity = new AnchorCableStressEntity();
         BeanUtils.copyProperties(anchorCableStressDTO, anchorCableStressEntity);
-        String maxMeasureNum = anchorCableStressMapper.selectMaxMeasureNum(anchorCableStressDTO.getSensorType());
+        String maxMeasureNum = anchorCableStressMapper.selectMaxMeasureNum(anchorCableStressDTO.getSensorType(), mineId);
 
         if (maxMeasureNum.equals("0")) {
             if (anchorCableStressDTO.getSensorType().equals(ConstantsInfo.ANCHOR_STRESS_TYPE)) {
@@ -81,6 +81,7 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
         }
         anchorCableStressEntity.setCreateTime(System.currentTimeMillis());
         anchorCableStressEntity.setCreateBy(SecurityUtils.getUserId());
+        anchorCableStressEntity.setMineId(mineId);
         anchorCableStressEntity.setTag(ConstantsInfo.MANUALLY_ADD);
         anchorCableStressEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = anchorCableStressMapper.insert(anchorCableStressEntity);
@@ -164,7 +165,7 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
      * @return 返回结果
      */
     @Override
-    public TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Integer pageNum, Integer pageSize) {
+    public TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Long mineId, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -173,7 +174,7 @@ public class AnchorStressServiceImpl extends ServiceImpl<AnchorCableStressMapper
             pageSize = 10;
         }
         PageHelper.startPage(pageNum, pageSize);
-        Page<AnchorCableStressVO> page = anchorCableStressMapper.selectQueryPage(measureSelectDTO);
+        Page<AnchorCableStressVO> page = anchorCableStressMapper.selectQueryPage(measureSelectDTO, mineId);
         Page<AnchorCableStressVO> resistanceVOPage = getListFmt(page);
         result.setTotal(resistanceVOPage.getTotal());
         result.setRows(resistanceVOPage.getResult());

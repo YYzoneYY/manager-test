@@ -18,7 +18,7 @@ public interface AnchorStressService extends IService<AnchorCableStressEntity> {
      * @param anchorCableStressDTO 参数DTO
      * @return 返回结果
      */
-    int addMeasure(AnchorCableStressDTO anchorCableStressDTO);
+    int addMeasure(AnchorCableStressDTO anchorCableStressDTO, Long mineId);
 
     /**
      * 测点修改
@@ -41,7 +41,7 @@ public interface AnchorStressService extends IService<AnchorCableStressEntity> {
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Integer pageNum, Integer pageSize);
+    TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Long mineId, Integer pageNum, Integer pageSize);
 
     /**
      * (批量)删除

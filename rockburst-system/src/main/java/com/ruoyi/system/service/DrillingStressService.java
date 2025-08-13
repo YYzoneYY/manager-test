@@ -18,7 +18,7 @@ public interface DrillingStressService extends IService<DrillingStressEntity> {
      * @param drillingStressDTO 参数DTO
      * @return 返回结果
      */
-    int addMeasure(DrillingStressDTO drillingStressDTO);
+    int addMeasure(DrillingStressDTO drillingStressDTO, Long mineId);
 
     /**
      * 测点编辑
@@ -41,7 +41,7 @@ public interface DrillingStressService extends IService<DrillingStressEntity> {
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Integer pageNum, Integer pageSize);
+    TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Long mineId, Integer pageNum, Integer pageSize);
 
     /**
      * 删除/批量删除

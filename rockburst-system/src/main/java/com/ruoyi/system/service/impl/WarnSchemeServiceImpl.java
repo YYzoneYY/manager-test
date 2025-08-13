@@ -201,8 +201,6 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
     @Override
     public TableData pageQueryList(WarnSchemeSelectDTO warnSchemeSelectDTO, Long mineId, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
-//        LoginUser loginUser = SecurityUtils.getLoginUser();
-//        String token = loginUser.getToken();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
         }

@@ -58,14 +58,14 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
      * @return 返回结果
      */
     @Override
-    public int addMeasure(DrillingStressDTO drillingStressDTO) {
+    public int addMeasure(DrillingStressDTO drillingStressDTO, Long mineId) {
         int flag = 0;
         if (ObjectUtil.isNull(drillingStressDTO)) {
             throw new RuntimeException("参数错误,不能为空");
         }
         DrillingStressEntity drillingStressEntity = new DrillingStressEntity();
         BeanUtils.copyProperties(drillingStressDTO, drillingStressEntity);
-        String maxMeasureNum = drillingStressMapper.selectMaxMeasureNum();
+        String maxMeasureNum = drillingStressMapper.selectMaxMeasureNum(mineId);
         if (maxMeasureNum.equals("0")) {
             drillingStressEntity.setMeasureNum(ConstantsInfo.Drill_Stress_INITIAL_VALUE);
         } else {
@@ -74,6 +74,7 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         }
         drillingStressEntity.setCreateTime(System.currentTimeMillis());
         drillingStressEntity.setCreateBy(SecurityUtils.getUserId());
+        drillingStressEntity.setMineId(mineId);
         drillingStressEntity.setTag(ConstantsInfo.MANUALLY_ADD);
         drillingStressEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = drillingStressMapper.insert(drillingStressEntity);
@@ -157,7 +158,7 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
      * @return 返回结果
      */
     @Override
-    public TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Integer pageNum, Integer pageSize) {
+    public TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Long mineId, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -166,7 +167,7 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
             pageSize = 10;
         }
         PageHelper.startPage(pageNum, pageSize);
-        Page<DrillingStressVO> page = drillingStressMapper.selectQueryPage(measureSelectDTO);
+        Page<DrillingStressVO> page = drillingStressMapper.selectQueryPage(measureSelectDTO, mineId);
         Page<DrillingStressVO> resistanceVOPage = getListFmt(page);
         result.setTotal(resistanceVOPage.getTotal());
         result.setRows(resistanceVOPage.getResult());

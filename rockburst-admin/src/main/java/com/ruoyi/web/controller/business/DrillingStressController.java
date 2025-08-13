@@ -1,6 +1,9 @@
 package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
@@ -9,6 +12,7 @@ import com.ruoyi.system.domain.dto.MeasureSelectDTO;
 import com.ruoyi.system.domain.dto.SupportResistanceDTO;
 import com.ruoyi.system.service.DrillingStressService;
 import io.swagger.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,10 +32,16 @@ public class DrillingStressController {
     @Resource
     private DrillingStressService drillingStressService;
 
+    @Autowired
+    private TokenService tokenService;
+
     @ApiOperation(value = "新增钻孔应力测点", notes = "新增钻孔应力测点")
     @PostMapping(value = "/add")
     public R<Object> addMeasure(@RequestBody DrillingStressDTO drillingStressDTO) {
-        return R.ok(this.drillingStressService.addMeasure(drillingStressDTO));
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        String token = loginUser.getToken();
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.drillingStressService.addMeasure(drillingStressDTO, mineId));
     }
 
     @ApiOperation(value = "修改钻孔应力测点", notes = "修改钻孔应力测点")
@@ -56,7 +66,10 @@ public class DrillingStressController {
     public R<Object> pageQueryList(@RequestBody MeasureSelectDTO measureSelectDTO,
                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
-        return R.ok(this.drillingStressService.pageQueryList(measureSelectDTO, pageNum, pageSize));
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        String token = loginUser.getToken();
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.drillingStressService.pageQueryList(measureSelectDTO, mineId, pageNum, pageSize));
     }
 
 

@@ -7,11 +7,11 @@
         SELECT ifnull(max(measure_num), 0)
         FROM support_resistance
         WHERE tag = '1'
-          AND del_flag = '0'
+          AND mine_id = #{mineId} AND del_flag = '0'
         ORDER BY SUBSTRING(measure_num, -4) DESC LIMIT 1;
     </select>
 
-    <select id="selectQueryPage" parameterType="com.ruoyi.system.domain.dto.MeasureSelectDTO" resultType="com.ruoyi.system.domain.vo.SupportResistanceVO">
+    <select id="selectQueryPage" resultType="com.ruoyi.system.domain.vo.SupportResistanceVO">
         SELECT
             sr.support_resistance_id AS supportResistanceId,
             sr.measure_num AS measureNum,
@@ -25,22 +25,22 @@
             sr.status AS status
         FROM support_resistance sr
         <where>
-            <if test="surveyAreaName != null and surveyAreaName != ''">
-                AND sr.survey_area_name like concat('%',#{surveyAreaName},'%')
+            <if test="measureSelectDTO.surveyAreaName != null and measureSelectDTO.surveyAreaName != ''">
+                AND sr.survey_area_name like concat('%',#{measureSelectDTO.surveyAreaName},'%')
             </if>
-            <if test="workFaceId != null and workFaceId != ''">
-                AND sr.workface_id = #{workFaceId}
+            <if test="measureSelectDTO.workFaceId != null and measureSelectDTO.workFaceId != ''">
+                AND sr.workface_id = #{measureSelectDTO.workFaceId}
             </if>
-            <if test="status != null and status != ''">
-                AND sr.status = #{status}
+            <if test="measureSelectDTO.status != null and measureSelectDTO.status != ''">
+                AND sr.status = #{measureSelectDTO.status}
             </if>
-            <if test="startTime != null">
-                AND sr.data_time &gt; = #{startTime}
+            <if test="measureSelectDTO.startTime != null">
+                AND sr.data_time &gt; = #{measureSelectDTO.startTime}
             </if>
-            <if test="endTime != null">
-                AND sr.data_time &lt; = #{endTime}
+            <if test="measureSelectDTO.endTime != null">
+                AND sr.data_time &lt; = #{measureSelectDTO.endTime}
             </if>
-            AND sr.del_flag = '0'
+            AND sr.mine_id = #{mineId} AND sr.del_flag = '0'
         </where>
         ORDER BY sr.data_time DESC
     </select>

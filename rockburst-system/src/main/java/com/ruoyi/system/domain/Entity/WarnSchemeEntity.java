@@ -71,8 +71,10 @@ public class WarnSchemeEntity extends BusinessBaseEntity implements Serializable
     private String delFlag;
 
     @ApiModelProperty("所属矿")
+    @TableField(value = "mine_id")
     private Long mineId;
 
     @ApiModelProperty("所属公司")
+    @TableField(value = "company_id")
     private Long companyId;
 }

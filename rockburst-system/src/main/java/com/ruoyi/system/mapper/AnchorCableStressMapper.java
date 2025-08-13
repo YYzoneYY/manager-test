@@ -17,7 +17,9 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface AnchorCableStressMapper extends BaseMapper<AnchorCableStressEntity> {
 
-    String selectMaxMeasureNum(@Param("sensorType") String sensorType);
+    String selectMaxMeasureNum(@Param("sensorType") String sensorType,
+                               @Param("mineId") Long mineId);
 
-    Page<AnchorCableStressVO> selectQueryPage(MeasureSelectDTO measureSelectDTO);
+    Page<AnchorCableStressVO> selectQueryPage(@Param("measureSelectDTO") MeasureSelectDTO measureSelectDTO,
+                                              @Param("mineId") Long mineId);
 }

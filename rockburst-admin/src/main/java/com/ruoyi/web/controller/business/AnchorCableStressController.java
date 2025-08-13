@@ -1,11 +1,15 @@
 package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.dto.AnchorCableStressDTO;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
 import com.ruoyi.system.service.AnchorStressService;
 import io.swagger.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,10 +29,16 @@ public class AnchorCableStressController {
     @Resource
     private AnchorStressService anchorStressService;
 
+    @Autowired
+    private TokenService tokenService;
+
     @ApiOperation(value = "新增锚杆(索)应力测点", notes = "新增锚杆(索)应力测点")
     @PostMapping(value = "/add")
     public R<Object> addMeasure(@RequestBody AnchorCableStressDTO anchorCableStressDTO){
-        return R.ok(this.anchorStressService.addMeasure(anchorCableStressDTO));
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        String token = loginUser.getToken();
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.anchorStressService.addMeasure(anchorCableStressDTO, mineId));
     }
 
     @ApiOperation(value = "修改锚杆(索)应力测点", notes = "修改锚杆(索)应力测点")
@@ -53,7 +63,10 @@ public class AnchorCableStressController {
     public R<Object> pageQueryList(@RequestBody MeasureSelectDTO measureSelectDTO,
                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
-        return R.ok(this.anchorStressService.pageQueryList(measureSelectDTO, pageNum, pageSize));
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        String token = loginUser.getToken();
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.anchorStressService.pageQueryList(measureSelectDTO, mineId, pageNum, pageSize));
     }
 
     @ApiOperation(value = "批量删除钻孔应力测点", notes = "批量删除钻孔应力测点")

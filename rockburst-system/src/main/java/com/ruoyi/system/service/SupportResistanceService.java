@@ -18,7 +18,7 @@ public interface SupportResistanceService extends IService<SupportResistanceEnti
      * @param supportResistanceDTO 参数DTO
      * @return 返回结果
      */
-    int addMeasure(SupportResistanceDTO supportResistanceDTO);
+    int addMeasure(SupportResistanceDTO supportResistanceDTO, Long mineId);
 
     /**
      * 测点修改
@@ -34,7 +34,7 @@ public interface SupportResistanceService extends IService<SupportResistanceEnti
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Integer pageNum, Integer pageSize);
+    TableData pageQueryList(MeasureSelectDTO measureSelectDTO, Long mineId, Integer pageNum, Integer pageSize);
 
     /**
      * 根据id查询
