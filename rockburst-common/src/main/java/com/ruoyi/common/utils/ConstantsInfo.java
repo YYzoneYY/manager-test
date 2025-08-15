@@ -48,6 +48,8 @@ public class ConstantsInfo {
     public static final String DRILL_STRESS_TYPE = "1201";
     public static final String ANCHOR_STRESS_TYPE = "1301";
     public static final String ANCHOR_CABLE_STRESS_TYPE = "1302";
+    public static final String ROOF_ABSCISSION_TYPE_TYPE = "1401";
+    public static final String LANE_DISPLACEMENT_TYPE = "1501";
 
 
     // 预警配置类型

@@ -47,4 +47,12 @@ public class GeologyDrillEntity implements Serializable {
     @ApiModelProperty("中心坐标")
     @TableField(value = "center")
     private String center;
+
+    @ApiModelProperty("所属矿")
+    @TableField(value = "mine_id")
+    private Long mineId;
+
+    @ApiModelProperty("所属公司")
+    @TableField(value = "company_id")
+    private Long companyId;
 }

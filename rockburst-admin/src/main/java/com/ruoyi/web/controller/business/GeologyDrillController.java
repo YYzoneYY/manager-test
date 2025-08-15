@@ -1,11 +1,17 @@
 package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.TableData;
+import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.dto.ClassesSelectDTO;
 import com.ruoyi.system.domain.dto.GeologyDrillDTO;
+import com.ruoyi.system.domain.vo.GeologyDrillVO;
 import com.ruoyi.system.service.GeologyDrillService;
+import com.ruoyi.system.service.MeasureActualService;
 import io.swagger.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +39,9 @@ public class GeologyDrillController {
     @Resource
     private GeologyDrillService geologyDrillService;
 
+    @Autowired
+    private TokenService tokenService;
+
 
     @ApiOperation(value = "批量新增地质钻孔", notes = "批量新增地质钻孔")
     @PostMapping(value = "/batchInsert")
@@ -56,6 +65,15 @@ public class GeologyDrillController {
                                       @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                       @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize){
         return R.ok(geologyDrillService.pageQueryList(drillName, pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "查询所有地质钻孔", notes = "查询所有地质钻孔")
+    @GetMapping(value = "/obtainAllGeologyDrill")
+    public R<List<GeologyDrillVO>> obtainGeologyDrillList(){
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        String token = loginUser.getToken();
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(geologyDrillService.obtainGeologyDrillList(mineId));
     }
 
     @ApiOperation(value = "下载导入模板", notes = "下载导入模板")

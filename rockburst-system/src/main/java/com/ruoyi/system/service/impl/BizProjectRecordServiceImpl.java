@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.yulichang.base.MPJBaseServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.google.common.util.concurrent.AtomicDouble;
 import com.ruoyi.common.annotation.DataScopeSelf;
 import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.entity.SysDept;
@@ -37,6 +38,7 @@ import com.ruoyi.system.domain.dto.project.BizWashProofDto;
 import com.ruoyi.system.domain.excel.BizProJson;
 import com.ruoyi.system.domain.excel.ChartData;
 import com.ruoyi.system.domain.excel.ChartDataAll;
+import com.ruoyi.system.domain.utils.AlgorithmUtils;
 import com.ruoyi.system.domain.utils.ClosestPointOnLine;
 import com.ruoyi.system.domain.vo.*;
 import com.ruoyi.system.mapper.*;
@@ -149,6 +151,12 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
 
     @Resource
     private PushConfigMapper pushConfigMapper;
+
+    @Resource
+    private BizTravePointMapper bizTravePointMapper;
+
+    @Resource
+    private SysConfigMapper sysConfigMapper;
 
 
 
@@ -462,7 +470,10 @@ public class BizProjectRecordServiceImpl extends MPJBaseServiceImpl<BizProjectRe
         videoQueryWrapper.lambda().eq(BizVideo::getProjectId, record.getProjectId()).eq(BizVideo::getDelFlag, BizBaseConstant.DELFLAG_N);
         List<BizVideo> videos =  bizVideoMapper.selectList(videoQueryWrapper);
 
-
+        // todo: 2025/8/15 在详情中增加施工钻孔的坐标
+        String Coordinate = AlgorithmUtils.obtainCoordinate(record.getWorkfaceId(), record.getTunnelId(), record.getTravePointId(),
+                record.getConstructRange(), bizTunnelBarMapper, bizTravePointMapper, sysConfigMapper);
+        vo.setDrillCoordinate(Coordinate);
 
         vo.setVideoList(videos).setDrillRecordList(drillRecordList);
         return  vo;

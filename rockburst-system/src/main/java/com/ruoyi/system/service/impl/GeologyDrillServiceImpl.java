@@ -134,6 +134,22 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
     }
 
     @Override
+    public List<GeologyDrillVO> obtainGeologyDrillList(Long mineId) {
+        List<GeologyDrillVO> geologyDrillVOList = new ArrayList<>();
+        List<GeologyDrillEntity> geologyDrillEntities = geologyDrillMapper.selectList(new LambdaQueryWrapper<GeologyDrillEntity>()
+                .eq(GeologyDrillEntity::getMineId, mineId));
+        if (ListUtils.isNotNull(geologyDrillEntities)) {
+            geologyDrillEntities.forEach(geologyDrillEntity -> {
+                GeologyDrillVO geologyDrillVO = new GeologyDrillVO();
+                BeanUtils.copyProperties(geologyDrillEntity, geologyDrillVO);
+                geologyDrillVO.setDrillPropertiesDTOS(drillMappingService.getDrillProperties(geologyDrillEntity.getGeologyDrillId()));
+                geologyDrillVOList.add(geologyDrillVO);
+            });
+        }
+        return geologyDrillVOList;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public String importData(MultipartFile file, Long geologyDrillId) throws Exception {
         ExcelUtil<ImportDrillMappingDTO> util = new ExcelUtil<>(ImportDrillMappingDTO.class);

@@ -5,6 +5,7 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.GeologyDrillEntity;
 import com.ruoyi.system.domain.dto.GeologyDrillDTO;
 import com.ruoyi.system.domain.dto.GeologyDrillInfoDTO;
+import com.ruoyi.system.domain.vo.GeologyDrillVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -21,6 +22,8 @@ public interface GeologyDrillService extends IService<GeologyDrillEntity> {
     GeologyDrillInfoDTO obtainGeologyDrillInfo(String drillName);
 
     TableData pageQueryList(String drillName, Integer pageNum, Integer pageSize);
+
+    List<GeologyDrillVO> obtainGeologyDrillList(Long mineId);
 
     /**
      * 批量导入
