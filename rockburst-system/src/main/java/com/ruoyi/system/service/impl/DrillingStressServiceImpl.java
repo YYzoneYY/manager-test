@@ -111,7 +111,7 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         }
         drillingStressEntity.setDrillingStressId(drillingStressId);
         drillingStressEntity.setUpdateTime(System.currentTimeMillis());
-        drillingStressEntity.setUpdateBy(1L);
+        drillingStressEntity.setUpdateBy(SecurityUtils.getUserId());
         flag = drillingStressMapper.updateById(drillingStressEntity);
         if (flag > 0) {
             if (ObjectUtil.isNotNull(drillingStressDTO.getWarnSchemeDTO())) {

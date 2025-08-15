@@ -2,9 +2,9 @@ package com.ruoyi.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.pagehelper.Page;
-import com.ruoyi.system.domain.Entity.LaneDisplacementEntity;
+import com.ruoyi.system.domain.Entity.RoofAbscissionEntity;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
-import com.ruoyi.system.domain.vo.DisplacementVO;
+import com.ruoyi.system.domain.vo.RoofAbscissionVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,12 +17,12 @@ import java.util.List;
  */
 
 @Mapper
-public interface LaneDisplacementMapper extends BaseMapper<LaneDisplacementEntity> {
+public interface RoofAbscissionMapper extends BaseMapper<RoofAbscissionEntity> {
 
     String selectMaxMeasureNum(@Param("mineId") Long mineId);
 
-    Page<DisplacementVO> selectQueryPage(@Param("measureSelectDTO") MeasureSelectDTO measureSelectDTO,
-                                         @Param("mineId") Long mineId);
+    Page<RoofAbscissionVO> selectQueryPage(@Param("measureSelectDTO") MeasureSelectDTO measureSelectDTO,
+                                           @Param("mineId") Long mineId);
 
     List<String> selectMeasureNumList(@Param("surveyAreaName") String surveyAreaName,
                                       @Param("mineId") Long mineId);

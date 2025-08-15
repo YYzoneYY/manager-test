@@ -11,26 +11,26 @@ import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @author: shikai
  * @date: 2025/8/15
  * @description:
  */
-
 @Data
-@ApiModel("巷道位移")
+@ApiModel("顶板离层位移")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("lane_displacement")
-public class LaneDisplacementEntity extends BusinessBaseEntity implements Serializable {
+@TableName("roof_abscission")
+public class RoofAbscissionEntity extends BusinessBaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("巷道表面位移id")
-    @TableId(value = "displacement_id", type = IdType.AUTO)
-    @NotNull(groups = {ParameterValidationUpdate.class}, message = "巷道表面位移id不能为空")
-    private Long displacementId;
+    @TableId(value = "roof_abscission_id", type = IdType.AUTO)
+    @NotNull(groups = {ParameterValidationUpdate.class}, message = "顶板离层id不能为空")
+    private Long roofAbscissionId;
 
     @ApiModelProperty("测点编码")
     @TableField(value = "measure_num")
@@ -74,6 +74,14 @@ public class LaneDisplacementEntity extends BusinessBaseEntity implements Serial
     @TableField(value = "z_axis")
     @JsonProperty(value = "zAxis")
     private String zAxis;
+
+    @ApiModelProperty("浅基点初始安装深度")
+    @TableField(value = "shallow_init_depth")
+    private BigDecimal shallowInitDepth;
+
+    @ApiModelProperty("深基点初始安装深度")
+    @TableField(value = "deep_init_depth")
+    private BigDecimal deepInitDepth;
 
     @ApiModelProperty("状态---是否启用（0是1否）")
     @TableField(value = "status")

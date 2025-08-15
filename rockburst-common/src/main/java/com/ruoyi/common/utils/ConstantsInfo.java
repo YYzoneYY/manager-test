@@ -43,6 +43,8 @@ public class ConstantsInfo {
     public static final String Drill_Stress_INITIAL_VALUE = "1100MN12010001"; // 钻孔应力测点初始值
     public static final String ANCHOR_STRESS_INITIAL_VALUE = "1100MN13010001"; // 锚杆应力测点初始值
     public static final String ANCHOR_CABLE_STRESS_INITIAL_VALUE = "1100MN13020001"; // 锚杆应力测点初始值
+    public static final String ROOF_ABSCISSION_TYPE_INITIAL_VALUE = "1100MN14010001"; // 顶板离层位移测点初始值
+    public static final String LANE_DISPLACEMENT_INITIAL_VALUE = "1100MN15010001"; // 巷道位移测点初始值
 
     public static final String SUPPORT_RESISTANCE_TYPE = "1101";
     public static final String DRILL_STRESS_TYPE = "1201";
