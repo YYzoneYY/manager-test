@@ -8,6 +8,8 @@ import com.ruoyi.system.domain.vo.DrillingStressVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author: shikai
  * @date: 2024/12/2
@@ -21,4 +23,7 @@ public interface DrillingStressMapper extends BaseMapper<DrillingStressEntity> {
 
     Page<DrillingStressVO> selectQueryPage(@Param("measureSelectDTO") MeasureSelectDTO measureSelectDTO,
                                            @Param("mineId") Long mineId);
+
+    List<String> selectMeasureNumList(@Param("surveyAreaName") String surveyAreaName,
+                                      @Param("mineId") Long mineId);
 }

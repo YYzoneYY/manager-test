@@ -8,6 +8,8 @@ import com.ruoyi.system.domain.vo.AnchorCableStressVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author: shikai
  * @date: 2024/12/3
@@ -22,4 +24,7 @@ public interface AnchorCableStressMapper extends BaseMapper<AnchorCableStressEnt
 
     Page<AnchorCableStressVO> selectQueryPage(@Param("measureSelectDTO") MeasureSelectDTO measureSelectDTO,
                                               @Param("mineId") Long mineId);
+
+    List<String> selectMeasureNumList(@Param("surveyAreaName") String surveyAreaName,
+                                      @Param("mineId") Long mineId);
 }

@@ -2,6 +2,7 @@ package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
@@ -10,13 +11,17 @@ import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.dto.DrillingStressDTO;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
 import com.ruoyi.system.domain.dto.SupportResistanceDTO;
+import com.ruoyi.system.domain.dto.actual.ActualSelectDTO;
 import com.ruoyi.system.service.DrillingStressService;
+import com.ruoyi.system.service.MeasureActualService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author: shikai
@@ -34,6 +39,9 @@ public class DrillingStressController {
 
     @Autowired
     private TokenService tokenService;
+
+    @Resource
+    private MeasureActualService measureActualService;
 
     @ApiOperation(value = "新增钻孔应力测点", notes = "新增钻孔应力测点")
     @PostMapping(value = "/add")
@@ -83,5 +91,38 @@ public class DrillingStressController {
     @PutMapping(value = "/batchEnableDisable")
     public R<Object> batchEnableDisable(@ApiParam(name = "supportResistanceIds", value = "id数组", required = true) @RequestParam Long[] drillingStressIds) {
         return R.ok(this.drillingStressService.batchEnableDisable(drillingStressIds));
+    }
+
+
+    @ApiOperation(value = "实时数据列表", notes = "实时数据列表")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
+            @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
+    })
+    @PostMapping(value = "/actualDataList")
+    public R<Object> ActualDataPage(@RequestBody ActualSelectDTO actualSelectDTO,
+                                   @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
+                                   @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
+        List<String> sensorTypes = new ArrayList<>();
+        sensorTypes.add(ConstantsInfo.DRILL_STRESS_TYPE);
+        String tag = "1";
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        String token = loginUser.getToken();
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.measureActualService.ActualDataPage(actualSelectDTO, sensorTypes, mineId, tag, pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "获取曲线图数据", notes = "获取曲线图数据")
+    @GetMapping(value = "/obtainLineGraph")
+    public R<Object> obtainLineGraph(@ApiParam(name = "measureNum", value = "测点编号", required = true) @RequestParam String measureNum,
+                                     @ApiParam(name = "range", value = "时间范围(1-30min;2-1h;3-24;4-当天;5-自定义时间)", required = true) @RequestParam String range,
+                                     @RequestParam(required = false) Long startTime,
+                                     @RequestParam(required = false) Long endTime) {
+        List<String> sensorTypes = new ArrayList<>();
+        sensorTypes.add(ConstantsInfo.DRILL_STRESS_TYPE);
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        String token = loginUser.getToken();
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.measureActualService.obtainLineGraph(measureNum, range, startTime, endTime, sensorTypes, mineId));
     }
 }

@@ -44,4 +44,16 @@
         ORDER BY acs.install_time DESC
     </select>
 
+
+    <select id="selectMeasureNumList" resultType="java.lang.String">
+        SELECT measure_num
+        FROM anchor_cable_stress as acs
+        <where>
+            acs.mine_id = #{mineId} AND acs.del_flag = '0'
+            <if test="surveyAreaName != null and surveyAreaName != ''">
+                AND acs.survey_area_name like concat('%',#{surveyAreaName},'%')
+            </if>
+        </where>
+    </select>
+
 </mapper>

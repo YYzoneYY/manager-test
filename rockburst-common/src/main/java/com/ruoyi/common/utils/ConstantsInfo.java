@@ -30,14 +30,25 @@ public class ConstantsInfo {
     public static final String MANUALLY_ADD = "1"; //手动新增
     public static final String AUTOMATIC_ACCESS = "2"; //自动接入
 
+
+
+    public static final String THIRTY_MINUTE_TAG = "1";
+    public static final String ONE_HOUR_TAG = "2";
+    public static final String TWENTY_FOUR_HOURS_TAG = "3";
+    public static final String ON_THAT_DAY_TAG = "4";
+    public static final String CUSTOMIZE_TAG = "5";
+
     // 测点编码初始值
     public static final String SUPPORT_RESISTANCE_INITIAL_VALUE = "1100MN11010001"; // 支架阻力测点初始值
     public static final String Drill_Stress_INITIAL_VALUE = "1100MN12010001"; // 钻孔应力测点初始值
     public static final String ANCHOR_STRESS_INITIAL_VALUE = "1100MN13010001"; // 锚杆应力测点初始值
     public static final String ANCHOR_CABLE_STRESS_INITIAL_VALUE = "1100MN13020001"; // 锚杆应力测点初始值
 
+    public static final String SUPPORT_RESISTANCE_TYPE = "1101";
+    public static final String DRILL_STRESS_TYPE = "1201";
     public static final String ANCHOR_STRESS_TYPE = "1301";
     public static final String ANCHOR_CABLE_STRESS_TYPE = "1302";
+
 
     // 预警配置类型
     public static final String THRESHOLD_CONFIG = "thresholdConfig"; // 预警阈值配置
