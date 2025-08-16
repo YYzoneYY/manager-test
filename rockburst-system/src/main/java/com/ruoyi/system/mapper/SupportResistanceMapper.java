@@ -8,6 +8,8 @@ import com.ruoyi.system.domain.vo.SupportResistanceVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author: shikai
  * @date: 2024/11/27
@@ -21,4 +23,7 @@ public interface SupportResistanceMapper extends BaseMapper<SupportResistanceEnt
 
     Page<SupportResistanceVO> selectQueryPage(@Param("measureSelectDTO") MeasureSelectDTO measureSelectDTO,
                                               @Param("mineId") Long mineId);
+
+    List<String> selectMeasureNumList(@Param("surveyAreaName") String surveyAreaName,
+                                      @Param("mineId") Long mineId);
 }

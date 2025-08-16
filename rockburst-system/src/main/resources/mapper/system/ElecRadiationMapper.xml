@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ElecRadiationMapper">
+
+    <!--获取最大测点编码，tag = '1'-->
+    <select id="selectMaxMeasureNum" resultType="java.lang.String">
+        SELECT ifnull(max(measure_num), 0)
+        FROM elec_radiation
+        WHERE tag = '1'
+          AND mine_id = #{mineId} AND del_flag = '0'
+        ORDER BY SUBSTRING(measure_num, -4) DESC LIMIT 1;
+    </select>
+
+    <select id="selectQueryPage" resultType="com.ruoyi.system.domain.vo.ElecRadiationVO">
+        SELECT
+        er.radiation_id AS radiationId,
+        er.measure_num AS measureNum,
+        er.workface_id AS workFaceId,
+        er.sensor_type AS sensorType,
+        er.sensor_location AS sensorLocation,
+        er.install_time AS installTime,
+        er.status
+        FROM elec_radiation as er
+        <where>
+            <if test="MeasureTSelectDTO.sensorLocation != null and MeasureTSelectDTO.sensorLocation != ''">
+                AND er.sensor_location like concat('%',#{measureSelectDTO.sensorLocation},'%')
+            </if>
+            <if test="MeasureTSelectDTO.workFaceId != null and MeasureTSelectDTO.workFaceId != ''">
+                AND er.workface_id = #{MeasureTSelectDTO.workFaceId}
+            </if>
+            <if test="MeasureTSelectDTO.status != null and MeasureTSelectDTO.status != ''">
+                AND er.status = #{MeasureTSelectDTO.status}
+            </if>
+            <if test="measureSelectDTO.startTime != null">
+                AND er.install_time &gt; = #{MeasureTSelectDTO.startTime}
+            </if>
+            <if test="MeasureTSelectDTO.endTime != null">
+                AND er.install_time &lt; = #{MeasureTSelectDTO.endTime}
+            </if>
+            AND er.mine_id = #{mineId} AND er.del_flag = '0'
+        </where>
+        Order By er.install_time DESC
+    </select>
+
+</mapper>

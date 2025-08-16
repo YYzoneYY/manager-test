@@ -6,11 +6,12 @@ import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
-import com.ruoyi.system.domain.dto.AnchorCableStressDTO;
+import com.ruoyi.system.domain.dto.LaneDisplacementDTO;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
+import com.ruoyi.system.domain.dto.RoofAbscissionDTO;
 import com.ruoyi.system.domain.dto.actual.ActualSelectDTO;
-import com.ruoyi.system.service.AnchorStressService;
 import com.ruoyi.system.service.MeasureActualService;
+import com.ruoyi.system.service.RoofAbscissionService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -22,17 +23,17 @@ import java.util.List;
 
 /**
  * @author: shikai
- * @date: 2024/12/4
+ * @date: 2025/8/16
  * @description:
  */
 
-@Api(tags = "锚杆(索)应力")
+@Api(tags = "顶部离层位移")
 @RestController
-@RequestMapping(value = "/anchorCableStress")
-public class AnchorCableStressController {
+@RequestMapping(value = "/laneDisplacement")
+public class RoofAbscissionController {
 
     @Resource
-    private AnchorStressService anchorStressService;
+    private RoofAbscissionService roofAbscissionService;
 
     @Autowired
     private TokenService tokenService;
@@ -40,26 +41,26 @@ public class AnchorCableStressController {
     @Resource
     private MeasureActualService measureActualService;
 
-    @ApiOperation(value = "新增锚杆(索)应力测点", notes = "新增锚杆(索)应力测点")
+    @ApiOperation(value = "添加顶部离层位移测点", notes = "添加顶部离层位移测点")
     @PostMapping(value = "/add")
-    public R<Object> addMeasure(@RequestBody AnchorCableStressDTO anchorCableStressDTO){
+    public R<Object> addMeasure(@RequestBody RoofAbscissionDTO roofAbscissionDTO) {
         LoginUser loginUser = SecurityUtils.getLoginUser();
         String token = loginUser.getToken();
         Long mineId = tokenService.getMineIdFromToken(token);
-        return R.ok(this.anchorStressService.addMeasure(anchorCableStressDTO, mineId));
+        return R.ok(this.roofAbscissionService.addMeasure(roofAbscissionDTO, mineId));
     }
 
-    @ApiOperation(value = "修改锚杆(索)应力测点", notes = "修改锚杆(索)应力测点")
-    @PutMapping(value = "/update")
-    public R<Object> updateMeasure(@RequestBody @Validated({ParameterValidationUpdate.class})
-                                   AnchorCableStressDTO anchorCableStressDTO){
-        return R.ok(this.anchorStressService.updateMeasure(anchorCableStressDTO));
+    @ApiOperation(value = "修改顶部离层位移测点", notes = "修改顶部离层位移测点")
+    @PostMapping(value = "/update")
+    public R<Object> updateMeasure(@RequestBody @Validated(ParameterValidationUpdate.class)
+                                   RoofAbscissionDTO roofAbscissionDTO) {
+        return R.ok(this.roofAbscissionService.updateMeasure(roofAbscissionDTO));
     }
 
     @ApiOperation(value = "根据主键查询", notes = "根据主键查询")
     @GetMapping(value = "/getById")
-    public R<AnchorCableStressDTO> detail(@ApiParam(name = "anchorCableStressId", value = "主键id", required = true) @RequestParam Long anchorCableStressId){
-        return R.ok(this.anchorStressService.detail(anchorCableStressId));
+    public R<Object> detail(@ApiParam(name = "roofAbscissionId", value = "主键id", required = true) @RequestParam Long roofAbscissionId) {
+        return R.ok(this.roofAbscissionService.detail(roofAbscissionId));
     }
 
     @ApiOperation(value = "分页查询数据列表接口", notes = "分页查询数据列表接口")
@@ -74,21 +75,19 @@ public class AnchorCableStressController {
         LoginUser loginUser = SecurityUtils.getLoginUser();
         String token = loginUser.getToken();
         Long mineId = tokenService.getMineIdFromToken(token);
-        return R.ok(this.anchorStressService.pageQueryList(measureSelectDTO, mineId, pageNum, pageSize));
+        return R.ok(this.roofAbscissionService.pageQueryList(measureSelectDTO, mineId, pageNum, pageSize));
     }
 
-    @ApiOperation(value = "批量删除钻孔应力测点", notes = "批量删除钻孔应力测点")
-    @DeleteMapping(value = "/delete")
-    public R<Object> batchDelete(@ApiParam(name = "anchorCableStressIds", value = "主键id数组", required = true)
-                                  @RequestParam Long[] anchorCableStressIds){
-        return R.ok(this.anchorStressService.deleteByIds(anchorCableStressIds));
+    @ApiOperation(value = "批量删除", notes = "批量删除")
+    @PutMapping(value = "/delete")
+    public R<Object> deleteByIds(@ApiParam(name = "roofAbscissionIds", value = "主键id数组", required = true) @RequestParam Long[] roofAbscissionIds) {
+        return R.ok(this.roofAbscissionService.deleteByIds(roofAbscissionIds));
     }
 
-    @ApiOperation(value = "批量启用/禁用", notes = "批量启用/禁用")
+    @ApiOperation(value = "批量启用禁用", notes = "批量启用禁用")
     @PutMapping(value = "/batchEnableDisable")
-    public R<Object> batchEnableDisable(@ApiParam(name = "anchorCableStressIds", value = "主键id数组", required = true)
-                                        @RequestParam Long[] anchorCableStressIds){
-        return R.ok(this.anchorStressService.batchEnableDisable(anchorCableStressIds));
+    public R<Object> batchEnableDisable(@ApiParam(name = "roofAbscissionIds", value = "主键id数组", required = true) @RequestParam Long[] roofAbscissionIds) {
+        return R.ok(this.roofAbscissionService.batchEnableDisable(roofAbscissionIds));
     }
 
     @ApiOperation(value = "实时数据列表", notes = "实时数据列表")
@@ -101,9 +100,8 @@ public class AnchorCableStressController {
                                     @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                     @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
         List<String> sensorTypes = new ArrayList<>();
-        sensorTypes.add(ConstantsInfo.ANCHOR_STRESS_TYPE);
-        sensorTypes.add(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE);
-        String tag = "3";
+        sensorTypes.add(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE);
+        String tag = "5";
         LoginUser loginUser = SecurityUtils.getLoginUser();
         String token = loginUser.getToken();
         Long mineId = tokenService.getMineIdFromToken(token);
@@ -117,8 +115,7 @@ public class AnchorCableStressController {
                                      @RequestParam(required = false) Long startTime,
                                      @RequestParam(required = false) Long endTime) {
         List<String> sensorTypes = new ArrayList<>();
-        sensorTypes.add(ConstantsInfo.ANCHOR_STRESS_TYPE);
-        sensorTypes.add(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE);
+        sensorTypes.add(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE);
         LoginUser loginUser = SecurityUtils.getLoginUser();
         String token = loginUser.getToken();
         Long mineId = tokenService.getMineIdFromToken(token);

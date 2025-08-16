@@ -6,10 +6,13 @@ import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
-import com.ruoyi.system.domain.dto.AnchorCableStressDTO;
+import com.ruoyi.system.domain.dto.ElecRadiationDTO;
+import com.ruoyi.system.domain.dto.LaneDisplacementDTO;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
+import com.ruoyi.system.domain.dto.MeasureTSelectDTO;
 import com.ruoyi.system.domain.dto.actual.ActualSelectDTO;
-import com.ruoyi.system.service.AnchorStressService;
+import com.ruoyi.system.domain.dto.actual.ActualSelectTDTO;
+import com.ruoyi.system.service.ElecRadiationService;
 import com.ruoyi.system.service.MeasureActualService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,17 +25,17 @@ import java.util.List;
 
 /**
  * @author: shikai
- * @date: 2024/12/4
+ * @date: 2025/8/16
  * @description:
  */
 
-@Api(tags = "锚杆(索)应力")
+@Api(tags = "电磁辐射")
 @RestController
-@RequestMapping(value = "/anchorCableStress")
-public class AnchorCableStressController {
+@RequestMapping(value = "/elecRadiation")
+public class ElecRadiationController {
 
     @Resource
-    private AnchorStressService anchorStressService;
+    private ElecRadiationService elecRadiationService;
 
     @Autowired
     private TokenService tokenService;
@@ -40,26 +43,28 @@ public class AnchorCableStressController {
     @Resource
     private MeasureActualService measureActualService;
 
-    @ApiOperation(value = "新增锚杆(索)应力测点", notes = "新增锚杆(索)应力测点")
+
+    @ApiOperation(value = "新增电磁辐射测点", notes = "新增电磁辐射测点")
     @PostMapping(value = "/add")
-    public R<Object> addMeasure(@RequestBody AnchorCableStressDTO anchorCableStressDTO){
+    public R<Object> addMeasure(@RequestBody ElecRadiationDTO laneDisplacementDTO) {
         LoginUser loginUser = SecurityUtils.getLoginUser();
         String token = loginUser.getToken();
         Long mineId = tokenService.getMineIdFromToken(token);
-        return R.ok(this.anchorStressService.addMeasure(anchorCableStressDTO, mineId));
+        return R.ok(this.elecRadiationService.addMeasure(laneDisplacementDTO, mineId));
     }
 
-    @ApiOperation(value = "修改锚杆(索)应力测点", notes = "修改锚杆(索)应力测点")
+    @ApiOperation(value = "修改电磁辐射测点", notes = "新增电磁辐射测点")
     @PutMapping(value = "/update")
     public R<Object> updateMeasure(@RequestBody @Validated({ParameterValidationUpdate.class})
-                                   AnchorCableStressDTO anchorCableStressDTO){
-        return R.ok(this.anchorStressService.updateMeasure(anchorCableStressDTO));
+                                       ElecRadiationDTO elecRadiationDTO) {
+        return R.ok(this.elecRadiationService.updateMeasure(elecRadiationDTO));
     }
+
 
     @ApiOperation(value = "根据主键查询", notes = "根据主键查询")
     @GetMapping(value = "/getById")
-    public R<AnchorCableStressDTO> detail(@ApiParam(name = "anchorCableStressId", value = "主键id", required = true) @RequestParam Long anchorCableStressId){
-        return R.ok(this.anchorStressService.detail(anchorCableStressId));
+    public R<ElecRadiationDTO> detail(@ApiParam(name = "displacementId", value = "主键id", required = true) @RequestParam Long radiationId) {
+        return R.ok(this.elecRadiationService.detail(radiationId));
     }
 
     @ApiOperation(value = "分页查询数据列表接口", notes = "分页查询数据列表接口")
@@ -68,27 +73,25 @@ public class AnchorCableStressController {
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
     @PostMapping(value = "/pageQueryList")
-    public R<Object> pageQueryList(@RequestBody MeasureSelectDTO measureSelectDTO,
+    public R<Object> pageQueryList(@RequestBody MeasureTSelectDTO measureTSelectDTO,
                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
         LoginUser loginUser = SecurityUtils.getLoginUser();
         String token = loginUser.getToken();
         Long mineId = tokenService.getMineIdFromToken(token);
-        return R.ok(this.anchorStressService.pageQueryList(measureSelectDTO, mineId, pageNum, pageSize));
+        return R.ok(this.elecRadiationService.pageQueryList(measureTSelectDTO, mineId, pageNum, pageSize));
     }
 
-    @ApiOperation(value = "批量删除钻孔应力测点", notes = "批量删除钻孔应力测点")
+    @ApiOperation(value = "批量删除电磁辐射测点", notes = "批量删除电磁辐射测点")
     @DeleteMapping(value = "/delete")
-    public R<Object> batchDelete(@ApiParam(name = "anchorCableStressIds", value = "主键id数组", required = true)
-                                  @RequestParam Long[] anchorCableStressIds){
-        return R.ok(this.anchorStressService.deleteByIds(anchorCableStressIds));
+    public R<Object> deleteByIds(@ApiParam(name = "radiationIds", value = "主键id数组", required = true) @RequestParam Long[] radiationIds) {
+        return R.ok(this.elecRadiationService.deleteByIds(radiationIds));
     }
 
     @ApiOperation(value = "批量启用/禁用", notes = "批量启用/禁用")
     @PutMapping(value = "/batchEnableDisable")
-    public R<Object> batchEnableDisable(@ApiParam(name = "anchorCableStressIds", value = "主键id数组", required = true)
-                                        @RequestParam Long[] anchorCableStressIds){
-        return R.ok(this.anchorStressService.batchEnableDisable(anchorCableStressIds));
+    public R<Object> batchEnableDisable(@ApiParam(name = "radiationIds", value = "主键id数组", required = true) @RequestParam Long[] radiationIds) {
+        return R.ok(this.elecRadiationService.batchEnableDisable(radiationIds));
     }
 
     @ApiOperation(value = "实时数据列表", notes = "实时数据列表")
@@ -97,17 +100,15 @@ public class AnchorCableStressController {
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
     @PostMapping(value = "/actualDataList")
-    public R<Object> ActualDataPage(@RequestBody ActualSelectDTO actualSelectDTO,
+    public R<Object> ActualDataPage(@RequestBody ActualSelectTDTO actualSelectTDTO,
                                     @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                     @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
         List<String> sensorTypes = new ArrayList<>();
-        sensorTypes.add(ConstantsInfo.ANCHOR_STRESS_TYPE);
-        sensorTypes.add(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE);
-        String tag = "3";
+        sensorTypes.add(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE);
         LoginUser loginUser = SecurityUtils.getLoginUser();
         String token = loginUser.getToken();
         Long mineId = tokenService.getMineIdFromToken(token);
-        return R.ok(this.measureActualService.ActualDataPage(actualSelectDTO, sensorTypes, mineId, tag, pageNum, pageSize));
+        return R.ok(this.measureActualService.ActualDataTPage(actualSelectTDTO, sensorTypes, mineId,pageNum, pageSize));
     }
 
     @ApiOperation(value = "获取曲线图数据", notes = "获取曲线图数据")
@@ -117,8 +118,7 @@ public class AnchorCableStressController {
                                      @RequestParam(required = false) Long startTime,
                                      @RequestParam(required = false) Long endTime) {
         List<String> sensorTypes = new ArrayList<>();
-        sensorTypes.add(ConstantsInfo.ANCHOR_STRESS_TYPE);
-        sensorTypes.add(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE);
+        sensorTypes.add(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE);
         LoginUser loginUser = SecurityUtils.getLoginUser();
         String token = loginUser.getToken();
         Long mineId = tokenService.getMineIdFromToken(token);

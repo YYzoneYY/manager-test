@@ -29,10 +29,10 @@ import java.util.List;
  * @author ruoyi
  * @date 2024-11-11
  */
-@Api(tags = "eqt-顶板离层")
-//@Tag(description = "矿井管理Controller", name = "矿井管理Controller")
-@RestController
-@RequestMapping("/eqt/roofSeparat")
+//@Api(tags = "eqt-顶板离层")
+////@Tag(description = "矿井管理Controller", name = "矿井管理Controller")
+//@RestController
+//@RequestMapping("/eqt/roofSeparat")
 public class EqtRoofSeparatController extends BaseController
 {
 

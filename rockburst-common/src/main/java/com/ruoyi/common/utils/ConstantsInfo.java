@@ -45,6 +45,7 @@ public class ConstantsInfo {
     public static final String ANCHOR_CABLE_STRESS_INITIAL_VALUE = "1100MN13020001"; // 锚杆应力测点初始值
     public static final String ROOF_ABSCISSION_TYPE_INITIAL_VALUE = "1100MN14010001"; // 顶板离层位移测点初始值
     public static final String LANE_DISPLACEMENT_INITIAL_VALUE = "1100MN15010001"; // 巷道位移测点初始值
+    public static final String ELECTROMAGNETIC_RADIATION_INITIAL_VALUE = "1100MN18010001"; // 电磁辐射测点初始值
 
     public static final String SUPPORT_RESISTANCE_TYPE = "1101";
     public static final String DRILL_STRESS_TYPE = "1201";
@@ -52,6 +53,7 @@ public class ConstantsInfo {
     public static final String ANCHOR_CABLE_STRESS_TYPE = "1302";
     public static final String ROOF_ABSCISSION_TYPE_TYPE = "1401";
     public static final String LANE_DISPLACEMENT_TYPE = "1501";
+    public static final String ELECTROMAGNETIC_RADIATION_TYPE = "1801";
 
 
     // 预警配置类型

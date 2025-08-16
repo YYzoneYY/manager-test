@@ -29,9 +29,9 @@ import java.util.List;
  * @author ruoyi
  * @date 2024-11-11
  */
-@Api(tags = "eqt-巷道表面位移")
-@RestController
-@RequestMapping("/eqt/displacement")
+//@Api(tags = "eqt-巷道表面位移")
+//@RestController
+//@RequestMapping("/eqt/displacement")
 public class EqtDisplacementController extends BaseController
 {
     @Autowired

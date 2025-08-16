@@ -1,5 +1,6 @@
 package com.ruoyi.system.domain.utils;
 
+import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.system.domain.EsEntity.MeasureActualEntity;
 import com.ruoyi.system.domain.dto.actual.ActualDataDTO;
 
@@ -58,7 +59,36 @@ public class ActualDataConverter {
         if (sensorNameFetcher != null) {
             dto.setSensorName(sensorNameFetcher.apply(entity.getMeasureNum()));
         }
+
+        // 根据不同传感器类型设置额外字段
+        setAdditionalFieldsBySensorType(entity, dto);
+
         return dto;
+    }
+
+    /**
+     * 根据传感器类型设置额外字段
+     * @param entity 原始数据实体
+     * @param dto 目标DTO
+     */
+    private static void setAdditionalFieldsBySensorType(MeasureActualEntity entity, ActualDataDTO dto) {
+        String sensorType = entity.getSensorType();
+
+        // 顶板离层位移类型传感器(1401)需要浅基点值和深基点值
+        if (ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE.equals(sensorType)) {
+            dto.setValueShallow(entity.getValueShallow());
+            dto.setValueDeep(entity.getValueDeep());
+        }
+
+        // 支架阻力传感器需要传感器编号,立柱架号和立柱名称
+        if (ConstantsInfo.SUPPORT_RESISTANCE_TYPE.equals(sensorType)) {
+            String sensorNum = entity.getSensorNum();
+            dto.setSensorNum(sensorNum);
+            String columnNum = ColumStringUtils.extractFirstThreeChars(sensorNum);
+            String columnName = ColumStringUtils.getColumnMeaning(sensorNum);
+            dto.setColumnNum(columnNum);
+            dto.setColumnName(columnName);
+        }
     }
 
     /**

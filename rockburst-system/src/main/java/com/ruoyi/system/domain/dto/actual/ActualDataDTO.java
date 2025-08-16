@@ -37,4 +37,21 @@ public class ActualDataDTO {
 
     @ApiModelProperty(value = "数据时间")
     private Long dataTime;
+
+    // 顶部离层位移额外字段
+    @ApiModelProperty(value = "浅基点值")
+    private BigDecimal valueShallow;
+
+    @ApiModelProperty(value = "深基点值")
+    private BigDecimal valueDeep;
+
+    // 支架阻力额外字段
+    @ApiModelProperty(value = "传感器编号")
+    private String sensorNum;
+
+    @ApiModelProperty(value = "立柱架号")
+    private String columnNum;
+
+    @ApiModelProperty(value = "立柱名称")
+    private String columnName;
 }

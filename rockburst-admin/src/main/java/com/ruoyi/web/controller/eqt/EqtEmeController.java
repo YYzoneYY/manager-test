@@ -29,10 +29,10 @@ import java.util.List;
  * @author ruoyi
  * @date 2024-11-11
  */
-@Api(tags = "eqt-电磁辐射")
-//@Tag(description = "矿井管理Controller", name = "矿井管理Controller")
-@RestController
-@RequestMapping("/eqt/eme")
+//@Api(tags = "eqt-电磁辐射")
+////@Tag(description = "矿井管理Controller", name = "矿井管理Controller")
+//@RestController
+//@RequestMapping("/eqt/eme")
 public class EqtEmeController extends BaseController
 {
     @Autowired

@@ -22,6 +22,18 @@ public class LineGraphDTO {
     @ApiModelProperty(value = "监测值")
     private BigDecimal monitoringValue;
 
+    @ApiModelProperty(value = "浅基点值")
+    private BigDecimal valueShallow;
+
+    @ApiModelProperty(value = "深基点值")
+    private BigDecimal valueDeep;
+
+    @ApiModelProperty(value = "电磁辐射强度极大值")
+    private BigDecimal eleMaxValue;
+
+    @ApiModelProperty(value = "电磁脉冲")
+    private BigDecimal elePulse;
+
     @ApiModelProperty("数据时间")
     private Long dataTime;
 }

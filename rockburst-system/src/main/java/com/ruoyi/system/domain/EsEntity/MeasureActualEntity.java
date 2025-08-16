@@ -44,7 +44,7 @@ public class MeasureActualEntity {
     private String sensorNum;
 
     @ApiModelProperty(value = "传感器类型")
-    @IndexField(value = "sensorLocation", fieldType = FieldType.KEYWORD)
+    @IndexField(value = "sensorType", fieldType = FieldType.KEYWORD)
     private String sensorType;
 
     @ApiModelProperty(value = "传感器位置")
