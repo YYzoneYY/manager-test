@@ -6,8 +6,8 @@ spring:
         druid:
             # 主库数据源
             master:
-                url: jdbc:mysql://192.168.31.156:3306/cjdy-wj?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-                username: cjdy-wj
+                url: jdbc:mysql://192.168.31.156:3306/cjdy-grade?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+                username: cjdy-grade
                 password: 123456
             # 从库数据源
             slave:

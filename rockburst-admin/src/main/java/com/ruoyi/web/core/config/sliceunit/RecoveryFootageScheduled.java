@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 @Lazy(value = false)
 @Component
-@EnableScheduling
+//@EnableScheduling
 public class RecoveryFootageScheduled implements SchedulingConfigurer {
 
     @Resource
