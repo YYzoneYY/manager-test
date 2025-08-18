@@ -29,7 +29,7 @@ import java.util.List;
 
 @Api(tags = "顶部离层位移")
 @RestController
-@RequestMapping(value = "/laneDisplacement")
+@RequestMapping(value = "/roofAbscission")
 public class RoofAbscissionController {
 
     @Resource

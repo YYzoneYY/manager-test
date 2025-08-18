@@ -27,7 +27,7 @@ public class RoofAbscissionEntity extends BusinessBaseEntity implements Serializ
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty("巷道表面位移id")
+    @ApiModelProperty("顶板离层位移id")
     @TableId(value = "roof_abscission_id", type = IdType.AUTO)
     @NotNull(groups = {ParameterValidationUpdate.class}, message = "顶板离层id不能为空")
     private Long roofAbscissionId;
