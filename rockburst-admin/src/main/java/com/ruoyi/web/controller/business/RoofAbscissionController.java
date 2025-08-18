@@ -4,6 +4,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.dto.LaneDisplacementDTO;
@@ -44,8 +45,7 @@ public class RoofAbscissionController {
     @ApiOperation(value = "添加顶部离层位移测点", notes = "添加顶部离层位移测点")
     @PostMapping(value = "/add")
     public R<Object> addMeasure(@RequestBody RoofAbscissionDTO roofAbscissionDTO) {
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.roofAbscissionService.addMeasure(roofAbscissionDTO, mineId));
     }
@@ -72,8 +72,7 @@ public class RoofAbscissionController {
     public R<Object> pageQueryList(@RequestBody MeasureSelectDTO measureSelectDTO,
                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.roofAbscissionService.pageQueryList(measureSelectDTO, mineId, pageNum, pageSize));
     }
@@ -102,8 +101,7 @@ public class RoofAbscissionController {
         List<String> sensorTypes = new ArrayList<>();
         sensorTypes.add(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE);
         String tag = "5";
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.measureActualService.ActualDataPage(actualSelectDTO, sensorTypes, mineId, tag, pageNum, pageSize));
     }
@@ -116,8 +114,7 @@ public class RoofAbscissionController {
                                      @RequestParam(required = false) Long endTime) {
         List<String> sensorTypes = new ArrayList<>();
         sensorTypes.add(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE);
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.measureActualService.obtainLineGraph(measureNum, range, startTime, endTime, sensorTypes, mineId));
     }

@@ -4,6 +4,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
 import com.ruoyi.system.domain.dto.ElecRadiationDTO;
@@ -47,8 +48,7 @@ public class ElecRadiationController {
     @ApiOperation(value = "新增电磁辐射测点", notes = "新增电磁辐射测点")
     @PostMapping(value = "/add")
     public R<Object> addMeasure(@RequestBody ElecRadiationDTO laneDisplacementDTO) {
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.elecRadiationService.addMeasure(laneDisplacementDTO, mineId));
     }
@@ -76,8 +76,7 @@ public class ElecRadiationController {
     public R<Object> pageQueryList(@RequestBody MeasureTSelectDTO measureTSelectDTO,
                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.elecRadiationService.pageQueryList(measureTSelectDTO, mineId, pageNum, pageSize));
     }
@@ -105,8 +104,7 @@ public class ElecRadiationController {
                                     @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
         List<String> sensorTypes = new ArrayList<>();
         sensorTypes.add(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE);
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.measureActualService.ActualDataTPage(actualSelectTDTO, sensorTypes, mineId,pageNum, pageSize));
     }
@@ -119,8 +117,7 @@ public class ElecRadiationController {
                                      @RequestParam(required = false) Long endTime) {
         List<String> sensorTypes = new ArrayList<>();
         sensorTypes.add(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE);
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.measureActualService.obtainLineGraph(measureNum, range, startTime, endTime, sensorTypes, mineId));
     }

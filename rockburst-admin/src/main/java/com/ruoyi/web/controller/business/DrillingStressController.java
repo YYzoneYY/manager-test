@@ -4,6 +4,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
@@ -46,8 +47,7 @@ public class DrillingStressController {
     @ApiOperation(value = "新增钻孔应力测点", notes = "新增钻孔应力测点")
     @PostMapping(value = "/add")
     public R<Object> addMeasure(@RequestBody DrillingStressDTO drillingStressDTO) {
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.drillingStressService.addMeasure(drillingStressDTO, mineId));
     }
@@ -74,8 +74,7 @@ public class DrillingStressController {
     public R<Object> pageQueryList(@RequestBody MeasureSelectDTO measureSelectDTO,
                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.drillingStressService.pageQueryList(measureSelectDTO, mineId, pageNum, pageSize));
     }
@@ -106,8 +105,7 @@ public class DrillingStressController {
         List<String> sensorTypes = new ArrayList<>();
         sensorTypes.add(ConstantsInfo.DRILL_STRESS_TYPE);
         String tag = "1";
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.measureActualService.ActualDataPage(actualSelectDTO, sensorTypes, mineId, tag, pageNum, pageSize));
     }
@@ -120,8 +118,7 @@ public class DrillingStressController {
                                      @RequestParam(required = false) Long endTime) {
         List<String> sensorTypes = new ArrayList<>();
         sensorTypes.add(ConstantsInfo.DRILL_STRESS_TYPE);
-        LoginUser loginUser = SecurityUtils.getLoginUser();
-        String token = loginUser.getToken();
+        String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.measureActualService.obtainLineGraph(measureNum, range, startTime, endTime, sensorTypes, mineId));
     }
