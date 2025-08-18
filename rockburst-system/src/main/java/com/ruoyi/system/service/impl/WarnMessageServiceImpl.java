@@ -1,0 +1,202 @@
+package com.ruoyi.system.service.impl;
+
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.ruoyi.common.core.page.TableData;
+import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.bean.BeanUtils;
+import com.ruoyi.system.EsMapper.MeasureActualMapper;
+import com.ruoyi.system.EsMapper.WarnMessageMapper;
+import com.ruoyi.system.domain.EsEntity.MeasureActualEntity;
+import com.ruoyi.system.domain.EsEntity.WarnMessageEntity;
+import com.ruoyi.system.domain.dto.actual.LineChartDTO;
+import com.ruoyi.system.domain.dto.actual.WarnMessageDTO;
+import com.ruoyi.system.domain.dto.actual.WarnSelectDTO;
+import com.ruoyi.system.domain.utils.ObtainDateUtils;
+import com.ruoyi.system.domain.utils.validatePageUtils;
+import com.ruoyi.system.domain.vo.WarnMessageVO;
+import com.ruoyi.system.service.WarnMessageService;
+import org.dromara.easyes.core.biz.EsPageInfo;
+import org.dromara.easyes.core.conditions.select.LambdaEsQueryWrapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * @author: shikai
+ * @date: 2025/8/18
+ * @description:
+ */
+
+@Transactional
+@Service
+public class WarnMessageServiceImpl implements WarnMessageService {
+
+    @Resource
+    private WarnMessageMapper warnMessageMapper;
+
+    @Resource
+    private MeasureActualMapper measureActualMapper;
+
+
+    @Override
+    public Boolean createIndex() {
+        boolean flag = false;
+        flag = warnMessageMapper.createIndex();
+        return flag;
+    }
+
+    @Override
+    public TableData warnMessagePage(WarnSelectDTO warnSelectDTO, Long mineId, Integer pageNum, Integer pageSize) {
+        if (warnSelectDTO == null) {
+            throw new IllegalArgumentException("参数 actualSelectDTO 不允许为空!");
+        }
+        EsPageInfo<WarnMessageEntity> pageInfo = queryEsPageData(warnSelectDTO, mineId, pageNum, pageSize);
+        // 将WarnMessageEntity转换为WarnMessageVO
+        List<WarnMessageVO> voList = pageInfo.getList().stream()
+                .map(this::convertToVO)
+                .collect(Collectors.toList());
+        // 返回TableData对象，包含VO列表和总记录数
+        return new TableData(voList, (int) pageInfo.getTotal());
+    }
+
+    @Override
+    public WarnMessageDTO detail(String warnInstanceNum, Long mineId) {
+        if (ObjectUtil.isNull(warnInstanceNum)) {
+            throw new IllegalArgumentException("参数错误！警情编号不允许为空!");
+        }
+        LambdaEsQueryWrapper<WarnMessageEntity> queryWrapper = new LambdaEsQueryWrapper<>();
+        queryWrapper.eq(WarnMessageEntity::getWarnInstanceNum, warnInstanceNum)
+                .eq(ObjectUtil.isNotNull(mineId), WarnMessageEntity::getMineId, mineId);
+        WarnMessageEntity warnMessageEntity = warnMessageMapper.selectOne(queryWrapper);
+        if (ObjectUtil.isNull(warnMessageEntity)) {
+            throw new IllegalArgumentException("此预警信息不存在！！");
+        }
+        WarnMessageDTO warnMessageDTO = new WarnMessageDTO();
+        BeanUtils.copyProperties(warnMessageEntity, warnMessageDTO);
+        String startTimeFmt = warnMessageEntity.getStartTime() == null ? null : DateUtils.getDateStrByTime(warnMessageEntity.getStartTime());
+        String endTimeFmt = warnMessageEntity.getEndTime() == null ? null : DateUtils.getDateStrByTime(warnMessageEntity.getEndTime());
+        warnMessageDTO.setStartTimeFmt(startTimeFmt);
+        warnMessageDTO.setEndTimeFmt(endTimeFmt);
+        // 构建预警内容，增加空值检查避免空指针异常
+        String warnContent = buildWarnContent(warnMessageEntity, startTimeFmt);
+        warnMessageDTO.setWarnContent(warnContent);
+
+        List<LineChartDTO> lineChartDTOs = new ArrayList<>();
+        Long warnStartTime = warnMessageEntity.getStartTime();
+        Long startTime = ObtainDateUtils.getThirtyMinutesTime(warnStartTime);
+
+        long endTime;
+        if (warnMessageEntity.getWarnStatus().equals(ConstantsInfo.WARNING)) {
+            endTime = System.currentTimeMillis();
+        } else if (warnMessageEntity.getWarnStatus().equals(ConstantsInfo.WARNING_END)) {
+            Long currentTime = System.currentTimeMillis();
+            Long thirtyMinutesAfterTime = ObtainDateUtils.getThirtyMinutesAfterTime(warnStartTime);
+            boolean isOverTime = ObtainDateUtils.isOverThirtyMinutesAfterTime(currentTime, thirtyMinutesAfterTime);
+            endTime = isOverTime ? currentTime : thirtyMinutesAfterTime;
+        } else {
+            // 其他状态不处理图表数据
+            warnMessageDTO.setLineChartDTOs(lineChartDTOs);
+            return warnMessageDTO;
+        }
+
+        lineChartDTOs = getLineChartData(startTime, endTime, mineId, warnMessageEntity.getMeasureNum());
+        warnMessageDTO.setLineChartDTOs(lineChartDTOs);
+        return warnMessageDTO;
+    }
+
+    /**
+     * 获取折线图数据
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param mineId 矿井ID
+     * @param measureNum 测点编码
+     * @return 折线图数据列表
+     */
+    private List<LineChartDTO> getLineChartData(Long startTime, Long endTime, Long mineId, String measureNum) {
+        List<LineChartDTO> lineChartDTOs = new ArrayList<>();
+        LambdaEsQueryWrapper<MeasureActualEntity> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.between(MeasureActualEntity::getDataTime, startTime, endTime)
+                .eq(MeasureActualEntity::getMineId, mineId)
+                .eq(MeasureActualEntity::getMeasureNum, measureNum);
+        List<MeasureActualEntity> measureActualEntities = measureActualMapper.selectList(wrapper);
+        if (!measureActualEntities.isEmpty()) {
+            measureActualEntities.forEach(measureActualEntity -> {
+                LineChartDTO lineChartDTO = new LineChartDTO();
+                lineChartDTO.setMonitoringValue(measureActualEntity.getMonitoringValue());
+                lineChartDTO.setDataTime(measureActualEntity.getDataTime());
+                lineChartDTOs.add(lineChartDTO);
+            });
+        }
+        return lineChartDTOs;
+    }
+
+    private EsPageInfo<WarnMessageEntity> queryEsPageData(WarnSelectDTO warnSelectDTO, Long mineId, Integer pageNum, Integer pageSize) {
+        // 分页参数校验与默认值设置
+        int validPageNum = validatePageUtils.validateAndSetDefaultPageNum(pageNum);
+        int validPageSize = validatePageUtils.validateAndSetDefaultPageSize(pageSize);
+
+        LambdaEsQueryWrapper<WarnMessageEntity> queryWrapper = new LambdaEsQueryWrapper<>();
+        queryWrapper.eq(ObjectUtil.isNotNull(warnSelectDTO.getWorkFaceId()), WarnMessageEntity::getWorkFaceId, warnSelectDTO.getWorkFaceId())
+                .eq(StrUtil.isNotEmpty(warnSelectDTO.getWarnType()), WarnMessageEntity::getWarnType, warnSelectDTO.getWarnType())
+                .eq(StrUtil.isNotEmpty(warnSelectDTO.getWarnLevel()), WarnMessageEntity::getWarnLevel, warnSelectDTO.getWarnLevel())
+                .eq(StrUtil.isNotEmpty(warnSelectDTO.getWarnStatus()), WarnMessageEntity::getWarnStatus, warnSelectDTO.getWarnStatus())
+                .eq(StrUtil.isNotEmpty(warnSelectDTO.getHandStatus()), WarnMessageEntity::getHandStatus, warnSelectDTO.getHandStatus())
+                .eq(ObjectUtil.isNotNull(mineId), WarnMessageEntity::getMineId, mineId)
+                .between(ObjectUtil.isNotNull(warnSelectDTO.getStartTime()),
+                        WarnMessageEntity::getStartTime,
+                        warnSelectDTO.getStartTime(),
+                        warnSelectDTO.getEndTime())
+                .orderByDesc(WarnMessageEntity::getStartTime);
+
+        return warnMessageMapper.pageQuery(queryWrapper, validPageNum, validPageSize);
+    }
+
+    private WarnMessageVO convertToVO(WarnMessageEntity entity) {
+        WarnMessageVO vo = new WarnMessageVO();
+        // 使用BeanUtils复制同名属性
+        BeanUtils.copyProperties(entity, vo);
+        // 格式化时间
+        String startTimeFmt = entity.getStartTime() == null ? null : DateUtils.getDateStrByTime(entity.getStartTime());
+        String endTimeFmt = entity.getEndTime() == null ? null : DateUtils.getDateStrByTime(entity.getEndTime());
+        vo.setStartTimeFmt(startTimeFmt);
+        vo.setEndTimeFmt(endTimeFmt);
+        // 构建预警内容，增加空值检查避免空指针异常
+        String warnContent = buildWarnContent(entity, startTimeFmt);
+        vo.setWarnContent(warnContent);
+        return vo;
+    }
+
+    /**
+     * 构建预警内容
+     *
+     * @param entity 实体对象
+     * @param startTimeFmt 格式化后的开始时间
+     * @return 预警内容
+     */
+    private String buildWarnContent(WarnMessageEntity entity, String startTimeFmt) {
+        if (entity.getMeasureNum() == null || entity.getWarnType() == null ||
+                entity.getWarnLevel() == null || entity.getMonitoringValue() == null) {
+            return ""; // 如果关键字段为空，返回空字符串而不是null
+        }
+
+        StringBuilder warnContentBuilder = new StringBuilder();
+        warnContentBuilder.append(entity.getMeasureNum())
+                .append("测点在")
+                .append(startTimeFmt == null ? "" : startTimeFmt)
+                .append("发生")
+                .append(entity.getWarnType())
+                .append(entity.getWarnLevel())
+                .append("预警，值为")
+                .append(entity.getMonitoringValue());
+
+        return warnContentBuilder.toString();
+    }
+
+}

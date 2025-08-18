@@ -22,6 +22,26 @@ public class ObtainDateUtils {
     }
 
     /**
+     * 获取后30分钟的时间戳
+     * @param currentTime 当前时间戳
+     */
+    public static Long getThirtyMinutesAfterTime(Long currentTime) {
+        long thirtyMinutesAfter = 0L;
+        thirtyMinutesAfter = currentTime + 30 * 60 * 1000L;
+        return thirtyMinutesAfter;
+    }
+
+    /**
+     * 判断后30分钟的时间是否超过当前时间
+     * @param currentTime 当前时间戳
+     * @param targetTime 目标时间戳
+     */
+    public static boolean isOverThirtyMinutesAfterTime(Long currentTime, Long targetTime) {
+        Long thirtyMinutesAfter = getThirtyMinutesAfterTime(targetTime);
+        return thirtyMinutesAfter > currentTime;
+    }
+
+    /**
      * 获取一小时的时间戳
      * @param currentTime 当前时间戳
      */

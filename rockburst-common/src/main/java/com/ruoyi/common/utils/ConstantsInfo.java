@@ -55,6 +55,9 @@ public class ConstantsInfo {
     public static final String LANE_DISPLACEMENT_TYPE = "1501";
     public static final String ELECTROMAGNETIC_RADIATION_TYPE = "1801";
 
+    public static final String WARNING = "1"; // 预警中
+    public static final String WARNING_END = "0"; // 预警结束
+
 
     // 预警配置类型
     public static final String THRESHOLD_CONFIG = "thresholdConfig"; // 预警阈值配置
