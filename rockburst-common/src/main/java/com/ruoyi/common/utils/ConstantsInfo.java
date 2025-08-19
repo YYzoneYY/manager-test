@@ -55,6 +55,22 @@ public class ConstantsInfo {
     public static final String LANE_DISPLACEMENT_TYPE = "1501";
     public static final String ELECTROMAGNETIC_RADIATION_TYPE = "1801";
 
+
+    public static final String DRILL_STRESS = "钻孔";
+    public static final String ANCHOR_STRESS = "锚杆";
+    public static final String ANCHOR_CABLE_STRESS = "锚索";
+    public static final String SHALLOW_DEEP_RESISTANCE = "深基点,浅基点";
+    public static final String LANE_DISPLACEMENT = "巷道位移";
+    public static final String ELE_INTENSITY_PULSE = "电磁强度,电磁脉冲";
+    public static final String SUPPORT_RESISTANCE = "支架阻力";
+
+    public static final String SUPPORT_RESISTANCE_YPE = "1"; // 工作面支架阻力
+    public static final String DRILL_STRESS_YPE = "2"; // 钻孔应力
+    public static final String ANCHOR_STRESS_YPE = "3"; // 锚杆(索)应力
+    public static final String ROOF_ABSCISSION_TYPE_YPE = "4"; // 顶板离层位移
+    public static final String LANE_DISPLACEMENT_YPE = "5"; // 巷道位移
+    public static final String ELECTROMAGNETIC_RADIATION_YPE = "6"; //电磁辐射
+
     public static final String WARNING = "1"; // 预警中
     public static final String WARNING_END = "0"; // 预警结束
 

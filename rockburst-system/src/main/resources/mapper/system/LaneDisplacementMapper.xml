@@ -55,5 +55,31 @@
         </where>
     </select>
 
+    <select id="selectParameterPage" resultType="com.ruoyi.system.domain.dto.actual.ParameterDTO">
+        SELECT
+        ld.displacement_id AS dataId,
+        ld.measure_num AS measureNum,
+        ld.sensor_type AS sensorType,
+        ld.sensor_location AS sensorLocation,
+        ld.workface_id AS workFaceId
+        FROM lane_displacement ld
+        <where>
+            ld.mine_id = #{mineId} AND ld.del_flag = '0'
+            <if test="keyword != null and keyword != ''">
+                AND (
+                ld.sensor_location LIKE CONCAT('%', #{keyword}, '%')
+                OR ld.workface_id IN (
+                SELECT bw.workface_id
+                FROM biz_workface bw
+                WHERE bw.workface_name LIKE CONCAT('%', #{keyword}, '%')
+                AND bw.del_flag = '0'
+                AND bw.mine_id = #{mineId}
+                )
+                )
+            </if>
+        </where>
+        ORDER BY ld.install_time DESC
+    </select>
+
 
 </mapper>

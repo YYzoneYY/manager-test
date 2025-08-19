@@ -77,7 +77,7 @@ public class LaneDisplacementController {
         return R.ok(this.laneDisplacementService.pageQueryList(measureSelectDTO, mineId, pageNum, pageSize));
     }
 
-    @ApiOperation(value = "批量删除钻孔应力测点", notes = "批量删除钻孔应力测点")
+    @ApiOperation(value = "批量删除巷道位移测点", notes = "批量删除巷道位移测点")
     @DeleteMapping(value = "/delete")
     public R<Object> deleteByIds(@ApiParam(name = "displacementIds", value = "主键id数组", required = true) @RequestParam Long[] displacementIds) {
         return R.ok(this.laneDisplacementService.deleteByIds(displacementIds));

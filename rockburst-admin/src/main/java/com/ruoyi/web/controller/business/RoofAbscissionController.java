@@ -78,7 +78,7 @@ public class RoofAbscissionController {
     }
 
     @ApiOperation(value = "批量删除", notes = "批量删除")
-    @PutMapping(value = "/delete")
+    @DeleteMapping(value = "/delete")
     public R<Object> deleteByIds(@ApiParam(name = "roofAbscissionIds", value = "主键id数组", required = true) @RequestParam Long[] roofAbscissionIds) {
         return R.ok(this.roofAbscissionService.deleteByIds(roofAbscissionIds));
     }

@@ -260,7 +260,7 @@ public class MeasureActualServiceImpl implements MeasureActualService {
         queryWrapper.in(MeasureActualEntity::getMeasureNum, measureNums)
                 .in(MeasureActualEntity::getSensorType, sensorTypes)
                 .eq(MeasureActualEntity::getMineId, mineId)
-                .eq(StrUtil.isNotEmpty(actualSelectDTO.getMonitoringStatus()), MeasureActualEntity::getMonitoringStatus, actualSelectDTO.getMonitoringStatus())
+                .eq(StrUtil.isNotEmpty(actualSelectDTO.getMonitoringStatus()), MeasureActualEntity::getSensorStatus, actualSelectDTO.getMonitoringStatus())
                 .between(ObjectUtil.isNotNull(actualSelectDTO.getStartTime()),
                         MeasureActualEntity::getDataTime,
                         actualSelectDTO.getStartTime(),

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.pagehelper.Page;
 import com.ruoyi.system.domain.Entity.SupportResistanceEntity;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
+import com.ruoyi.system.domain.dto.actual.ParameterDTO;
 import com.ruoyi.system.domain.vo.SupportResistanceVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -26,4 +27,7 @@ public interface SupportResistanceMapper extends BaseMapper<SupportResistanceEnt
 
     List<String> selectMeasureNumList(@Param("surveyAreaName") String surveyAreaName,
                                       @Param("mineId") Long mineId);
+
+    Page<ParameterDTO> selectParameterPage(@Param("keyword") String keyword,
+                                           @Param("mineId") Long mineId);
 }

@@ -71,9 +71,9 @@ public class MeasureActualEntity {
     @IndexField(value = "elePulse", fieldType = FieldType.DOUBLE)
     private BigDecimal elePulse;
 
-    @ApiModelProperty(value = "测点状态")
-    @IndexField(value = "monitoringStatus", fieldType = FieldType.KEYWORD)
-    private String monitoringStatus;
+    @ApiModelProperty(value = "传感器状态")
+    @IndexField(value = "sensorStatus", fieldType = FieldType.KEYWORD)
+    private String sensorStatus;
 
     @ApiModelProperty("数据时间")
     @IndexField(value = "dataTime", fieldType = FieldType.LONG)

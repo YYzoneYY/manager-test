@@ -4,6 +4,7 @@ import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.system.domain.EsEntity.MeasureActualEntity;
 import com.ruoyi.system.domain.dto.actual.ActualDataDTO;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -30,7 +31,7 @@ public class ActualDataConverter {
         dto.setSensorType(entity.getSensorType());
         dto.setSensorLocation(entity.getSensorLocation());
         dto.setMonitoringValue(entity.getMonitoringValue());
-        dto.setMonitoringStatus(entity.getMonitoringStatus());
+        dto.setSensorStatus(entity.getSensorStatus());
         dto.setDataTime(entity.getDataTime());
         // surveyAreaName和sensorName需要从其他地方获取，暂时留空
         return dto;
@@ -78,6 +79,8 @@ public class ActualDataConverter {
         if (ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE.equals(sensorType)) {
             dto.setValueShallow(entity.getValueShallow());
             dto.setValueDeep(entity.getValueDeep());
+            BigDecimal subtract = entity.getValueDeep().subtract(entity.getValueShallow());
+            dto.setDifference(subtract);
         }
 
         // 支架阻力传感器需要传感器编号,立柱架号和立柱名称

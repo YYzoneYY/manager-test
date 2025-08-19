@@ -1,22 +1,26 @@
 package com.ruoyi.system.service.impl;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.EsMapper.MeasureActualMapper;
 import com.ruoyi.system.EsMapper.WarnMessageMapper;
+import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.EsEntity.MeasureActualEntity;
 import com.ruoyi.system.domain.EsEntity.WarnMessageEntity;
-import com.ruoyi.system.domain.dto.actual.LineChartDTO;
-import com.ruoyi.system.domain.dto.actual.WarnMessageDTO;
-import com.ruoyi.system.domain.dto.actual.WarnSelectDTO;
+import com.ruoyi.system.domain.dto.actual.*;
 import com.ruoyi.system.domain.utils.ObtainDateUtils;
 import com.ruoyi.system.domain.utils.validatePageUtils;
 import com.ruoyi.system.domain.vo.WarnMessageVO;
+import com.ruoyi.system.mapper.*;
+import com.ruoyi.system.service.MultiplePlanService;
 import com.ruoyi.system.service.WarnMessageService;
 import org.dromara.easyes.core.biz.EsPageInfo;
 import org.dromara.easyes.core.conditions.select.LambdaEsQueryWrapper;
@@ -26,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +48,30 @@ public class WarnMessageServiceImpl implements WarnMessageService {
 
     @Resource
     private MeasureActualMapper measureActualMapper;
+
+    @Resource
+    private SupportResistanceMapper supportResistanceMapper;
+
+    @Resource
+    private DrillingStressMapper drillingStressMapper;
+
+    @Resource
+    private AnchorCableStressMapper anchorCableStressMapper;
+
+    @Resource
+    private RoofAbscissionMapper roofAbscissionMapper;
+
+    @Resource
+    private LaneDisplacementMapper laneDisplacementMapper;
+
+    @Resource
+    private ElecRadiationMapper elecRadiationMapper;
+
+    @Resource
+    private BizWorkfaceMapper bizWorkfaceMapper;
+
+    @Resource
+    private MultiplePlanService multiplePlanService;
 
 
     @Override
@@ -84,6 +113,8 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         String endTimeFmt = warnMessageEntity.getEndTime() == null ? null : DateUtils.getDateStrByTime(warnMessageEntity.getEndTime());
         warnMessageDTO.setStartTimeFmt(startTimeFmt);
         warnMessageDTO.setEndTimeFmt(endTimeFmt);
+        String monitorValue = obtainMonitorValue(warnMessageEntity);
+        warnMessageDTO.setMonitorValue(monitorValue);
         // 构建预警内容，增加空值检查避免空指针异常
         String warnContent = buildWarnContent(warnMessageEntity, startTimeFmt);
         warnMessageDTO.setWarnContent(warnContent);
@@ -111,6 +142,82 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         return warnMessageDTO;
     }
 
+    @Override
+    public TableData referenceQuantityPage(String type, String keyword, Long mineId, Integer pageNum, Integer pageSize) {
+        if (ObjectUtil.isNull(type)) {
+            throw new IllegalArgumentException("参数错误！type 不允许为空!");
+        }
+        int validPageNum = validatePageUtils.validateAndSetDefaultPageNum(pageNum);
+        int validPageSize = validatePageUtils.validateAndSetDefaultPageSize(pageSize);
+
+        PageHelper.startPage(validPageNum, validPageSize);
+        Page<ParameterDTO> parameterDTOS = null;
+
+        // 根据type值查询不同的表
+        switch (type) {
+            case "1":
+                // 工作面支架阻力
+                parameterDTOS = supportResistanceMapper.selectParameterPage(keyword, mineId);
+                break;
+            case "2":
+                // 钻孔应力
+                parameterDTOS = drillingStressMapper.selectParameterPage(keyword, mineId);
+                break;
+            case "3":
+                // 钻孔应力
+                parameterDTOS = anchorCableStressMapper.selectParameterPage(keyword, mineId);
+                break;
+            case "4":
+                // 顶板离层
+                parameterDTOS = roofAbscissionMapper.selectParameterPage(keyword, mineId);
+                break;
+            case "5":
+                // 巷道位移
+                parameterDTOS = laneDisplacementMapper.selectParameterPage(keyword, mineId);
+                break;
+            case "6":
+                // 电磁辐射
+                parameterDTOS = elecRadiationMapper.selectParameterPage(keyword, mineId);
+                break;
+            default:
+                throw new IllegalArgumentException("不支持的查询类型: " + type);
+        }
+        Page<ParameterDTO> dtoPage = getListFmt(parameterDTOS);
+
+        // 返回统一的TableData结果
+        return new TableData(dtoPage.getResult(), (int) dtoPage.getTotal());
+    }
+
+    @Override
+    public boolean saveMultipleParamPlan(List<MultipleParamPlanDTO> multipleParamPlanDTOs, String location, Long mineId) {
+        return multiplePlanService.saveBatch(multipleParamPlanDTOs, location, mineId);
+    }
+
+    private Page<ParameterDTO> getListFmt(Page<ParameterDTO> parameterDTOS) {
+        if (ListUtils.isNotNull(parameterDTOS.getResult())) {
+            parameterDTOS.getResult().forEach(parameterDTO -> {
+                String sensorType = parameterDTO.getSensorType();
+                if (sensorType != null && sensorType.equals(ConstantsInfo.DRILL_STRESS_TYPE)) {
+                    parameterDTO.setMonitorItems(ConstantsInfo.DRILL_STRESS);
+                } else if (sensorType != null && sensorType.equals(ConstantsInfo.ANCHOR_STRESS_TYPE)) {
+                    parameterDTO.setMonitorItems(ConstantsInfo.ANCHOR_STRESS);
+                } else if (sensorType != null && sensorType.equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)) {
+                    parameterDTO.setMonitorItems(ConstantsInfo.ANCHOR_CABLE_STRESS);
+                } else if (sensorType != null && sensorType.equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
+                    parameterDTO.setMonitorItems(ConstantsInfo.SHALLOW_DEEP_RESISTANCE);
+                } else if (sensorType != null && sensorType.equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
+                    parameterDTO.setMonitorItems(ConstantsInfo.LANE_DISPLACEMENT);
+                } else if (sensorType != null && sensorType.equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
+                    parameterDTO.setMonitorItems(ConstantsInfo.ELE_INTENSITY_PULSE);
+                } else if (sensorType != null && sensorType.equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE)) {
+                    parameterDTO.setMonitorItems(ConstantsInfo.SUPPORT_RESISTANCE);
+                }
+                parameterDTO.setWorkFaceName(getWorkFaceName(parameterDTO.getWorkFaceId()));
+            });
+        }
+        return parameterDTOS;
+    }
+
     /**
      * 获取折线图数据
      * @param startTime 开始时间
@@ -129,7 +236,19 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         if (!measureActualEntities.isEmpty()) {
             measureActualEntities.forEach(measureActualEntity -> {
                 LineChartDTO lineChartDTO = new LineChartDTO();
-                lineChartDTO.setMonitoringValue(measureActualEntity.getMonitoringValue());
+                if (measureActualEntity.getSensorType().equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE) ||
+                        measureActualEntity.getSensorType().equals(ConstantsInfo.DRILL_STRESS_TYPE) ||
+                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_STRESS_TYPE) ||
+                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)
+                        || measureActualEntity.getSensorType().equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
+                    lineChartDTO.setMonitoringValue(measureActualEntity.getMonitoringValue());
+                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
+                    lineChartDTO.setMonitoringValue(measureActualEntity.getValueShallow());
+                    lineChartDTO.setValueDeep(measureActualEntity.getValueDeep());
+                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
+                    lineChartDTO.setEleMaxValue(measureActualEntity.getEleMaxValue());
+                    lineChartDTO.setElePulse(measureActualEntity.getElePulse());
+                }
                 lineChartDTO.setDataTime(measureActualEntity.getDataTime());
                 lineChartDTOs.add(lineChartDTO);
             });
@@ -167,6 +286,9 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         String endTimeFmt = entity.getEndTime() == null ? null : DateUtils.getDateStrByTime(entity.getEndTime());
         vo.setStartTimeFmt(startTimeFmt);
         vo.setEndTimeFmt(endTimeFmt);
+
+        String monitorValue = obtainMonitorValue(entity);
+        vo.setMonitoringValue(monitorValue);
         // 构建预警内容，增加空值检查避免空指针异常
         String warnContent = buildWarnContent(entity, startTimeFmt);
         vo.setWarnContent(warnContent);
@@ -198,5 +320,41 @@ public class WarnMessageServiceImpl implements WarnMessageService {
 
         return warnContentBuilder.toString();
     }
+
+    private String getWorkFaceName(Long workFaceId) {
+        String workFaceName = null;
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceId, workFaceId)
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNull(bizWorkface)) {
+            return workFaceName;
+        }
+        workFaceName =  bizWorkface.getWorkfaceName();
+        return workFaceName;
+    }
+
+
+    private String obtainMonitorValue(WarnMessageEntity entity) {
+        String monitorValue = "";
+        String sensorType = entity.getSensorType();
+        if (sensorType != null && (sensorType.equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE) || sensorType.equals(ConstantsInfo.DRILL_STRESS_TYPE)
+                || sensorType.equals(ConstantsInfo.ANCHOR_STRESS_TYPE) || sensorType.equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)
+                || sensorType.equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE))) {
+            if (entity.getMonitoringValue() != null) {
+                monitorValue = entity.getMonitoringValue().toString();
+            }
+        } else if (Objects.equals(sensorType, ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
+            String valueShallow = entity.getValueShallow() != null ? entity.getValueShallow().toString() : "";
+            String valueDeep = entity.getValueDeep() != null ? entity.getValueDeep().toString() : "";
+            monitorValue = "浅基点:" + valueShallow + ",深基点:" + valueDeep;
+        } else if (Objects.equals(sensorType, ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
+            String eleMaxValue = entity.getEleMaxValue() != null ? entity.getEleMaxValue().toString() : "";
+            String elePulse = entity.getElePulse() != null ? entity.getElePulse().toString() : "";
+            monitorValue = "电磁强度极大值:" + eleMaxValue + ",电磁脉冲:" + elePulse;
+        }
+        return monitorValue;
+    }
+
+
 
 }

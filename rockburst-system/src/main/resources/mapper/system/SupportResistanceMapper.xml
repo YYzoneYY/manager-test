@@ -56,4 +56,30 @@
         </where>
     </select>
 
+    <select id="selectParameterPage" resultType="com.ruoyi.system.domain.dto.actual.ParameterDTO">
+        SELECT
+        sr.support_resistance_id AS dataId,
+        sr.measure_num AS measureNum,
+        sr.workface_id AS workFaceId,
+        sr.sensor_location AS sensorLocation,
+        sr.sensor_type AS sensorType
+        FROM support_resistance sr
+        <where>
+            sr.mine_id = #{mineId} AND sr.del_flag = '0'
+            <if test="keyword != null and keyword != ''">
+                AND (
+                sr.sensor_location LIKE CONCAT('%', #{keyword}, '%')
+                OR sr.workface_id IN (
+                SELECT bw.workface_id
+                FROM biz_workface bw
+                WHERE bw.workface_name LIKE CONCAT('%', #{keyword}, '%')
+                AND bw.del_flag = '0'
+                AND bw.mine_id = #{mineId}
+                )
+                )
+            </if>
+        </where>
+        GROUP BY sr.data_time DESC
+    </select>
+
 </mapper>

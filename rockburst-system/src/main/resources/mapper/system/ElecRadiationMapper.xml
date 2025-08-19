@@ -42,4 +42,32 @@
         Order By er.install_time DESC
     </select>
 
+    <select id="selectParameterPage" resultType="com.ruoyi.system.domain.dto.actual.ParameterDTO">
+        SELECT
+        er.radiation_id AS dataId,
+        er.measure_num AS measureNum,
+        er.sensor_type AS sensorType,
+        er.sensor_location AS sensorLocation,
+        er.workface_id AS workFaceId,
+        er.install_time AS installTime,
+        er.status AS status
+        FROM elec_radiation as er
+        <where>
+            er.mine_id = #{mineId} AND er.del_flag = '0'
+            <if test="keyword != null and keyword != ''">
+                AND (
+                er.sensor_location LIKE CONCAT('%', #{keyword}, '%')
+                OR er.workface_id IN (
+                SELECT bw.workface_id
+                FROM biz_workface bw
+                WHERE bw.workface_name LIKE CONCAT('%', #{keyword}, '%')
+                AND bw.del_flag = '0'
+                AND bw.mine_id = #{mineId}
+                )
+                )
+            </if>
+        </where>
+        GROUP BY er.install_time DESC
+    </select>
+
 </mapper>

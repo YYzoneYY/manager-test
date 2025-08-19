@@ -56,4 +56,21 @@ public class WarnMessageController {
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.warnMessageService.detail(warnInstanceNum, mineId));
     }
+
+    @ApiOperation(value = "多参量选择列表", notes = "多参量选择列表")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "type", value = "类型", required = true, dataType = "String"),
+            @ApiImplicitParam(name = "keyword", value = "关键字", dataType = "String", required = false),
+            @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
+            @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
+    })
+    @PostMapping(value = "/referenceQuantityPage")
+    public R<Object> referenceQuantityPage(@ApiParam(name = "type", value = "类型", required = true) @RequestParam String type,
+                                    @ApiParam(name = "keyword", value = "关键字") @RequestParam(required = false) String keyword,
+                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
+                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.warnMessageService.referenceQuantityPage(type, keyword, mineId, pageNum, pageSize));
+    }
 }

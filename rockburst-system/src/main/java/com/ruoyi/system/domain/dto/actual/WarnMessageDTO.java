@@ -17,6 +17,9 @@ import java.util.List;
 @Data
 public class WarnMessageDTO extends WarnMessageEntity {
 
+    @ApiModelProperty(value = "监测值(处理后)")
+    private String monitorValue;
+
     @ApiModelProperty(value = "警情内容")
     private String warnContent;
 

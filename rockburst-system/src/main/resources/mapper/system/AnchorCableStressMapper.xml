@@ -56,4 +56,30 @@
         </where>
     </select>
 
+    <select id="selectParameterPage" resultType="com.ruoyi.system.domain.dto.actual.ParameterDTO">
+        SELECT
+        acs.anchor_cable_stress_id AS dataId,
+        acs.measure_num AS measureNum,
+        acs.workface_id AS workFaceId,
+        acs.sensor_location AS sensorLocation,
+        acs.sensor_type AS sensorType
+        FROM anchor_cable_stress acs
+        <where>
+            acs.mine_id = #{mineId} AND acs.del_flag = '0'
+            <if test="keyword != null and keyword != ''">
+                AND (
+                acs.sensor_location LIKE CONCAT('%', #{keyword}, '%')
+                OR acs.workface_id IN (
+                SELECT bw.workface_id
+                FROM biz_workface bw
+                WHERE bw.workface_name LIKE CONCAT('%', #{keyword}, '%')
+                AND bw.del_flag = '0'
+                AND bw.mine_id = #{mineId}
+                )
+                )
+            </if>
+        </where>
+        ORDER BY acs.install_time DESC
+    </select>
+
 </mapper>

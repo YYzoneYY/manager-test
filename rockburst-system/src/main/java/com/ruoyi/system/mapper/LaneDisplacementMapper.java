@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.pagehelper.Page;
 import com.ruoyi.system.domain.Entity.LaneDisplacementEntity;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
+import com.ruoyi.system.domain.dto.actual.ParameterDTO;
 import com.ruoyi.system.domain.vo.DisplacementVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -26,4 +27,7 @@ public interface LaneDisplacementMapper extends BaseMapper<LaneDisplacementEntit
 
     List<String> selectMeasureNumList(@Param("surveyAreaName") String surveyAreaName,
                                       @Param("mineId") Long mineId);
+
+    Page<ParameterDTO> selectParameterPage(@Param("keyword") String keyword,
+                                           @Param("mineId") Long mineId);
 }

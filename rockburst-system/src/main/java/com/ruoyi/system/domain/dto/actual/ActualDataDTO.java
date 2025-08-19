@@ -33,7 +33,7 @@ public class ActualDataDTO {
     private BigDecimal monitoringValue;
 
     @ApiModelProperty(value = "传感器状态")
-    private String monitoringStatus;
+    private String sensorStatus;
 
     @ApiModelProperty(value = "数据时间")
     private Long dataTime;
@@ -44,6 +44,9 @@ public class ActualDataDTO {
 
     @ApiModelProperty(value = "深基点值")
     private BigDecimal valueDeep;
+
+    @ApiModelProperty(value = "差值")
+    private BigDecimal difference;
 
     // 支架阻力额外字段
     @ApiModelProperty(value = "传感器编号")
