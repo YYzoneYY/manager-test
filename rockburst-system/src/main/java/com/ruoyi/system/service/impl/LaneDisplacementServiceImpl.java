@@ -103,7 +103,7 @@ public class LaneDisplacementServiceImpl extends ServiceImpl<LaneDisplacementMap
         laneDisplacementEntity.setUpdateTime(System.currentTimeMillis());
         laneDisplacementEntity.setUpdateBy(SecurityUtils.getUserId());
         flag = laneDisplacementMapper.updateById(laneDisplacementEntity);
-        if (flag <= 0) {
+        if (flag > 0) {
             if (ObjectUtil.isNotNull(laneDisplacementDTO.getWarnSchemeDTO())) {
                 int update = updateAloneWarnScheme(laneDisplacementDTO.getMeasureNum(), laneDisplacementDTO.getWarnSchemeDTO());
                 if (update <= 0) {

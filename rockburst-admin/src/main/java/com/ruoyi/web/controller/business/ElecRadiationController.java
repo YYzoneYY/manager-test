@@ -63,7 +63,7 @@ public class ElecRadiationController {
 
     @ApiOperation(value = "根据主键查询", notes = "根据主键查询")
     @GetMapping(value = "/getById")
-    public R<ElecRadiationDTO> detail(@ApiParam(name = "displacementId", value = "主键id", required = true) @RequestParam Long radiationId) {
+    public R<ElecRadiationDTO> detail(@ApiParam(name = "radiationId", value = "主键id", required = true) @RequestParam Long radiationId) {
         return R.ok(this.elecRadiationService.detail(radiationId));
     }
 

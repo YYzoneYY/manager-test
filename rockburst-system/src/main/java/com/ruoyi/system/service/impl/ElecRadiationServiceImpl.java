@@ -102,7 +102,7 @@ public class ElecRadiationServiceImpl extends ServiceImpl<ElecRadiationMapper, E
         elecRadiationEntity.setUpdateTime(System.currentTimeMillis());
         elecRadiationEntity.setUpdateBy(SecurityUtils.getUserId());
         flag = elecRadiationMapper.updateById(elecRadiationEntity);
-        if (flag <= 0) {
+        if (flag > 0) {
             if (ObjectUtil.isNotNull(elecRadiationDTO.getWarnSchemeDTO())) {
                 int update = updateAloneWarnScheme(elecRadiationDTO.getMeasureNum(), elecRadiationDTO.getWarnSchemeDTO());
                 if (update <= 0) {

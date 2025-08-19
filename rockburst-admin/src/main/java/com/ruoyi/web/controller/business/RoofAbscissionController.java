@@ -51,7 +51,7 @@ public class RoofAbscissionController {
     }
 
     @ApiOperation(value = "修改顶部离层位移测点", notes = "修改顶部离层位移测点")
-    @PostMapping(value = "/update")
+    @PutMapping(value = "/update")
     public R<Object> updateMeasure(@RequestBody @Validated(ParameterValidationUpdate.class)
                                    RoofAbscissionDTO roofAbscissionDTO) {
         return R.ok(this.roofAbscissionService.updateMeasure(roofAbscissionDTO));

@@ -11,7 +11,7 @@
         ORDER BY SUBSTRING(measure_num, -4) DESC LIMIT 1;
     </select>
 
-    <select id="selectQueryPage" resultType="com.ruoyi.system.domain.vo.DisplacementVO">
+    <select id="selectQueryPage" resultType="com.ruoyi.system.domain.vo.RoofAbscissionVO">
         SELECT
         ra.roof_abscission_id AS roofAbscissionId,
         ra.measure_num AS measureNum,

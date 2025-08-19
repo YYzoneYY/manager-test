@@ -72,6 +72,7 @@ public class RoofAbscissionServiceImpl extends ServiceImpl<RoofAbscissionMapper,
         roofAbscissionEntity.setCreateBy(SecurityUtils.getUserId());
         roofAbscissionEntity.setMineId(mineId);
         roofAbscissionEntity.setTag(ConstantsInfo.MANUALLY_ADD);
+        roofAbscissionEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         flag = roofAbscissionMapper.insert(roofAbscissionEntity);
         if (flag <= 0) {
             throw new RuntimeException("测点新增失败,请联系管理员");
@@ -103,7 +104,7 @@ public class RoofAbscissionServiceImpl extends ServiceImpl<RoofAbscissionMapper,
         roofAbscissionEntity.setUpdateTime(System.currentTimeMillis());
         roofAbscissionEntity.setUpdateBy(SecurityUtils.getUserId());
         flag = roofAbscissionMapper.updateById(roofAbscissionEntity);
-        if (flag <= 0) {
+        if (flag > 0) {
             if (ObjectUtil.isNotNull(roofAbscissionDTO.getWarnSchemeDTO())) {
                 int update = updateAloneWarnScheme(roofAbscissionDTO.getMeasureNum(), roofAbscissionDTO.getWarnSchemeDTO());
                 if (update <= 0) {
