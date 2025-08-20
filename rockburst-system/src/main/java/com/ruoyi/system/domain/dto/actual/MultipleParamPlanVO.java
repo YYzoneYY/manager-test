@@ -1,12 +1,7 @@
 package com.ruoyi.system.domain.dto.actual;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.ruoyi.system.domain.Entity.MultiplePlanEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * @author: shikai
@@ -15,7 +10,16 @@ import lombok.EqualsAndHashCode;
  */
 
 @Data
-public class MultipleParamPlanDTO{
+public class MultipleParamPlanVO {
+
+    @ApiModelProperty("多参量方案id")
+    private Long multiplePlanId;
+
+    @ApiModelProperty("参量名称")
+    private String paramName;
+
+    @ApiModelProperty("警情编号")
+    private String warnInstanceNum;
 
     @ApiModelProperty("测点编码")
     private String measureNum;

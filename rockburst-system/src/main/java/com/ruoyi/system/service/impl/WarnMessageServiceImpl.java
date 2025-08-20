@@ -13,6 +13,7 @@ import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.EsMapper.MeasureActualMapper;
 import com.ruoyi.system.EsMapper.WarnMessageMapper;
 import com.ruoyi.system.domain.BizWorkface;
+import com.ruoyi.system.domain.Entity.MultiplePlanEntity;
 import com.ruoyi.system.domain.EsEntity.MeasureActualEntity;
 import com.ruoyi.system.domain.EsEntity.WarnMessageEntity;
 import com.ruoyi.system.domain.dto.actual.*;
@@ -72,6 +73,9 @@ public class WarnMessageServiceImpl implements WarnMessageService {
 
     @Resource
     private MultiplePlanService multiplePlanService;
+
+    @Resource
+    private MultiplePlanMapper multiplePlanMapper;
 
 
     @Override
@@ -139,7 +143,28 @@ public class WarnMessageServiceImpl implements WarnMessageService {
 
         lineChartDTOs = getLineChartData(startTime, endTime, mineId, warnMessageEntity.getMeasureNum());
         warnMessageDTO.setLineChartDTOs(lineChartDTOs);
+
+        List<ParamAnalyzeDTO> paramAnalyzeDTOS = obtainParamAnalyzeData(warnMessageEntity.getMeasureNum(), startTime, endTime, mineId);
+        warnMessageDTO.setParamAnalyzeDTOs(paramAnalyzeDTOS);
         return warnMessageDTO;
+    }
+
+    private List<ParamAnalyzeDTO> obtainParamAnalyzeData(String warnInstanceNum, Long startTime, Long endTime, Long mineId) {
+        List<MultiplePlanEntity> multiplePlanEntities = multiplePlanMapper.selectList(new LambdaQueryWrapper<MultiplePlanEntity>()
+                .eq(MultiplePlanEntity::getWarnInstanceNum, warnInstanceNum)
+                .eq(MultiplePlanEntity::getMineId, mineId));
+        List<ParamAnalyzeDTO> paramAnalyzeDTOS = new ArrayList<>();
+        if (ListUtils.isNotNull(multiplePlanEntities)) {
+            multiplePlanEntities.forEach(multiplePlanEntity -> {
+                ParamAnalyzeDTO paramAnalyzeDTO = new ParamAnalyzeDTO();
+                paramAnalyzeDTO.setSensorType(multiplePlanEntity.getSensorType());
+                paramAnalyzeDTO.setMeasureNum(multiplePlanEntity.getMeasureNum());
+                List<LineChartDTO> lineChartDTOS = getLineChartData(startTime, endTime, mineId, warnInstanceNum);
+                paramAnalyzeDTO.setLineChartDTOs(lineChartDTOS);
+                paramAnalyzeDTOS.add(paramAnalyzeDTO);
+            });
+        }
+        return paramAnalyzeDTOS;
     }
 
     @Override
@@ -189,8 +214,18 @@ public class WarnMessageServiceImpl implements WarnMessageService {
     }
 
     @Override
-    public boolean saveMultipleParamPlan(List<MultipleParamPlanDTO> multipleParamPlanDTOs, String location, Long mineId) {
-        return multiplePlanService.saveBatch(multipleParamPlanDTOs, location, mineId);
+    public boolean saveMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
+        return multiplePlanService.saveBatch(warnInstanceNum, location, multipleParamPlanDTOs, mineId);
+    }
+
+    @Override
+    public boolean updateMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
+        return multiplePlanService.updateBatchById(warnInstanceNum, location, multipleParamPlanDTOs, mineId);
+    }
+
+    @Override
+    public List<MultipleParamPlanVO> obtainMultipleParamPlan(String warnInstanceNum, Long mineId) {
+        return multiplePlanService.getMultipleParamPlanList(warnInstanceNum, mineId);
     }
 
     private Page<ParameterDTO> getListFmt(Page<ParameterDTO> parameterDTOS) {
@@ -354,7 +389,5 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         }
         return monitorValue;
     }
-
-
 
 }

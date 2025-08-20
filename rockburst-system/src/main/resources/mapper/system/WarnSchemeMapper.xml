@@ -4,9 +4,9 @@
 
     <select id="queryPage" resultType="com.ruoyi.system.domain.vo.WarnSchemeVO">
         select ws.warn_scheme_id as warnSchemeId,
-               ws.warn_scheme_name as warnSchemeName,
+               ws.scheme_name as schemeName,
                ws.scene_type as sceneType,
-               ws.workface_id as workFaceId,
+               ws.work_face_id as workFaceId,
                ws.threshold_config as thresholdConfig,
                ws.increment_config as incrementConfig,
                ws.growth_rate_config as growthRateConfig,
@@ -14,7 +14,7 @@
         from warn_scheme as ws
         <where>
             <if test="warnSchemeSelectDTO.workFaceId != null and warnSchemeSelectDTO.workFaceId != ''">
-                and ws.workface_id = #{warnSchemeSelectDTO.workFaceId}
+                and ws.work_face_id = #{warnSchemeSelectDTO.workFaceId}
             </if>
             <if test="warnSchemeSelectDTO.sceneType != null and warnSchemeSelectDTO.sceneType != ''">
                 and ws.scene_type = #{warnSchemeSelectDTO.sceneType}

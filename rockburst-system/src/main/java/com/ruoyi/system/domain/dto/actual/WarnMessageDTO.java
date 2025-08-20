@@ -23,6 +23,9 @@ public class WarnMessageDTO extends WarnMessageEntity {
     @ApiModelProperty(value = "警情内容")
     private String warnContent;
 
+    @ApiModelProperty(value = "多参量分析数据")
+    List<ParamAnalyzeDTO> paramAnalyzeDTOs;
+
     @ApiModelProperty(value = "曲线图数据")
     private List<LineChartDTO> lineChartDTOs;
 

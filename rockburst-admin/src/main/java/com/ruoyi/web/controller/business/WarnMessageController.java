@@ -5,6 +5,7 @@ import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.dto.actual.ActualSelectDTO;
+import com.ruoyi.system.domain.dto.actual.MultipleParamPlanDTO;
 import com.ruoyi.system.domain.dto.actual.WarnSelectDTO;
 import com.ruoyi.system.service.MeasureActualService;
 import com.ruoyi.system.service.WarnMessageService;
@@ -32,8 +33,6 @@ public class WarnMessageController {
 
     @Autowired
     private TokenService tokenService;
-
-
 
     @ApiOperation(value = "预警信息列表", notes = "预警信息列表")
     @ApiImplicitParams(value = {
@@ -72,5 +71,35 @@ public class WarnMessageController {
         String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.warnMessageService.referenceQuantityPage(type, keyword, mineId, pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "保存已勾选的多参量", notes = "保存已勾选的多参量")
+    @PostMapping(value = "/saveMultipleParamPlan")
+    public R<Object> saveMultipleParamPlan(@ApiParam(name = "warnInstanceNum", value = "警情编号", required = true) @RequestParam String warnInstanceNum,
+                                            @ApiParam(name = "location", value = "安装位置", required = true) @RequestParam String location,
+                                           @ApiParam(name = "multipleParamPlanDTOs", value = "多参量方案信息", required = true)
+                                               @RequestBody List<MultipleParamPlanDTO> multipleParamPlanDTOs) {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.warnMessageService.saveMultipleParamPlan(warnInstanceNum, location, multipleParamPlanDTOs, mineId));
+    }
+
+    @ApiOperation(value = "更新已勾选的多参量", notes = "更新已勾选的多参量")
+    @PutMapping(value = "/updateMultipleParamPlan")
+    public R<Object> updateMultipleParamPlan(@ApiParam(name = "warnInstanceNum", value = "警情编号", required = true) @RequestParam String warnInstanceNum,
+                                            @ApiParam(name = "location", value = "安装位置", required = true) @RequestParam String location,
+                                           @ApiParam(name = "multipleParamPlanDTOs", value = "多参量方案信息", required = true)
+                                               @RequestBody List<MultipleParamPlanDTO> multipleParamPlanDTOs) {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.warnMessageService.updateMultipleParamPlan(warnInstanceNum, location, multipleParamPlanDTOs, mineId));
+    }
+
+    @ApiOperation(value = "获取已勾选的多参量", notes = "获取已勾选的多参量")
+    @GetMapping(value = "/obtainMultipleParamPlan")
+    public R<Object> obtainMultipleParamPlan(@ApiParam(name = "warnInstanceNum", value = "警情编号", required = true) @RequestParam String warnInstanceNum) {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.warnMessageService.obtainMultipleParamPlan(warnInstanceNum, mineId));
     }
 }

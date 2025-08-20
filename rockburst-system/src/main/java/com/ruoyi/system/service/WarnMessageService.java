@@ -1,9 +1,7 @@
 package com.ruoyi.system.service;
 
 import com.ruoyi.common.core.page.TableData;
-import com.ruoyi.system.domain.dto.actual.MultipleParamPlanDTO;
-import com.ruoyi.system.domain.dto.actual.WarnMessageDTO;
-import com.ruoyi.system.domain.dto.actual.WarnSelectDTO;
+import com.ruoyi.system.domain.dto.actual.*;
 
 import java.util.List;
 
@@ -22,5 +20,9 @@ public interface WarnMessageService {
 
     TableData referenceQuantityPage(String type, String keyword, Long mineId, Integer pageNum, Integer pageSize);
 
-    boolean saveMultipleParamPlan(List<MultipleParamPlanDTO> multipleParamPlanDTOs, String location, Long mineId);
+    boolean saveMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
+
+    boolean updateMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
+
+    List<MultipleParamPlanVO> obtainMultipleParamPlan(String warnInstanceNum, Long mineId);
 }

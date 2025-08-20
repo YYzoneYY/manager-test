@@ -3,6 +3,7 @@ package com.ruoyi.system.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.system.domain.Entity.MultiplePlanEntity;
 import com.ruoyi.system.domain.dto.actual.MultipleParamPlanDTO;
+import com.ruoyi.system.domain.dto.actual.MultipleParamPlanVO;
 
 import java.util.List;
 
@@ -13,9 +14,11 @@ import java.util.List;
  */
 public interface MultiplePlanService extends IService<MultiplePlanEntity> {
 
-    boolean saveBatch(List<MultipleParamPlanDTO> multipleParamPlanDTOs, String location, Long mineId);
+    boolean saveBatch(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
 
-    List<MultipleParamPlanDTO> getMultipleParamPlanList(String warnInstanceNum, Long mineId);
+    boolean updateBatchById(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOS, Long mineId);
 
-    boolean deleteByWarnInstanceNum(List<String> warnInstanceNums, Long mineId);
+    List<MultipleParamPlanVO> getMultipleParamPlanList(String warnInstanceNum, Long mineId);
+
+    void deleteByWarnInstanceNum(List<String> warnInstanceNums, Long mineId);
 }

@@ -75,7 +75,7 @@ public class WarnSchemeController {
     }
 
     @ApiOperation(value = "批量启用禁用方案", notes = "批量启用禁用方案")
-    @PostMapping(value = "/batchEnableDisable")
+    @PutMapping(value = "/batchEnableDisable")
     public R<Object> batchEnableDisable(@ApiParam(name = "warnSchemeIds", value = "预警方案配置ID数组", required = true)
                                             @RequestParam Long[] warnSchemeIds) {
         return R.ok(warnSchemeService.batchEnableDisable(warnSchemeIds));

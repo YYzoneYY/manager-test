@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.Entity.MultiplePlanEntity;
 import com.ruoyi.system.domain.dto.actual.MultipleParamPlanDTO;
+import com.ruoyi.system.domain.dto.actual.MultipleParamPlanVO;
 import com.ruoyi.system.mapper.MultiplePlanMapper;
 import com.ruoyi.system.service.MultiplePlanService;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
     private MultiplePlanMapper multiplePlanMapper;
 
     @Override
-    public boolean saveBatch(List<MultipleParamPlanDTO> multipleParamPlanDTOs, String location, Long mineId) {
+    public boolean saveBatch(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
         boolean flag = false;
         if (ObjectUtil.isNull(multipleParamPlanDTOs)) {
             throw new RuntimeException("参数不能为空");
@@ -42,7 +43,7 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
         multipleParamPlanDTOs.forEach(dto -> {
             MultiplePlanEntity entity = new MultiplePlanEntity();
             entity.setParamName(obtainParamName(dto, location));
-            entity.setWarnInstanceNum(dto.getWarnInstanceNum());
+            entity.setWarnInstanceNum(warnInstanceNum);
             entity.setMeasureNum(dto.getMeasureNum());
             entity.setWorkFaceId(dto.getWorkFaceId());
             entity.setSensorType(dto.getSensorType());
@@ -54,7 +55,26 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
     }
 
     @Override
-    public List<MultipleParamPlanDTO> getMultipleParamPlanList(String warnInstanceNum, Long mineId) {
+    public boolean updateBatchById(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOS, Long mineId) {
+        boolean flag = false;
+        if (ObjectUtil.isNull(warnInstanceNum)) {
+            throw new RuntimeException("警情编码不能为空");
+        }
+        if (ObjectUtil.isNull(location)) {
+            throw new RuntimeException("位置参数不能为空");
+        }
+        if (ObjectUtil.isNull(multipleParamPlanDTOS)) {
+            throw new RuntimeException("参数不能为空");
+        }
+        List<String> warnInstanceNumList = new ArrayList<>();
+        warnInstanceNumList.add(warnInstanceNum);
+        this.deleteByWarnInstanceNum(warnInstanceNumList, mineId);
+        flag = this.saveBatch(warnInstanceNum, location, multipleParamPlanDTOS, mineId);
+        return flag;
+    }
+
+    @Override
+    public List<MultipleParamPlanVO> getMultipleParamPlanList(String warnInstanceNum, Long mineId) {
         List<MultiplePlanEntity> multiplePlanEntities = multiplePlanMapper.selectList(new LambdaQueryWrapper<MultiplePlanEntity>()
                 .eq(MultiplePlanEntity::getWarnInstanceNum, warnInstanceNum)
                 .eq(MultiplePlanEntity::getMineId, mineId));
@@ -64,19 +84,19 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
         }
         return multiplePlanEntities.stream()
                 .map(multiplePlanEntity -> {
-                    MultipleParamPlanDTO multipleParamPlanDTO = new MultipleParamPlanDTO();
-                    BeanUtils.copyProperties(multiplePlanEntity, multipleParamPlanDTO);
-                    return multipleParamPlanDTO;
+                    MultipleParamPlanVO multipleParamPlanVO = new MultipleParamPlanVO();
+                    BeanUtils.copyProperties(multiplePlanEntity, multipleParamPlanVO);
+                    return multipleParamPlanVO;
                 })
                 .collect(Collectors.toList());
     }
 
     @Override
-    public boolean deleteByWarnInstanceNum(List<String> warnInstanceNums, Long mineId) {
+    public void deleteByWarnInstanceNum(List<String> warnInstanceNums, Long mineId) {
         LambdaQueryWrapper<MultiplePlanEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(MultiplePlanEntity::getWarnInstanceNum, warnInstanceNums)
                 .eq(MultiplePlanEntity::getMineId, mineId);
-        return this.remove(queryWrapper);
+        this.remove(queryWrapper);
     }
 
 

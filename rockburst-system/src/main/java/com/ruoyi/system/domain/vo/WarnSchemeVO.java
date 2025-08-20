@@ -22,7 +22,7 @@ public class WarnSchemeVO {
     private Long warnSchemeId;
 
     @ApiModelProperty("预警方案名称")
-    private String warnSchemeName;
+    private String schemeName;
 
     @ApiModelProperty("场景类型")
     private String sceneType;
