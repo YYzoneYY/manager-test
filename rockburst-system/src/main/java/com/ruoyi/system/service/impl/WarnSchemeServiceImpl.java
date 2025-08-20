@@ -63,7 +63,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             throw new RuntimeException("增速配置不能为空！");
         }
         Long selectCount = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
-                .eq(WarnSchemeEntity::getWarnSchemeName, warnSchemeDTO.getWarnSchemeName())
+                .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getWarnSchemeName())
                 .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
                 .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (selectCount > 0) {
@@ -79,7 +79,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         List<Map<String, Object>> growthRateMap = ConvertUtils.convertGrowthRateMap(growthRateConfigDTOS);
 
         WarnSchemeEntity warnSchemeEntity = new WarnSchemeEntity();
-        warnSchemeEntity.setWarnSchemeName(warnSchemeDTO.getWarnSchemeName());
+        warnSchemeEntity.setSchemeName(warnSchemeDTO.getWarnSchemeName());
         warnSchemeEntity.setSceneType(warnSchemeDTO.getSceneType());
         warnSchemeEntity.setWorkFaceId(warnSchemeDTO.getWorkFaceId());
         warnSchemeEntity.setQuietHour(warnSchemeDTO.getQuietHour());
@@ -120,7 +120,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             throw new RuntimeException("该预警方案已启用,不能修改！");
         } else {
             Long selectCount = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
-                    .eq(WarnSchemeEntity::getWarnSchemeName, warnSchemeDTO.getWarnSchemeName())
+                    .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getWarnSchemeName())
                     .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
                     .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
                     .ne(WarnSchemeEntity::getWarnSchemeId, warnSchemeDTO.getWarnSchemeId()));
@@ -150,7 +150,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             List<Map<String, Object>> growthRateMap = ConvertUtils.convertGrowthRateMap(growthRateConfigDTOS);
 
             warnSchemeEntity.setWarnSchemeId(warnSchemeId);
-            warnSchemeEntity.setWarnSchemeName(warnSchemeDTO.getWarnSchemeName());
+            warnSchemeEntity.setSchemeName(warnSchemeDTO.getWarnSchemeName());
             warnSchemeEntity.setSceneType(warnSchemeDTO.getSceneType());
             warnSchemeEntity.setWorkFaceId(warnSchemeDTO.getWorkFaceId());
             warnSchemeEntity.setQuietHour(warnSchemeDTO.getQuietHour());
@@ -180,7 +180,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         }
         WarnSchemeDTO warnSchemeDTO = new WarnSchemeDTO();
         warnSchemeDTO.setWarnSchemeId(warnSchemeEntity.getWarnSchemeId());
-        warnSchemeDTO.setWarnSchemeName(warnSchemeEntity.getWarnSchemeName());
+        warnSchemeDTO.setWarnSchemeName(warnSchemeEntity.getSchemeName());
         warnSchemeDTO.setSceneType(warnSchemeEntity.getSceneType());
         warnSchemeDTO.setWorkFaceId(warnSchemeEntity.getWorkFaceId());
         warnSchemeDTO.setQuietHour(warnSchemeEntity.getQuietHour());
@@ -229,10 +229,10 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             if (ObjectUtil.isNull(warnSchemeEntity)) {
                 throw new RuntimeException("未找到id为" + warnSchemeId + "的预警方案数据");
             }
-            if (StringUtils.equals(ConstantsInfo.SCHEME_DISABLE, warnSchemeEntity.getStatus())) {
-                warnSchemeEntity.setStatus(ConstantsInfo.SCHEME_ENABLE);
-            } else {
+            if (StringUtils.equals(ConstantsInfo.SCHEME_ENABLE, warnSchemeEntity.getStatus())) {
                 warnSchemeEntity.setStatus(ConstantsInfo.SCHEME_DISABLE);
+            } else {
+                warnSchemeEntity.setStatus(ConstantsInfo.SCHEME_ENABLE);
             }
             warnSchemeMapper.updateById(warnSchemeEntity);
         });

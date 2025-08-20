@@ -25,4 +25,8 @@ public interface WarnMessageService {
     boolean updateMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
 
     List<MultipleParamPlanVO> obtainMultipleParamPlan(String warnInstanceNum, Long mineId);
+
+    int warnHand(String warnInstanceNum, WarnHandleDTO warnHandleDTO, Long mineId);
+
+    int ResponseOperate(String warnInstanceNum, ResponseOperateDTO responseOperateDTO, Long mineId);
 }

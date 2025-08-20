@@ -98,14 +98,14 @@ spring:
       enabled: true
   elasticsearch:
     rest:
-      uris: localhost:9200
+      uris: 192.168.31.156:9200
 
 easy-es:
   enable: true
   address: 192.168.31.156:9200
   global-config:
     print-dsl: true
-    process_index_mode: smoothly
+    process_index_mode: manual
     enable-index-alias: false
 
 # token配置

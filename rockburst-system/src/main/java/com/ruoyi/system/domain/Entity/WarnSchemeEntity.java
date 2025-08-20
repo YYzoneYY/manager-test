@@ -35,7 +35,7 @@ public class WarnSchemeEntity extends BusinessBaseEntity implements Serializable
 
     @ApiModelProperty("预警方案名称")
     @TableField(value = "scheme_name")
-    private String warnSchemeName;
+    private String schemeName;
 
     @ApiModelProperty("场景类型")
     @TableField(value = "scene_type")

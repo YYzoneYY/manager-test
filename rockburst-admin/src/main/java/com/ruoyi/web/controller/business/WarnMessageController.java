@@ -1,11 +1,11 @@
 package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
-import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.web.service.TokenService;
-import com.ruoyi.system.domain.dto.actual.ActualSelectDTO;
 import com.ruoyi.system.domain.dto.actual.MultipleParamPlanDTO;
+import com.ruoyi.system.domain.dto.actual.ResponseOperateDTO;
+import com.ruoyi.system.domain.dto.actual.WarnHandleDTO;
 import com.ruoyi.system.domain.dto.actual.WarnSelectDTO;
 import com.ruoyi.system.service.MeasureActualService;
 import com.ruoyi.system.service.WarnMessageService;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -101,5 +100,25 @@ public class WarnMessageController {
         String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.warnMessageService.obtainMultipleParamPlan(warnInstanceNum, mineId));
+    }
+
+    @ApiOperation(value = "预警处理", notes = "预警处理")
+    @PostMapping(value = "/warnHand")
+    public R<Object> warnHand(@ApiParam(name = "warnInstanceNum", value = "警情编号", required = true) @RequestParam String warnInstanceNum,
+                                           @ApiParam(name = "warnHandleDTO", value = "处理信息", required = true)
+                                               @RequestBody WarnHandleDTO warnHandleDTO) {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.warnMessageService.warnHand(warnInstanceNum, warnHandleDTO, mineId));
+    }
+
+    @ApiOperation(value = "发布响应", notes = "发布响应")
+    @PostMapping(value = "/ResponseOperate")
+    private R<Object> ResponseOperate(@ApiParam(name = "warnInstanceNum", value = "警情编号", required = true) @RequestParam String warnInstanceNum,
+                                           @ApiParam(name = "responseOperateDTO", value = "发布响应信息", required = true)
+                                               @RequestBody ResponseOperateDTO responseOperateDTO) {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.warnMessageService.ResponseOperate(warnInstanceNum, responseOperateDTO, mineId));
     }
 }

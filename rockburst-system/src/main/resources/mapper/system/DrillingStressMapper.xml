@@ -35,10 +35,10 @@
                 AND ds.status = #{measureSelectDTO.status}
             </if>
             <if test="measureSelectDTO.startTime != null">
-                AND ds.install_time &gt; = #{measureSelectDTO.startTime}
+                AND ds.install_time &gt;= #{measureSelectDTO.startTime}
             </if>
             <if test="measureSelectDTO.endTime != null">
-                AND ds.install_time &lt; = #{measureSelectDTO.endTime}
+                AND ds.install_time &lt;= #{measureSelectDTO.endTime}
             </if>
             AND ds.mine_id = #{mineId} AND ds.del_flag = '0'
         </where>

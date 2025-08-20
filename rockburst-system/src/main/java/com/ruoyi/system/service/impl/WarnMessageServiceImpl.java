@@ -14,6 +14,7 @@ import com.ruoyi.system.EsMapper.MeasureActualMapper;
 import com.ruoyi.system.EsMapper.WarnMessageMapper;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.MultiplePlanEntity;
+import com.ruoyi.system.domain.Entity.WarnHandleEntity;
 import com.ruoyi.system.domain.EsEntity.MeasureActualEntity;
 import com.ruoyi.system.domain.EsEntity.WarnMessageEntity;
 import com.ruoyi.system.domain.dto.actual.*;
@@ -22,9 +23,12 @@ import com.ruoyi.system.domain.utils.validatePageUtils;
 import com.ruoyi.system.domain.vo.WarnMessageVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.MultiplePlanService;
+import com.ruoyi.system.service.ResponseOperateService;
+import com.ruoyi.system.service.WarnHandleService;
 import com.ruoyi.system.service.WarnMessageService;
 import org.dromara.easyes.core.biz.EsPageInfo;
 import org.dromara.easyes.core.conditions.select.LambdaEsQueryWrapper;
+import org.elasticsearch.client.WarningsHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +80,15 @@ public class WarnMessageServiceImpl implements WarnMessageService {
 
     @Resource
     private MultiplePlanMapper multiplePlanMapper;
+
+    @Resource
+    private WarnHandleService warnHandleService;
+
+    @Resource
+    private WarnHandleMapper warnHandleMapper;
+
+    @Resource
+    private ResponseOperateService responseOperateService;
 
 
     @Override
@@ -228,6 +241,57 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         return multiplePlanService.getMultipleParamPlanList(warnInstanceNum, mineId);
     }
 
+    @Override
+    public int warnHand(String warnInstanceNum, WarnHandleDTO warnHandleDTO, Long mineId) {
+        int flag = 0;
+        LambdaEsQueryWrapper<WarnMessageEntity> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq(WarnMessageEntity::getWarnInstanceNum, warnInstanceNum)
+                .eq(WarnMessageEntity::getMineId, mineId);
+        WarnMessageEntity warnMessageEntity = warnMessageMapper.selectOne(wrapper);
+        if (ObjectUtil.isNull(warnMessageEntity)) {
+            throw new RuntimeException("警情编号不存在！");
+        }
+        WarnMessageEntity warnMessage = new WarnMessageEntity();
+        BeanUtils.copyProperties(warnMessageEntity, warnMessage);
+        warnMessage.setHandStatus(warnHandleDTO.getHandleStatus());
+        // 处理状态为“误报警”时，警情状态改为“结束”，其他改为“处理中”
+        if (warnHandleDTO.getHandleStatus().equals(ConstantsInfo.FALSE_WARN)) {
+            warnMessage.setWarnStatus(ConstantsInfo.WARNING_END);
+            warnMessage.setEndTime(System.currentTimeMillis());
+        } else {
+            warnMessage.setWarnStatus(ConstantsInfo.WARNING_HANDLED);
+        }
+        flag = warnMessageMapper.updateById(warnMessage);
+        if (flag > 0) {
+            warnHandleService.addWarnHandle(warnInstanceNum, warnHandleDTO, mineId);
+        } else {
+            throw new RuntimeException("处理失败,请联系管理员");
+        }
+        return flag;
+    }
+
+    @Override
+    public int ResponseOperate(String warnInstanceNum, ResponseOperateDTO responseOperateDTO, Long mineId) {
+        int flag = 0;
+        LambdaEsQueryWrapper<WarnMessageEntity> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq(WarnMessageEntity::getWarnInstanceNum, warnInstanceNum)
+                .eq(WarnMessageEntity::getMineId, mineId);
+        WarnMessageEntity warnMessageEntity = warnMessageMapper.selectOne(wrapper);
+        if (ObjectUtil.isNull(warnMessageEntity)) {
+            throw new RuntimeException("警情编号不存在！");
+        }
+        WarnMessageEntity warnMessage = new WarnMessageEntity();
+        BeanUtils.copyProperties(warnMessageEntity, warnMessage);
+        warnMessage.setWarnStatus(ConstantsInfo.WARNING_RESPONSE);
+        flag = warnMessageMapper.updateById(warnMessage);
+        if (flag > 0) {
+            responseOperateService.addResponseOperate(warnInstanceNum, responseOperateDTO, mineId);
+        } else {
+            throw new RuntimeException("发布响应失败,请联系管理员");
+        }
+        return flag;
+    }
+
     private Page<ParameterDTO> getListFmt(Page<ParameterDTO> parameterDTOS) {
         if (ListUtils.isNotNull(parameterDTOS.getResult())) {
             parameterDTOS.getResult().forEach(parameterDTO -> {
@@ -327,6 +391,15 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         // 构建预警内容，增加空值检查避免空指针异常
         String warnContent = buildWarnContent(entity, startTimeFmt);
         vo.setWarnContent(warnContent);
+
+        // 判断是否执行应急响应
+        if (entity.getWarnStatus().equals(ConstantsInfo.WARNING_HANDLED)) {
+            WarnHandleEntity warnHandleEntity = warnHandleMapper.selectOne(new LambdaQueryWrapper<WarnHandleEntity>()
+                    .eq(WarnHandleEntity::getWarnInstanceNum, entity.getWarnInstanceNum()));
+            if (warnHandleEntity.getIsResponse().equals(ConstantsInfo.YES_RESPONSE)) {
+                vo.setIsResponse(ConstantsInfo.YES_RESPONSE);
+            }
+        }
         return vo;
     }
 

@@ -1,5 +1,4 @@
 package com.ruoyi.system.domain.vo;
-
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -55,6 +54,9 @@ public class WarnMessageVO {
 
     @ApiModelProperty(value = "处理状态")
     private String handStatus;
+
+    @ApiModelProperty("是否执行应急响应")
+    private String isResponse;
 
     @ApiModelProperty(value = "开始时间格式化")
     private String startTimeFmt;

@@ -17,9 +17,9 @@ public class ConstantsInfo {
     public static final String DISABLE = "1";
 
     // 方案启用
-    public static final String SCHEME_ENABLE = "1";
-    // 方案未启用
-    public static final String SCHEME_DISABLE = "0";
+    public static final String SCHEME_ENABLE = "0";
+    // 方案禁用
+    public static final String SCHEME_DISABLE = "1";
 
     //未删除(逻辑)
     public static final String ZERO_DEL_FLAG = "0";
@@ -73,6 +73,16 @@ public class ConstantsInfo {
 
     public static final String WARNING = "1"; // 预警中
     public static final String WARNING_END = "0"; // 预警结束
+    public static final String WARNING_HANDLED = "2"; // 处理中
+    public static final String WARNING_RESPONSE = "3"; // 响应中
+
+    public static final String WARN_PROCESS = "1"; // 预警处理
+    public static final String TURE_WARN = "2"; // 真实报警
+    public static final String FALSE_WARN = "3"; // 误报警
+
+    public static final String YES_RESPONSE = "1"; // 执行应急响应
+    public static final String NO_RESPONSE = "0";
+
 
 
     // 预警配置类型
