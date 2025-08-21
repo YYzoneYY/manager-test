@@ -79,7 +79,7 @@
                 )
             </if>
         </where>
-        GROUP BY sr.data_time DESC
+        ORDER BY sr.data_time DESC
     </select>
 
 </mapper>

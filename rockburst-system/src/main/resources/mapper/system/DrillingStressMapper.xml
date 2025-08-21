@@ -79,7 +79,7 @@
                 )
             </if>
         </where>
-        GROUP BY ds.install_time DESC
+        ORDER BY ds.install_time DESC
     </select>
 
 </mapper>

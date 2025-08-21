@@ -202,7 +202,7 @@ public class WarnMessageServiceImpl implements WarnMessageService {
                 parameterDTOS = drillingStressMapper.selectParameterPage(keyword, mineId);
                 break;
             case "3":
-                // 钻孔应力
+                // 锚杆/索应力
                 parameterDTOS = anchorCableStressMapper.selectParameterPage(keyword, mineId);
                 break;
             case "4":

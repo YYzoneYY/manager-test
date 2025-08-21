@@ -80,7 +80,7 @@
                 )
             </if>
         </where>
-        GROUP BY ra.install_time DESC
+        ORDER BY ra.install_time DESC
     </select>
 
 

@@ -49,15 +49,15 @@ minio:
   secretKey: ${minioskey:4LAQfrsrAhgYVhMrmWgL5c25jZWT9rcPQxNBvoOG}
   defaultBucketName: ${miniobname:bust-dev} #存储桶名称
 
-##MQTT配置信息
-#mqtt:
-#  host: tcp://47.104.160.255:1883
-#  clientid: mqttjs_cloud
-#  username: dingyue
-#  password: 123456
-#  timeout: 1000
-#  keepalive: 10
-#  topic: /iot/data
+#MQTT配置信息
+mqtt:
+  host: tcp://47.104.160.255:1883
+  clientid: mqttjs_cloud
+  username: dingyue
+  password: 123456
+  timeout: 1000
+  keepalive: 10
+  topic: /iot/data
 
 
 

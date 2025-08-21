@@ -67,7 +67,7 @@
                 )
             </if>
         </where>
-        GROUP BY er.install_time DESC
+        ORDER BY er.install_time DESC
     </select>
 
 </mapper>
