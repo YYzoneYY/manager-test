@@ -403,19 +403,20 @@ public class WarnMessageServiceImpl implements WarnMessageService {
 
         String monitorValue = obtainMonitorValue(entity);
         vo.setMonitoringValue(monitorValue);
+
+        String monitorItems = obtainMonitorItems(entity.getSensorType());
+        vo.setMonitorItems(monitorItems);
+
         // 构建预警内容，增加空值检查避免空指针异常
         String warnContent = buildWarnContent(entity, startTimeFmt);
         vo.setWarnContent(warnContent);
 
         String warnStatusFmt = obtainDicLabel(ConstantsInfo.MONITOR_WARN_STATUS_DICT_TYPE, entity.getWarnStatus());
         vo.setWarnStatusFmt(warnStatusFmt);
-
         String warnLevelFmt = obtainDicLabel(ConstantsInfo.WARN_LEVEL_DICT_TYPE, entity.getWarnLevel());
         vo.setWarnLevelFmt(warnLevelFmt);
-
         String warnTypeFmt = obtainDicLabel(ConstantsInfo.WARN_TYPE_DICT_TYPE, entity.getWarnType());
         vo.setWarnTypeFmt(warnTypeFmt);
-
         String handStatusFmt = obtainDicLabel(ConstantsInfo.WARN_HANDLE_STATUS_DICT_TYPE, entity.getHandStatus());
         vo.setHandStatusFmt(handStatusFmt);
 
@@ -428,6 +429,27 @@ public class WarnMessageServiceImpl implements WarnMessageService {
             }
         }
         return vo;
+    }
+
+
+    private String obtainMonitorItems(String sensorType) {
+        String monitorItems = "";
+        if (sensorType.equals(ConstantsInfo.DRILL_STRESS_TYPE)) {
+            monitorItems = ConstantsInfo.DRILL_STRESS;
+        } else if (sensorType.equals(ConstantsInfo.ANCHOR_STRESS_TYPE)) {
+            monitorItems = ConstantsInfo.ANCHOR_STRESS;
+        } else if (sensorType.equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)) {
+            monitorItems = ConstantsInfo.ANCHOR_CABLE_STRESS;
+        } else if (sensorType.equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
+            monitorItems = ConstantsInfo.SHALLOW_DEEP_RESISTANCE;
+        } else if (sensorType.equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
+            monitorItems = ConstantsInfo.LANE_DISPLACEMENT;
+        } else if (sensorType.equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
+            monitorItems = ConstantsInfo.ELE_INTENSITY_PULSE;
+        } else if (sensorType.equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE)) {
+            monitorItems = ConstantsInfo.SUPPORT_RESISTANCE;
+        }
+        return monitorItems;
     }
 
     /**
