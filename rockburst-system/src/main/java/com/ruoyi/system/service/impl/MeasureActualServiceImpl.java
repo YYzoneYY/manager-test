@@ -5,13 +5,11 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.EsMapper.MeasureActualMapper;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.EsEntity.MeasureActualEntity;
-import com.ruoyi.system.domain.dto.actual.ActualDataDTO;
-import com.ruoyi.system.domain.dto.actual.ActualSelectDTO;
-import com.ruoyi.system.domain.dto.actual.ActualSelectTDTO;
-import com.ruoyi.system.domain.dto.actual.LineGraphDTO;
+import com.ruoyi.system.domain.dto.actual.*;
 import com.ruoyi.system.domain.utils.ActualDataConverter;
 import com.ruoyi.system.domain.utils.ObtainDateUtils;
 import com.ruoyi.system.domain.utils.validatePageUtils;
@@ -59,6 +57,16 @@ public class MeasureActualServiceImpl implements MeasureActualService {
     public Boolean createIndex() {
         boolean flag = false;
         flag = measureActualMapper.createIndex();
+        return flag;
+    }
+
+    @Override
+    public int insert(ActualDTO actualDTO, Long mineId) {
+        int flag = 0;
+        MeasureActualEntity measureActualEntity = new MeasureActualEntity();
+        BeanUtils.copyProperties(actualDTO, measureActualEntity);
+        measureActualEntity.setMineId(mineId);
+        flag = measureActualMapper.insert(measureActualEntity);
         return flag;
     }
 

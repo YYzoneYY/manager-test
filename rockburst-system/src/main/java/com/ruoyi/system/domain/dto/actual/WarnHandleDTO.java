@@ -20,7 +20,7 @@ public class WarnHandleDTO {
     private String handleName;
 
     @ApiModelProperty("处理状态")
-    private String handleStatus;
+    private String handStatus;
 
     @ApiModelProperty("是否执行应急响应")
     private String isResponse;

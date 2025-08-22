@@ -28,16 +28,13 @@ public class WarnMessageEntity {
     @IndexId(type = IdType.NONE)
     private String id;
 
-    @IndexField(value = "warnMessageId", fieldType = FieldType.KEYWORD)
-    private String warnMessageId;
-
     @ApiModelProperty(value = "所属矿")
     @IndexField(value = "mineId", fieldType = FieldType.KEYWORD)
-    private String mineId;
+    private Long mineId;
 
     @ApiModelProperty(value = "所属公司")
     @IndexField(value = "companyId", fieldType = FieldType.KEYWORD)
-    private String companyId;
+    private Long companyId;
 
     @ApiModelProperty(value = "警情编号")
     @IndexField(value = "warnInstanceNum", fieldType = FieldType.KEYWORD)
@@ -54,10 +51,6 @@ public class WarnMessageEntity {
     @ApiModelProperty(value = "传感器类型")
     @IndexField(value = "sensorType", fieldType = FieldType.KEYWORD)
     private String sensorType;
-
-    @ApiModelProperty(value = "监测项")
-    @IndexField(value = "monitorItems", fieldType = FieldType.KEYWORD)
-    private String monitorItems;
 
     @ApiModelProperty(value = "监测值")
     @IndexField(value = "monitoringValue", fieldType = FieldType.DOUBLE)
@@ -107,7 +100,7 @@ public class WarnMessageEntity {
     @IndexField(value = "handStatus", fieldType = FieldType.KEYWORD)
     private String handStatus;
 
-    @ApiModelProperty(value = "标识(1-深基点/电磁强度阈值预警，2-浅基点/电磁脉冲阈值预警，3-全部阈值预警，" +
+    @ApiModelProperty(value = "标识(1-深基点阈值预警，2-浅基点阈值预警，3-全部阈值预警，" +
             "4-深基点增量预警，5-浅基点增量预警，6-全部增量预警，7-深基点增速预警，8-浅基点增速预警，9-全部增速预警)")
     @IndexField(value = "roofTag", fieldType = FieldType.KEYWORD)
     private String roofTag;

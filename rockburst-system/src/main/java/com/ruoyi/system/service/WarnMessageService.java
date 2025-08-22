@@ -14,6 +14,8 @@ public interface WarnMessageService {
 
     Boolean createIndex();
 
+    int insertWarnMessage(WarnMessageDTO warnMessageDTO, Long mineId);
+
     TableData warnMessagePage(WarnSelectDTO warnSelectDTO, Long mineId, Integer pageNum, Integer pageSize);
 
     WarnMessageDTO detail(String warnInstanceNum, Long mineId);

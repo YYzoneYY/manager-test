@@ -90,11 +90,26 @@ public class WarnMessageServiceImpl implements WarnMessageService {
     @Resource
     private ResponseOperateService responseOperateService;
 
+    @Resource
+    private SysDictDataMapper sysDictDataMapper;
+
 
     @Override
     public Boolean createIndex() {
         boolean flag = false;
         flag = warnMessageMapper.createIndex();
+        return flag;
+    }
+
+    @Override
+    public int insertWarnMessage(WarnMessageDTO warnMessageDTO, Long mineId) {
+        int flag = 0;
+        WarnMessageEntity warnMessageEntity = new WarnMessageEntity();
+        BeanUtils.copyProperties(warnMessageDTO, warnMessageEntity);
+        String warnInstanceNum = generateWarnInstanceNum();
+        warnMessageEntity.setWarnInstanceNum(warnInstanceNum);
+        warnMessageEntity.setMineId(mineId);
+        flag = warnMessageMapper.insert(warnMessageEntity);
         return flag;
     }
 
@@ -253,9 +268,9 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         }
         WarnMessageEntity warnMessage = new WarnMessageEntity();
         BeanUtils.copyProperties(warnMessageEntity, warnMessage);
-        warnMessage.setHandStatus(warnHandleDTO.getHandleStatus());
+        warnMessage.setHandStatus(warnHandleDTO.getHandStatus());
         // 处理状态为“误报警”时，警情状态改为“结束”，其他改为“处理中”
-        if (warnHandleDTO.getHandleStatus().equals(ConstantsInfo.FALSE_WARN)) {
+        if (warnHandleDTO.getHandStatus().equals(ConstantsInfo.FALSE_WARN)) {
             warnMessage.setWarnStatus(ConstantsInfo.WARNING_END);
             warnMessage.setEndTime(System.currentTimeMillis());
         } else {
@@ -392,6 +407,18 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         String warnContent = buildWarnContent(entity, startTimeFmt);
         vo.setWarnContent(warnContent);
 
+        String warnStatusFmt = obtainDicLabel(ConstantsInfo.MONITOR_WARN_STATUS_DICT_TYPE, entity.getWarnStatus());
+        vo.setWarnStatusFmt(warnStatusFmt);
+
+        String warnLevelFmt = obtainDicLabel(ConstantsInfo.WARN_LEVEL_DICT_TYPE, entity.getWarnLevel());
+        vo.setWarnLevelFmt(warnLevelFmt);
+
+        String warnTypeFmt = obtainDicLabel(ConstantsInfo.WARN_TYPE_DICT_TYPE, entity.getWarnType());
+        vo.setWarnTypeFmt(warnTypeFmt);
+
+        String handStatusFmt = obtainDicLabel(ConstantsInfo.WARN_HANDLE_STATUS_DICT_TYPE, entity.getHandStatus());
+        vo.setHandStatusFmt(handStatusFmt);
+
         // 判断是否执行应急响应
         if (entity.getWarnStatus().equals(ConstantsInfo.WARNING_HANDLED)) {
             WarnHandleEntity warnHandleEntity = warnHandleMapper.selectOne(new LambdaQueryWrapper<WarnHandleEntity>()
@@ -416,17 +443,27 @@ public class WarnMessageServiceImpl implements WarnMessageService {
             return ""; // 如果关键字段为空，返回空字符串而不是null
         }
 
+        String warnType = obtainDicLabel(ConstantsInfo.WARN_TYPE_DICT_TYPE, entity.getWarnType());
+        String warnLevel = obtainDicLabel(ConstantsInfo.WARN_LEVEL_DICT_TYPE, entity.getWarnLevel());
+
         StringBuilder warnContentBuilder = new StringBuilder();
         warnContentBuilder.append(entity.getMeasureNum())
                 .append("测点在")
                 .append(startTimeFmt == null ? "" : startTimeFmt)
-                .append("发生")
-                .append(entity.getWarnType())
-                .append(entity.getWarnLevel())
+                .append(",发生")
+                .append(warnType)
+                .append(warnLevel)
                 .append("预警，值为")
                 .append(entity.getMonitoringValue());
 
         return warnContentBuilder.toString();
+    }
+
+    /**
+     * 获取字典标签
+     */
+    private String obtainDicLabel(String dictType, String dictValue) {
+        return sysDictDataMapper.selectDictLabel(dictType, dictValue);
     }
 
     private String getWorkFaceName(Long workFaceId) {
@@ -461,6 +498,41 @@ public class WarnMessageServiceImpl implements WarnMessageService {
             monitorValue = "电磁强度极大值:" + eleMaxValue + ",电磁脉冲:" + elePulse;
         }
         return monitorValue;
+    }
+
+
+    /**
+     * 生成警情编号
+     * 格式: BJ + 当前时间戳（毫秒） + 四位顺序码
+     * 例如: BJ17556594858900001
+     * @return 警情编号
+     */
+    private String generateWarnInstanceNum() {
+        long currentTimeMillis = System.currentTimeMillis();
+        // 构造时间戳前缀
+        String timePrefix = "BJ" + currentTimeMillis;
+        // 查询当前时间戳下最大的警情编号
+        LambdaEsQueryWrapper<WarnMessageEntity> queryWrapper = new LambdaEsQueryWrapper<>();
+        queryWrapper.likeRight(WarnMessageEntity::getWarnInstanceNum, timePrefix)
+                .orderByDesc(WarnMessageEntity::getWarnInstanceNum)
+                .limit(1);
+        WarnMessageEntity latestEntity = warnMessageMapper.selectOne(queryWrapper);
+        int sequence = 1;
+        if (latestEntity != null && latestEntity.getWarnInstanceNum() != null) {
+            String latestNum = latestEntity.getWarnInstanceNum();
+            // 确保编号长度足够，然后提取最后四位顺序码并加1
+            if (latestNum.length() >= 4) {
+                String sequenceStr = latestNum.substring(latestNum.length() - 4);
+                try {
+                    sequence = Integer.parseInt(sequenceStr) + 1;
+                } catch (NumberFormatException e) {
+                    sequence = 1;
+                }
+            }
+        }
+        // 如果没有找到当前时间戳下的记录，默认sequence为1，格式化后为0001
+        // 格式化为4位数字，不足补0
+        return timePrefix + String.format("%04d", sequence);
     }
 
 }

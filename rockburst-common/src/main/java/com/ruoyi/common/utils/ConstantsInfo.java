@@ -105,6 +105,10 @@ public class ConstantsInfo {
     public static final String YEAR_DICT_TYPE = "year";
     public static final String PLAN_TYPE_DICT_TYPE = "plan_type";
     public static final String DANGER_AREA_LEVEL_DICT_TYPE = "danger_area_level";
+    public static final String MONITOR_WARN_STATUS_DICT_TYPE = "monitor_warn_status"; // 测点预警状态
+    public static final String WARN_TYPE_DICT_TYPE = "warn_type"; // 测点预警类型
+    public static final String WARN_LEVEL_DICT_TYPE = "warn_level"; // 测点预警等级
+    public static final String WARN_HANDLE_STATUS_DICT_TYPE = "warn_handle_status"; // 预警处理状态
 
 
     public static final String WORKLOAD = "工作量";

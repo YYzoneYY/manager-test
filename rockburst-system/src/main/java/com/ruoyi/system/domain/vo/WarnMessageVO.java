@@ -63,4 +63,16 @@ public class WarnMessageVO {
 
     @ApiModelProperty(value = "结束时间格式化")
     private String endTimeFmt;
+
+    @ApiModelProperty(value = "预警类型格式化")
+    private String warnTypeFmt;
+
+    @ApiModelProperty(value = "预警等级格式化")
+    private String warnLevelFmt;
+
+    @ApiModelProperty(value = "预警状态格式化")
+    private String warnStatusFmt;
+
+    @ApiModelProperty(value = "处理状态格式化")
+    private String handStatusFmt;
 }

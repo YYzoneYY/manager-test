@@ -28,12 +28,9 @@ public class MeasureActualEntity {
     @IndexId(type = IdType.NONE)
     private String id;
 
-    @IndexField(value = "actualId", fieldType = FieldType.KEYWORD)
-    private String actualId;
-
     @ApiModelProperty(value = "所属矿")
     @IndexField(value = "mineId", fieldType = FieldType.KEYWORD)
-    private String mineId;
+    private Long mineId;
 
     @ApiModelProperty(value = "测点编码")
     @IndexField(value = "measureNum", fieldType = FieldType.KEYWORD)
