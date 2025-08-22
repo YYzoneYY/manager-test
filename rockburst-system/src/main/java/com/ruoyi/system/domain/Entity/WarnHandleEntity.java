@@ -45,8 +45,8 @@ public class WarnHandleEntity extends BusinessBaseEntity implements Serializable
     private String handleName;
 
     @ApiModelProperty("处理状态")
-    @TableField(value = "handle_status")
-    private String handleStatus;
+    @TableField(value = "hand_status")
+    private String handStatus;
 
     @ApiModelProperty("是否执行应急响应")
     @TableField(value = "is_response")
