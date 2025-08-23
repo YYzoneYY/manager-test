@@ -31,4 +31,6 @@ public interface WarnMessageService {
     int warnHand(String warnInstanceNum, WarnHandleDTO warnHandleDTO, Long mineId);
 
     int ResponseOperate(String warnInstanceNum, ResponseOperateDTO responseOperateDTO, Long mineId);
+
+    TableData singlePointWarnInfo(SingleWarnSelectDTO singleWarnSelectDTO, String measureNum, String sensorType, Long mineId, Integer pageNum, Integer pageSize);
 }

@@ -7,8 +7,10 @@ import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.EsMapper.MeasureActualMapper;
+import com.ruoyi.system.EsMapper.WarnMessageMapper;
 import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.domain.EsEntity.MeasureActualEntity;
+import com.ruoyi.system.domain.EsEntity.WarnMessageEntity;
 import com.ruoyi.system.domain.dto.actual.*;
 import com.ruoyi.system.domain.utils.ActualDataConverter;
 import com.ruoyi.system.domain.utils.ObtainDateUtils;
@@ -52,6 +54,9 @@ public class MeasureActualServiceImpl implements MeasureActualService {
 
     @Resource
     private RoofAbscissionMapper roofAbscissionMapper;
+
+    @Resource
+    private WarnMessageMapper warnMessageMapper;
 
     @Override
     public Boolean createIndex() {
@@ -169,6 +174,52 @@ public class MeasureActualServiceImpl implements MeasureActualService {
         return lineGraphDTOS;
     }
 
+    @Override
+    public SingleLineChartDTO obtainSingleLineChart(String measureNum, String sensorType, Long mineId) {
+        if (ObjectUtil.isNull(measureNum)) {
+            throw new RuntimeException("测点编码不能为空！");
+        }
+        if (ObjectUtil.isNull(sensorType)) {
+            throw new RuntimeException("传感器类型不能为空！");
+        }
+
+        LambdaEsQueryWrapper<WarnMessageEntity> queryWrapper = new LambdaEsQueryWrapper<>();
+        queryWrapper.eq(WarnMessageEntity::getMeasureNum, measureNum)
+                .eq(WarnMessageEntity::getSensorType, sensorType)
+                .eq(WarnMessageEntity::getMineId, mineId);
+        WarnMessageEntity warnMessageEntity = warnMessageMapper.selectOne(queryWrapper);
+
+        if (ObjectUtil.isNull(warnMessageEntity)) {
+            throw new RuntimeException("未找到对应的预警信息！");
+        }
+
+        long startTime = ObtainDateUtils.getThirtyMinutesTime(warnMessageEntity.getStartTime());
+        long endTime = 0L;
+
+        Long warnET = warnMessageEntity.getEndTime();
+        if (ObjectUtil.isNull(warnET)) {
+            endTime = System.currentTimeMillis();
+        } else {
+            Long afterTime = ObtainDateUtils.getThirtyMinutesAfterTime(warnET);
+            boolean isAfterTimeOverCurrent = ObtainDateUtils.isOverThirtyMinutesAfterTime(System.currentTimeMillis(), afterTime);
+            if (isAfterTimeOverCurrent) {
+                endTime = System.currentTimeMillis();
+            } else {
+                endTime = afterTime;
+            }
+        }
+        SingleLineChartDTO singleLineChartDTO = new SingleLineChartDTO();
+        singleLineChartDTO.setStartTime(startTime);
+        singleLineChartDTO.setEndTime(endTime);
+        singleLineChartDTO.setMeasureNum(measureNum);
+        singleLineChartDTO.setSensorType(sensorType);
+
+        List<LineChartDTO> lineChartDTOS = getLineChartData(startTime, endTime, mineId, measureNum);
+        singleLineChartDTO.setLineChartDTOs(lineChartDTOS);
+
+        return singleLineChartDTO;
+    }
+
     /**
      * 根据时间范围标签设置查询条件
      */
@@ -189,8 +240,8 @@ public class MeasureActualServiceImpl implements MeasureActualService {
                 queryWrapper.between(MeasureActualEntity::getDataTime, twentyFourHoursAgo, currentTimeMillis);
                 break;
             case ConstantsInfo.ON_THAT_DAY_TAG:
-                Long startOfDay = ObtainDateUtils.getCurrentZoneTime();
-                Long endOfDay = ObtainDateUtils.getCurrentTwentyFourHoursTime();
+                Long startOfDay = ObtainDateUtils.getCurrentZoneTime(currentTimeMillis);
+                Long endOfDay = ObtainDateUtils.getCurrentTwentyFourHoursTime(currentTimeMillis);
                 queryWrapper.between(MeasureActualEntity::getDataTime, startOfDay, endOfDay);
                 break;
             case ConstantsInfo.CUSTOMIZE_TAG:
@@ -484,5 +535,44 @@ public class MeasureActualServiceImpl implements MeasureActualService {
             throw new RuntimeException("时间范围不能为空");
         }
     }
+
+    /**
+     * 获取折线图数据
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param mineId 矿井ID
+     * @param measureNum 测点编码
+     * @return 折线图数据列表
+     */
+    private List<LineChartDTO> getLineChartData(Long startTime, Long endTime, Long mineId, String measureNum) {
+        List<LineChartDTO> lineChartDTOs = new ArrayList<>();
+        LambdaEsQueryWrapper<MeasureActualEntity> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.between(MeasureActualEntity::getDataTime, startTime, endTime)
+                .eq(MeasureActualEntity::getMineId, mineId)
+                .eq(MeasureActualEntity::getMeasureNum, measureNum);
+        List<MeasureActualEntity> measureActualEntities = measureActualMapper.selectList(wrapper);
+        if (!measureActualEntities.isEmpty()) {
+            measureActualEntities.forEach(measureActualEntity -> {
+                LineChartDTO lineChartDTO = new LineChartDTO();
+                if (measureActualEntity.getSensorType().equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE) ||
+                        measureActualEntity.getSensorType().equals(ConstantsInfo.DRILL_STRESS_TYPE) ||
+                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_STRESS_TYPE) ||
+                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)
+                        || measureActualEntity.getSensorType().equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
+                    lineChartDTO.setMonitoringValue(measureActualEntity.getMonitoringValue());
+                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
+                    lineChartDTO.setMonitoringValue(measureActualEntity.getValueShallow());
+                    lineChartDTO.setValueDeep(measureActualEntity.getValueDeep());
+                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
+                    lineChartDTO.setEleMaxValue(measureActualEntity.getEleMaxValue());
+                    lineChartDTO.setElePulse(measureActualEntity.getElePulse());
+                }
+                lineChartDTO.setDataTime(measureActualEntity.getDataTime());
+                lineChartDTOs.add(lineChartDTO);
+            });
+        }
+        return lineChartDTOs;
+    }
+
 
 }

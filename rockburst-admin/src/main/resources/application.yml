@@ -52,12 +52,14 @@ minio:
 #MQTT配置信息
 mqtt:
   host: tcp://47.104.160.255:1883
-  clientid: mqttjs_cloud
+  clientid: mqttjs_cloud7
   username: dingyue
   password: 123456
-  timeout: 1000
-  keepalive: 10
+  timeout: 10
+  keepalive: 20
   topic: /iot/data
+  # 可以明确配置，不配置则使用代码中的默认值 false
+  clean-session: false
 
 
 
@@ -95,7 +97,7 @@ spring:
   devtools:
     restart:
       # 热部署开关
-      enabled: true
+      enabled: false
   elasticsearch:
     rest:
       uris: 192.168.31.156:9200

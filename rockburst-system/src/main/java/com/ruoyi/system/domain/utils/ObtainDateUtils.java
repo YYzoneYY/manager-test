@@ -1,8 +1,6 @@
 package com.ruoyi.system.domain.utils;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 
 /**
  * @author: shikai
@@ -37,8 +35,7 @@ public class ObtainDateUtils {
      * @param targetTime 目标时间戳
      */
     public static boolean isOverThirtyMinutesAfterTime(Long currentTime, Long targetTime) {
-        Long thirtyMinutesAfter = getThirtyMinutesAfterTime(targetTime);
-        return thirtyMinutesAfter > currentTime;
+        return targetTime > currentTime;
     }
 
     /**
@@ -62,19 +59,72 @@ public class ObtainDateUtils {
     }
 
 
-    public static Long getCurrentZoneTime() {
-        long startOfDayMillis = 0L;
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfDay = now.with(LocalTime.MIN);
-        startOfDayMillis = startOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        return startOfDayMillis;
+    /**
+     * 获取指定时间戳所在天的开始时间戳（00:00:00）
+     * @param currentTime 指定时间戳
+     * @return 当天开始时间戳
+     */
+    public static Long getCurrentZoneTime(Long currentTime) {
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(currentTime), ZoneId.systemDefault());
+        LocalDateTime startOfDay = dateTime.with(LocalTime.MIN);
+        return startOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
-    public static Long getCurrentTwentyFourHoursTime() {
-        long endOfDayMillis = 0L;
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime endOfDay = now.with(LocalTime.MAX);
-        endOfDayMillis = endOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-        return endOfDayMillis;
+
+    /**
+     * 获取指定时间戳所在天的结束时间戳（23:59:59）
+     * @param currentTime 指定时间戳
+     * @return 当天结束时间戳
+     */
+    public static Long getCurrentTwentyFourHoursTime(Long currentTime) {
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(currentTime), ZoneId.systemDefault());
+        LocalDateTime endOfDay = dateTime.with(LocalTime.MAX);
+        return endOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    /**
+     * 获取指定时间戳所在周的开始时间戳（周一 00:00:00）
+     * @param currentTime 指定时间戳
+     * @return 当周开始时间戳
+     */
+    public static Long getCurrentWeekStartTime(Long currentTime) {
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(currentTime), ZoneId.systemDefault());
+        LocalDateTime startOfWeek = dateTime.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
+        return startOfWeek.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+
+    /**
+     * 获取指定时间戳所在周的结束时间戳（周日 23:59:59）
+     * @param currentTime 指定时间戳
+     * @return 当周结束时间戳
+     */
+    public static Long getCurrentWeekEndTime(Long currentTime) {
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(currentTime), ZoneId.systemDefault());
+        LocalDateTime endOfWeek = dateTime.with(DayOfWeek.SUNDAY).with(LocalTime.MAX);
+        return endOfWeek.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    /**
+     * 获取指定时间戳所在月的开始时间戳（1号 00:00:00）
+     * @param currentTime 指定时间戳
+     * @return 当月开始时间戳
+     */
+    public static Long getCurrentMonthStartTime(Long currentTime) {
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(currentTime), ZoneId.systemDefault());
+        LocalDateTime startOfMonth = dateTime.withDayOfMonth(1).with(LocalTime.MIN);
+        return startOfMonth.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+
+    /**
+     * 获取指定时间戳所在月的结束时间戳（月末最后一天 23:59:59）
+     * @param currentTime 指定时间戳
+     * @return 当月结束时间戳
+     */
+    public static Long getCurrentMonthEndTime(Long currentTime) {
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(currentTime), ZoneId.systemDefault());
+        LocalDateTime endOfMonth = dateTime.withDayOfMonth(dateTime.toLocalDate().lengthOfMonth()).with(LocalTime.MAX);
+        return endOfMonth.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 }

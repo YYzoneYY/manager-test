@@ -1,10 +1,7 @@
 package com.ruoyi.system.service;
 
 import com.ruoyi.common.core.page.TableData;
-import com.ruoyi.system.domain.dto.actual.ActualDTO;
-import com.ruoyi.system.domain.dto.actual.ActualSelectDTO;
-import com.ruoyi.system.domain.dto.actual.ActualSelectTDTO;
-import com.ruoyi.system.domain.dto.actual.LineGraphDTO;
+import com.ruoyi.system.domain.dto.actual.*;
 
 import java.util.List;
 
@@ -26,4 +23,6 @@ public interface MeasureActualService {
 
     List<LineGraphDTO> obtainLineGraph(String measureNum, String range, Long  startTime, Long endTime,
                                        List<String> sensorTypes, Long mineId);
+
+    SingleLineChartDTO obtainSingleLineChart(String measureNum, String sensorType, Long mineId);
 }

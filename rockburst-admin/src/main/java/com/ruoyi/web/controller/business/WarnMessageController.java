@@ -3,10 +3,7 @@ package com.ruoyi.web.controller.business;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.web.service.TokenService;
-import com.ruoyi.system.domain.dto.actual.MultipleParamPlanDTO;
-import com.ruoyi.system.domain.dto.actual.ResponseOperateDTO;
-import com.ruoyi.system.domain.dto.actual.WarnHandleDTO;
-import com.ruoyi.system.domain.dto.actual.WarnSelectDTO;
+import com.ruoyi.system.domain.dto.actual.*;
 import com.ruoyi.system.service.MeasureActualService;
 import com.ruoyi.system.service.WarnMessageService;
 import io.swagger.annotations.*;
@@ -32,6 +29,9 @@ public class WarnMessageController {
 
     @Autowired
     private TokenService tokenService;
+
+    @Resource
+    private MeasureActualService measureActualService;
 
     @ApiOperation(value = "预警信息列表", notes = "预警信息列表")
     @ApiImplicitParams(value = {
@@ -120,5 +120,30 @@ public class WarnMessageController {
         String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
         return R.ok(this.warnMessageService.ResponseOperate(warnInstanceNum, responseOperateDTO, mineId));
+    }
+
+    @ApiOperation(value = "警情信息(单传感器)", notes = "警情信息(单传感器)")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "pageNum", value = "当前记录起始索引", defaultValue = "1", dataType = "Integer"),
+            @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
+    })
+    @PostMapping(value = "/singlePointWarnInfo")
+    public R<Object> singlePointWarnInfo(@RequestBody SingleWarnSelectDTO singleWarnSelectDTO,
+                                         @ApiParam(name = "measureNum", value = "测点编码", required = true) @RequestParam String measureNum,
+                                         @ApiParam(name = "sensorType", value = "传感器类型", required = true) @RequestParam String sensorType,
+                                         @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
+                                         @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.warnMessageService.singlePointWarnInfo(singleWarnSelectDTO,measureNum, sensorType, mineId, pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "警情信息-查看趋势(单传感器)", notes = "警情信息-查看趋势(单传感器)")
+    @GetMapping(value = "/obtainSingleLineChart")
+    public R<Object> obtainSingleLineChart(@ApiParam(name = "measureNum", value = "测点编码", required = true) @RequestParam String measureNum,
+                                           @ApiParam(name = "sensorType", value = "传感器类型", required = true) @RequestParam String sensorType) {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.measureActualService.obtainSingleLineChart(measureNum, sensorType, mineId));
     }
 }

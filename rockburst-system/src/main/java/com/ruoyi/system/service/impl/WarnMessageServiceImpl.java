@@ -307,6 +307,67 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         return flag;
     }
 
+    @Override
+    public TableData singlePointWarnInfo(SingleWarnSelectDTO singleWarnSelectDTO, String measureNum, String sensorType,
+                                         Long mineId, Integer pageNum, Integer pageSize) {
+        if (ObjectUtil.isNull(measureNum)) {
+            throw new RuntimeException("测点编码不能为空！");
+        }
+        if (ObjectUtil.isNull(singleWarnSelectDTO)) {
+            throw new RuntimeException("参数不能为空！");
+        }
+        long st = 0L;
+        long et = 0L;
+        long currentTimeMillis = System.currentTimeMillis();
+        if (ObjectUtil.isNull(singleWarnSelectDTO.getRange())) {
+            st = singleWarnSelectDTO.getStartTime();
+            et = singleWarnSelectDTO.getEndTime();
+        } else {
+            switch (singleWarnSelectDTO.getRange()) {
+                case "1":
+                    st = ObtainDateUtils.getCurrentZoneTime(currentTimeMillis);
+                    et = ObtainDateUtils.getCurrentTwentyFourHoursTime(currentTimeMillis);
+                    break;
+                case "2":
+                    st = ObtainDateUtils.getCurrentWeekStartTime(currentTimeMillis);
+                    et = ObtainDateUtils.getCurrentWeekEndTime(currentTimeMillis);
+                    break;
+                case "3":
+                    st = ObtainDateUtils.getCurrentMonthStartTime(currentTimeMillis);
+                    et = ObtainDateUtils.getCurrentMonthEndTime(currentTimeMillis);
+                    break;
+                case "4":
+                    st = singleWarnSelectDTO.getStartTime();
+                    et = singleWarnSelectDTO.getEndTime();
+                    break;
+            }
+        }
+        EsPageInfo<WarnMessageEntity> esPageInfo = singlePageInfo(measureNum, st, et,  sensorType, mineId, pageNum, pageSize);
+
+        List<AlarmInfoDTO> voList = esPageInfo.getList().stream()
+                .map(this::convertToAlarmInfoDTO)
+                .collect(Collectors.toList());
+        // 返回TableData对象，包含DTO列表和总记录数
+        return new TableData(voList, (int) esPageInfo.getTotal());
+    }
+
+    private EsPageInfo<WarnMessageEntity> singlePageInfo(String measureNum, Long startTime, Long endTime, String sensorType,
+                                                         Long mineId, Integer pageNum, Integer pageSize) {
+        // 分页参数校验与默认值设置
+        int validPageNum = validatePageUtils.validateAndSetDefaultPageNum(pageNum);
+        int validPageSize = validatePageUtils.validateAndSetDefaultPageSize(pageSize);
+
+        LambdaEsQueryWrapper<WarnMessageEntity> queryWrapper = new LambdaEsQueryWrapper<>();
+        queryWrapper.eq(WarnMessageEntity::getMeasureNum, measureNum)
+                .eq(WarnMessageEntity::getSensorType, sensorType)
+                .eq(ObjectUtil.isNotNull(mineId), WarnMessageEntity::getMineId, mineId)
+                .between(ObjectUtil.isNotNull(startTime),
+                        WarnMessageEntity::getStartTime,
+                        startTime, endTime)
+                .orderByDesc(WarnMessageEntity::getStartTime);
+        return warnMessageMapper.pageQuery(queryWrapper, validPageNum, validPageSize);
+    }
+
     private Page<ParameterDTO> getListFmt(Page<ParameterDTO> parameterDTOS) {
         if (ListUtils.isNotNull(parameterDTOS.getResult())) {
             parameterDTOS.getResult().forEach(parameterDTO -> {
@@ -429,6 +490,31 @@ public class WarnMessageServiceImpl implements WarnMessageService {
             }
         }
         return vo;
+    }
+
+
+    private AlarmInfoDTO convertToAlarmInfoDTO(WarnMessageEntity entity) {
+        AlarmInfoDTO alarmInfoDTO = new AlarmInfoDTO();
+        BeanUtils.copyProperties(entity, alarmInfoDTO);
+
+        // 格式化时间
+        String startTimeFmt = entity.getStartTime() == null ? null : DateUtils.getDateStrByTime(entity.getStartTime());
+        String endTimeFmt = entity.getEndTime() == null ? null : DateUtils.getDateStrByTime(entity.getEndTime());
+        alarmInfoDTO.setStartTimeFmt(startTimeFmt);
+        alarmInfoDTO.setEndTimeFmt(endTimeFmt);
+
+        String monitorValue = obtainMonitorValue(entity);
+        alarmInfoDTO.setMonitorValue(monitorValue);
+
+        // 构建预警内容，增加空值检查避免空指针异常
+        String warnContent = buildWarnContent(entity, startTimeFmt);
+        alarmInfoDTO.setWarnContent(warnContent);
+
+        String warnLevelFmt = obtainDicLabel(ConstantsInfo.WARN_LEVEL_DICT_TYPE, entity.getWarnLevel());
+        alarmInfoDTO.setWarnLevelFmt(warnLevelFmt);
+        String warnTypeFmt = obtainDicLabel(ConstantsInfo.WARN_TYPE_DICT_TYPE, entity.getWarnType());
+        alarmInfoDTO.setWarnTypeFmt(warnTypeFmt);
+        return alarmInfoDTO;
     }
 
 

@@ -92,6 +92,10 @@ public class DrillingStressEntity extends BusinessBaseEntity implements Serializ
     @TableField(value = "status")
     private String status;
 
+    @ApiModelProperty("原始工作面名称(数采上来的数据)")
+    @TableField(value = "original_work_face_name")
+    private String originalWorkFaceName;
+
     @ApiModelProperty("删除标志(0存在2删除)")
     @TableField("del_flag")
     @TableLogic(value = "0", delval = "2")
