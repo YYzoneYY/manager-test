@@ -59,4 +59,36 @@ public class ObtainWarnSchemeUtils {
         warnSchemeDTO.setGrowthRateConfigDTOS(growthRateConfigDTOList);
         return warnSchemeDTO;
     }
+
+
+    public static WarnSchemeDTO getObtainWarnSchemeT(String measureNum, String sensorType, String mark, WarnSchemeMapper warnSchemeMapper,
+                                                    WarnSchemeSeparateMapper warnSchemeSeparateMapper) {
+        WarnSchemeDTO warnSchemeDTO = new WarnSchemeDTO();
+
+        // 获取预警方案基础信息
+        WarnSchemeEntity warnSchemeEntity = warnSchemeMapper.selectOne(new LambdaQueryWrapper<WarnSchemeEntity>()
+                .eq(WarnSchemeEntity::getSceneType, sensorType)
+                .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNotNull(warnSchemeEntity)) {
+            warnSchemeDTO.setWarnSchemeId(warnSchemeEntity.getWarnSchemeId());
+            warnSchemeDTO.setWarnSchemeName(warnSchemeEntity.getSchemeName());
+            warnSchemeDTO.setSceneType(warnSchemeEntity.getSceneType());
+            warnSchemeDTO.setWorkFaceId(warnSchemeEntity.getWorkFaceId());
+            warnSchemeDTO.setQuietHour(warnSchemeEntity.getQuietHour());
+        }
+
+        // 获取预警阈值配置
+        List<ThresholdConfigDTO> thresholdConfigDTOList = SchemeConfigUtils.getThresholdConfigT(measureNum, sensorType, mark,
+                warnSchemeMapper, warnSchemeSeparateMapper);
+        // 获取预警增量配置
+        List<IncrementConfigDTO> incrementConfigDTOList = SchemeConfigUtils.getIncrementConfigT(measureNum, sensorType, mark,
+                warnSchemeMapper, warnSchemeSeparateMapper);
+        // 获取预警增速配置
+        List<GrowthRateConfigDTO> growthRateConfigDTOList = SchemeConfigUtils.getGrowthRateConfigT(measureNum, sensorType, mark,
+                warnSchemeMapper, warnSchemeSeparateMapper);
+        warnSchemeDTO.setThresholdConfigDTOS(thresholdConfigDTOList);
+        warnSchemeDTO.setIncrementConfigDTOS(incrementConfigDTOList);
+        warnSchemeDTO.setGrowthRateConfigDTOS(growthRateConfigDTOList);
+        return warnSchemeDTO;
+    }
 }

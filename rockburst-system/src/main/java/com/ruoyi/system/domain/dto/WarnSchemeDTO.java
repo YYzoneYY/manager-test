@@ -25,6 +25,9 @@ public class WarnSchemeDTO {
     @ApiModelProperty("场景类型")
     private String sceneType;
 
+    @ApiModelProperty("标志")
+    private String mark;
+
     @ApiModelProperty("工作面id")
     private Long workFaceId;
 

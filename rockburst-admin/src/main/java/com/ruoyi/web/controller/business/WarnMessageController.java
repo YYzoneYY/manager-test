@@ -83,16 +83,16 @@ public class WarnMessageController {
         return R.ok(this.warnMessageService.saveMultipleParamPlan(warnInstanceNum, location, multipleParamPlanDTOs, mineId));
     }
 
-    @ApiOperation(value = "更新已勾选的多参量", notes = "更新已勾选的多参量")
-    @PutMapping(value = "/updateMultipleParamPlan")
-    public R<Object> updateMultipleParamPlan(@ApiParam(name = "warnInstanceNum", value = "警情编号", required = true) @RequestParam String warnInstanceNum,
-                                            @ApiParam(name = "location", value = "安装位置", required = true) @RequestParam String location,
-                                           @ApiParam(name = "multipleParamPlanDTOs", value = "多参量方案信息", required = true)
-                                               @RequestBody List<MultipleParamPlanDTO> multipleParamPlanDTOs) {
-        String token = tokenService.getToken(ServletUtils.getRequest());
-        Long mineId = tokenService.getMineIdFromToken(token);
-        return R.ok(this.warnMessageService.updateMultipleParamPlan(warnInstanceNum, location, multipleParamPlanDTOs, mineId));
-    }
+//    @ApiOperation(value = "更新已勾选的多参量", notes = "更新已勾选的多参量")
+//    @PutMapping(value = "/updateMultipleParamPlan")
+//    public R<Object> updateMultipleParamPlan(@ApiParam(name = "warnInstanceNum", value = "警情编号", required = true) @RequestParam String warnInstanceNum,
+//                                            @ApiParam(name = "location", value = "安装位置", required = true) @RequestParam String location,
+//                                           @ApiParam(name = "multipleParamPlanDTOs", value = "多参量方案信息", required = true)
+//                                               @RequestBody List<MultipleParamPlanDTO> multipleParamPlanDTOs) {
+//        String token = tokenService.getToken(ServletUtils.getRequest());
+//        Long mineId = tokenService.getMineIdFromToken(token);
+//        return R.ok(this.warnMessageService.updateMultipleParamPlan(warnInstanceNum, location, multipleParamPlanDTOs, mineId));
+//    }
 
     @ApiOperation(value = "获取已勾选的多参量", notes = "获取已勾选的多参量")
     @GetMapping(value = "/obtainMultipleParamPlan")

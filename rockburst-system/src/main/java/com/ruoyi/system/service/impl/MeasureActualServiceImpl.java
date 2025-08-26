@@ -561,7 +561,7 @@ public class MeasureActualServiceImpl implements MeasureActualService {
                         || measureActualEntity.getSensorType().equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
                     lineChartDTO.setMonitoringValue(measureActualEntity.getMonitoringValue());
                 } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
-                    lineChartDTO.setMonitoringValue(measureActualEntity.getValueShallow());
+                    lineChartDTO.setValueShallow(measureActualEntity.getValueShallow());
                     lineChartDTO.setValueDeep(measureActualEntity.getValueDeep());
                 } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
                     lineChartDTO.setEleMaxValue(measureActualEntity.getEleMaxValue());

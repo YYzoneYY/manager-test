@@ -44,6 +44,10 @@ public class WarnSchemeSeparateEntity implements Serializable {
     @TableField(value = "scene_type")
     private String sceneType;
 
+    @ApiModelProperty("标志")
+    @TableField(value = "mark")
+    private String mark;
+
     @ApiModelProperty("测点编码")
     @TableField(value = "measure_num")
     private String measureNum;

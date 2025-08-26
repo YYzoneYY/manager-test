@@ -45,6 +45,10 @@ public class WarnSchemeEntity extends BusinessBaseEntity implements Serializable
     @TableField(value = "work_face_id")
     private Long workFaceId;
 
+    @ApiModelProperty("标志")
+    @TableField(value = "mark")
+    private String mark;
+
     @ApiModelProperty("静默时间")
     @TableField(value = "quiet_hour")
     private String quietHour;

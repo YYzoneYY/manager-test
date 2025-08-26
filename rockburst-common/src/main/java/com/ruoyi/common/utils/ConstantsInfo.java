@@ -1,6 +1,8 @@
 package com.ruoyi.common.utils;
 
 
+import org.springframework.security.core.parameters.P;
+
 /**
  * 通用常量信息
  *
@@ -47,6 +49,7 @@ public class ConstantsInfo {
     public static final String LANE_DISPLACEMENT_INITIAL_VALUE = "1100MN15010001"; // 巷道位移测点初始值
     public static final String ELECTROMAGNETIC_RADIATION_INITIAL_VALUE = "1100MN18010001"; // 电磁辐射测点初始值
 
+    // 传感器类型
     public static final String SUPPORT_RESISTANCE_TYPE = "1101";
     public static final String DRILL_STRESS_TYPE = "1201";
     public static final String ANCHOR_STRESS_TYPE = "1301";
@@ -55,7 +58,15 @@ public class ConstantsInfo {
     public static final String LANE_DISPLACEMENT_TYPE = "1501";
     public static final String ELECTROMAGNETIC_RADIATION_TYPE = "1801";
 
+    // 场景类型
+    public static final String SUPPORT_SCENE_TYPE = "ZJ";
+    public static final String DRILL_SCENE_TYPE = "ZK";
+    public static final String ANCHOR_SCENE_TYPE = "MG";
+    public static final String ROOF_SCENE_TYPE = "DBLC";
+    public static final String LANE_SCENE_TYPE = "HDWY";
+    public static final String ELECTROMAGNETIC_SCENE_TYPE = "DCFS";
 
+    // 监测项
     public static final String DRILL_STRESS = "钻孔";
     public static final String ANCHOR_STRESS = "锚杆";
     public static final String ANCHOR_CABLE_STRESS = "锚索";
@@ -63,6 +74,17 @@ public class ConstantsInfo {
     public static final String LANE_DISPLACEMENT = "巷道位移";
     public static final String ELE_INTENSITY_PULSE = "电磁强度,电磁脉冲";
     public static final String SUPPORT_RESISTANCE = "支架阻力";
+
+    // 标志
+    public static final String SUPPORT = "support"; // 支架
+    public static final String DRILL = "drill"; // 钻孔
+    public static final String ANCHOR_ROD = "anchor_rod"; // 锚杆
+    public static final String ANCHOR_CABLE = "anchor_cable"; // 锚索
+    public static final String DEEP = "deep"; // 深基点
+    public static final String SHALLOW = "shallow"; // 浅基点
+    public static final String LANE = "lane";
+    public static final String INTENSITY = "intensity";
+    public static final String PULSE = "pulse";
 
     public static final String SUPPORT_RESISTANCE_YPE = "1"; // 工作面支架阻力
     public static final String DRILL_STRESS_YPE = "2"; // 钻孔应力

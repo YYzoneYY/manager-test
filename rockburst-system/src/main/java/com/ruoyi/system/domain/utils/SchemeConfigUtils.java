@@ -32,6 +32,11 @@ public class SchemeConfigUtils {
         return getConfig(measureNum, sensorType, workFaceId, warnSchemeMapper, warnSchemeSeparateMapper, ConstantsInfo.THRESHOLD_CONFIG);
     }
 
+    public static List<ThresholdConfigDTO> getThresholdConfigT(String measureNum, String sensorType, String mark, WarnSchemeMapper warnSchemeMapper,
+                                                              WarnSchemeSeparateMapper warnSchemeSeparateMapper) {
+        return getConfigT(measureNum, sensorType, mark, warnSchemeMapper, warnSchemeSeparateMapper, ConstantsInfo.THRESHOLD_CONFIG);
+    }
+
     /**
      * 获取增量配置
      */
@@ -40,12 +45,22 @@ public class SchemeConfigUtils {
         return getConfig(measureNum, sensorType, workFaceId, warnSchemeMapper, warnSchemeSeparateMapper, ConstantsInfo.INCREMENT_CONFIG);
     }
 
+    public static List<IncrementConfigDTO> getIncrementConfigT(String measureNum, String sensorType, String mark, WarnSchemeMapper warnSchemeMapper,
+                                                              WarnSchemeSeparateMapper warnSchemeSeparateMapper) {
+        return getConfigT(measureNum, sensorType, mark, warnSchemeMapper, warnSchemeSeparateMapper, ConstantsInfo.INCREMENT_CONFIG);
+    }
+
     /**
      * 获取增速配置
      */
     public static List<GrowthRateConfigDTO> getGrowthRateConfig(String measureNum, String sensorType, Long workFaceId, WarnSchemeMapper warnSchemeMapper,
                                                                 WarnSchemeSeparateMapper warnSchemeSeparateMapper) {
         return getConfig(measureNum, sensorType, workFaceId, warnSchemeMapper, warnSchemeSeparateMapper, ConstantsInfo.GROWTH_RATE_CONFIG);
+    }
+
+    public static List<GrowthRateConfigDTO> getGrowthRateConfigT(String measureNum, String sensorType, String mark, WarnSchemeMapper warnSchemeMapper,
+                                                                WarnSchemeSeparateMapper warnSchemeSeparateMapper) {
+        return getConfigT(measureNum, sensorType, mark, warnSchemeMapper, warnSchemeSeparateMapper, ConstantsInfo.GROWTH_RATE_CONFIG);
     }
 
     /**
@@ -65,6 +80,31 @@ public class SchemeConfigUtils {
             WarnSchemeEntity warnSchemeEntity = warnSchemeMapper.selectOne(new LambdaQueryWrapper<WarnSchemeEntity>()
                     .eq(WarnSchemeEntity::getSceneType, sensorType)
                     .eq(WarnSchemeEntity::getWorkFaceId, workFaceId)
+                    .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+            if (Objects.isNull(warnSchemeEntity)) {
+                return configDTOS;
+            }
+            return convertToDTO(configType, warnSchemeEntity);
+        }
+
+        return convertToDTO(configType, warnSchemeSeparateEntity);
+    }
+
+
+    private static <T> List<T> getConfigT(String measureNum, String sensorType, String mark, WarnSchemeMapper warnSchemeMapper,
+                                         WarnSchemeSeparateMapper warnSchemeSeparateMapper, String configType) {
+        List<T> configDTOS = new ArrayList<>();
+
+        WarnSchemeSeparateEntity warnSchemeSeparateEntity = warnSchemeSeparateMapper.selectOne(new LambdaQueryWrapper<WarnSchemeSeparateEntity>()
+                .eq(WarnSchemeSeparateEntity::getMeasureNum, measureNum)
+                .eq(WarnSchemeSeparateEntity::getSceneType, sensorType)
+                .eq(WarnSchemeSeparateEntity::getMark, mark)
+                .eq(WarnSchemeSeparateEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+        if (Objects.isNull(warnSchemeSeparateEntity)) {
+            WarnSchemeEntity warnSchemeEntity = warnSchemeMapper.selectOne(new LambdaQueryWrapper<WarnSchemeEntity>()
+                    .eq(WarnSchemeEntity::getSceneType, sensorType)
+                    .eq(WarnSchemeEntity::getMark,  mark)
                     .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
             if (Objects.isNull(warnSchemeEntity)) {
                 return configDTOS;

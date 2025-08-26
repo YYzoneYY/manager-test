@@ -33,18 +33,27 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
     @Override
     public boolean saveBatch(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
         boolean flag = false;
+        if (ObjectUtil.isNull(warnInstanceNum)) {
+            throw new RuntimeException("警情编码不能为空");
+        }
         if (ObjectUtil.isNull(multipleParamPlanDTOs)) {
             throw new RuntimeException("参数不能为空");
         }
         if (ObjectUtil.isNull(location)) {
             throw new RuntimeException("位置参数不能为空");
         }
+
+        List<String> warnInstanceNumList = new ArrayList<>();
+        warnInstanceNumList.add(warnInstanceNum);
+        this.deleteByWarnInstanceNum(warnInstanceNumList, mineId);
+
         ArrayList<MultiplePlanEntity> multiplePlanEntities = new ArrayList<>();
         multipleParamPlanDTOs.forEach(dto -> {
             MultiplePlanEntity entity = new MultiplePlanEntity();
             entity.setParamName(obtainParamName(dto, location));
             entity.setWarnInstanceNum(warnInstanceNum);
             entity.setMeasureNum(dto.getMeasureNum());
+            entity.setMonitorItems(dto.getMonitorItems());
             entity.setWorkFaceId(dto.getWorkFaceId());
             entity.setSensorType(dto.getSensorType());
             entity.setMineId(mineId);

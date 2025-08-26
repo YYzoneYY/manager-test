@@ -56,21 +56,21 @@ public class WarnMessageEntity {
     @IndexField(value = "monitoringValue", fieldType = FieldType.DOUBLE)
     private BigDecimal monitoringValue;
 
-    @ApiModelProperty(value = "浅基点值")
-    @IndexField(value = "valueShallow", fieldType = FieldType.DOUBLE)
-    private BigDecimal valueShallow;
-
-    @ApiModelProperty(value = "深基点值")
-    @IndexField(value = "valueDeep", fieldType = FieldType.DOUBLE)
-    private BigDecimal valueDeep;
-
-    @ApiModelProperty(value = "电磁辐射强度极大值")
-    @IndexField(value = "eleMaxValue", fieldType = FieldType.DOUBLE)
-    private BigDecimal eleMaxValue;
-
-    @ApiModelProperty(value = "电磁脉冲")
-    @IndexField(value = "elePulse", fieldType = FieldType.DOUBLE)
-    private BigDecimal elePulse;
+//    @ApiModelProperty(value = "浅基点值")
+//    @IndexField(value = "valueShallow", fieldType = FieldType.DOUBLE)
+//    private BigDecimal valueShallow;
+//
+//    @ApiModelProperty(value = "深基点值")
+//    @IndexField(value = "valueDeep", fieldType = FieldType.DOUBLE)
+//    private BigDecimal valueDeep;
+//
+//    @ApiModelProperty(value = "电磁辐射强度极大值")
+//    @IndexField(value = "eleMaxValue", fieldType = FieldType.DOUBLE)
+//    private BigDecimal eleMaxValue;
+//
+//    @ApiModelProperty(value = "电磁脉冲")
+//    @IndexField(value = "elePulse", fieldType = FieldType.DOUBLE)
+//    private BigDecimal elePulse;
 
     @ApiModelProperty(value = "预警类型")
     @IndexField(value = "warnType", fieldType = FieldType.KEYWORD)
@@ -100,13 +100,17 @@ public class WarnMessageEntity {
     @IndexField(value = "handStatus", fieldType = FieldType.KEYWORD)
     private String handStatus;
 
-    @ApiModelProperty(value = "标识(1-深基点阈值预警，2-浅基点阈值预警，3-全部阈值预警，" +
-            "4-深基点增量预警，5-浅基点增量预警，6-全部增量预警，7-深基点增速预警，8-浅基点增速预警，9-全部增速预警)")
-    @IndexField(value = "roofTag", fieldType = FieldType.KEYWORD)
-    private String roofTag;
+    @ApiModelProperty(value = "标志")
+    @IndexField(value = "tag", fieldType = FieldType.KEYWORD)
+    private String tag;
 
-    @ApiModelProperty(value = "标识(1-电磁强度阈值预警，2-电磁脉冲阈值预警，3-全部阈值预警，" +
-            "4-电磁强度增量预警，5-电磁脉冲增量预警，6-全部增量预警，7-电磁强度增速预警，8-电磁脉冲增速预警，9-全部增速预警)")
-    @IndexField(value = "elcTag", fieldType = FieldType.KEYWORD)
-    private String elcTag;
+//    @ApiModelProperty(value = "标识(1-深基点阈值预警，2-浅基点阈值预警，3-全部阈值预警，" +
+//            "4-深基点增量预警，5-浅基点增量预警，6-全部增量预警，7-深基点增速预警，8-浅基点增速预警，9-全部增速预警)")
+//    @IndexField(value = "roofTag", fieldType = FieldType.KEYWORD)
+//    private String roofTag;
+//
+//    @ApiModelProperty(value = "标识(1-电磁强度阈值预警，2-电磁脉冲阈值预警，3-全部阈值预警，" +
+//            "4-电磁强度增量预警，5-电磁脉冲增量预警，6-全部增量预警，7-电磁强度增速预警，8-电磁脉冲增速预警，9-全部增速预警)")
+//    @IndexField(value = "elcTag", fieldType = FieldType.KEYWORD)
+//    private String elcTag;
 }

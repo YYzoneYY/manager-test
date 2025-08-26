@@ -145,8 +145,9 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         String endTimeFmt = warnMessageEntity.getEndTime() == null ? null : DateUtils.getDateStrByTime(warnMessageEntity.getEndTime());
         warnMessageDTO.setStartTimeFmt(startTimeFmt);
         warnMessageDTO.setEndTimeFmt(endTimeFmt);
-        String monitorValue = obtainMonitorValue(warnMessageEntity);
-        warnMessageDTO.setMonitorValue(monitorValue);
+        // 已废弃
+//        String monitorValue = obtainMonitorValue(warnMessageEntity);
+        warnMessageDTO.setMonitorValue(String.valueOf(warnMessageEntity.getMonitoringValue()));
         // 构建预警内容，增加空值检查避免空指针异常
         String warnContent = buildWarnContent(warnMessageEntity, startTimeFmt);
         warnMessageDTO.setWarnContent(warnContent);
@@ -246,10 +247,10 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         return multiplePlanService.saveBatch(warnInstanceNum, location, multipleParamPlanDTOs, mineId);
     }
 
-    @Override
-    public boolean updateMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
-        return multiplePlanService.updateBatchById(warnInstanceNum, location, multipleParamPlanDTOs, mineId);
-    }
+//    @Override
+//    public boolean updateMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
+//        return multiplePlanService.updateBatchById(warnInstanceNum, location, multipleParamPlanDTOs, mineId);
+//    }
 
     @Override
     public List<MultipleParamPlanVO> obtainMultipleParamPlan(String warnInstanceNum, Long mineId) {
@@ -411,19 +412,21 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         if (!measureActualEntities.isEmpty()) {
             measureActualEntities.forEach(measureActualEntity -> {
                 LineChartDTO lineChartDTO = new LineChartDTO();
-                if (measureActualEntity.getSensorType().equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE) ||
-                        measureActualEntity.getSensorType().equals(ConstantsInfo.DRILL_STRESS_TYPE) ||
-                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_STRESS_TYPE) ||
-                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)
-                        || measureActualEntity.getSensorType().equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
-                    lineChartDTO.setMonitoringValue(measureActualEntity.getMonitoringValue());
-                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
-                    lineChartDTO.setMonitoringValue(measureActualEntity.getValueShallow());
-                    lineChartDTO.setValueDeep(measureActualEntity.getValueDeep());
-                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
-                    lineChartDTO.setEleMaxValue(measureActualEntity.getEleMaxValue());
-                    lineChartDTO.setElePulse(measureActualEntity.getElePulse());
-                }
+                lineChartDTO.setMonitoringValue(measureActualEntity.getMonitoringValue());
+                // 已废弃
+//                if (measureActualEntity.getSensorType().equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE) ||
+//                        measureActualEntity.getSensorType().equals(ConstantsInfo.DRILL_STRESS_TYPE) ||
+//                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_STRESS_TYPE) ||
+//                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)
+//                        || measureActualEntity.getSensorType().equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
+//                    lineChartDTO.setMonitoringValue(measureActualEntity.getMonitoringValue());
+//                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
+//                    lineChartDTO.setMonitoringValue(measureActualEntity.getValueShallow());
+//                    lineChartDTO.setValueDeep(measureActualEntity.getValueDeep());
+//                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
+//                    lineChartDTO.setEleMaxValue(measureActualEntity.getEleMaxValue());
+//                    lineChartDTO.setElePulse(measureActualEntity.getElePulse());
+//                }
                 lineChartDTO.setDataTime(measureActualEntity.getDataTime());
                 lineChartDTOs.add(lineChartDTO);
             });
@@ -462,11 +465,13 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         vo.setStartTimeFmt(startTimeFmt);
         vo.setEndTimeFmt(endTimeFmt);
 
-        String monitorValue = obtainMonitorValue(entity);
-        vo.setMonitoringValue(monitorValue);
-
-        String monitorItems = obtainMonitorItems(entity.getSensorType());
-        vo.setMonitorItems(monitorItems);
+        // 已废弃
+//        String monitorValue = obtainMonitorValue(entity);
+//        vo.setMonitoringValue(monitorValue);
+//
+//        String monitorItems = obtainMonitorItems(entity.getSensorType());
+//        vo.setMonitorItems(monitorItems);
+        vo.setMonitorItems(entity.getTag());
 
         // 构建预警内容，增加空值检查避免空指针异常
         String warnContent = buildWarnContent(entity, startTimeFmt);
@@ -503,8 +508,9 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         alarmInfoDTO.setStartTimeFmt(startTimeFmt);
         alarmInfoDTO.setEndTimeFmt(endTimeFmt);
 
-        String monitorValue = obtainMonitorValue(entity);
-        alarmInfoDTO.setMonitorValue(monitorValue);
+        // 已废弃
+//        String monitorValue = obtainMonitorValue(entity);
+//        alarmInfoDTO.setMonitorValue(monitorValue);
 
         // 构建预警内容，增加空值检查避免空指针异常
         String warnContent = buildWarnContent(entity, startTimeFmt);
@@ -518,25 +524,25 @@ public class WarnMessageServiceImpl implements WarnMessageService {
     }
 
 
-    private String obtainMonitorItems(String sensorType) {
-        String monitorItems = "";
-        if (sensorType.equals(ConstantsInfo.DRILL_STRESS_TYPE)) {
-            monitorItems = ConstantsInfo.DRILL_STRESS;
-        } else if (sensorType.equals(ConstantsInfo.ANCHOR_STRESS_TYPE)) {
-            monitorItems = ConstantsInfo.ANCHOR_STRESS;
-        } else if (sensorType.equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)) {
-            monitorItems = ConstantsInfo.ANCHOR_CABLE_STRESS;
-        } else if (sensorType.equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
-            monitorItems = ConstantsInfo.SHALLOW_DEEP_RESISTANCE;
-        } else if (sensorType.equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
-            monitorItems = ConstantsInfo.LANE_DISPLACEMENT;
-        } else if (sensorType.equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
-            monitorItems = ConstantsInfo.ELE_INTENSITY_PULSE;
-        } else if (sensorType.equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE)) {
-            monitorItems = ConstantsInfo.SUPPORT_RESISTANCE;
-        }
-        return monitorItems;
-    }
+//    private String obtainMonitorItems(String sensorType) {
+//        String monitorItems = "";
+//        if (sensorType.equals(ConstantsInfo.DRILL_STRESS_TYPE)) {
+//            monitorItems = ConstantsInfo.DRILL_STRESS;
+//        } else if (sensorType.equals(ConstantsInfo.ANCHOR_STRESS_TYPE)) {
+//            monitorItems = ConstantsInfo.ANCHOR_STRESS;
+//        } else if (sensorType.equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)) {
+//            monitorItems = ConstantsInfo.ANCHOR_CABLE_STRESS;
+//        } else if (sensorType.equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
+//            monitorItems = ConstantsInfo.SHALLOW_DEEP_RESISTANCE;
+//        } else if (sensorType.equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
+//            monitorItems = ConstantsInfo.LANE_DISPLACEMENT;
+//        } else if (sensorType.equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
+//            monitorItems = ConstantsInfo.ELE_INTENSITY_PULSE;
+//        } else if (sensorType.equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE)) {
+//            monitorItems = ConstantsInfo.SUPPORT_RESISTANCE;
+//        }
+//        return monitorItems;
+//    }
 
     /**
      * 构建预警内容
@@ -587,26 +593,26 @@ public class WarnMessageServiceImpl implements WarnMessageService {
     }
 
 
-    private String obtainMonitorValue(WarnMessageEntity entity) {
-        String monitorValue = "";
-        String sensorType = entity.getSensorType();
-        if (sensorType != null && (sensorType.equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE) || sensorType.equals(ConstantsInfo.DRILL_STRESS_TYPE)
-                || sensorType.equals(ConstantsInfo.ANCHOR_STRESS_TYPE) || sensorType.equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)
-                || sensorType.equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE))) {
-            if (entity.getMonitoringValue() != null) {
-                monitorValue = entity.getMonitoringValue().toString();
-            }
-        } else if (Objects.equals(sensorType, ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
-            String valueShallow = entity.getValueShallow() != null ? entity.getValueShallow().toString() : "";
-            String valueDeep = entity.getValueDeep() != null ? entity.getValueDeep().toString() : "";
-            monitorValue = "浅基点:" + valueShallow + ",深基点:" + valueDeep;
-        } else if (Objects.equals(sensorType, ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
-            String eleMaxValue = entity.getEleMaxValue() != null ? entity.getEleMaxValue().toString() : "";
-            String elePulse = entity.getElePulse() != null ? entity.getElePulse().toString() : "";
-            monitorValue = "电磁强度极大值:" + eleMaxValue + ",电磁脉冲:" + elePulse;
-        }
-        return monitorValue;
-    }
+//    private String obtainMonitorValue(WarnMessageEntity entity) {
+//        String monitorValue = "";
+//        String sensorType = entity.getSensorType();
+//        if (sensorType != null && (sensorType.equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE) || sensorType.equals(ConstantsInfo.DRILL_STRESS_TYPE)
+//                || sensorType.equals(ConstantsInfo.ANCHOR_STRESS_TYPE) || sensorType.equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)
+//                || sensorType.equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE))) {
+//            if (entity.getMonitoringValue() != null) {
+//                monitorValue = entity.getMonitoringValue().toString();
+//            }
+//        } else if (Objects.equals(sensorType, ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
+//            String valueShallow = entity.getValueShallow() != null ? entity.getValueShallow().toString() : "";
+//            String valueDeep = entity.getValueDeep() != null ? entity.getValueDeep().toString() : "";
+//            monitorValue = "浅基点:" + valueShallow + ",深基点:" + valueDeep;
+//        } else if (Objects.equals(sensorType, ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
+//            String eleMaxValue = entity.getEleMaxValue() != null ? entity.getEleMaxValue().toString() : "";
+//            String elePulse = entity.getElePulse() != null ? entity.getElePulse().toString() : "";
+//            monitorValue = "电磁强度极大值:" + eleMaxValue + ",电磁脉冲:" + elePulse;
+//        }
+//        return monitorValue;
+//    }
 
 
     /**

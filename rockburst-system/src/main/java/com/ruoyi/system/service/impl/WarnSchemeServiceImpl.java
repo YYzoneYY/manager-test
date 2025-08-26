@@ -62,6 +62,20 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         if (ObjectUtil.isNull(warnSchemeDTO.getGrowthRateConfigDTOS())  || warnSchemeDTO.getGrowthRateConfigDTOS().isEmpty()) {
             throw new RuntimeException("增速配置不能为空！");
         }
+        Long count = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
+                .eq(WarnSchemeEntity::getSceneType, warnSchemeDTO.getSceneType())
+                .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
+                .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+
+        if (warnSchemeDTO.getSceneType().equals("1401") || warnSchemeDTO.getSceneType().equals("1801")) {
+            if (count >= 2) {
+                throw new RuntimeException("同一个场景下,预警方案已存在！");
+            }
+        } else {
+            if (count > 0) {
+                throw new RuntimeException("同一个场景下,预警方案已存在！");
+            }
+        }
         Long selectCount = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
                 .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getWarnSchemeName())
                 .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
@@ -69,6 +83,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         if (selectCount > 0) {
             throw new RuntimeException("同一个工作面下,该名称的方案已存在！");
         }
+
         List<ThresholdConfigDTO> thresholdConfigDTOS = warnSchemeDTO.getThresholdConfigDTOS();
         List<Map<String, Object>> thresholdMap = ConvertUtils.convertThresholdMap(thresholdConfigDTOS);
 
@@ -119,6 +134,20 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         if (warnSchemeEntity.getStatus().equals(ConstantsInfo.SCHEME_ENABLE)) {
             throw new RuntimeException("该预警方案已启用,不能修改！");
         } else {
+            Long count = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
+                    .eq(WarnSchemeEntity::getSceneType, warnSchemeDTO.getSceneType())
+                    .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
+                    .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                    .ne(WarnSchemeEntity::getWarnSchemeId, warnSchemeId));
+            if (warnSchemeDTO.getSceneType().equals("1401") || warnSchemeDTO.getSceneType().equals("1801")) {
+                if (count >= 2) {
+                    throw new RuntimeException("同一个场景下,预警方案已存在！");
+                }
+            } else {
+                if (count > 0) {
+                    throw new RuntimeException("同一个场景下,预警方案已存在！");
+                }
+            }
             Long selectCount = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
                     .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getWarnSchemeName())
                     .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
