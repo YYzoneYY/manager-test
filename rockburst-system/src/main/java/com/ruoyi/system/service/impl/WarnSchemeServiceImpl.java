@@ -99,6 +99,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         warnSchemeEntity.setThresholdConfig(thresholdMap);
         warnSchemeEntity.setIncrementConfig(incrementMap);
         warnSchemeEntity.setGrowthRateConfig(growthRateMap);
+        warnSchemeEntity.setMark(warnSchemeDTO.getMark());
         warnSchemeEntity.setCreateTime(System.currentTimeMillis());
         warnSchemeEntity.setCreateBy(SecurityUtils.getUserId());
         warnSchemeEntity.setMineId(mineId);
