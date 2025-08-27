@@ -3,6 +3,7 @@ package com.ruoyi.system.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.pagehelper.Page;
 import com.ruoyi.system.domain.Entity.DrillingStressEntity;
+import com.ruoyi.system.domain.dto.DeviceCountDTO;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
 import com.ruoyi.system.domain.dto.actual.ParameterDTO;
 import com.ruoyi.system.domain.vo.DrillingStressVO;
@@ -30,4 +31,7 @@ public interface DrillingStressMapper extends BaseMapper<DrillingStressEntity> {
 
     Page<ParameterDTO> selectParameterPage(@Param("keyword") String keyword,
                                            @Param("mineId") Long mineId);
+
+
+    DeviceCountDTO getDeviceCountStatistics(@Param("mineId") Long mineId);
 }
