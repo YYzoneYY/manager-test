@@ -62,6 +62,7 @@ public class ConstantsInfo {
     public static final String SUPPORT_SCENE_TYPE = "ZJ";
     public static final String DRILL_SCENE_TYPE = "ZK";
     public static final String ANCHOR_SCENE_TYPE = "MG";
+    public static final String ANCHOR_CABLE_SCENE_TYPE = "MS";
     public static final String ROOF_SCENE_TYPE = "DBLC";
     public static final String LANE_SCENE_TYPE = "HDWY";
     public static final String ELECTROMAGNETIC_SCENE_TYPE = "DCFS";

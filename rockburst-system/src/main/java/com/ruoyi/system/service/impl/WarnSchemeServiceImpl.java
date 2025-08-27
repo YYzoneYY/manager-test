@@ -295,8 +295,9 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             tagDropDownListDTOS.add(createTagDropDownListDTO("钻孔", "drill"));
         } else if (sceneType.equals(ConstantsInfo.ANCHOR_SCENE_TYPE)) {
             tagDropDownListDTOS.add(createTagDropDownListDTO("锚杆", "anchor_rod"));
+        } else if (sceneType.equals(ConstantsInfo.ANCHOR_CABLE_SCENE_TYPE)) {
             tagDropDownListDTOS.add(createTagDropDownListDTO("锚索", "anchor_cable"));
-        } else if (sceneType.equals(ConstantsInfo.ROOF_SCENE_TYPE)) {
+        }else if (sceneType.equals(ConstantsInfo.ROOF_SCENE_TYPE)) {
             tagDropDownListDTOS.add(createTagDropDownListDTO("深基点", "deep"));
             tagDropDownListDTOS.add(createTagDropDownListDTO("浅基点", "shallow"));
         } else if (sceneType.equals(ConstantsInfo.LANE_SCENE_TYPE)) {
