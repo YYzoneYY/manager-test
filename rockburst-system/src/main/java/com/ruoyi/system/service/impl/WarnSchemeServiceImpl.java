@@ -210,6 +210,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         warnSchemeDTO.setSceneType(warnSchemeEntity.getSceneType());
         warnSchemeDTO.setWorkFaceId(warnSchemeEntity.getWorkFaceId());
         warnSchemeDTO.setQuietHour(warnSchemeEntity.getQuietHour());
+        warnSchemeDTO.setMark(warnSchemeEntity.getMark());
         warnSchemeDTO.setStatus(warnSchemeEntity.getStatus());
 
         List<ThresholdConfigDTO> thresholdConfigDTOList = WholeSchemeUtils.getThresholdConfig(warnSchemeId, warnSchemeMapper);
