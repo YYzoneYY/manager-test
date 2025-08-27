@@ -178,6 +178,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             warnSchemeEntity.setSchemeName(warnSchemeDTO.getSchemeName());
             warnSchemeEntity.setSceneType(warnSchemeDTO.getSceneType());
             warnSchemeEntity.setWorkFaceId(warnSchemeDTO.getWorkFaceId());
+            warnSchemeEntity.setMark(warnSchemeDTO.getMark());
             warnSchemeEntity.setQuietHour(warnSchemeDTO.getQuietHour());
             warnSchemeEntity.setThresholdConfig(thresholdMap);
             warnSchemeEntity.setIncrementConfig(incrementMap);
