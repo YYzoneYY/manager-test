@@ -39,7 +39,7 @@ public class ObtainWarnSchemeUtils {
                 .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNotNull(warnSchemeEntity)) {
             warnSchemeDTO.setWarnSchemeId(warnSchemeEntity.getWarnSchemeId());
-            warnSchemeDTO.setWarnSchemeName(warnSchemeEntity.getSchemeName());
+            warnSchemeDTO.setSchemeName(warnSchemeEntity.getSchemeName());
             warnSchemeDTO.setSceneType(warnSchemeEntity.getSceneType());
             warnSchemeDTO.setWorkFaceId(warnSchemeEntity.getWorkFaceId());
             warnSchemeDTO.setQuietHour(warnSchemeEntity.getQuietHour());
@@ -71,7 +71,7 @@ public class ObtainWarnSchemeUtils {
                 .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isNotNull(warnSchemeEntity)) {
             warnSchemeDTO.setWarnSchemeId(warnSchemeEntity.getWarnSchemeId());
-            warnSchemeDTO.setWarnSchemeName(warnSchemeEntity.getSchemeName());
+            warnSchemeDTO.setSchemeName(warnSchemeEntity.getSchemeName());
             warnSchemeDTO.setSceneType(warnSchemeEntity.getSceneType());
             warnSchemeDTO.setWorkFaceId(warnSchemeEntity.getWorkFaceId());
             warnSchemeDTO.setQuietHour(warnSchemeEntity.getQuietHour());

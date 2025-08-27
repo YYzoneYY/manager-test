@@ -74,7 +74,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             throw new RuntimeException("同场景，同标志下,预警方案已存在！");
         }
         Long selectCount = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
-                .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getWarnSchemeName())
+                .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getSchemeName())
                 .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
                 .eq(WarnSchemeEntity::getMineId, mineId)
                 .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
@@ -92,7 +92,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         List<Map<String, Object>> growthRateMap = ConvertUtils.convertGrowthRateMap(growthRateConfigDTOS);
 
         WarnSchemeEntity warnSchemeEntity = new WarnSchemeEntity();
-        warnSchemeEntity.setSchemeName(warnSchemeDTO.getWarnSchemeName());
+        warnSchemeEntity.setSchemeName(warnSchemeDTO.getSchemeName());
         warnSchemeEntity.setSceneType(warnSchemeDTO.getSceneType());
         warnSchemeEntity.setWorkFaceId(warnSchemeDTO.getWorkFaceId());
         warnSchemeEntity.setQuietHour(warnSchemeDTO.getQuietHour());
@@ -143,7 +143,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
                 throw new RuntimeException("同场景，同标志下,预警方案已存在！");
             }
             Long selectCount = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
-                    .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getWarnSchemeName())
+                    .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getSchemeName())
                     .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
                     .eq(WarnSchemeEntity::getMineId, warnSchemeEntity.getMineId())
                     .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
@@ -174,7 +174,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             List<Map<String, Object>> growthRateMap = ConvertUtils.convertGrowthRateMap(growthRateConfigDTOS);
 
             warnSchemeEntity.setWarnSchemeId(warnSchemeId);
-            warnSchemeEntity.setSchemeName(warnSchemeDTO.getWarnSchemeName());
+            warnSchemeEntity.setSchemeName(warnSchemeDTO.getSchemeName());
             warnSchemeEntity.setSceneType(warnSchemeDTO.getSceneType());
             warnSchemeEntity.setWorkFaceId(warnSchemeDTO.getWorkFaceId());
             warnSchemeEntity.setQuietHour(warnSchemeDTO.getQuietHour());
@@ -204,7 +204,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         }
         WarnSchemeDTO warnSchemeDTO = new WarnSchemeDTO();
         warnSchemeDTO.setWarnSchemeId(warnSchemeEntity.getWarnSchemeId());
-        warnSchemeDTO.setWarnSchemeName(warnSchemeEntity.getSchemeName());
+        warnSchemeDTO.setSchemeName(warnSchemeEntity.getSchemeName());
         warnSchemeDTO.setSceneType(warnSchemeEntity.getSceneType());
         warnSchemeDTO.setWorkFaceId(warnSchemeEntity.getWorkFaceId());
         warnSchemeDTO.setQuietHour(warnSchemeEntity.getQuietHour());
