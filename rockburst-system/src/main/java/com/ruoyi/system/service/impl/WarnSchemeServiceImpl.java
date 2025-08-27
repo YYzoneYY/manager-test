@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -64,21 +65,18 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         }
         Long count = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
                 .eq(WarnSchemeEntity::getSceneType, warnSchemeDTO.getSceneType())
+                .eq(WarnSchemeEntity::getMark, warnSchemeDTO.getMark())
                 .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
+                .eq(WarnSchemeEntity::getMineId, mineId)
                 .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
 
-        if (warnSchemeDTO.getSceneType().equals("1401") || warnSchemeDTO.getSceneType().equals("1801")) {
-            if (count >= 2) {
-                throw new RuntimeException("同一个场景下,预警方案已存在！");
-            }
-        } else {
-            if (count > 0) {
-                throw new RuntimeException("同一个场景下,预警方案已存在！");
-            }
+        if (count > 0) {
+            throw new RuntimeException("同场景，同标志下,预警方案已存在！");
         }
         Long selectCount = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
                 .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getWarnSchemeName())
                 .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
+                .eq(WarnSchemeEntity::getMineId, mineId)
                 .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (selectCount > 0) {
             throw new RuntimeException("同一个工作面下,该名称的方案已存在！");
@@ -137,20 +135,17 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             Long count = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
                     .eq(WarnSchemeEntity::getSceneType, warnSchemeDTO.getSceneType())
                     .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
+                    .eq(WarnSchemeEntity::getMark, warnSchemeDTO.getMark())
+                    .eq(WarnSchemeEntity::getMineId, warnSchemeEntity.getMineId())
                     .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
                     .ne(WarnSchemeEntity::getWarnSchemeId, warnSchemeId));
-            if (warnSchemeDTO.getSceneType().equals("1401") || warnSchemeDTO.getSceneType().equals("1801")) {
-                if (count >= 2) {
-                    throw new RuntimeException("同一个场景下,预警方案已存在！");
-                }
-            } else {
-                if (count > 0) {
-                    throw new RuntimeException("同一个场景下,预警方案已存在！");
-                }
+            if (count > 0) {
+                throw new RuntimeException("同场景，同标志下,预警方案已存在！");
             }
             Long selectCount = warnSchemeMapper.selectCount(new LambdaQueryWrapper<WarnSchemeEntity>()
                     .eq(WarnSchemeEntity::getSchemeName, warnSchemeDTO.getWarnSchemeName())
                     .eq(WarnSchemeEntity::getWorkFaceId, warnSchemeDTO.getWorkFaceId())
+                    .eq(WarnSchemeEntity::getMineId, warnSchemeEntity.getMineId())
                     .eq(WarnSchemeEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
                     .ne(WarnSchemeEntity::getWarnSchemeId, warnSchemeDTO.getWarnSchemeId()));
             if (selectCount > 0) {
@@ -289,6 +284,45 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
         flag = this.removeBatchByIds(ids);
         return flag;
     }
+
+    @Override
+    public List<TagDropDownListDTO> getTagDropDownList(String sceneType, Long mineId) {
+        List<TagDropDownListDTO> tagDropDownListDTOS = new ArrayList<>();
+
+        if (sceneType.equals(ConstantsInfo.SUPPORT_SCENE_TYPE)) {
+            tagDropDownListDTOS.add(createTagDropDownListDTO("支架", "support"));
+        } else if (sceneType.equals(ConstantsInfo.DRILL_SCENE_TYPE)) {
+            tagDropDownListDTOS.add(createTagDropDownListDTO("钻孔", "drill"));
+        } else if (sceneType.equals(ConstantsInfo.ANCHOR_SCENE_TYPE)) {
+            tagDropDownListDTOS.add(createTagDropDownListDTO("锚杆", "anchor_rod"));
+            tagDropDownListDTOS.add(createTagDropDownListDTO("锚索", "anchor_cable"));
+        } else if (sceneType.equals(ConstantsInfo.ROOF_SCENE_TYPE)) {
+            tagDropDownListDTOS.add(createTagDropDownListDTO("深基点", "deep"));
+            tagDropDownListDTOS.add(createTagDropDownListDTO("浅基点", "shallow"));
+        } else if (sceneType.equals(ConstantsInfo.LANE_SCENE_TYPE)) {
+            tagDropDownListDTOS.add(createTagDropDownListDTO("巷道位移", "lane"));
+        } else if (sceneType.equals(ConstantsInfo.ELECTROMAGNETIC_SCENE_TYPE)) {
+            tagDropDownListDTOS.add(createTagDropDownListDTO("电磁强度", "intensity"));
+            tagDropDownListDTOS.add(createTagDropDownListDTO("电磁脉冲", "pulse"));
+        }
+
+        return tagDropDownListDTOS;
+    }
+
+    /**
+     * 创建标签下拉列表DTO
+     *
+     * @param label 标签显示名称
+     * @param value 标签值
+     * @return TagDropDownListDTO
+     */
+    private TagDropDownListDTO createTagDropDownListDTO(String label, String value) {
+        TagDropDownListDTO dto = new TagDropDownListDTO();
+        dto.setLabel(label);
+        dto.setValue(value);
+        return dto;
+    }
+
 
 
     /**

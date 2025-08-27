@@ -6,6 +6,7 @@ import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
+import com.ruoyi.system.domain.dto.TagDropDownListDTO;
 import com.ruoyi.system.domain.dto.WarnSchemeDTO;
 import com.ruoyi.system.domain.dto.WarnSchemeSelectDTO;
 import com.ruoyi.system.service.WarnSchemeService;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author: shikai
@@ -79,6 +81,14 @@ public class WarnSchemeController {
     public R<Object> batchEnableDisable(@ApiParam(name = "warnSchemeIds", value = "预警方案配置ID数组", required = true)
                                             @RequestParam Long[] warnSchemeIds) {
         return R.ok(warnSchemeService.batchEnableDisable(warnSchemeIds));
+    }
+
+    @ApiOperation(value = "根据场景类型获取标志下拉列表", notes = "根据场景类型获取标志下拉列表")
+    @GetMapping(value = "/getTagDropDownList")
+    public R<List<TagDropDownListDTO>> getTagDropDownList(@ApiParam(name = "sceneType", value = "场景类型", required = true) @RequestParam String sceneType) {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.warnSchemeService.getTagDropDownList(sceneType, mineId));
     }
 
 

@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.WarnSchemeEntity;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
+import com.ruoyi.system.domain.dto.TagDropDownListDTO;
 import com.ruoyi.system.domain.dto.WarnSchemeDTO;
 import com.ruoyi.system.domain.dto.WarnSchemeSelectDTO;
+
+import java.util.List;
 
 /**
  * @author: shikai
@@ -25,4 +28,6 @@ public interface WarnSchemeService extends IService<WarnSchemeEntity> {
     int batchEnableDisable(Long[] warnSchemeIds);
 
     boolean deleteByIds(Long[] warnSchemeIds);
+
+    List<TagDropDownListDTO> getTagDropDownList(String sceneType, Long mineId);
 }
