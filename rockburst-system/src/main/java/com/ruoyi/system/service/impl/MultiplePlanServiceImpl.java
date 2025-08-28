@@ -51,6 +51,7 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
         multipleParamPlanDTOs.forEach(dto -> {
             MultiplePlanEntity entity = new MultiplePlanEntity();
             entity.setParamName(obtainParamName(dto, location));
+            entity.setLocation(location);
             entity.setWarnInstanceNum(warnInstanceNum);
             entity.setMeasureNum(dto.getMeasureNum());
             entity.setMonitorItems(dto.getMonitorItems());

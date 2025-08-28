@@ -43,6 +43,10 @@ public class MultiplePlanEntity implements Serializable {
     @TableField(value = "measure_num")
     private String measureNum;
 
+    @ApiModelProperty("传感器位置")
+    @TableField(value = "location")
+    private String location;
+
     @ApiModelProperty(value = "监测项")
     @TableField(value = "monitor_items")
     private String monitorItems;

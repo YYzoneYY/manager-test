@@ -18,6 +18,9 @@ public class MultipleParamPlanVO {
     @ApiModelProperty("参量名称")
     private String paramName;
 
+    @ApiModelProperty("传感器位置")
+    private String location;
+
     @ApiModelProperty("警情编号")
     private String warnInstanceNum;
 
