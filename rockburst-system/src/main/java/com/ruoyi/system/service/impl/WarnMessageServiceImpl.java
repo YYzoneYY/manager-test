@@ -114,11 +114,16 @@ public class WarnMessageServiceImpl implements WarnMessageService {
     }
 
     @Override
-    public int updateWarnMessage(String warnInstanceNum, WarnMessageDTO warnMessageDTO, Long mineId) {
+    public int updateWarnMessage(WarnMessageDTO warnMessageDTO, Long mineId) {
         int flag = 0;
-        WarnMessageEntity warnMessageEntity = new WarnMessageEntity();
+
+        LambdaEsQueryWrapper<WarnMessageEntity> queryWrapper = new LambdaEsQueryWrapper<>();
+        queryWrapper.eq(WarnMessageEntity::getWarnInstanceNum, warnMessageDTO.getWarnInstanceNum());
+        WarnMessageEntity warnMessageEntity = warnMessageMapper.selectOne(queryWrapper);
+
         BeanUtils.copyProperties(warnMessageDTO, warnMessageEntity);
-        return 0;
+        flag = warnMessageMapper.updateById(warnMessageEntity);
+        return flag;
     }
 
     @Override

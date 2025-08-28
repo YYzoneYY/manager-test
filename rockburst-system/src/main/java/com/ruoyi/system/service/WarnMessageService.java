@@ -16,7 +16,7 @@ public interface WarnMessageService {
 
     int insertWarnMessage(WarnMessageDTO warnMessageDTO, Long mineId);
 
-    int updateWarnMessage(String warnInstanceNum, WarnMessageDTO warnMessageDTO, Long mineId);
+    int updateWarnMessage(WarnMessageDTO warnMessageDTO, Long mineId);
 
     TableData warnMessagePage(WarnSelectDTO warnSelectDTO, Long mineId, Integer pageNum, Integer pageSize);
 
