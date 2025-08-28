@@ -20,6 +20,9 @@ public class WarnMessageDTO extends WarnMessageEntity {
     @ApiModelProperty(value = "监测值(处理后)")
     private String monitorValue;
 
+    @ApiModelProperty(value = "监测项")
+    private String monitorItems;
+
     @ApiModelProperty(value = "警情内容")
     private String warnContent;
 

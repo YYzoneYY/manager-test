@@ -158,6 +158,7 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         String endTimeFmt = warnMessageEntity.getEndTime() == null ? null : DateUtils.getDateStrByTime(warnMessageEntity.getEndTime());
         warnMessageDTO.setStartTimeFmt(startTimeFmt);
         warnMessageDTO.setEndTimeFmt(endTimeFmt);
+        warnMessageDTO.setMonitorItems(warnMessageEntity.getTag());
         // 已废弃
 //        String monitorValue = obtainMonitorValue(warnMessageEntity);
         warnMessageDTO.setMonitorValue(String.valueOf(warnMessageEntity.getMonitoringValue()));
@@ -186,7 +187,7 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         lineChartDTOs = getLineChartData(startTime, endTime, mineId, warnMessageEntity.getMeasureNum());
         warnMessageDTO.setLineChartDTOs(lineChartDTOs);
 
-        List<ParamAnalyzeDTO> paramAnalyzeDTOS = obtainParamAnalyzeData(warnMessageEntity.getMeasureNum(), startTime, endTime, mineId);
+        List<ParamAnalyzeDTO> paramAnalyzeDTOS = obtainParamAnalyzeData(warnMessageEntity.getWarnInstanceNum(), startTime, endTime, mineId);
         warnMessageDTO.setParamAnalyzeDTOs(paramAnalyzeDTOS);
         return warnMessageDTO;
     }
@@ -201,7 +202,7 @@ public class WarnMessageServiceImpl implements WarnMessageService {
                 ParamAnalyzeDTO paramAnalyzeDTO = new ParamAnalyzeDTO();
                 paramAnalyzeDTO.setSensorType(multiplePlanEntity.getSensorType());
                 paramAnalyzeDTO.setMeasureNum(multiplePlanEntity.getMeasureNum());
-                List<LineChartDTO> lineChartDTOS = getLineChartData(startTime, endTime, mineId, warnInstanceNum);
+                List<LineChartDTO> lineChartDTOS = getLineChartDataT(startTime, endTime, mineId, multiplePlanEntity.getMeasureNum());
                 paramAnalyzeDTO.setLineChartDTOs(lineChartDTOS);
                 paramAnalyzeDTOS.add(paramAnalyzeDTO);
             });
@@ -440,6 +441,40 @@ public class WarnMessageServiceImpl implements WarnMessageService {
 //                    lineChartDTO.setEleMaxValue(measureActualEntity.getEleMaxValue());
 //                    lineChartDTO.setElePulse(measureActualEntity.getElePulse());
 //                }
+                lineChartDTO.setDataTime(measureActualEntity.getDataTime());
+                lineChartDTOs.add(lineChartDTO);
+            });
+        }
+        return lineChartDTOs;
+    }
+
+
+    /**
+     * 获取折线图数据(多参量)
+     */
+    private List<LineChartDTO> getLineChartDataT(Long startTime, Long endTime, Long mineId, String measureNum) {
+        List<LineChartDTO> lineChartDTOs = new ArrayList<>();
+        LambdaEsQueryWrapper<MeasureActualEntity> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.between(MeasureActualEntity::getDataTime, startTime, endTime)
+                .eq(MeasureActualEntity::getMineId, mineId)
+                .eq(MeasureActualEntity::getMeasureNum, measureNum);
+        List<MeasureActualEntity> measureActualEntities = measureActualMapper.selectList(wrapper);
+        if (!measureActualEntities.isEmpty()) {
+            measureActualEntities.forEach(measureActualEntity -> {
+                LineChartDTO lineChartDTO = new LineChartDTO();
+                if (measureActualEntity.getSensorType().equals(ConstantsInfo.SUPPORT_RESISTANCE_TYPE) ||
+                        measureActualEntity.getSensorType().equals(ConstantsInfo.DRILL_STRESS_TYPE) ||
+                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_STRESS_TYPE) ||
+                        measureActualEntity.getSensorType().equals(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE)
+                        || measureActualEntity.getSensorType().equals(ConstantsInfo.LANE_DISPLACEMENT_TYPE)) {
+                    lineChartDTO.setMonitoringValue(measureActualEntity.getMonitoringValue());
+                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE)) {
+                    lineChartDTO.setMonitoringValue(measureActualEntity.getValueShallow());
+                    lineChartDTO.setValueDeep(measureActualEntity.getValueDeep());
+                } else if (measureActualEntity.getSensorType().equals(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE)) {
+                    lineChartDTO.setEleMaxValue(measureActualEntity.getEleMaxValue());
+                    lineChartDTO.setElePulse(measureActualEntity.getElePulse());
+                }
                 lineChartDTO.setDataTime(measureActualEntity.getDataTime());
                 lineChartDTOs.add(lineChartDTO);
             });

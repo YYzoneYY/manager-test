@@ -185,6 +185,7 @@ public class WarnSchemeServiceImpl extends ServiceImpl<WarnSchemeMapper, WarnSch
             warnSchemeEntity.setGrowthRateConfig(growthRateMap);
             warnSchemeEntity.setUpdateTime(System.currentTimeMillis());
             warnSchemeEntity.setUpdateBy(SecurityUtils.getUserId());
+            warnSchemeEntity.setStatus(warnSchemeDTO.getStatus());
             flag = warnSchemeMapper.updateById(warnSchemeEntity);
             if (flag <= 0) {
                 throw new RuntimeException("预警方案修改失败");
