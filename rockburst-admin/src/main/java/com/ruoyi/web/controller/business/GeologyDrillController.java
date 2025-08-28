@@ -47,13 +47,17 @@ public class GeologyDrillController {
     @ApiOperation(value = "批量新增地质钻孔", notes = "批量新增地质钻孔")
     @PostMapping(value = "/batchInsert")
     public R<Object> batchInsert(@RequestBody List<GeologyDrillDTO> geologyDrillDTOS) {
-        return R.ok(this.geologyDrillService.batchInsert(geologyDrillDTOS));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.geologyDrillService.batchInsert(geologyDrillDTOS, mineId));
     }
 
     @ApiOperation(value = "查询地质钻孔信息", notes = "查询地质钻孔信息")
     @GetMapping(value = "/obtainGeologyDrillInfo")
     public R<Object> obtainGeologyDrillInfo(@RequestParam("drillName") String drillName) {
-        return R.ok(this.geologyDrillService.obtainGeologyDrillInfo(drillName));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.geologyDrillService.obtainGeologyDrillInfo(drillName, mineId));
     }
 
     @ApiOperation(value = "根据条件参数分页查询数据列表接口", notes = "根据条件参数分页查询数据列表接口")
@@ -65,7 +69,9 @@ public class GeologyDrillController {
     public R<TableData> pageQueryList(@ApiParam(name = "drillName", value = "钻孔名称") @RequestParam(name = "drillName", required = false) String drillName,
                                       @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                       @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize){
-        return R.ok(geologyDrillService.pageQueryList(drillName, pageNum, pageSize));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(geologyDrillService.pageQueryList(drillName, pageNum, pageSize, mineId));
     }
 
     @ApiOperation(value = "查询所有地质钻孔", notes = "查询所有地质钻孔")
@@ -119,6 +125,8 @@ public class GeologyDrillController {
     @ApiOperation(value = "一键删除", notes = "一键删除")
     @DeleteMapping(value = "/oneClickDelete")
     public R<Object> oneClickDelete() {
-        return R.ok(this.geologyDrillService.oneClickDelete());
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.geologyDrillService.oneClickDelete(mineId));
     }
 }

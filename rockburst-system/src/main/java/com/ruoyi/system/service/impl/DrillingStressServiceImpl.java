@@ -228,6 +228,11 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
         return flag;
     }
 
+    @Override
+    public boolean batchSave() {
+        return false;
+    }
+
     /**
      * VO格式化
      */

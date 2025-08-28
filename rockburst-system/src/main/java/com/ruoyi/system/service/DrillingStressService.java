@@ -56,4 +56,7 @@ public interface DrillingStressService extends IService<DrillingStressEntity> {
      * @return 返回结果
      */
     int batchEnableDisable(Long[] drillingStressIds);
+
+
+    boolean batchSave();
 }

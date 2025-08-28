@@ -15,12 +15,13 @@
             <if test="drillName != null and drillName != ''">
                 and g.data_name like concat('%',#{drillName},'%')
             </if>
+        and g.mine_id = #{mineId}
         </where>
     </select>
 
-    <update id="truncateTable">
-        TRUNCATE TABLE geology_drill;
-    </update>
+    <delete id="truncateTable" parameterType="long">
+        DELETE FROM geology_drill WHERE mine_id = #{mineId}
+    </delete>
 
     <update id="resetAutoIncrement">
         ALTER TABLE geology_drill AUTO_INCREMENT = 1;

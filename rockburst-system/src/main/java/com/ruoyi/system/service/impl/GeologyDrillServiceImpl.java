@@ -65,7 +65,7 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
     private GeologyDrillService geologyDrillService;
 
     @Override
-    public boolean batchInsert(List<GeologyDrillDTO> geologyDrillDTOList) {
+    public boolean batchInsert(List<GeologyDrillDTO> geologyDrillDTOList, Long mineId) {
         // 1. 参数校验
         if (CollectionUtils.isEmpty(geologyDrillDTOList)) {
             return false;
@@ -80,6 +80,7 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
 
         Map<String, GeologyDrillEntity> existingMap = geologyDrillMapper.selectList(
                 new LambdaQueryWrapper<GeologyDrillEntity>()
+                        .eq(GeologyDrillEntity::getMineId, mineId)
                         .in(GeologyDrillEntity::getDataName, dataNames)
         ).stream().collect(Collectors.toMap(GeologyDrillEntity::getDataName, Function.identity()));
 
@@ -89,6 +90,7 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
 
             // 属性拷贝
             BeanUtils.copyProperties(dto, entity);
+            entity.setMineId(mineId);
             entityList.add(entity);
         }
         // 5. 批量保存或更新
@@ -96,12 +98,13 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
     }
 
     @Override
-    public GeologyDrillInfoDTO obtainGeologyDrillInfo(String drillName) {
+    public GeologyDrillInfoDTO obtainGeologyDrillInfo(String drillName, Long mineId) {
         if (ObjectUtil.isNull(drillName)) {
             throw new RuntimeException("参数错误,钻孔名称不能为空");
         }
         GeologyDrillEntity geologyDrillEntity = geologyDrillMapper.selectOne(new LambdaQueryWrapper<GeologyDrillEntity>()
-                .eq(GeologyDrillEntity::getDataName, drillName));
+                .eq(GeologyDrillEntity::getDataName, drillName)
+                .eq(GeologyDrillEntity::getMineId, mineId));
         if (ObjectUtil.isNull(geologyDrillEntity)) {
             throw new RuntimeException("钻孔不存在");
         }
@@ -113,7 +116,7 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
     }
 
     @Override
-    public TableData pageQueryList(String drillName, Integer pageNum, Integer pageSize) {
+    public TableData pageQueryList(String drillName, Integer pageNum, Integer pageSize, Long mineId) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -122,7 +125,7 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
             pageSize = 10;
         }
         PageHelper.startPage(pageNum, pageSize);
-        Page<GeologyDrillVO> page = geologyDrillMapper.queryByPage(drillName);
+        Page<GeologyDrillVO> page = geologyDrillMapper.queryByPage(drillName, mineId);
         if (ListUtils.isNotNull(page.getResult())) {
             page.getResult().forEach(geologyDrillVO -> {
                 geologyDrillVO.setDrillPropertiesDTOS(drillMappingService.getDrillProperties(geologyDrillVO.getGeologyDrillId()));
@@ -188,9 +191,13 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
     }
 
     @Override
-    public boolean oneClickDelete() {
+    public boolean oneClickDelete(Long mineId) {
         try {
-            geologyDrillMapper.truncateTable();
+            List<GeologyDrillEntity> geologyDrillEntities = geologyDrillMapper.selectList(new LambdaQueryWrapper<GeologyDrillEntity>()
+                    .eq(GeologyDrillEntity::getMineId, mineId));
+            List<Long> longList = geologyDrillEntities.stream().map(GeologyDrillEntity::getGeologyDrillId).collect(Collectors.toList());
+            geologyDrillMapper.truncateTable(mineId);
+            drillMappingService.removeBatchByIds(longList);
             return true;
         } catch (Exception e) {
             log.error("清空地质钻孔表并重置自增失败", e);

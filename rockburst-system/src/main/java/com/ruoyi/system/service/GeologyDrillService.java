@@ -17,11 +17,11 @@ import java.util.List;
  */
 public interface GeologyDrillService extends IService<GeologyDrillEntity> {
 
-    boolean batchInsert(List<GeologyDrillDTO> geologyDrillDTOList);
+    boolean batchInsert(List<GeologyDrillDTO> geologyDrillDTOList, Long mineId);
 
-    GeologyDrillInfoDTO obtainGeologyDrillInfo(String drillName);
+    GeologyDrillInfoDTO obtainGeologyDrillInfo(String drillName, Long mineId);
 
-    TableData pageQueryList(String drillName, Integer pageNum, Integer pageSize);
+    TableData pageQueryList(String drillName, Integer pageNum, Integer pageSize, Long mineId);
 
     List<GeologyDrillVO> obtainGeologyDrillList(Long mineId);
 
@@ -37,5 +37,5 @@ public interface GeologyDrillService extends IService<GeologyDrillEntity> {
      * 一键删除
      * @return 删除结果
      */
-    boolean oneClickDelete();
+    boolean oneClickDelete(Long mineId);
 }

@@ -16,8 +16,10 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface GeologyDrillMapper extends BaseMapper<GeologyDrillEntity> {
 
-    Page<GeologyDrillVO> queryByPage(@Param("drillName") String drillName);
+    Page<GeologyDrillVO> queryByPage(@Param("drillName") String drillName,
+                                     @Param("mineId") Long mineId);
 
-    int truncateTable();
+    int truncateTable(@Param("mineId") Long mineId);
+
     int resetAutoIncrement();
 }
