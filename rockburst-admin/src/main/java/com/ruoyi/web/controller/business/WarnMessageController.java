@@ -75,12 +75,11 @@ public class WarnMessageController {
     @ApiOperation(value = "保存已勾选的多参量", notes = "保存已勾选的多参量")
     @PostMapping(value = "/saveMultipleParamPlan")
     public R<Object> saveMultipleParamPlan(@ApiParam(name = "warnInstanceNum", value = "警情编号", required = true) @RequestParam String warnInstanceNum,
-                                            @ApiParam(name = "location", value = "安装位置", required = true) @RequestParam String sensorLocation,
                                            @ApiParam(name = "multipleParamPlanDTOs", value = "多参量方案信息", required = true)
                                                @RequestBody List<MultipleParamPlanDTO> multipleParamPlanDTOs) {
         String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
-        return R.ok(this.warnMessageService.saveMultipleParamPlan(warnInstanceNum, sensorLocation, multipleParamPlanDTOs, mineId));
+        return R.ok(this.warnMessageService.saveMultipleParamPlan(warnInstanceNum, multipleParamPlanDTOs, mineId));
     }
 
 //    @ApiOperation(value = "更新已勾选的多参量", notes = "更新已勾选的多参量")

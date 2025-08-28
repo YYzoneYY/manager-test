@@ -16,13 +16,15 @@ public interface WarnMessageService {
 
     int insertWarnMessage(WarnMessageDTO warnMessageDTO, Long mineId);
 
+    int updateWarnMessage(String warnInstanceNum, WarnMessageDTO warnMessageDTO, Long mineId);
+
     TableData warnMessagePage(WarnSelectDTO warnSelectDTO, Long mineId, Integer pageNum, Integer pageSize);
 
     WarnMessageDTO detail(String warnInstanceNum, Long mineId);
 
     TableData referenceQuantityPage(String type, String keyword, Long mineId, Integer pageNum, Integer pageSize);
 
-    boolean saveMultipleParamPlan(String warnInstanceNum, String sensorLocation, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
+    boolean saveMultipleParamPlan(String warnInstanceNum, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
 
 //    boolean updateMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
 

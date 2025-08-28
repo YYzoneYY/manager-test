@@ -20,6 +20,9 @@ public class MultipleParamPlanDTO{
     @ApiModelProperty("测点编码")
     private String measureNum;
 
+    @ApiModelProperty("安装位置")
+    private String sensorLocation;
+
     @ApiModelProperty(value = "监测项")
     private String monitorItems;
 

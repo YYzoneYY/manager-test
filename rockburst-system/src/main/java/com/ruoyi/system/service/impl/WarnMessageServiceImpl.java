@@ -114,6 +114,14 @@ public class WarnMessageServiceImpl implements WarnMessageService {
     }
 
     @Override
+    public int updateWarnMessage(String warnInstanceNum, WarnMessageDTO warnMessageDTO, Long mineId) {
+        int flag = 0;
+        WarnMessageEntity warnMessageEntity = new WarnMessageEntity();
+        BeanUtils.copyProperties(warnMessageDTO, warnMessageEntity);
+        return 0;
+    }
+
+    @Override
     public TableData warnMessagePage(WarnSelectDTO warnSelectDTO, Long mineId, Integer pageNum, Integer pageSize) {
         if (warnSelectDTO == null) {
             throw new IllegalArgumentException("参数 actualSelectDTO 不允许为空!");
@@ -243,8 +251,8 @@ public class WarnMessageServiceImpl implements WarnMessageService {
     }
 
     @Override
-    public boolean saveMultipleParamPlan(String warnInstanceNum, String sensorLocation, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
-        return multiplePlanService.saveBatch(warnInstanceNum, sensorLocation, multipleParamPlanDTOs, mineId);
+    public boolean saveMultipleParamPlan(String warnInstanceNum, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
+        return multiplePlanService.saveBatch(warnInstanceNum, multipleParamPlanDTOs, mineId);
     }
 
 //    @Override

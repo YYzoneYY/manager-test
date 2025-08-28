@@ -29,7 +29,7 @@ public class WarnMessageVO {
     private String monitorItems;
 
     @ApiModelProperty(value = "监测值")
-    private String monitoringValue;
+    private BigDecimal monitoringValue;
 
     @ApiModelProperty(value = "预警类型")
     private String warnType;
