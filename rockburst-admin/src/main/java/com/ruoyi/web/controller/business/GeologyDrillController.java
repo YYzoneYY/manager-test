@@ -4,6 +4,7 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.dto.ClassesSelectDTO;
 import com.ruoyi.system.domain.dto.GeologyDrillDTO;
@@ -70,10 +71,9 @@ public class GeologyDrillController {
     @ApiOperation(value = "查询所有地质钻孔", notes = "查询所有地质钻孔")
     @GetMapping(value = "/obtainAllGeologyDrill")
     public R<List<GeologyDrillVO>> obtainGeologyDrillList(){
-//        LoginUser loginUser = SecurityUtils.getLoginUser();
-//        String token = loginUser.getToken();
-//        Long mineId = tokenService.getMineIdFromToken(token);
-        return R.ok(geologyDrillService.obtainGeologyDrillList());
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(geologyDrillService.obtainGeologyDrillList(mineId));
     }
 
     @ApiOperation(value = "下载导入模板", notes = "下载导入模板")

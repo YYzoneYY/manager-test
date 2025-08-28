@@ -134,12 +134,11 @@ public class GeologyDrillServiceImpl extends ServiceImpl<GeologyDrillMapper, Geo
     }
 
     @Override
-    public List<GeologyDrillVO> obtainGeologyDrillList() {
+    public List<GeologyDrillVO> obtainGeologyDrillList(Long mineId) {
         List<GeologyDrillVO> geologyDrillVOList = new ArrayList<>();
-//        List<GeologyDrillEntity> geologyDrillEntities = geologyDrillMapper.selectList(new LambdaQueryWrapper<GeologyDrillEntity>()
-//                .eq(GeologyDrillEntity::getMineId, mineId));
-        List<GeologyDrillEntity> geologyDrillEntities = geologyDrillMapper.selectList(new LambdaQueryWrapper<GeologyDrillEntity>());
-        if (ListUtils.isNotNull(geologyDrillEntities)) {
+        List<GeologyDrillEntity> geologyDrillEntities = geologyDrillMapper.selectList(new LambdaQueryWrapper<GeologyDrillEntity>()
+                .eq(GeologyDrillEntity::getMineId, mineId));
+        if (!geologyDrillEntities.isEmpty()) {
             geologyDrillEntities.forEach(geologyDrillEntity -> {
                 GeologyDrillVO geologyDrillVO = new GeologyDrillVO();
                 BeanUtils.copyProperties(geologyDrillEntity, geologyDrillVO);

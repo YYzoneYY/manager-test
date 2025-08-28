@@ -23,8 +23,7 @@ public interface GeologyDrillService extends IService<GeologyDrillEntity> {
 
     TableData pageQueryList(String drillName, Integer pageNum, Integer pageSize);
 
-    // todo:暂时将mineId去掉，配合前端测试
-    List<GeologyDrillVO> obtainGeologyDrillList();
+    List<GeologyDrillVO> obtainGeologyDrillList(Long mineId);
 
     /**
      * 批量导入
