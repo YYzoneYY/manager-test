@@ -243,8 +243,8 @@ public class WarnMessageServiceImpl implements WarnMessageService {
     }
 
     @Override
-    public boolean saveMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
-        return multiplePlanService.saveBatch(warnInstanceNum, location, multipleParamPlanDTOs, mineId);
+    public boolean saveMultipleParamPlan(String warnInstanceNum, String sensorLocation, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
+        return multiplePlanService.saveBatch(warnInstanceNum, sensorLocation, multipleParamPlanDTOs, mineId);
     }
 
 //    @Override

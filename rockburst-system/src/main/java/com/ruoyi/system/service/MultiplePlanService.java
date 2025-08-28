@@ -14,9 +14,9 @@ import java.util.List;
  */
 public interface MultiplePlanService extends IService<MultiplePlanEntity> {
 
-    boolean saveBatch(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
+    boolean saveBatch(String warnInstanceNum, String sensorLocation, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
 
-    boolean updateBatchById(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOS, Long mineId);
+    boolean updateBatchById(String warnInstanceNum, String sensorLocation, List<MultipleParamPlanDTO> multipleParamPlanDTOS, Long mineId);
 
     List<MultipleParamPlanVO> getMultipleParamPlanList(String warnInstanceNum, Long mineId);
 

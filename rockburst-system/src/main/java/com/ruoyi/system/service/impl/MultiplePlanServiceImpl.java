@@ -31,7 +31,7 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
     private MultiplePlanMapper multiplePlanMapper;
 
     @Override
-    public boolean saveBatch(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
+    public boolean saveBatch(String warnInstanceNum, String sensorLocation, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId) {
         boolean flag = false;
         if (ObjectUtil.isNull(warnInstanceNum)) {
             throw new RuntimeException("警情编码不能为空");
@@ -39,7 +39,7 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
         if (ObjectUtil.isNull(multipleParamPlanDTOs)) {
             throw new RuntimeException("参数不能为空");
         }
-        if (ObjectUtil.isNull(location)) {
+        if (ObjectUtil.isNull(sensorLocation)) {
             throw new RuntimeException("位置参数不能为空");
         }
 
@@ -50,8 +50,8 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
         ArrayList<MultiplePlanEntity> multiplePlanEntities = new ArrayList<>();
         multipleParamPlanDTOs.forEach(dto -> {
             MultiplePlanEntity entity = new MultiplePlanEntity();
-            entity.setParamName(obtainParamName(dto, location));
-            entity.setLocation(location);
+            entity.setParamName(obtainParamName(dto, sensorLocation));
+            entity.setSensorLocation(sensorLocation);
             entity.setWarnInstanceNum(warnInstanceNum);
             entity.setMeasureNum(dto.getMeasureNum());
             entity.setMonitorItems(dto.getMonitorItems());
@@ -65,12 +65,12 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
     }
 
     @Override
-    public boolean updateBatchById(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOS, Long mineId) {
+    public boolean updateBatchById(String warnInstanceNum, String sensorLocation, List<MultipleParamPlanDTO> multipleParamPlanDTOS, Long mineId) {
         boolean flag = false;
         if (ObjectUtil.isNull(warnInstanceNum)) {
             throw new RuntimeException("警情编码不能为空");
         }
-        if (ObjectUtil.isNull(location)) {
+        if (ObjectUtil.isNull(sensorLocation)) {
             throw new RuntimeException("位置参数不能为空");
         }
         if (ObjectUtil.isNull(multipleParamPlanDTOS)) {
@@ -79,7 +79,7 @@ public class MultiplePlanServiceImpl extends ServiceImpl<MultiplePlanMapper, Mul
         List<String> warnInstanceNumList = new ArrayList<>();
         warnInstanceNumList.add(warnInstanceNum);
         this.deleteByWarnInstanceNum(warnInstanceNumList, mineId);
-        flag = this.saveBatch(warnInstanceNum, location, multipleParamPlanDTOS, mineId);
+        flag = this.saveBatch(warnInstanceNum, sensorLocation, multipleParamPlanDTOS, mineId);
         return flag;
     }
 

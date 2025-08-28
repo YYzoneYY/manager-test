@@ -22,7 +22,7 @@ public interface WarnMessageService {
 
     TableData referenceQuantityPage(String type, String keyword, Long mineId, Integer pageNum, Integer pageSize);
 
-    boolean saveMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
+    boolean saveMultipleParamPlan(String warnInstanceNum, String sensorLocation, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
 
 //    boolean updateMultipleParamPlan(String warnInstanceNum, String location, List<MultipleParamPlanDTO> multipleParamPlanDTOs, Long mineId);
 
