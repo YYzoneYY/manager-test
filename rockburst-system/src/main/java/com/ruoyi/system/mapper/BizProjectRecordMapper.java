@@ -3,6 +3,7 @@ package com.ruoyi.system.mapper;
 import com.github.pagehelper.Page;
 import com.github.yulichang.base.MPJBaseMapper;
 import com.ruoyi.system.domain.BizProjectRecord;
+import com.ruoyi.system.domain.dto.PrintListDTO;
 import com.ruoyi.system.domain.dto.ReportFormsDTO;
 import com.ruoyi.system.domain.dto.largeScreen.MiddleDTO;
 import com.ruoyi.system.domain.dto.largeScreen.ProjectDTO;
@@ -92,4 +93,8 @@ public interface BizProjectRecordMapper extends MPJBaseMapper<BizProjectRecord>
 
     List<MiddleDTO> queryProjectCountBatch(@Param("tunnelIds") List<Long> tunnelIds);
 
+    Page<PrintListDTO> queryPrintList(@Param("startTime") Date startTime,
+                                      @Param("endTime") Date endTime,
+                                      @Param("drillNum") String drillNum,
+                                      @Param("mineId") Long mineId);
 }

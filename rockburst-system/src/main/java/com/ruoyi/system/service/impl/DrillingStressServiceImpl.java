@@ -10,6 +10,7 @@ import com.ruoyi.common.utils.*;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.BizWorkface;
 import com.ruoyi.system.domain.Entity.DrillingStressEntity;
+import com.ruoyi.system.domain.Entity.SupportResistanceEntity;
 import com.ruoyi.system.domain.Entity.SurveyAreaEntity;
 import com.ruoyi.system.domain.Entity.WarnSchemeSeparateEntity;
 import com.ruoyi.system.domain.dto.*;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -226,11 +228,6 @@ public class DrillingStressServiceImpl extends ServiceImpl<DrillingStressMapper,
             drillingStressMapper.updateById(drillingStressEntity);
         });
         return flag;
-    }
-
-    @Override
-    public boolean batchSave() {
-        return false;
     }
 
     /**

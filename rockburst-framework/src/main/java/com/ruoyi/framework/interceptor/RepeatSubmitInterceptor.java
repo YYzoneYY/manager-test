@@ -51,7 +51,7 @@ public abstract class RepeatSubmitInterceptor implements HandlerInterceptor
                 || uri.endsWith(".jpeg") || uri.endsWith(".ico")
                 || uri.contains("/swagger") || uri.contains("/webjars")
                 || uri.contains("/swagger-resources") || uri.contains("/v3/api-docs")
-                || uri.contains("/v2/api-docs") || uri.contains("/swagger-ui")) {
+                || uri.contains("/v2/api-docs") || uri.contains("/swagger-ui") || uri.contains("/dataCollection/")) {
             return true; // 登录、文档、静态资源直接放行
         }
         String token = getToken(request);

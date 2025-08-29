@@ -6,6 +6,8 @@ import com.ruoyi.system.domain.Entity.DrillingStressEntity;
 import com.ruoyi.system.domain.dto.DrillingStressDTO;
 import com.ruoyi.system.domain.dto.MeasureSelectDTO;
 
+import java.util.Map;
+
 /**
  * @author: shikai
  * @date: 2024/12/3
@@ -56,7 +58,4 @@ public interface DrillingStressService extends IService<DrillingStressEntity> {
      * @return 返回结果
      */
     int batchEnableDisable(Long[] drillingStressIds);
-
-
-    boolean batchSave();
 }

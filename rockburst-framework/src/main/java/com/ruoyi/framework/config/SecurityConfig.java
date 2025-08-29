@@ -113,6 +113,7 @@ public class SecurityConfig
                 // 对于登录login 注册register 验证码captchaImage 允许匿名访问
                 requests.antMatchers("/login", "/register", "/captchaImage","/app/**","/auditForApp/**","/imserver/**","/webSocket/**").permitAll()
                         .antMatchers("/app/project/record/**", "/map/**").permitAll()
+                        .antMatchers("/dataCollection/**").permitAll()
                         .antMatchers("/videoIdentify/**")
                         .permitAll().antMatchers("/pressureHoleForms/exportForms").permitAll()
                     // 静态资源，可匿名访问

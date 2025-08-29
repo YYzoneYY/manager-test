@@ -58,7 +58,7 @@ public class SupportResistanceEntity extends BusinessBaseEntity implements Seria
     @NotNull(groups = {ParameterValidationUpdate.class}, message = "分站编号不能为空")
     private String substationNum;
 
-    @ApiModelProperty("立柱架号不能为空")
+    @ApiModelProperty("立柱架号")
     @TableField(value = "column_num")
     @NotNull(groups = {ParameterValidationUpdate.class}, message = "立柱架号不能为空")
     private String columnNum;
