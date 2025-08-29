@@ -4,10 +4,11 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.system.domain.BizWorkface;
-import com.ruoyi.system.domain.Entity.DrillingStressEntity;
-import com.ruoyi.system.domain.Entity.SupportResistanceEntity;
+import com.ruoyi.system.domain.Entity.*;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DataCollectionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,8 @@ import java.util.Map;
 @Transactional
 @Service
 public class DataCollectionServiceImpl implements DataCollectionService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataCollectionServiceImpl.class);
 
     @Resource
     private SupportResistanceMapper supportResistanceMapper;
@@ -48,97 +51,218 @@ public class DataCollectionServiceImpl implements DataCollectionService {
     @Resource
     private BizWorkfaceMapper bizWorkfaceMapper;
 
+    @Resource
+    private TunnelMapper tunnelMapper;
+
     @Override
     public int dataCollectionSave(Map<String, Object> map) {
         int flag = 0;
         String type = (String) map.get("type");
         switch (type) {
             case "ZJ":
-                flag = addZJ( map);
+                flag = addZJ(map);
                 break;
             case "ZK":
-                flag = addZK( map);
+                flag = addZK(map);
+                break;
+            case "MG":
+                flag = addMG(map);
+                break;
+            case "DB":
+                flag = addDB(map);
+                break;
+            case "HD":
+                flag = addHD(map);
+                break;
+            case "DC":
+                flag = addDC(map);
+                break;
+            default:
+                logger.warn("未知的数据类型: {}", type);
                 break;
         }
         return flag;
     }
 
-
     private int addZJ(Map<String, Object> map) {
-        int flag = 0;
         String measureNum = (String) map.get("measureNum");
         String monitorAreaName = (String) map.get("monitorAreaName");
         String sensorType = (String) map.get("sensorType");
         String sensorNum = (String) map.get("sensorNum");
         String columnNum = getFirstPart(sensorNum);
         String columnName = getLastPart(sensorNum);
+
         SupportResistanceEntity supportResistanceEntity = new SupportResistanceEntity();
-        supportResistanceEntity.setMeasureNum(measureNum);
-        supportResistanceEntity.setSurveyAreaName(monitorAreaName);
-        supportResistanceEntity.setSensorType(sensorType);
+        // 设置通用字段
+        setCommonFields(supportResistanceEntity, map, measureNum, monitorAreaName, sensorType);
+
+        // 设置特定字段
         supportResistanceEntity.setSubstationNum((String) map.get("siteNum"));
         supportResistanceEntity.setColumnNum(columnNum);
         supportResistanceEntity.setColumnName(columnName);
         supportResistanceEntity.setSensorLocation((String) map.get("sensorLocation"));
-        // 使用辅助方法处理数值转换
         supportResistanceEntity.setPressureReliefValue(convertToBigDecimal(map.get("pressureNumTwo")));
         supportResistanceEntity.setSettingLoad(convertToBigDecimal(map.get("settingLoadTwo")));
         supportResistanceEntity.setWorkResistance(convertToBigDecimal(map.get("workResistanceTwo")));
-        supportResistanceEntity.setXAxis((String) map.get("xaxis"));
-        supportResistanceEntity.setYAxis((String) map.get("yaxis"));
-        supportResistanceEntity.setZAxis((String) map.get("zaxis"));
-        Object dataTimeObj = map.get("dataTime");
-        if (dataTimeObj instanceof String) {
-            supportResistanceEntity.setDataTime(Long.valueOf((String) dataTimeObj));
-        } else if (dataTimeObj instanceof Long) {
-            supportResistanceEntity.setDataTime((Long) dataTimeObj);
-        }
-        supportResistanceEntity.setStatus(ConstantsInfo.ENABLE);
-        supportResistanceEntity.setTag(ConstantsInfo.AUTOMATIC_ACCESS);
-        supportResistanceEntity.setMineId(2L);
-        supportResistanceEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
-        supportResistanceEntity.setCreateTime(System.currentTimeMillis());
-        Long selectCount = obtainWorkFaceId(monitorAreaName);
-        supportResistanceEntity.setWorkFaceId(selectCount);
-        String originalString = obtainOriginalString(monitorAreaName);
-        supportResistanceEntity.setOriginalWorkFaceName(originalString);
-        flag = supportResistanceMapper.insert(supportResistanceEntity);
-        return flag;
+
+        return supportResistanceMapper.insert(supportResistanceEntity);
     }
 
     private int addZK(Map<String, Object> map) {
-        int flag = 0;
         String measureNum = (String) map.get("measureNum");
         String monitorAreaName = (String) map.get("monitorAreaName");
         String sensorType = (String) map.get("sensorType");
+
         DrillingStressEntity drillingStressEntity = new DrillingStressEntity();
-        drillingStressEntity.setMeasureNum(measureNum);
-        drillingStressEntity.setSurveyAreaName(monitorAreaName);
-        drillingStressEntity.setSensorType(sensorType);
+        // 设置通用字段
+        setCommonFields(drillingStressEntity, map, measureNum, monitorAreaName, sensorType);
+
+        // 设置特定字段
         drillingStressEntity.setSensorLocation((String) map.get("sensorLocation"));
-        Object installTimeObj = map.get("installTime");
-        if (installTimeObj instanceof String) {
-            drillingStressEntity.setInstallTime(Long.valueOf((String) installTimeObj));
-        } else if (installTimeObj instanceof Long) {
-            drillingStressEntity.setInstallTime((Long) installTimeObj);
-        }
+        drillingStressEntity.setInstallTime(convertToLong(map.get("installTime")));
         drillingStressEntity.setInstallDepth(convertToBigDecimal(map.get("installDepth")));
         drillingStressEntity.setInstallDirection((String) map.get("detectorDirection"));
         drillingStressEntity.setInitialStress(convertToBigDecimal(map.get("initialStress")));
-        drillingStressEntity.setXAxis((String) map.get("xaxis"));
-        drillingStressEntity.setYAxis((String) map.get("yaxis"));
-        drillingStressEntity.setZAxis((String) map.get("zaxis"));
-        drillingStressEntity.setStatus(ConstantsInfo.ENABLE);
-        drillingStressEntity.setTag(ConstantsInfo.AUTOMATIC_ACCESS);
-        drillingStressEntity.setMineId(2L);
-        drillingStressEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
-        drillingStressEntity.setCreateTime(System.currentTimeMillis());
-        Long selectCount = obtainWorkFaceId(monitorAreaName);
-        drillingStressEntity.setWorkFaceId(selectCount);
-        String originalString = obtainOriginalString(monitorAreaName);
-        drillingStressEntity.setOriginalWorkFaceName(originalString);
-        flag = drillingStressMapper.insert(drillingStressEntity);
-        return flag;
+
+        return drillingStressMapper.insert(drillingStressEntity);
+    }
+
+    private int addMG(Map<String, Object> map) {
+        String measureNum = (String) map.get("measureNum");
+        String monitorAreaName = (String) map.get("monitorAreaName");
+        String sensorType = (String) map.get("sensorType");
+
+        AnchorCableStressEntity anchorCableStressEntity = new AnchorCableStressEntity();
+        // 设置通用字段
+        setCommonFields(anchorCableStressEntity, map, measureNum, monitorAreaName, sensorType);
+
+        // 设置特定字段
+        anchorCableStressEntity.setSensorLocation((String) map.get("sensorLocation"));
+        anchorCableStressEntity.setInstallTime(convertToLong(map.get("installTime")));
+        anchorCableStressEntity.setBreakingValue(convertToBigDecimal(map.get("breakingValue")));
+
+        return anchorCableStressMapper.insert(anchorCableStressEntity);
+    }
+
+    private int addDB(Map<String, Object> map) {
+        String measureNum = (String) map.get("measureNum");
+        String monitorAreaName = (String) map.get("monitorAreaName");
+        String sensorType = (String) map.get("sensorType");
+        String tunnelName = (String) map.get("tunnelName");
+
+        RoofAbscissionEntity roofAbscissionEntity = new RoofAbscissionEntity();
+        // 设置通用字段
+        setCommonFields(roofAbscissionEntity, map, measureNum, monitorAreaName, sensorType);
+
+        // 设置特定字段
+        roofAbscissionEntity.setSensorLocation((String) map.get("sensorLocation"));
+        roofAbscissionEntity.setInstallTime(convertToLong(map.get("installTime")));
+        roofAbscissionEntity.setDeepInitDepth(convertToBigDecimal(map.get("deepDepth")));
+        roofAbscissionEntity.setShallowInitDepth(convertToBigDecimal(map.get("shallowDepth")));
+        roofAbscissionEntity.setOriginalTunnelName(tunnelName);
+        roofAbscissionEntity.setTunnelId(obtainTunnelId(tunnelName, 2L));
+
+        return roofAbscissionMapper.insert(roofAbscissionEntity);
+    }
+
+    private int addHD(Map<String, Object> map) {
+        String measureNum = (String) map.get("measureNum");
+        String monitorAreaName = (String) map.get("monitorAreaName");
+        String sensorType = (String) map.get("sensorType");
+        String tunnelName = (String) map.get("tunnelName");
+
+        LaneDisplacementEntity laneDisplacementEntity = new LaneDisplacementEntity();
+        // 设置通用字段
+        setCommonFields(laneDisplacementEntity, map, measureNum, monitorAreaName, sensorType);
+
+        // 设置特定字段
+        laneDisplacementEntity.setSensorLocation((String) map.get("sensorLocation"));
+        laneDisplacementEntity.setInstallTime(convertToLong(map.get("installTime")));
+        laneDisplacementEntity.setOriginalTunnelName(tunnelName);
+        laneDisplacementEntity.setTunnelId(obtainTunnelId(tunnelName, 2L));
+
+        return laneDisplacementMapper.insert(laneDisplacementEntity);
+    }
+
+    private int addDC(Map<String, Object> map) {
+        String measureNum = (String) map.get("measureNum");
+        String sensorType = (String) map.get("sensorType");
+        String workFaceName = (String) map.get("workFaceName");
+
+        ElecRadiationEntity elecRadiationEntity = new ElecRadiationEntity();
+        // 设置通用字段（部分）
+        elecRadiationEntity.setMeasureNum(measureNum);
+        elecRadiationEntity.setSensorType(sensorType);
+        elecRadiationEntity.setSensorLocation((String) map.get("sensorLocation"));
+        elecRadiationEntity.setInstallTime(convertToLong(map.get("installTime")));
+        elecRadiationEntity.setStatus(ConstantsInfo.ENABLE);
+        elecRadiationEntity.setTag(ConstantsInfo.AUTOMATIC_ACCESS);
+        elecRadiationEntity.setMineId(2L);
+        elecRadiationEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
+        elecRadiationEntity.setCreateTime(System.currentTimeMillis());
+        elecRadiationEntity.setWorkFaceId(obtainWorkFaceId2(workFaceName, 2L));
+        elecRadiationEntity.setOriginalWorkFaceName(workFaceName);
+
+        return elecRadiationMapper.insert(elecRadiationEntity);
+    }
+
+    /**
+     * 设置通用字段
+     */
+    private <T> void setCommonFields(T entity, Map<String, Object> map, String measureNum,
+                                     String monitorAreaName, String sensorType) {
+        try {
+            // 使用反射设置通用字段
+            entity.getClass().getMethod("setMeasureNum", String.class).invoke(entity, measureNum);
+            entity.getClass().getMethod("setSurveyAreaName", String.class).invoke(entity, monitorAreaName);
+            entity.getClass().getMethod("setSensorType", String.class).invoke(entity, sensorType);
+
+            entity.getClass().getMethod("setXAxis", String.class).invoke(entity, (String) map.get("xaxis"));
+            entity.getClass().getMethod("setYAxis", String.class).invoke(entity, (String) map.get("yaxis"));
+            entity.getClass().getMethod("setZAxis", String.class).invoke(entity, (String) map.get("zaxis"));
+
+            entity.getClass().getMethod("setStatus", String.class).invoke(entity, ConstantsInfo.ENABLE);
+            entity.getClass().getMethod("setTag", String.class).invoke(entity, ConstantsInfo.AUTOMATIC_ACCESS);
+            entity.getClass().getMethod("setMineId", Long.class).invoke(entity, 2L);
+            entity.getClass().getMethod("setDelFlag", String.class).invoke(entity, ConstantsInfo.ZERO_DEL_FLAG);
+            entity.getClass().getMethod("setCreateTime", Long.class).invoke(entity, System.currentTimeMillis());
+
+            Long workFaceId = obtainWorkFaceId(monitorAreaName);
+            entity.getClass().getMethod("setWorkFaceId", Long.class).invoke(entity, workFaceId);
+
+            String originalString = obtainOriginalString(monitorAreaName);
+            entity.getClass().getMethod("setOriginalWorkFaceName", String.class).invoke(entity, originalString);
+
+        } catch (Exception e) {
+            // 处理反射异常
+            logger.error("设置通用字段时发生异常", e);
+        }
+    }
+
+
+    /**
+     * 将对象转换为Long
+     * @param obj 待转换的对象
+     * @return Long值
+     */
+    private Long convertToLong(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        if (obj instanceof String) {
+            try {
+                return Long.valueOf((String) obj);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        } else if (obj instanceof Long) {
+            return (Long) obj;
+        } else if (obj instanceof Integer) {
+            return ((Integer) obj).longValue();
+        }
+
+        return null;
     }
 
     /**
@@ -188,6 +312,30 @@ public class DataCollectionServiceImpl implements DataCollectionService {
             if (ObjectUtil.isNotNull(bizWorkface)) {
                 workFaceId = bizWorkface.getWorkfaceId();
             }
+        }
+        return workFaceId;
+    }
+
+    private Long obtainTunnelId(String tunnelName, Long mineId) {
+        Long tunnelId = null;
+        TunnelEntity tunnelEntity = tunnelMapper.selectOne(new LambdaQueryWrapper<TunnelEntity>()
+                .eq(TunnelEntity::getTunnelName, tunnelName)
+                .eq(TunnelEntity::getMineId, mineId)
+                .eq(TunnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNotNull(tunnelEntity)) {
+            tunnelId = tunnelEntity.getTunnelId();
+        }
+        return tunnelId;
+    }
+
+    private Long obtainWorkFaceId2(String workFaceName, Long mineId) {
+        Long workFaceId = null;
+        BizWorkface bizWorkface = bizWorkfaceMapper.selectOne(new LambdaQueryWrapper<BizWorkface>()
+                .eq(BizWorkface::getWorkfaceName, workFaceName)
+                .eq(BizWorkface::getMineId, mineId)
+                .eq(BizWorkface::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+        if (ObjectUtil.isNotNull(bizWorkface)) {
+            workFaceId = bizWorkface.getWorkfaceId();
         }
         return workFaceId;
     }

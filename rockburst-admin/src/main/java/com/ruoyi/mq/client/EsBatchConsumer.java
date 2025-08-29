@@ -4,7 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONObject;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.ruoyi.common.message.WebSocketServer;
 import com.ruoyi.common.utils.ConstantsInfo;
+import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.system.EsMapper.MeasureActualMapper;
 import com.ruoyi.system.EsMapper.WarnMessageMapper;
 import com.ruoyi.system.domain.Entity.WarnSchemeSeparateEntity;
@@ -14,8 +16,11 @@ import com.ruoyi.system.domain.dto.GrowthRateConfigDTO;
 import com.ruoyi.system.domain.dto.IncrementConfigDTO;
 import com.ruoyi.system.domain.dto.ThresholdConfigDTO;
 import com.ruoyi.system.domain.dto.WarnSchemeDTO;
+import com.ruoyi.system.domain.dto.actual.MeasureWarnPushDTO;
 import com.ruoyi.system.domain.utils.ObtainDateUtils;
 import com.ruoyi.system.domain.utils.ObtainWarnSchemeUtils;
+import com.ruoyi.system.domain.utils.SendMessageUtils;
+import com.ruoyi.system.mapper.SysDictDataMapper;
 import com.ruoyi.system.mapper.WarnSchemeMapper;
 import com.ruoyi.system.mapper.WarnSchemeSeparateMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +30,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -51,6 +57,9 @@ public class EsBatchConsumer implements InitializingBean, DisposableBean { // 1.
 
     @Resource
     private WarnSchemeMapper warnSchemeMapper;
+
+    @Resource
+    private SysDictDataMapper sysDictDataMapper;
 
     private final BlockingQueue<JSONObject> messageQueue = new LinkedBlockingQueue<>(10000);
 
@@ -108,54 +117,14 @@ public class EsBatchConsumer implements InitializingBean, DisposableBean { // 1.
                     // 如果1秒内没有新消息，继续下一次循环
                     continue;
                 }
-
                 if (jsonList.isEmpty()) {
                     continue;
                 }
 
                 log.info("开始批量处理 {} 条数据到ES...", jsonList.size());
 
-                // b. 转换并批量插入
-                List<MeasureActualEntity> esEntities = new ArrayList<>();
-                for (JSONObject json : jsonList) {
-                    MeasureActualEntity entity = new MeasureActualEntity();
-                    String tag = json.getStr("tag");
-                    entity.setMineId(2L);
-                    entity.setMeasureNum(json.getStr("monitoringCode"));
-                    entity.setSensorType(json.getStr("sensorType"));
-                    entity.setSensorLocation(json.getStr("sensorLocation"));
-                    entity.setSensorStatus(json.getStr("monitoringStatus"));
-                    entity.setDataTime(json.getLong("dataUploadTime"));
-                    if (tag.equals("ZKSS") || tag.equals("MGSS") || tag.equals("WYSS") || tag.equals("ZJSS")) {
-                        entity.setMonitoringValue(json.getBigDecimal("monitoringValue"));
-                        entity.setSensorNum(json.getStr("sensorCode"));
-                    } else if (tag.equals("LCSS")) {
-                        entity.setValueShallow(json.getBigDecimal("valueShallow"));
-                        entity.setValueDeep(json.getBigDecimal("valueSecond"));
-                    } else if (tag.equals("DCSS")) {
-                        entity.setEleMaxValue(json.getBigDecimal("electromagnetismMaxValue"));
-                        entity.setElePulse(json.getBigDecimal("electromMagneticPulse"));
-                    }
-                    esEntities.add(entity);
-
-                    LambdaEsQueryWrapper<WarnMessageEntity> queryWrapper = new LambdaEsQueryWrapper<>();
-                    queryWrapper.eq(WarnMessageEntity::getMeasureNum, json.getStr("monitoringCode"))
-                            .eq(WarnMessageEntity::getSensorType, json.getStr("sensorType"))
-                            .eq(WarnMessageEntity::getMineId, 2L)
-                            .eq(WarnMessageEntity::getWarnStatus,"1");
-                    List<WarnMessageEntity> warnMessageEntities = warnMessageMapper.selectList(queryWrapper);
-                    if (!warnMessageEntities.isEmpty()) {
-
-                    }
-
-
-                }
-                Integer insertBatch = measureActualMapper.insertBatch(esEntities);
-                if (insertBatch > 0) {
-                    log.info("成功批量插入 {} 条数据到ES。", insertBatch);
-                } else {
-                    log.error("批量插入ES失败！数据量: {}", esEntities.size());
-                }
+                // 批量处理数据：插入测量数据、处理预警逻辑
+                processBatchData(jsonList);
 
             } catch (InterruptedException e) {
                 // 当线程被中断时，恢复中断状态并退出循环
@@ -177,6 +146,149 @@ public class EsBatchConsumer implements InitializingBean, DisposableBean { // 1.
     }
 
     /**
+     * 批量处理数据：包括插入测量数据和处理预警逻辑
+     * @param jsonList JSON数据列表
+     */
+    private void processBatchData(List<JSONObject> jsonList) {
+        // 1. 转换并批量插入测量数据
+        List<MeasureActualEntity> esEntities = convertToMeasureActualEntities(jsonList);
+        insertMeasureActualData(esEntities);
+
+        // 2. 处理预警逻辑
+        processWarningLogic(jsonList);
+    }
+
+    /**
+     * 将JSON列表转换为测量实体列表
+     * @param jsonList JSON数据列表
+     * @return 测量实体列表
+     */
+    private List<MeasureActualEntity> convertToMeasureActualEntities(List<JSONObject> jsonList) {
+        List<MeasureActualEntity> esEntities = new ArrayList<>(jsonList.size());
+        for (JSONObject json : jsonList) {
+            MeasureActualEntity entity = new MeasureActualEntity();
+            String tag = json.getStr("tag");
+            entity.setMineId(2L);
+            entity.setMeasureNum(json.getStr("monitoringCode"));
+            entity.setSensorType(json.getStr("sensorType"));
+            entity.setSensorLocation(json.getStr("sensorLocation"));
+            entity.setSensorStatus(json.getStr("monitoringStatus"));
+            entity.setDataTime(json.getLong("dataUploadTime"));
+
+            // 根据tag类型设置不同的监测值
+            setMonitoringValuesByTag(entity, json, tag);
+
+            esEntities.add(entity);
+        }
+        return esEntities;
+    }
+
+    /**
+     * 根据tag类型设置监测值
+     * @param entity 测量实体
+     * @param json JSON数据
+     * @param tag 标签类型
+     */
+    private void setMonitoringValuesByTag(MeasureActualEntity entity, JSONObject json, String tag) {
+        if (tag.equals("ZKSS") || tag.equals("MGSS") || tag.equals("WYSS") || tag.equals("ZJSS")) {
+            entity.setMonitoringValue(json.getBigDecimal("monitoringValue"));
+            entity.setSensorNum(json.getStr("sensorCode"));
+        } else if (tag.equals("LCSS")) {
+            entity.setValueShallow(json.getBigDecimal("valueShallow"));
+            entity.setValueDeep(json.getBigDecimal("valueSecond"));
+        } else if (tag.equals("DCSS")) {
+            entity.setEleMaxValue(json.getBigDecimal("electromagnetismMaxValue"));
+            entity.setElePulse(json.getBigDecimal("electromMagneticPulse"));
+        }
+    }
+
+    /**
+     * 插入测量数据到ES
+     * @param esEntities 测量实体列表
+     */
+    private void insertMeasureActualData(List<MeasureActualEntity> esEntities) {
+        if (esEntities.isEmpty()) {
+            return;
+        }
+
+        Integer insertCount = measureActualMapper.insertBatch(esEntities);
+        if (insertCount > 0) {
+            log.info("成功批量插入 {} 条数据到ES。", insertCount);
+        } else {
+            log.error("批量插入ES失败！数据量: {}", esEntities.size());
+        }
+    }
+
+    /**
+     * 处理预警逻辑
+     * @param jsonList JSON数据列表
+     */
+    private void processWarningLogic(List<JSONObject> jsonList) {
+        List<WarnMessageEntity> newWarnings = new ArrayList<>();
+        List<JSONObject> jsonsToUpdate = new ArrayList<>();
+
+        for (JSONObject json : jsonList) {
+            LambdaEsQueryWrapper<WarnMessageEntity> queryWrapper = new LambdaEsQueryWrapper<>();
+            queryWrapper.eq(WarnMessageEntity::getMeasureNum, json.getStr("monitoringCode"))
+                    .eq(WarnMessageEntity::getSensorType, json.getStr("sensorType"))
+                    .eq(WarnMessageEntity::getMineId, 2L)
+                    .eq(WarnMessageEntity::getWarnStatus, ConstantsInfo.WARNING);
+            List<WarnMessageEntity> warnMessageEntities = warnMessageMapper.selectList(queryWrapper);
+            if (!warnMessageEntities.isEmpty()) {
+                jsonsToUpdate.add(json);
+            } else {
+                List<WarnMessageEntity> warnList = judgmentWarn(json, 2L);
+                if (!warnList.isEmpty()) {
+                    newWarnings.addAll(warnList);
+                }
+            }
+        }
+
+        // 批量处理需要更新预警状态的JSON对象
+        processWarningUpdates(jsonsToUpdate);
+
+        // 批量插入新的预警信息
+        insertNewWarnings(newWarnings);
+    }
+
+    /**
+     * 处理预警状态更新
+     * @param jsonsToUpdate 需要更新的JSON对象列表
+     */
+    private void processWarningUpdates(List<JSONObject> jsonsToUpdate) {
+        if (jsonsToUpdate.isEmpty()) {
+            return;
+        }
+
+        int updateCount = updateWarnMessage(jsonsToUpdate);
+        if (updateCount > 0) {
+            log.info("成功批量修改 {} 条数据到ES(预警信息索引库)。", updateCount);
+        } else {
+            log.error("批量修改ES(预警信息索引库)失败！数据量: {}", updateCount);
+        }
+    }
+
+    /**
+     * 插入新的预警信息
+     * @param newWarnings 新的预警信息列表
+     */
+    private void insertNewWarnings(List<WarnMessageEntity> newWarnings) {
+        if (newWarnings.isEmpty()) {
+            return;
+        }
+
+        Integer insertCount = warnMessageMapper.insertBatch(newWarnings);
+        if (insertCount > 0) {
+            log.info("成功批量插入 {} 条数据到ES(预警信息索引库)。", insertCount);
+
+            // 预警信息插入成功后，通过WebSocket推送消息
+            pushWarningMessagesToWebSocket(newWarnings);
+        } else {
+            log.error("批量插入ES(预警信息索引库)失败！数据量: {}", newWarnings.size());
+        }
+    }
+
+    /**
      * Bean销毁时，优雅地停止消费者线程
      */
     @Override
@@ -189,8 +301,17 @@ public class EsBatchConsumer implements InitializingBean, DisposableBean { // 1.
         log.info("已发送停止信号到ES批量消费者线程。");
     }
 
+    private int updateWarnMessage(List<JSONObject> jsons) {
+        int totalCount = 0;
 
-    private int updateWarnMessage(JSONObject json) {
+        for (JSONObject json : jsons) {
+            totalCount += updateWarnMessageSingle(json);
+        }
+
+        return totalCount;
+    }
+
+    private int updateWarnMessageSingle(JSONObject json) {
         String tag = json.getStr("tag");
         String monitoringCode = json.getStr("monitoringCode");
         String sensorType = json.getStr("sensorType");
@@ -663,6 +784,75 @@ public class EsBatchConsumer implements InitializingBean, DisposableBean { // 1.
         }
     }
 
+    /**
+     * 将预警信息推送到WebSocket客户端
+     * @param warnMessageEntities 预警信息实体列表
+     */
+    private void pushWarningMessagesToWebSocket(List<WarnMessageEntity> warnMessageEntities) {
+        try {
+            List<MeasureWarnPushDTO> measureWarnPushDTOS = new ArrayList<>();
+            for (WarnMessageEntity warnMessageEntity : warnMessageEntities) {
+                MeasureWarnPushDTO measureWarnPushDTO = new MeasureWarnPushDTO();
+                LambdaEsQueryWrapper<WarnMessageEntity> queryWrapper = new LambdaEsQueryWrapper<>();
+                queryWrapper.eq(WarnMessageEntity::getMeasureNum, warnMessageEntity.getMeasureNum())
+                        .eq(WarnMessageEntity::getWarnStatus, ConstantsInfo.WARNING);
+                WarnMessageEntity warnMessage = warnMessageMapper.selectOne(queryWrapper);
+                if (ObjectUtil.isNotNull(warnMessage)) {
+                    measureWarnPushDTO.setWarnInstanceNum(warnMessage.getWarnInstanceNum());
+                    measureWarnPushDTO.setAlarmTime(warnMessage.getStartTime());
+                    measureWarnPushDTO.setAlarmType(warnMessage.getWarnType());
+                    measureWarnPushDTO.setMonitoringValue(warnMessage.getMonitoringValue());
+                    measureWarnPushDTO.setMonitoringItems(warnMessage.getTag());
+                    String startTimeFmt = warnMessageEntity.getStartTime() == null ? null : DateUtils.getDateStrByTime(warnMessageEntity.getStartTime());
+                    buildWarnContent(warnMessageEntity, startTimeFmt);
+                    measureWarnPushDTO.setAlarmContent(warnMessage.getWarnLocation());
+                    measureWarnPushDTOS.add(measureWarnPushDTO);
+                }
+            }
+            // 发送消息
+            String message = SendMessageUtils.sendMessage(measureWarnPushDTOS);
+            WebSocketServer.sendInfoAll(message);
+            log.info("成功推送 {} 条预警信息到WebSocket客户端", measureWarnPushDTOS.size());
+        } catch (Exception e) {
+            log.error("推送预警信息到WebSocket失败！", e);
+        }
+    }
+
+    /**
+     * 构建预警内容
+     *
+     * @param entity 实体对象
+     * @param startTimeFmt 格式化后的开始时间
+     * @return 预警内容
+     */
+    private String buildWarnContent(WarnMessageEntity entity, String startTimeFmt) {
+        if (entity.getMeasureNum() == null || entity.getWarnType() == null ||
+                entity.getWarnLevel() == null || entity.getMonitoringValue() == null) {
+            return ""; // 如果关键字段为空，返回空字符串而不是null
+        }
+
+        String warnType = obtainDicLabel(ConstantsInfo.WARN_TYPE_DICT_TYPE, entity.getWarnType());
+        String warnLevel = obtainDicLabel(ConstantsInfo.WARN_LEVEL_DICT_TYPE, entity.getWarnLevel());
+
+        StringBuilder warnContentBuilder = new StringBuilder();
+        warnContentBuilder.append(entity.getMeasureNum())
+                .append("测点在")
+                .append(startTimeFmt == null ? "" : startTimeFmt)
+                .append(",发生")
+                .append(warnType)
+                .append(warnLevel)
+                .append("预警，值为")
+                .append(entity.getMonitoringValue());
+
+        return warnContentBuilder.toString();
+    }
+
+    /**
+     * 获取字典标签
+     */
+    private String obtainDicLabel(String dictType, String dictValue) {
+        return sysDictDataMapper.selectDictLabel(dictType, dictValue);
+    }
 
     public static void main(String[] args) {
         // 创建类实例以调用非静态方法
@@ -701,5 +891,4 @@ public class EsBatchConsumer implements InitializingBean, DisposableBean { // 1.
         String result = consumer.isWarnGeneric(thresholdConfigDTOS, new BigDecimal("6"));
         System.out.println("预警等级: " + result);
     }
-
 }
