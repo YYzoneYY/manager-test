@@ -2,8 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.ConstructionUnitMapper">
 
-    <select id="selectConstructionUnitByPage"
-           parameterType="com.ruoyi.system.domain.dto.ConstructUnitSelectDTO" resultType="com.ruoyi.system.domain.vo.ConstructionUnitVO">
+    <select id="selectConstructionUnitByPage" resultType="com.ruoyi.system.domain.vo.ConstructionUnitVO">
         select
         cn.construction_unit_id as constructionUnitId,
         cn.construction_unit_name as constructionUnitName,
@@ -12,16 +11,16 @@
         cn.del_flag as delFlag
         from construction_unit as cn
         <where>
-            <if test="constructionUnitName != null and constructionUnitName != ''">
-                and cn.construction_unit_name like concat('%',#{constructionUnitName},'%')
+            <if test="constructUnitSelectDTO.constructionUnitName != null and constructUnitSelectDTO.constructionUnitName != ''">
+                and cn.construction_unit_name like concat('%',#{constructUnitSelectDTO.constructionUnitName},'%')
             </if>
-            <if test="startTime != null">
-                and cn.create_time &gt;= #{startTime}
+            <if test="constructUnitSelectDTO.startTime != null">
+                and cn.create_time &gt;= #{constructUnitSelectDTO.startTime}
             </if>
-            <if test="endTime != null">
-                and cn.create_time &lt;= #{endTime}
+            <if test="constructUnitSelectDTO.endTime != null">
+                and cn.create_time &lt;= #{constructUnitSelectDTO.endTime}
             </if>
-            and cn.del_flag = '0'
+            and cn.del_flag = '0' and cn.mine_id = #{mineId}
         </where>
         order by cn.create_time desc
     </select>

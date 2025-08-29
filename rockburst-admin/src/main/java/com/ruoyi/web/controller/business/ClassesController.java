@@ -2,6 +2,8 @@ package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableData;
+import com.ruoyi.common.utils.ServletUtils;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ClassesEntity;
 import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
@@ -10,6 +12,7 @@ import com.ruoyi.system.domain.dto.ClassesChoiceListDTO;
 import com.ruoyi.system.domain.dto.ClassesSelectDTO;
 import com.ruoyi.system.service.ClassesService;
 import io.swagger.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -31,16 +34,23 @@ public class ClassesController {
     @Resource
     private ClassesService classesService;
 
+    @Autowired
+    private TokenService tokenService;
+
     @ApiOperation(value = "新增班次", notes = "新增班次")
     @PostMapping(value = "/add")
     public R<Integer> addClasses(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) ClassesEntity classesEntity){
-        return R.ok(classesService.insertClasses(classesEntity));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(classesService.insertClasses(classesEntity, mineId));
     }
 
     @ApiOperation(value = "班次修改", notes = "班次修改")
     @PutMapping(value = "/update")
     public R<Integer> updateClasses(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) ClassesEntity classesEntity){
-        return R.ok(classesService.updateClasses(classesEntity));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(classesService.updateClasses(classesEntity, mineId));
     }
 
     @ApiOperation(value = "根据主键查询", notes = "根据主键查询")
@@ -58,7 +68,9 @@ public class ClassesController {
     public R<TableData> pageQueryList(@RequestBody ClassesSelectDTO classesSelectDTO,
                                        @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                        @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize){
-        return R.ok(classesService.pageQueryList(classesSelectDTO, pageNum, pageSize));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(classesService.pageQueryList(classesSelectDTO, pageNum, pageSize, mineId));
     }
 
     @ApiOperation(value = "删除班次", notes = "删除班次")

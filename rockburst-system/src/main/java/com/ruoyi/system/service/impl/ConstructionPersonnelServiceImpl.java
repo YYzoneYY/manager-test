@@ -52,9 +52,11 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
      * @return 返回结果
      */
     @Override
-    public ConstructPersonnelDTO insertConstructionPersonnel(ConstructPersonnelDTO constructPersonnelDTO) {
+    public ConstructPersonnelDTO insertConstructionPersonnel(ConstructPersonnelDTO constructPersonnelDTO, Long mineId) {
         LambdaQueryWrapper<ConstructionPersonnelEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ConstructionPersonnelEntity::getName,constructPersonnelDTO.getName());
+        queryWrapper.eq(ConstructionPersonnelEntity::getName,constructPersonnelDTO.getName())
+                .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .eq(ConstructionPersonnelEntity::getMineId,mineId);
         Long selectCount = constructionPersonnelMapper.selectCount(queryWrapper);
         if (selectCount > 0) {
             throw new RuntimeException("施工人员名称不能重复！");
@@ -65,6 +67,7 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
         constructionPersonnelEntity.setCreateTime(ts);
         constructionPersonnelEntity.setCreateBy(SecurityUtils.getUserId());
         constructionPersonnelEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
+        constructionPersonnelEntity.setMineId(mineId);
         constructionPersonnelMapper.insert(constructionPersonnelEntity);
         BeanUtils.copyProperties(constructionPersonnelEntity,constructPersonnelDTO);
         return constructPersonnelDTO;
@@ -77,19 +80,21 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
      *
      */
     @Override
-    public ConstructPersonnelDTO updateConstructionPersonnel(ConstructPersonnelDTO constructPersonnelDTO) {
+    public ConstructPersonnelDTO updateConstructionPersonnel(ConstructPersonnelDTO constructPersonnelDTO, Long mineId) {
         if (ObjectUtil.isEmpty(constructPersonnelDTO.getConstructionPersonnelId())) {
             throw new RuntimeException("施工人员id不能为空！");
         }
         ConstructionPersonnelEntity constructionPersonnelEntity = constructionPersonnelMapper.selectOne(
                 new LambdaQueryWrapper<ConstructionPersonnelEntity>()
                         .eq(ConstructionPersonnelEntity::getConstructionPersonnelId,constructPersonnelDTO.getConstructionPersonnelId())
-                        .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                        .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                        .eq(ConstructionPersonnelEntity::getMineId,mineId));
         if (ObjectUtil.isEmpty(constructionPersonnelEntity)) {
             throw new RuntimeException("施工人员不存在！");
         }
         LambdaQueryWrapper<ConstructionPersonnelEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ConstructionPersonnelEntity::getName,constructPersonnelDTO.getName())
+                .eq(ConstructionPersonnelEntity::getMineId,mineId)
                 .ne(ConstructionPersonnelEntity::getConstructionPersonnelId,constructPersonnelDTO.getConstructionPersonnelId());
         Long selectCount = constructionPersonnelMapper.selectCount(queryWrapper);
         if (selectCount > 0) {
@@ -148,7 +153,8 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
      * @return 返回结果
      */
     @Override
-    public TableData pageQueryList(PersonnelSelectDTO personnelSelectDTO, Integer pageNum, Integer pageSize) {        TableData result = new TableData();
+    public TableData pageQueryList(PersonnelSelectDTO personnelSelectDTO, Integer pageNum, Integer pageSize, Long mineId) {
+        TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
         }
@@ -156,7 +162,7 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
             pageSize = 10;
         }
         PageHelper.startPage(pageNum, pageSize);
-        Page<ConstructPersonnelVO> page = constructionPersonnelMapper.selectConstructionPersonnelByPage(personnelSelectDTO);
+        Page<ConstructPersonnelVO> page = constructionPersonnelMapper.selectConstructionPersonnelByPage(personnelSelectDTO, mineId);
         if (ListUtils.isNotNull(page.getResult())) {
             page.getResult().forEach(constructPersonnelVO -> {
                 ConstructionUnitEntity constructionUnitEntity = constructionUnitMapper.selectOne(
@@ -192,6 +198,7 @@ public class ConstructionPersonnelServiceImpl extends ServiceImpl<ConstructionPe
             try {
                 List<ConstructionPersonnelEntity> constructionPersonnelEntities = constructionPersonnelMapper.selectList(new LambdaQueryWrapper<ConstructionPersonnelEntity>()
                         .eq(ConstructionPersonnelEntity::getConstructionUnitId, constructionUnitId)
+                        .eq(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
                         .ne(ConstructionPersonnelEntity::getDelFlag, ConstantsInfo.TWO_DEL_FLAG));
                 if (ListUtils.isNotNull(constructionPersonnelEntities)) {
                     personnelChoiceListDTOS = constructionPersonnelEntities.stream().map(this::convertToDTO).collect(Collectors.toList());

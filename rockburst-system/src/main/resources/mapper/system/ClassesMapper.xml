@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.ClassesMapper">
 
-    <select id="selectClassesList" parameterType="com.ruoyi.system.domain.dto.ClassesSelectDTO" resultType="com.ruoyi.system.domain.vo.ClassesVO">
+    <select id="selectClassesList" resultType="com.ruoyi.system.domain.vo.ClassesVO">
         select
         c.classes_id as classesId,
         c.classes_name as classesName,
@@ -11,16 +11,16 @@
         c.del_flag as delFlag
         from classes as c
         <where>
-            <if test="classesName != null and classesName != ''">
-                and c.classes_name like concat('%',#{classesName},'%')
+            <if test="classesSelectDTO.classesName != null and classesSelectDTO.classesName != ''">
+                and c.classes_name like concat('%',#{classesSelectDTO.classesName},'%')
             </if>
-            <if test="startTime != null">
-                and c.create_time &gt;= #{startTime}
+            <if test="classesSelectDTO.startTime != null">
+                and c.create_time &gt;= #{classesSelectDTO.startTime}
             </if>
-            <if test="endTime != null">
-                and c.create_time &lt;= #{endTime}
+            <if test="classesSelectDTO.endTime != null">
+                and c.create_time &lt;= #{classesSelectDTO.endTime}
             </if>
-            and c.del_flag = '0'
+            and c.del_flag = '0' and c.mine_id = #{mineId}
         </where>
         order by c.create_time desc
     </select>

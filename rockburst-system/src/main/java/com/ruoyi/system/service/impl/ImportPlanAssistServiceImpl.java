@@ -71,7 +71,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
 
 
     @Override
-    public int importDataAdd(ImportPlanDTO importPlanDTO) throws ParseException {
+    public int importDataAdd(ImportPlanDTO importPlanDTO, Long mineId) throws ParseException {
         int flag = 0;
         PlanEntity planEntity = new PlanEntity();
         planEntity.setPlanName(importPlanDTO.getPlanName());
@@ -88,6 +88,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
         planEntity.setCreateTime(System.currentTimeMillis());
         planEntity.setCreateBy(SecurityUtils.getUserId());
         planEntity.setShieldStatus(ConstantsInfo.UN_SHIELD_STATUS);
+        planEntity.setMineId(mineId);
         SysUser sysUser = sysUserMapper.selectUserById(SecurityUtils.getUserId());
         planEntity.setDeptId(sysUser.getDeptId());
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
@@ -123,7 +124,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
 
 
     @Override
-    public int importDataAddTwo(ImportPlanTwoDTO importPlanTwoDTO) throws ParseException {
+    public int importDataAddTwo(ImportPlanTwoDTO importPlanTwoDTO, Long mineId) throws ParseException {
         int flag = 0;
         PlanEntity planEntity = new PlanEntity();
         planEntity.setPlanName(importPlanTwoDTO.getPlanName());
@@ -143,6 +144,7 @@ public class ImportPlanAssistServiceImpl implements ImportPlanAssistService {
         SysUser sysUser = sysUserMapper.selectUserById(SecurityUtils.getUserId());
         planEntity.setDeptId(sysUser.getDeptId());
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
+        planEntity.setMineId(mineId);
         flag = planMapper.insert(planEntity);
         if (flag > 0) {
             List<PlanAreaBatchDTO> planAreaBatchDTOS = new ArrayList<>();

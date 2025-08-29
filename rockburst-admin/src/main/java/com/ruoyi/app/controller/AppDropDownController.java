@@ -2,6 +2,7 @@ package com.ruoyi.app.controller;
 
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.enums.ProfessionEnums;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.service.ClassesService;
 import com.ruoyi.system.service.ConstructionPersonnelService;
@@ -10,6 +11,7 @@ import com.ruoyi.system.service.TunnelService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

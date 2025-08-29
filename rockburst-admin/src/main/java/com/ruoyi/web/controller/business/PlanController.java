@@ -2,6 +2,8 @@ package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.utils.ServletUtils;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
@@ -10,6 +12,7 @@ import com.ruoyi.system.domain.dto.ProjectWarnChoiceListDTO;
 import com.ruoyi.system.domain.dto.SelectNewPlanDTO;
 import com.ruoyi.system.service.PlanService;
 import io.swagger.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -39,19 +42,26 @@ public class PlanController {
     @Resource
     private PlanService planService;
 
+    @Autowired
+    private TokenService tokenService;
+
 
     @ApiOperation(value = "计划新增", notes = "计划新增")
     @PreAuthorize("@ss.hasPermi('engineeringPlan:addPlan')")
     @PostMapping(value = "/addPlan")
     public R<Object> addPlan(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) PlanDTO planDTO){
-        return R.ok(this.planService.insertPlan(planDTO));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.planService.insertPlan(planDTO, mineId));
     }
 
     @ApiOperation(value = "计划修改", notes = "计划修改")
     @PreAuthorize("@ss.hasPermi('engineeringPlan:updatePlan')")
     @PutMapping(value = "/updatePlan")
     public R<Object> updatePlan(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class}) PlanDTO planDTO){
-        return R.ok(this.planService.updatePlan(planDTO));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.planService.updatePlan(planDTO, mineId));
     }
 
     @ApiOperation(value = "根据id查询", notes = "根据id查询")
@@ -72,7 +82,9 @@ public class PlanController {
     public R<Object> queryPage(@RequestBody SelectNewPlanDTO selectNewPlanDTO,
                                @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize){
-        return R.ok(this.planService.queryPage(new BasePermission(), selectNewPlanDTO, pageNum, pageSize));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.planService.queryPage(new BasePermission(), selectNewPlanDTO, pageNum, pageSize, mineId));
     }
 
 
@@ -142,7 +154,9 @@ public class PlanController {
     @PostMapping(value = "/importPlan")
     public R<Object> importPlan(@RequestParam(value = "tag") String tag,
                                 @ApiParam(name = "file", value = "文件", required = true) @RequestPart(value = "file") MultipartFile file) throws Exception {
-        return R.ok(this.planService.importPlan(tag, file));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(this.planService.importPlan(tag, file, mineId));
     }
 
     @ApiOperation(value = "获取区域缩略图数据", notes = "获取区域缩略图数据")

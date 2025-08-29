@@ -39,6 +39,14 @@ public class ConstructionPersonnelEntity extends BusinessBaseEntity implements S
     @TableField(value = "profession")
     private String profession;
 
+    @ApiModelProperty("所属矿")
+    @TableField(value = "mine_id")
+    private Long mineId;
+
+    @ApiModelProperty("所属公司")
+    @TableField(value = "company_id")
+    private Long companyId;
+
     @ApiModelProperty(value = "删除标志(0存在2删除)")
     @TableLogic(value = "0", delval = "2")
     @TableField("del_flag")

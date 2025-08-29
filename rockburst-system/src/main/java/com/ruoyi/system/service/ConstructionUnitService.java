@@ -22,14 +22,14 @@ public interface ConstructionUnitService extends IService<ConstructionUnitEntity
      * @param constructionUnitDTO 参数DTO
      * @return 返回结果
      */
-    ConstructionUnitDTO insertConstructionUnit(ConstructionUnitDTO constructionUnitDTO);
+    ConstructionUnitDTO insertConstructionUnit(ConstructionUnitDTO constructionUnitDTO, Long mineId);
 
     /**
      * 修改施工单位
      * @param constructionUnitDTO 参数DTO
      * @return 返回结果
      */
-    ConstructionUnitDTO updateConstructionUnit(ConstructionUnitDTO constructionUnitDTO);
+    ConstructionUnitDTO updateConstructionUnit(ConstructionUnitDTO constructionUnitDTO, Long mineId);
 
     /**
      * 根据id查询施工单位
@@ -45,7 +45,7 @@ public interface ConstructionUnitService extends IService<ConstructionUnitEntity
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData pageQueryList(ConstructUnitSelectDTO constructUnitSelectDTO, Integer pageNum, Integer pageSize);
+    TableData pageQueryList(ConstructUnitSelectDTO constructUnitSelectDTO, Integer pageNum, Integer pageSize, Long mineId);
 
     /**
      * 批量删除

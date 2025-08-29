@@ -5,6 +5,7 @@ import com.github.pagehelper.Page;
 import com.ruoyi.system.domain.Entity.ConstructionUnitEntity;
 import com.ruoyi.system.domain.dto.ConstructUnitSelectDTO;
 import com.ruoyi.system.domain.vo.ConstructionUnitVO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -20,5 +21,6 @@ public interface ConstructionUnitMapper extends BaseMapper<ConstructionUnitEntit
      * @param constructUnitSelectDTO 参数DTO
      * @return 返回结果
      */
-    Page<ConstructionUnitVO> selectConstructionUnitByPage(ConstructUnitSelectDTO constructUnitSelectDTO);
+    Page<ConstructionUnitVO> selectConstructionUnitByPage(@Param("constructUnitSelectDTO") ConstructUnitSelectDTO constructUnitSelectDTO,
+                                                          @Param("mineId") Long mineId);
 }

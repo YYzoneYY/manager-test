@@ -23,7 +23,8 @@ public interface PlanMapper extends BaseMapper<PlanEntity>{
     Page<PlanVO> queryPage(@Param("selectNewPlanDTO") SelectNewPlanDTO selectNewPlanDTO,
                            @Param("deptIds") List<Long> deptIds,
                            @Param("dateScopeSelf") Integer dateScopeSelf,
-                           @Param("userName") String userName);
+                           @Param("userName") String userName,
+                           @Param("mineId") Long mineId);
 
     List<PlanCountDTO> queryPlanCount();
 

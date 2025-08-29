@@ -63,7 +63,7 @@
                     </when>
                 </choose>
             </if>
-            and p.del_flag = '0'
+            and p.del_flag = '0' and p.mine_id = #{mineId}
         </where>
         order by p.create_time desc
     </select>

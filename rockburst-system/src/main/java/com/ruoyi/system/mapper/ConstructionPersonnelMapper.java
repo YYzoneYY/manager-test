@@ -25,7 +25,8 @@ public interface ConstructionPersonnelMapper extends BaseMapper<ConstructionPers
      * @param personnelSelectDTO 查询参数DTO
      * @return 返回结果
      */
-    Page<ConstructPersonnelVO> selectConstructionPersonnelByPage(PersonnelSelectDTO personnelSelectDTO);
+    Page<ConstructPersonnelVO> selectConstructionPersonnelByPage(@Param("personnelSelectDTO") PersonnelSelectDTO personnelSelectDTO,
+                                                                 @Param("mineId") Long mineId);
 
     /**
      * 根据施工单位和工种查询施工人员

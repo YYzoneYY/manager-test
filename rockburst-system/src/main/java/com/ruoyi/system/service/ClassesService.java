@@ -20,14 +20,14 @@ public interface ClassesService extends IService<ClassesEntity> {
      * @param classesEntity 参数实体类
      * @return 返回结果
      */
-    int insertClasses(ClassesEntity classesEntity);
+    int insertClasses(ClassesEntity classesEntity, Long mineId);
 
     /**
      * 修改班次
      * @param classesEntity 参数实体类
      * @return 返回结果
      */
-    int updateClasses(ClassesEntity classesEntity);
+    int updateClasses(ClassesEntity classesEntity, Long mineId);
 
     /**
      * 根据id查询
@@ -43,7 +43,7 @@ public interface ClassesService extends IService<ClassesEntity> {
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData pageQueryList(ClassesSelectDTO classesSelectDTO, Integer pageNum, Integer pageSize);
+    TableData pageQueryList(ClassesSelectDTO classesSelectDTO, Integer pageNum, Integer pageSize, Long mineId);
 
     /**
      * 批量删除

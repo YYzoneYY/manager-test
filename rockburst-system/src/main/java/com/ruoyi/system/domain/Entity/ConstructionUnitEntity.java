@@ -41,4 +41,12 @@ public class ConstructionUnitEntity extends BusinessBaseEntity implements Serial
     @TableLogic(value = "0", delval = "2")
     @TableField("del_flag")
     private String delFlag;
+
+    @ApiModelProperty("所属矿")
+    @TableField(value = "mine_id")
+    private Long mineId;
+
+    @ApiModelProperty("所属公司")
+    @TableField(value = "company_id")
+    private Long companyId;
 }

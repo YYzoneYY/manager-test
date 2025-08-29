@@ -21,7 +21,7 @@ public interface ConstructionPersonnelService extends IService<ConstructionPerso
      * @param constructPersonnelDTO 参数DTO
      * @return 返回结果
      */
-    ConstructPersonnelDTO insertConstructionPersonnel(ConstructPersonnelDTO constructPersonnelDTO);
+    ConstructPersonnelDTO insertConstructionPersonnel(ConstructPersonnelDTO constructPersonnelDTO, Long mineId);
 
     /**
      * 施工人员编辑
@@ -29,7 +29,7 @@ public interface ConstructionPersonnelService extends IService<ConstructionPerso
      * @return 返回结果
      *
      */
-    ConstructPersonnelDTO updateConstructionPersonnel(ConstructPersonnelDTO constructPersonnelDTO);
+    ConstructPersonnelDTO updateConstructionPersonnel(ConstructPersonnelDTO constructPersonnelDTO, Long mineId);
 
     /**
      * 批量删除
@@ -52,7 +52,7 @@ public interface ConstructionPersonnelService extends IService<ConstructionPerso
      * @param pageSize 每页显示条数
      * @return 返回结果
      */
-    TableData pageQueryList(PersonnelSelectDTO personnelSelectDTO, Integer pageNum, Integer pageSize);
+    TableData pageQueryList(PersonnelSelectDTO personnelSelectDTO, Integer pageNum, Integer pageSize, Long mineId);
 
     /**
      * 获取施工人员下拉列表

@@ -17,7 +17,7 @@ import java.text.ParseException;
  */
 public interface ImportPlanAssistService {
 
-    int importDataAdd(ImportPlanDTO importPlanDTO) throws ParseException;
+    int importDataAdd(ImportPlanDTO importPlanDTO, Long mineId) throws ParseException;
 
-    int importDataAddTwo(ImportPlanTwoDTO importPlanTwoDTO) throws ParseException;
+    int importDataAddTwo(ImportPlanTwoDTO importPlanTwoDTO, Long mineId) throws ParseException;
 }

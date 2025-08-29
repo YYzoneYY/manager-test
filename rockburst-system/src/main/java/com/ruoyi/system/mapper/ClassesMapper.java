@@ -5,6 +5,7 @@ import com.github.pagehelper.Page;
 import com.ruoyi.system.domain.Entity.ClassesEntity;
 import com.ruoyi.system.domain.dto.ClassesSelectDTO;
 import com.ruoyi.system.domain.vo.ClassesVO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -16,5 +17,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ClassesMapper extends BaseMapper<ClassesEntity> {
 
-    Page<ClassesVO> selectClassesList(ClassesSelectDTO classesSelectDTO);
+    Page<ClassesVO> selectClassesList(@Param("classesSelectDTO") ClassesSelectDTO classesSelectDTO,
+                                      @Param("mineId") Long mineId);
 }

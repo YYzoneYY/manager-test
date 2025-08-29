@@ -2,8 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.ConstructionPersonnelMapper">
 
-    <select id="selectConstructionPersonnelByPage" parameterType="com.ruoyi.system.domain.dto.PersonnelSelectDTO"
-            resultType="com.ruoyi.system.domain.vo.ConstructPersonnelVO">
+    <select id="selectConstructionPersonnelByPage" resultType="com.ruoyi.system.domain.vo.ConstructPersonnelVO">
         select
         cp.construction_personnel_id as constructionPersonnelId,
         cp.name as name,
@@ -14,22 +13,22 @@
         cp.del_flag as delFlag
         from construction_personnel as cp
         <where>
-            <if test="name != null and name != ''">
-                and cp.name like concat('%',#{name},'%')
+            <if test="personnelSelectDTO.name != null and personnelSelectDTO.name != ''">
+                and cp.name like concat('%',#{personnelSelectDTO.name},'%')
             </if>
-            <if test="constructionUnitId != null">
-                and cp.construction_unit_id = #{constructionUnitId}
+            <if test="personnelSelectDTO.constructionUnitId != null">
+                and cp.construction_unit_id = #{personnelSelectDTO.constructionUnitId}
             </if>
-            <if test="profession != null and profession!= ''">
-                and cp.profession = #{profession}
+            <if test="personnelSelectDTO.profession != null and personnelSelectDTO.profession!= ''">
+                and cp.profession = #{personnelSelectDTO.profession}
             </if>
-            <if test="startTime != null">
-                and cp.create_time &gt;= #{startTime}
+            <if test="personnelSelectDTO.startTime != null">
+                and cp.create_time &gt;= #{personnelSelectDTO.startTime}
             </if>
-            <if test="endTime != null">
-                and cp.create_time &lt;= #{endTime}
+            <if test="personnelSelectDTO.endTime != null">
+                and cp.create_time &lt;= #{personnelSelectDTO.endTime}
             </if>
-            and cp.del_flag = '0'
+            and cp.del_flag = '0' and cp.mine_id = #{mineId}
         </where>
         order by cp.create_time desc
     </select>

@@ -63,9 +63,11 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
      * @return 返回结果
      */
     @Override
-    public ConstructionUnitDTO insertConstructionUnit(ConstructionUnitDTO constructionUnitDTO) {
+    public ConstructionUnitDTO insertConstructionUnit(ConstructionUnitDTO constructionUnitDTO, Long mineId) {
         LambdaQueryWrapper<ConstructionUnitEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ConstructionUnitEntity::getConstructionUnitName,constructionUnitDTO.getConstructionUnitName());
+        queryWrapper.eq(ConstructionUnitEntity::getConstructionUnitName,constructionUnitDTO.getConstructionUnitName())
+                .eq(ConstructionUnitEntity::getMineId,mineId)
+                .eq(ConstructionUnitEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
         Long selectCount = constructionUnitMapper.selectCount(queryWrapper);
         if (selectCount > 0) {
             throw new RuntimeException("施工单位名称不能重复！");
@@ -75,6 +77,7 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
         long ts = System.currentTimeMillis();
         constructionUnitEntity.setCreateTime(ts);
         constructionUnitEntity.setCreateBy(SecurityUtils.getUserId());
+        constructionUnitEntity.setMineId(mineId);
         constructionUnitMapper.insert(constructionUnitEntity);
         BeanUtils.copyProperties(constructionUnitEntity,constructionUnitDTO);
         return constructionUnitDTO;
@@ -86,16 +89,19 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
      * @return 返回结果
      */
     @Override
-    public ConstructionUnitDTO updateConstructionUnit(ConstructionUnitDTO constructionUnitDTO) {
+    public ConstructionUnitDTO updateConstructionUnit(ConstructionUnitDTO constructionUnitDTO, Long mineId) {
         if (ObjectUtil.isEmpty(constructionUnitDTO.getConstructionUnitId())) {
             throw new RuntimeException("施工单位id不能为空！");
         }
-        ConstructionUnitEntity constructionUnitEntity = constructionUnitMapper.selectById(constructionUnitDTO.getConstructionUnitId());
+        ConstructionUnitEntity constructionUnitEntity = constructionUnitMapper.selectOne(new LambdaQueryWrapper<ConstructionUnitEntity>()
+                .eq(ConstructionUnitEntity::getConstructionUnitId,constructionUnitDTO.getConstructionUnitId())
+                .eq(ConstructionUnitEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
         if (ObjectUtil.isEmpty(constructionUnitEntity)) {
             throw new RuntimeException("施工单位不存在！");
         }
         LambdaQueryWrapper<ConstructionUnitEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ConstructionUnitEntity::getConstructionUnitName,constructionUnitDTO.getConstructionUnitName())
+                .eq(ConstructionUnitEntity::getMineId,mineId)
                 .ne(ConstructionUnitEntity::getConstructionUnitId,constructionUnitDTO.getConstructionUnitId());
         Long selectCount = constructionUnitMapper.selectCount(queryWrapper);
         if (selectCount > 0) {
@@ -136,7 +142,7 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
      */
 
     @Override
-    public TableData pageQueryList(ConstructUnitSelectDTO constructUnitSelectDTO, Integer pageNum, Integer pageSize) {
+    public TableData pageQueryList(ConstructUnitSelectDTO constructUnitSelectDTO, Integer pageNum, Integer pageSize, Long mineId) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -145,7 +151,7 @@ public class ConstructionUnitServiceImpl extends ServiceImpl<ConstructionUnitMap
             pageSize = 10;
         }
         PageHelper.startPage(pageNum, pageSize);
-        Page<ConstructionUnitVO> page = constructionUnitMapper.selectConstructionUnitByPage(constructUnitSelectDTO);
+        Page<ConstructionUnitVO> page = constructionUnitMapper.selectConstructionUnitByPage(constructUnitSelectDTO, mineId);
         if (ListUtils.isNotNull(page.getResult())) {
             page.getResult().forEach(constructionUnitVO -> {
                 constructionUnitVO.setCreateTimeFmt(DateUtils.getDateStrByTime(constructionUnitVO.getCreateTime()));

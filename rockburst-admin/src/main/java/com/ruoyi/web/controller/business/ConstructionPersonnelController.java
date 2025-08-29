@@ -3,6 +3,8 @@ package com.ruoyi.web.controller.business;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.enums.ProfessionEnums;
+import com.ruoyi.common.utils.ServletUtils;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.Entity.ParameterValidationAdd;
 import com.ruoyi.system.domain.Entity.ParameterValidationOther;
 import com.ruoyi.system.domain.Entity.ParameterValidationUpdate;
@@ -11,6 +13,7 @@ import com.ruoyi.system.domain.dto.PersonnelChoiceListDTO;
 import com.ruoyi.system.domain.dto.PersonnelSelectDTO;
 import com.ruoyi.system.service.ConstructionPersonnelService;
 import io.swagger.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,17 +37,24 @@ public class ConstructionPersonnelController {
     @Resource
     private ConstructionPersonnelService personnelService;
 
+    @Autowired
+    private TokenService tokenService;
+
     @ApiOperation(value = "新增施工人员", notes = "新增施工人员")
     @PostMapping(value = "/add")
     public R<ConstructPersonnelDTO> add(@RequestBody @Validated({ParameterValidationAdd.class, ParameterValidationOther.class}) ConstructPersonnelDTO constructPersonnelDTO) {
-        return R.ok(personnelService.insertConstructionPersonnel(constructPersonnelDTO));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(personnelService.insertConstructionPersonnel(constructPersonnelDTO, mineId));
     }
 
     @ApiOperation(value = "施工人员编辑", notes = "施工人员编辑")
     @PutMapping(value = "/update")
     public R<ConstructPersonnelDTO> update(@RequestBody @Validated({ParameterValidationUpdate.class, ParameterValidationOther.class})
                                            ConstructPersonnelDTO constructPersonnelDTO) {
-        return R.ok(personnelService.updateConstructionPersonnel(constructPersonnelDTO));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(personnelService.updateConstructionPersonnel(constructPersonnelDTO, mineId));
     }
 
     @ApiOperation(value = "根据id查询", notes = "根据id查询")
@@ -63,7 +73,9 @@ public class ConstructionPersonnelController {
     public R<TableData> pageQueryList(@RequestBody PersonnelSelectDTO personnelSelectDTO,
                                       @RequestParam(required = false) Integer pageNum,
                                       @RequestParam(required = false) Integer pageSize) {
-        return R.ok(personnelService.pageQueryList(personnelSelectDTO, pageNum, pageSize));
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+        return R.ok(personnelService.pageQueryList(personnelSelectDTO, pageNum, pageSize, mineId));
     }
 
     @ApiOperation(value = "删除施工人员", notes = "删除施工人员")

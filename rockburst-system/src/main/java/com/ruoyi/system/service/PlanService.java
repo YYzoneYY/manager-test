@@ -25,14 +25,14 @@ public interface PlanService extends IService<PlanEntity> {
      * @param planDTO 参数DTO
      * @return 返回结果
      */
-    int insertPlan(PlanDTO planDTO);
+    int insertPlan(PlanDTO planDTO, Long mineId);
 
     /**
      * 工程计划修改
      * @param planDTO 参数DTO
      * @return 返回结果
      */
-    int updatePlan(PlanDTO planDTO);
+    int updatePlan(PlanDTO planDTO, Long mineId);
 
     /**
      * 根据id查询
@@ -49,7 +49,7 @@ public interface PlanService extends IService<PlanEntity> {
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData queryPage(BasePermission permission, SelectNewPlanDTO selectNewPlanDTO, Integer pageNum, Integer pageSize);
+    TableData queryPage(BasePermission permission, SelectNewPlanDTO selectNewPlanDTO, Integer pageNum, Integer pageSize, Long mineId);
 
     /**
      * 撤回
@@ -85,7 +85,7 @@ public interface PlanService extends IService<PlanEntity> {
      * @return 返回结果
      * @throws Exception 异常
      */
-    String importPlan(String tag, MultipartFile file) throws Exception;
+    String importPlan(String tag, MultipartFile file, Long mineId) throws Exception;
 
     /**
      * 根据巷道id和类型获取区域集合

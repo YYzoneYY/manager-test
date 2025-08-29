@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.dromara.easyes.annotation.IndexField;
+import org.dromara.easyes.annotation.rely.FieldType;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -43,4 +45,12 @@ public class ClassesEntity extends BusinessBaseEntity implements Serializable {
     @TableLogic(value = "0", delval = "2")
     @TableField("del_flag")
     private String delFlag;
+
+    @ApiModelProperty("所属矿")
+    @TableField(value = "mine_id")
+    private Long mineId;
+
+    @ApiModelProperty("所属公司")
+    @TableField(value = "company_id")
+    private Long companyId;
 }

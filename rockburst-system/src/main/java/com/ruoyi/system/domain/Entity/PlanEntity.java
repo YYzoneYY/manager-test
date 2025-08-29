@@ -114,4 +114,12 @@ public class PlanEntity extends BusinessBaseEntity implements Serializable {
     @ApiModelProperty(value = "报警屏蔽状态")
     @TableField("shield_status")
     private String shieldStatus;
+
+    @ApiModelProperty("所属矿")
+    @TableField(value = "mine_id")
+    private Long mineId;
+
+    @ApiModelProperty(value = "所属公司")
+    @TableField(value = "company_id")
+    private Long companyId;
 }

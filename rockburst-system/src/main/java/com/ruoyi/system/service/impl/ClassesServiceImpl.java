@@ -45,9 +45,11 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
      * @return 返回结果
      */
     @Override
-    public int insertClasses(ClassesEntity classesEntity) {
+    public int insertClasses(ClassesEntity classesEntity, Long mineId) {
         Long selectCount = classesMapper.selectCount(new LambdaQueryWrapper<ClassesEntity>()
-                .eq(ClassesEntity::getClassesName, classesEntity.getClassesName()));
+                .eq(ClassesEntity::getClassesName, classesEntity.getClassesName())
+                .eq(ClassesEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .eq(ClassesEntity::getMineId, mineId));
         if (selectCount > 0) {
             throw new RuntimeException("班次名称已存在");
         }
@@ -55,6 +57,7 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
         classesEntity.setCreateTime(ts);
         classesEntity.setCreateBy(SecurityUtils.getUserId());
         classesEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
+        classesEntity.setMineId(mineId);
         return classesMapper.insert(classesEntity);
     }
 
@@ -64,7 +67,7 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
      * @return 返回结果
      */
     @Override
-    public int updateClasses(ClassesEntity classesEntity) {
+    public int updateClasses(ClassesEntity classesEntity, Long mineId) {
         if (ObjectUtil.isEmpty(classesEntity.getClassesId())) {
             throw new RuntimeException("班次id不能为空");
         }
@@ -76,6 +79,8 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
         }
         Long selectCount = classesMapper.selectCount(new LambdaQueryWrapper<ClassesEntity>()
                 .eq(ClassesEntity::getClassesName, classesEntity.getClassesName())
+                .eq(ClassesEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .eq(ClassesEntity::getMineId, mineId)
                 .ne(ClassesEntity::getClassesId, classesEntity.getClassesId()));
         if (selectCount > 0) {
             throw new RuntimeException("班次名称已存在");
@@ -111,7 +116,7 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
      * @return 返回结果
      */
     @Override
-    public TableData pageQueryList(ClassesSelectDTO classesSelectDTO, Integer pageNum, Integer pageSize) {
+    public TableData pageQueryList(ClassesSelectDTO classesSelectDTO, Integer pageNum, Integer pageSize, Long mineId) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -120,7 +125,7 @@ public class ClassesServiceImpl extends ServiceImpl<ClassesMapper, ClassesEntity
             pageSize = 10;
         }
         PageHelper.startPage(pageNum, pageSize);
-        Page<ClassesVO> page = classesMapper.selectClassesList(classesSelectDTO);
+        Page<ClassesVO> page = classesMapper.selectClassesList(classesSelectDTO, mineId);
         if (ListUtils.isNotNull(page.getResult())) {
             page.getResult().forEach(classesVO -> {
                 classesVO.setCreateTimeFmt(DateUtils.getDateStrByTime(classesVO.getCreateTime()));

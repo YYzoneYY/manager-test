@@ -112,7 +112,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
 
 
     @Override
-    public int insertPlan(PlanDTO planDTO) {
+    public int insertPlan(PlanDTO planDTO, Long mineId) {
         int flag = 0;
         if (ObjectUtil.isNull(planDTO)) {
             throw new RuntimeException("参数错误,参数不能为空");
@@ -125,7 +125,8 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                     .eq(PlanEntity::getPlanName, planDTO.getPlanName())
                     .eq(PlanEntity::getType, planDTO.getType())
                     .eq(PlanEntity::getPlanType, planDTO.getPlanType())
-                    .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                    .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                    .eq(PlanEntity::getMineId, mineId));
             if (selectCount > 0) {
                 throw new RuntimeException("计划名称已存在");
             }
@@ -139,6 +140,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         planEntity.setDeptId(sysUser.getDeptId());
         planEntity.setShieldStatus(ConstantsInfo.UN_SHIELD_STATUS);
         planEntity.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
+        planEntity.setMineId(mineId);
         flag = planMapper.insert(planEntity);
         if (flag > 0) {
             // 区域信息
@@ -169,7 +171,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     }
 
     @Override
-    public int updatePlan(PlanDTO planDTO) {
+    public int updatePlan(PlanDTO planDTO, Long mineId) {
         int flag = 0;
         if (ObjectUtil.isNull(planDTO)) {
             throw new RuntimeException("参数错误,参数不能为空");
@@ -193,6 +195,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                 .eq(PlanEntity::getType, planDTO.getType())
                 .eq(PlanEntity::getPlanType, planDTO.getPlanType())
                 .eq(PlanEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG)
+                .eq(PlanEntity::getMineId, mineId)
                 .ne(PlanEntity::getPlanId, planDTO.getPlanId()));
         if (selectCount > 0) {
             throw new RuntimeException("计划名称已存在");
@@ -283,7 +286,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
      * @return 返回结果
      */
     @Override
-    public TableData queryPage(BasePermission permission, SelectNewPlanDTO selectNewPlanDTO, Integer pageNum, Integer pageSize) {
+    public TableData queryPage(BasePermission permission, SelectNewPlanDTO selectNewPlanDTO, Integer pageNum, Integer pageSize, Long mineId) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -294,7 +297,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser currentUser = loginUser.getUser();
         PageHelper.startPage(pageNum, pageSize);
-        Page<PlanVO> page = planMapper.queryPage(selectNewPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName());
+        Page<PlanVO> page = planMapper.queryPage(selectNewPlanDTO, permission.getDeptIds(), permission.getDateScopeSelf(), currentUser.getUserName(), mineId);
         if (ListUtils.isNotNull(page.getResult())) {
             page.getResult().forEach(planVO -> {
                 List<PlanAreaDTO> planAreaDTOS = planAreaService.getByPlanId(planVO.getPlanId());
@@ -549,15 +552,15 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
      */
     @Override
     @Transactional(rollbackFor = ServiceException.class)
-    public String importPlan(String tag, MultipartFile file) throws Exception {
+    public String importPlan(String tag, MultipartFile file, Long mineId) throws Exception {
         if (ObjectUtil.isNull(tag)) {
             throw new ServiceException("模板类型不能为空,请先选择模板类型！");
         }
         try (InputStream inputStream = file.getInputStream()) {
             if (tag.equals(ConstantsInfo.TUNNELING)) {
-                return importData(inputStream, ImportPlanDTO.class, this::checkParam, importPlanAssistService::importDataAdd);
+                return importData(inputStream, ImportPlanDTO.class, this::checkParam, importPlanAssistService::importDataAdd, mineId);
             } else if (tag.equals(ConstantsInfo.STOPE)) {
-                return importData(inputStream, ImportPlanTwoDTO.class, this::checkParamTwo, importPlanAssistService::importDataAddTwo);
+                return importData(inputStream, ImportPlanTwoDTO.class, this::checkParamTwo, importPlanAssistService::importDataAddTwo, mineId);
             } else {
                 throw new ServiceException("不支持的模板类型");
             }
@@ -565,7 +568,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     }
 
     private <T> String importData(InputStream inputStream, Class<T> dtoClass, PlanServiceImpl.ParamChecker<T> paramChecker,
-                                  PlanServiceImpl.DataImporter<T> dataImporter) throws Exception {
+                                  PlanServiceImpl.DataImporter<T> dataImporter, Long mineId) throws Exception {
         ExcelUtil<T> util = new ExcelUtil<>(dtoClass);
         List<T> list = util.importExcel(inputStream);
         if (CollUtil.isEmpty(list)) {
@@ -580,7 +583,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
                 TrimUtils.trimBean(dto);
                 paramChecker.check(dto);
                 try {
-                    dataImporter.importData(dto);
+                    dataImporter.importData(dto, mineId);
                 } catch (ConstraintViolationException e) {
                     throw new ServiceException(e.getConstraintViolations().iterator().next().getMessage());
                 }
@@ -598,7 +601,7 @@ public class PlanServiceImpl extends ServiceImpl<PlanMapper, PlanEntity> impleme
     }
     @FunctionalInterface
     interface DataImporter<T> {
-        void importData(T dto) throws Exception;
+        void importData(T dto, Long mineId) throws Exception;
     }
 
     /**
