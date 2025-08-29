@@ -35,8 +35,8 @@ public class PrintTypesetController {
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
     @GetMapping("/queryPage")
-    public R<Object> queryPage(@ApiParam(name = "startTime", value = "开始时间") @RequestParam(required = false) Long startTime,
-                               @ApiParam(name = "endTime", value = "结束时间") @RequestParam(required = false) Long endTime,
+    public R<Object> queryPage(@ApiParam(name = "startTime", value = "开始时间", required = true) @RequestParam Long startTime,
+                               @ApiParam(name = "endTime", value = "结束时间", required = true) @RequestParam Long endTime,
                                @ApiParam(name = "drillNum", value = "钻孔编号") @RequestParam(required = false) String drillNum,
                                @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                @ApiParam(name = "pageSize", value = "页数", required = true) @RequestParam Integer pageSize) {

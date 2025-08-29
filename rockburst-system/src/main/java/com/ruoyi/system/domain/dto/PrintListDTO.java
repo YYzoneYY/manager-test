@@ -1,5 +1,7 @@
 package com.ruoyi.system.domain.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -45,12 +47,15 @@ public class PrintListDTO {
 
 
     @ApiModelProperty(value = "钻孔孔径")
+    @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal diameter;
 
     @ApiModelProperty(value = "计划孔深")
+    @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal planDeep;
 
     @ApiModelProperty(value = "实际孔深")
+    @JsonSerialize(using= ToStringSerializer.class)
     private BigDecimal realDeep;
 
     @ApiModelProperty(value = "动态现象")

@@ -99,17 +99,17 @@ public class PrintTypesetServiceImpl implements PrintTypesetService {
                         .eq(BizDrillRecord::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
 
                 if (ObjectUtil.isNull(bizDrillRecord.getRealDeep())) {
-                    printListDTO.setRealDeep(new BigDecimal(""));
+                    printListDTO.setRealDeep(null);
                 } else {
                     printListDTO.setRealDeep(bizDrillRecord.getRealDeep());
                 }
                 if (ObjectUtil.isNull(bizDrillRecord.getDiameter())) {
-                    printListDTO.setDiameter(new BigDecimal(""));
+                    printListDTO.setDiameter(null);
                 } else {
                     printListDTO.setDiameter(bizDrillRecord.getDiameter());
                 }
                 if (ObjectUtil.isNull(bizDrillRecord.getPlanDeep())) {
-                    printListDTO.setPlanDeep(new BigDecimal(""));
+                    printListDTO.setPlanDeep(null);
                 } else {
                     printListDTO.setPlanDeep(bizDrillRecord.getPlanDeep());
                 }
