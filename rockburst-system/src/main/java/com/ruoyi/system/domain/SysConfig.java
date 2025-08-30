@@ -33,6 +33,12 @@ public class SysConfig extends BaseEntity
     private String configKey;
 
 
+    private Long companyId;
+
+
+    private Integer common;
+
+
     private Long mineId;
 
 
@@ -43,6 +49,24 @@ public class SysConfig extends BaseEntity
     /** 系统内置（Y是 N否） */
     @Excel(name = "系统内置", readConverterExp = "Y=是,N=否")
     private String configType;
+
+    @Override
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    @Override
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Integer getCommon() {
+        return common;
+    }
+
+    public void setCommon(Integer common) {
+        this.common = common;
+    }
 
     public Long getConfigId()
     {

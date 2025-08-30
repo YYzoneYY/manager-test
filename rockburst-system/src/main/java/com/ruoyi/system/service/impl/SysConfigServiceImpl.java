@@ -5,6 +5,10 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ruoyi.common.core.domain.entity.SysDept;
+import com.ruoyi.system.mapper.SysDeptMapper;
+import com.ruoyi.system.service.ISysDeptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.token.TokenService;
 import org.springframework.stereotype.Service;
@@ -26,7 +30,7 @@ import com.ruoyi.system.service.ISysConfigService;
  * @author ruoyi
  */
 @Service
-public class SysConfigServiceImpl implements ISysConfigService
+public class SysConfigServiceImpl   extends ServiceImpl<SysConfigMapper, SysConfig> implements ISysConfigService
 {
     @Autowired
     private SysConfigMapper configMapper;
