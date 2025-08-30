@@ -16,7 +16,7 @@ public interface MeasureActualService {
 
     int insert(ActualDTO actualDTO, Long mineId);
 
-    TableData ActualDataPage(ActualSelectDTO actualSelectDTO, List<String> sensorTypes, Long mineId,
+    TableData ActualDataPage(String measureNum, ActualSelectDTO actualSelectDTO, List<String> sensorTypes, Long mineId,
                                     String tag, Integer pageNum, Integer pageSize);
 
     TableData ActualDataTPage(ActualSelectTDTO actualSelectTDTO, List<String> sensorTypes, Long mineId, Integer pageNum, Integer pageSize);

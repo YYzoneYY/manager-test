@@ -12,9 +12,6 @@ import lombok.Data;
 @Data
 public class ActualSelectDTO {
 
-    @ApiModelProperty(value = "监测区名称")
-    private String surveyAreaName;
-
     @ApiModelProperty(value = "传感器状态")
     private String monitoringStatus;
 

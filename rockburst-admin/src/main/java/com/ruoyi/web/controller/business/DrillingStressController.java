@@ -100,6 +100,7 @@ public class DrillingStressController {
     })
     @PostMapping(value = "/actualDataList")
     public R<Object> ActualDataPage(@RequestBody ActualSelectDTO actualSelectDTO,
+                                    @ApiParam(name = "measureNum", value = "测点编码", required = true) @RequestParam String measureNum,
                                    @ApiParam(name = "pageNum", value = "页码", required = true) @RequestParam Integer pageNum,
                                    @ApiParam(name = "pageSize", value = "每页数量", required = true) @RequestParam Integer pageSize) {
         List<String> sensorTypes = new ArrayList<>();
@@ -107,7 +108,7 @@ public class DrillingStressController {
         String tag = "1";
         String token = tokenService.getToken(ServletUtils.getRequest());
         Long mineId = tokenService.getMineIdFromToken(token);
-        return R.ok(this.measureActualService.ActualDataPage(actualSelectDTO, sensorTypes, mineId, tag, pageNum, pageSize));
+        return R.ok(this.measureActualService.ActualDataPage(measureNum, actualSelectDTO, sensorTypes, mineId, tag, pageNum, pageSize));
     }
 
     @ApiOperation(value = "获取曲线图数据", notes = "获取曲线图数据")

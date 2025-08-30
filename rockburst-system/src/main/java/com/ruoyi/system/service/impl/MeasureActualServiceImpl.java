@@ -76,17 +76,17 @@ public class MeasureActualServiceImpl implements MeasureActualService {
     }
 
     @Override
-    public TableData ActualDataPage(ActualSelectDTO actualSelectDTO, List<String> sensorTypes, Long mineId,
+    public TableData ActualDataPage(String measureNum, ActualSelectDTO actualSelectDTO, List<String> sensorTypes, Long mineId,
                                     String tag, Integer pageNum, Integer pageSize) {
         if (actualSelectDTO == null) {
             throw new IllegalArgumentException("参数 actualSelectDTO 不允许为空!");
         }
 
         // 获取测点编码列表
-        List<String> measureNums = getMeasureNums(actualSelectDTO, mineId, tag);
+//        List<String> measureNums = getMeasureNums(actualSelectDTO, mineId, tag);
 
         // 如果没有获取到测点编码，则直接返回空结果
-        if (measureNums.isEmpty()) {
+        if (measureNum.isEmpty()) {
             TableData result = new TableData();
             result.setTotal(0L);
             result.setRows(Collections.emptyList());
@@ -94,7 +94,7 @@ public class MeasureActualServiceImpl implements MeasureActualService {
         }
 
         // 分页查询ES数据
-        EsPageInfo<MeasureActualEntity> pageInfo = queryEsData(actualSelectDTO, sensorTypes, mineId, measureNums, pageNum, pageSize);
+        EsPageInfo<MeasureActualEntity> pageInfo = queryEsData(measureNum, actualSelectDTO, sensorTypes, mineId, pageNum, pageSize);
 
         // 获取实体信息映射
         Map<String, Object> entityMap = getEntityMap(pageInfo, mineId, tag);
@@ -280,43 +280,43 @@ public class MeasureActualServiceImpl implements MeasureActualService {
     /**
      * 根据不同类型获取测点编码列表
      */
-    private List<String> getMeasureNums(ActualSelectDTO actualSelectDTO, Long mineId, String tag) {
-        List<String> measureNums = new ArrayList<>();
-        // 钻孔应力
-        if (tag.equals("1")) {
-            measureNums = drillingStressMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
-        }
-        // 巷道表面位移
-        else if (tag.equals("2")) {
-            measureNums = laneDisplacementMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
-        }
-        // 锚杆/索应力
-        else if (tag.equals("3")) {
-            measureNums = anchorCableStressMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
-        }
-        // 支架阻力
-        else if (tag.equals("4")) {
-            measureNums = supportResistanceMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
-        }
-        // 顶板离层位移
-        else if (tag.equals("5")) {
-            measureNums = roofAbscissionMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
-        }
-        return measureNums;
-    }
+//    private List<String> getMeasureNums(ActualSelectDTO actualSelectDTO, Long mineId, String tag) {
+//        List<String> measureNums = new ArrayList<>();
+//        // 钻孔应力
+//        if (tag.equals("1")) {
+//            measureNums = drillingStressMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
+//        }
+//        // 巷道表面位移
+//        else if (tag.equals("2")) {
+//            measureNums = laneDisplacementMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
+//        }
+//        // 锚杆/索应力
+//        else if (tag.equals("3")) {
+//            measureNums = anchorCableStressMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
+//        }
+//        // 支架阻力
+//        else if (tag.equals("4")) {
+//            measureNums = supportResistanceMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
+//        }
+//        // 顶板离层位移
+//        else if (tag.equals("5")) {
+//            measureNums = roofAbscissionMapper.selectMeasureNumList(actualSelectDTO.getSurveyAreaName(), mineId);
+//        }
+//        return measureNums;
+//    }
 
     /**
      * 分页查询ES数据
      */
-    private EsPageInfo<MeasureActualEntity> queryEsData(ActualSelectDTO actualSelectDTO, List<String> sensorTypes,
-                                                        Long mineId, List<String> measureNums, Integer pageNum, Integer pageSize) {
+    private EsPageInfo<MeasureActualEntity> queryEsData(String measureNum, ActualSelectDTO actualSelectDTO, List<String> sensorTypes,
+                                                        Long mineId, Integer pageNum, Integer pageSize) {
         // 分页参数校验与默认值设置
         int validPageNum = validatePageUtils.validateAndSetDefaultPageNum(pageNum);
         int validPageSize = validatePageUtils.validateAndSetDefaultPageSize(pageSize);
 
         // 操作ES
         LambdaEsQueryWrapper<MeasureActualEntity> queryWrapper = new LambdaEsQueryWrapper<>();
-        queryWrapper.in(MeasureActualEntity::getMeasureNum, measureNums)
+        queryWrapper.eq(MeasureActualEntity::getMeasureNum, measureNum)
                 .in(MeasureActualEntity::getSensorType, sensorTypes)
                 .eq(MeasureActualEntity::getMineId, mineId)
                 .eq(StrUtil.isNotEmpty(actualSelectDTO.getMonitoringStatus()), MeasureActualEntity::getSensorStatus, actualSelectDTO.getMonitoringStatus())
