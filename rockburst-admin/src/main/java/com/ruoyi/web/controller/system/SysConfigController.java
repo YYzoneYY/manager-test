@@ -4,6 +4,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ruoyi.common.core.domain.entity.SysDictType;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.domain.dto.SysConfigDto;
@@ -56,9 +59,19 @@ public class SysConfigController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:config:list')")
     @GetMapping("/list")
-    public TableDataInfo list(SysConfig config)
+    public TableDataInfo list(SysConfig config, HttpServletRequest request)
     {
+        SysUser usercurrent = userService.selectUserById(getUserId());
+        String token = tokenService.getToken(request);
+        Long mineId = tokenService.getMineIdFromToken(token);
         startPage();
+        QueryWrapper<SysConfig> queryWrapper = new QueryWrapper<SysConfig>(config);
+        queryWrapper.lambda().eq(StrUtil.isNotEmpty(config.getConfigType()),SysConfig::getConfigType,"Y")
+                        .eq( usercurrent.getCompanyId() != null, SysConfig::getCompanyId,usercurrent.getCompanyId())
+                        .eq(usercurrent.getMineId() != null,SysConfig::getMineId,usercurrent.getMineId())
+                        .eq(mineId != null,SysConfig::getMineId,mineId)
+                        .eq(StrUtil.isNotEmpty(config.getConfigName()), SysConfig::getConfigName,config.getConfigName())
+                        .eq(StrUtil.isNotEmpty(config.getConfigKey()), SysConfig::getConfigKey,config.getConfigKey());
         List<SysConfig> list = configService.selectConfigList(config);
         return getDataTable(list);
     }
@@ -133,6 +146,7 @@ public class SysConfigController extends BaseController
         SysUser usercurrent = userService.selectUserById(getUserId());
         config.setCreateBy(getUsername());
         config.setCompanyId(usercurrent.getCompanyId());
+        config.setCompanyId(usercurrent.getMineId());
         return toAjax(configService.insertConfig(config));
     }
 

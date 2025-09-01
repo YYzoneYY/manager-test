@@ -55,7 +55,8 @@ public class MybatisPlusConfig
 
             @Override
             public boolean ignoreTable(String tableName) {
-                return Arrays.asList("sys_config","sys_post","biz_mine", "sys_dept" ,"sys_user_post", "sys_user_role", "sys_role_menu", "sys_role_dept", "sys_role", "sys_menu", "sys_user","sys_company").contains(tableName);
+//                return Arrays.asList("sys_config","sys_post","biz_mine", "sys_dept" ,"sys_user_post", "sys_user_role", "sys_role_menu", "sys_role_dept", "sys_role", "sys_menu", "sys_user","sys_company").contains(tableName);
+                return Arrays.asList("sys_dict_data","sys_dict_type","sys_config","sys_post","biz_mine", "sys_dept" ,"sys_user_post", "sys_user_role", "sys_role_menu", "sys_role_dept", "sys_role", "sys_menu", "sys_user","sys_company").contains(tableName);
                 // 如果某些表不需要加 mine_id 条件可在这里排除
 //                return TenantContext.getMineId() == null;
             }

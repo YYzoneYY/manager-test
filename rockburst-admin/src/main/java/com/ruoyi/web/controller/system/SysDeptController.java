@@ -91,13 +91,14 @@ public class SysDeptController extends BaseController
         {
             return error("新增部门'" + dept.getDeptName() + "'失败，施工单位已存在");
         }
-        String token = tokenService.getToken(request);
-        Long mineId = tokenService.getMineIdFromToken(token);
-        if(mineId != null ){
-            dept.setMineId(mineId);
-        }
+//        String token = tokenService.getToken(request);
+//        Long mineId = tokenService.getMineIdFromToken(token);
+//        if(mineId != null ){
+//            dept.setMineId(mineId);
+//        }
         SysUser usercurrent = userService.selectUserById(getUserId());
         dept.setCompanyId(usercurrent.getCompanyId());
+        dept.setMineId(usercurrent.getMineId());
         dept.setCreateBy(getUsername());
         return toAjax(deptService.insertDept(dept));
     }

@@ -1,6 +1,9 @@
 package com.ruoyi.system.mapper;
 
 import java.util.List;
+
+import com.github.yulichang.base.MPJBaseMapper;
+import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.core.domain.entity.SysDictType;
 
 /**
@@ -8,7 +11,7 @@ import com.ruoyi.common.core.domain.entity.SysDictType;
  * 
  * @author ruoyi
  */
-public interface SysDictTypeMapper
+public interface SysDictTypeMapper  extends MPJBaseMapper<SysDictType>
 {
     /**
      * 根据条件分页查询字典类型

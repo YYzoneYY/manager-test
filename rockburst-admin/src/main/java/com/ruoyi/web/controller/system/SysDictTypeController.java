@@ -1,9 +1,13 @@
 package com.ruoyi.web.controller.system;
 
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.service.ISysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,13 +42,28 @@ public class SysDictTypeController extends BaseController
     private ISysDictTypeService dictTypeService;
     @Autowired
     private ISysUserService userService;
-
+    @Autowired
+    TokenService tokenService;
     @PreAuthorize("@ss.hasPermi('system:dict:list')")
     @GetMapping("/list")
-    public TableDataInfo list(SysDictType dictType)
+    public TableDataInfo list(SysDictType dictType, HttpServletRequest request)
     {
+
+        SysUser usercurrent = userService.selectUserById(getUserId());
+        String token = tokenService.getToken(request);
+        Long mineId = tokenService.getMineIdFromToken(token);
+
         startPage();
-        List<SysDictType> list = dictTypeService.selectDictTypeList(dictType);
+        QueryWrapper<SysDictType> queryWrapper = new QueryWrapper<SysDictType>(dictType);
+        queryWrapper.lambda().eq(SysDictType::getDictSysType,"Y")
+                        .or(o->o.eq( usercurrent.getCompanyId() != null, SysDictType::getCompanyId,usercurrent.getCompanyId())
+                                .eq(usercurrent.getMineId() != null,SysDictType::getMineId,usercurrent.getMineId())
+                                .eq(mineId != null,SysDictType::getMineId,mineId)
+                                .eq(dictType.getStatus() != null ,SysDictType::getStatus,dictType.getStatus())
+                                .eq(StrUtil.isNotEmpty(dictType.getDictName()), SysDictType::getDictName,dictType.getDictName())
+                                .eq(StrUtil.isNotEmpty(dictType.getDictType()), SysDictType::getDictType,dictType.getDictType()));
+
+        List<SysDictType> list = dictTypeService.list(queryWrapper);
         return getDataTable(list);
     }
 
@@ -82,7 +101,15 @@ public class SysDictTypeController extends BaseController
         }
         SysUser usercurrent = userService.selectUserById(getUserId());
         dict.setCompanyId(usercurrent.getCompanyId());
+        dict.setMineId(usercurrent.getMineId());
         dict.setCreateBy(getUsername());
+        String type =dict.getDictType();
+        if(usercurrent.getCompanyId() != null){
+            type = type + "_c" ;
+        }
+        if(usercurrent.getMineId() != null){
+            type = type + "_m" ;
+        }
         return toAjax(dictTypeService.insertDictType(dict));
     }
 

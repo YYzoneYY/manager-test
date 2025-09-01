@@ -34,6 +34,20 @@ public class SysDictType extends BaseEntity
     @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
     private String status;
 
+    @Excel(name = "私有", readConverterExp = "Y系统内置,N不是")
+    private String dictSysType;
+
+    @Excel(name = "矿井id")
+    private Long mineId;
+
+    public Long getMineId() {
+        return mineId;
+    }
+
+    public void setMineId(Long mineId) {
+        this.mineId = mineId;
+    }
+
     public Long getDictId()
     {
         return dictId;
@@ -78,7 +92,15 @@ public class SysDictType extends BaseEntity
     {
         this.status = status;
     }
-    
+
+    public String getDictSysType() {
+        return dictSysType;
+    }
+
+    public void setDictSysType(String dictSysType) {
+        this.dictSysType = dictSysType;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)

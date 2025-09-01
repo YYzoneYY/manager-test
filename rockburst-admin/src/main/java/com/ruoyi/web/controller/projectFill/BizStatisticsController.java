@@ -128,9 +128,9 @@ public class BizStatisticsController extends BaseController
         return R.ok(bizProjectRecordService.monitorProject( dto , pagination));
     }
 
-    @Anonymous
+//    @Anonymous
     @ApiOperation("煤粉量日报表")
-    @GetMapping("get666")
+    @GetMapping("getPulverizedCoalDailyExcel")
     public void get666(BizProjectRecordDto1 dto , HttpServletResponse response) throws IOException {
         if(dto.getStartTime().length() == 13){
             String  start = DateUtil.formatDateTime(DateUtil.date(Long.parseLong(dto.getStartTime())));
@@ -199,6 +199,8 @@ public class BizStatisticsController extends BaseController
             voList1.add(bizPulverizedCoalDaily);
         }
         sss.setRecords(null);
+//        sss.setCurrent(voList1.size());
+        sss.setTotal(voList1.size());
         sss.setRecords(voList1);
 
         return R.ok(new MPage<>(sss));
