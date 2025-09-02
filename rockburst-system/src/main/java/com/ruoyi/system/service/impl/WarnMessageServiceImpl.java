@@ -171,7 +171,9 @@ public class WarnMessageServiceImpl implements WarnMessageService {
         Long startTime = ObtainDateUtils.getThirtyMinutesTime(warnStartTime);
 
         long endTime;
-        if (warnMessageEntity.getWarnStatus().equals(ConstantsInfo.WARNING)) {
+        if (warnMessageEntity.getWarnStatus().equals(ConstantsInfo.WARNING) ||
+                warnMessageEntity.getWarnStatus().equals(ConstantsInfo.WARNING_HANDLED) ||
+                warnMessageEntity.getWarnStatus().equals(ConstantsInfo.WARNING_RESPONSE)) {
             endTime = System.currentTimeMillis();
         } else if (warnMessageEntity.getWarnStatus().equals(ConstantsInfo.WARNING_END)) {
             Long currentTime = System.currentTimeMillis();
