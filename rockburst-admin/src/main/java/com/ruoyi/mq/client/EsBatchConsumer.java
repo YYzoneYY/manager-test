@@ -154,8 +154,8 @@ public class EsBatchConsumer implements InitializingBean, DisposableBean { // 1.
         List<MeasureActualEntity> esEntities = convertToMeasureActualEntities(jsonList);
         insertMeasureActualData(esEntities);
 
-        // 2. 处理预警逻辑
-        processWarningLogic(jsonList);
+//        // 2. 处理预警逻辑
+//        processWarningLogic(jsonList);
     }
 
     /**
