@@ -33,8 +33,8 @@ public class ObtainWarnSchemeUtils {
         WarnSchemeDTO warnSchemeDTO = new WarnSchemeDTO();
         String sensorTypeFmt = "";
         Map<String, String> sensorTypeMap = new HashMap<String, String>() {{
-            put(ConstantsInfo.SUPPORT_RESISTANCE_TYPE, ConstantsInfo.SUPPORT);
-            put(ConstantsInfo.DRILL_STRESS_TYPE, ConstantsInfo.DRILL);
+            put(ConstantsInfo.SUPPORT_RESISTANCE_TYPE, ConstantsInfo.SUPPORT_SCENE_TYPE);
+            put(ConstantsInfo.DRILL_STRESS_TYPE, ConstantsInfo.DRILL_SCENE_TYPE);
             put(ConstantsInfo.ANCHOR_STRESS_TYPE, ConstantsInfo.ANCHOR_SCENE_TYPE);
             put(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE, ConstantsInfo.ANCHOR_CABLE_SCENE_TYPE);
             put(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE, ConstantsInfo.ROOF_SCENE_TYPE);
@@ -57,6 +57,8 @@ public class ObtainWarnSchemeUtils {
             warnSchemeDTO.setSceneType(warnSchemeEntity.getSceneType());
             warnSchemeDTO.setWorkFaceId(warnSchemeEntity.getWorkFaceId());
             warnSchemeDTO.setQuietHour(warnSchemeEntity.getQuietHour());
+            warnSchemeDTO.setMark(warnSchemeEntity.getMark());
+            warnSchemeDTO.setStatus(warnSchemeEntity.getStatus());
         }
 
         // 获取预警阈值配置
@@ -81,8 +83,8 @@ public class ObtainWarnSchemeUtils {
 
         String sensorTypeFmt = "";
         Map<String, String> sensorTypeMap = new HashMap<String, String>() {{
-            put(ConstantsInfo.SUPPORT_RESISTANCE_TYPE, ConstantsInfo.SUPPORT);
-            put(ConstantsInfo.DRILL_STRESS_TYPE, ConstantsInfo.DRILL);
+            put(ConstantsInfo.SUPPORT_RESISTANCE_TYPE, ConstantsInfo.SUPPORT_SCENE_TYPE);
+            put(ConstantsInfo.DRILL_STRESS_TYPE, ConstantsInfo.DRILL_SCENE_TYPE);
             put(ConstantsInfo.ANCHOR_STRESS_TYPE, ConstantsInfo.ANCHOR_SCENE_TYPE);
             put(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE, ConstantsInfo.ANCHOR_CABLE_SCENE_TYPE);
             put(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE, ConstantsInfo.ROOF_SCENE_TYPE);
@@ -104,6 +106,8 @@ public class ObtainWarnSchemeUtils {
             warnSchemeDTO.setSceneType(warnSchemeEntity.getSceneType());
             warnSchemeDTO.setWorkFaceId(warnSchemeEntity.getWorkFaceId());
             warnSchemeDTO.setQuietHour(warnSchemeEntity.getQuietHour());
+            warnSchemeDTO.setMark(warnSchemeEntity.getMark());
+            warnSchemeDTO.setStatus(warnSchemeEntity.getStatus());
         }
 
         // 获取预警阈值配置
