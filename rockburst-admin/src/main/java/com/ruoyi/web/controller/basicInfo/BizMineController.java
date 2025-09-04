@@ -185,6 +185,8 @@ public class BizMineController extends BaseController
                                 .collect(Collectors.toList());
             }
             QueryWrapper<BizMine> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().like(StrUtil.isNotEmpty(mineDto.getMineName()), BizMine::getMineName,mineDto.getMineName());
+
             queryWrapper.lambda().in(allMineIds != null && allMineIds.size() > 0, BizMine::getMineId,allMineIds);
             List<BizMine> list = bizMineService.getBaseMapper().selectList(queryWrapper);
             return R.ok(list);
