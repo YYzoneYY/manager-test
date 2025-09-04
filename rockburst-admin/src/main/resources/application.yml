@@ -57,7 +57,7 @@ mqtt:
   password: 123456
   timeout: 10
   keepalive: 20
-  topic: /iot/data
+  topic: /iot/data2
   # 可以明确配置，不配置则使用代码中的默认值 false
   clean-session: false
 
