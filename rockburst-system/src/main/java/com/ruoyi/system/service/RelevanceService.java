@@ -13,5 +13,5 @@ import java.util.List;
  */
 public interface RelevanceService extends IService<RelevanceEntity> {
 
-    boolean addRelevance(List<RelevanceDTO> relevanceDTOS, Long mineId);
+    int addRelevance(String sensorType, RelevanceDTO relevanceDTO, Long mineId);
 }

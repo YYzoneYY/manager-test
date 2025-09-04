@@ -16,9 +16,6 @@ public class RelevanceDTO {
     @ApiModelProperty("测点编码")
     private String measureNum;
 
-    @ApiModelProperty("传感器类型")
-    private String sensorType;
-
     @ApiModelProperty("原始工作面名称(数采上来的数据)")
     private String originalWorkFaceName;
 
