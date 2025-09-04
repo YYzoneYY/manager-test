@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 @Lazy(value = false)
 @Component
-//@EnableScheduling
+@EnableScheduling
 public class RecoveryFootageScheduled implements SchedulingConfigurer {
 
     @Resource
@@ -160,16 +160,20 @@ public class RecoveryFootageScheduled implements SchedulingConfigurer {
             @Override
             public Date nextExecutionTime(TriggerContext triggerContext) {
                 RuleConfigEntity ruleConfigEntity = ruleConfigMapper.selectOne(null);
-                String hourTime="";
-                String minuteTime="";
+                String hourTime="0";
+                String minuteTime="0";
                 if (ruleConfigEntity != null) {
                     String ruleTime = ruleConfigEntity.getStartTime();
-                    if(StringUtils.isNotEmpty(ruleTime)){
-                        hourTime = ruleTime.split(":")[0];
-                        minuteTime = ruleTime.split(":")[1];
+                    if(StringUtils.isNotEmpty(ruleTime) && ruleTime.contains(":")){
+                        String[] timeParts = ruleTime.split(":");
+                        if (timeParts.length >= 2) {
+                            hourTime = timeParts[0];
+                            minuteTime = timeParts[1];
+                        }
                     }
                 }
-                cron = 0 + " " + minuteTime + " " + hourTime + " " +
+                // 修复Cron表达式，确保它有6个字段：秒 分 时 日 月 周
+                cron = "0 " + minuteTime + " " + hourTime + " " +
                         "*" + " " +  "*" + " " + "?";
                 CronTrigger trigger = new CronTrigger(cron);
                 Date nextExecutionTime = trigger.nextExecutionTime(triggerContext);
@@ -177,4 +181,5 @@ public class RecoveryFootageScheduled implements SchedulingConfigurer {
             }
         });
     }
+
 }
