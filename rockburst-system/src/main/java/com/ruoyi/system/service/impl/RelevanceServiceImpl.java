@@ -79,81 +79,63 @@ public class RelevanceServiceImpl extends ServiceImpl<RelevanceMapper, Relevance
     }
 
     private int updateWorkFaceIdBySensorType(String sensorType, String measureNum, Long workFaceId) {
-        // 使用Map存储传感器类型与对应Mapper的映射关系
-        Map<String, Object> mapperMap = new HashMap<String, Object>() {{
-            put(ConstantsInfo.SUPPORT_RESISTANCE_TYPE, supportResistanceMapper);
-            put(ConstantsInfo.DRILL_STRESS_TYPE, drillingStressMapper);
-            put(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE, anchorCableStressMapper);
-            put(ConstantsInfo.ANCHOR_STRESS_TYPE, anchorCableStressMapper);
-            put(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE, roofAbscissionMapper);
-            put(ConstantsInfo.LANE_DISPLACEMENT_TYPE, laneDisplacementMapper);
-            put(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE, elecRadiationMapper);
-        }};
-
-        // 使用Map存储传感器类型与对应实体类的映射关系
-        Map<String, Class<?>> entityClassMap = new HashMap<String, Class<?>>() {{
-            put(ConstantsInfo.SUPPORT_RESISTANCE_TYPE, SupportResistanceEntity.class);
-            put(ConstantsInfo.DRILL_STRESS_TYPE, DrillingStressEntity.class);
-            put(ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE, AnchorCableStressEntity.class);
-            put(ConstantsInfo.ANCHOR_STRESS_TYPE, AnchorCableStressEntity.class);
-            put(ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE, RoofAbscissionEntity.class);
-            put(ConstantsInfo.LANE_DISPLACEMENT_TYPE, LaneDisplacementEntity.class);
-            put(ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE, ElecRadiationEntity.class);
-        }};
-
-        if (!mapperMap.containsKey(sensorType)) {
-            return 0;
-        }
-
-        Object mapper = mapperMap.get(sensorType);
-        Class<?> entityClass = entityClassMap.get(sensorType);
-
         try {
-            // 使用反射调用对应Mapper的selectOne方法
-            Method selectOneMethod = mapper.getClass().getMethod("selectOne", Wrapper.class);
-
-            // 构造查询条件
-            LambdaQueryWrapper<?> queryWrapper = null;
-            if (entityClass == SupportResistanceEntity.class) {
-                queryWrapper = new LambdaQueryWrapper<SupportResistanceEntity>()
+            if (ConstantsInfo.SUPPORT_RESISTANCE_TYPE.equals(sensorType)) {
+                SupportResistanceEntity entity = supportResistanceMapper.selectOne(new LambdaQueryWrapper<SupportResistanceEntity>()
                         .eq(SupportResistanceEntity::getMeasureNum, measureNum)
-                        .eq(SupportResistanceEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
-            } else if (entityClass == DrillingStressEntity.class) {
-                queryWrapper = new LambdaQueryWrapper<DrillingStressEntity>()
+                        .eq(SupportResistanceEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                if (ObjectUtil.isNotNull(entity)) {
+                    entity.setWorkFaceId(workFaceId);
+                    return supportResistanceMapper.updateById(entity);
+                }
+            } else if (ConstantsInfo.DRILL_STRESS_TYPE.equals(sensorType)) {
+                DrillingStressEntity entity = drillingStressMapper.selectOne(new LambdaQueryWrapper<DrillingStressEntity>()
                         .eq(DrillingStressEntity::getMeasureNum, measureNum)
-                        .eq(DrillingStressEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
-            } else if (entityClass == AnchorCableStressEntity.class) {
-                queryWrapper = new LambdaQueryWrapper<AnchorCableStressEntity>()
+                        .eq(DrillingStressEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                if (ObjectUtil.isNotNull(entity)) {
+                    entity.setWorkFaceId(workFaceId);
+                    return drillingStressMapper.updateById(entity);
+                }
+            } else if (ConstantsInfo.ANCHOR_CABLE_STRESS_TYPE.equals(sensorType) || ConstantsInfo.ANCHOR_STRESS_TYPE.equals(sensorType)) {
+                AnchorCableStressEntity entity = anchorCableStressMapper.selectOne(new LambdaQueryWrapper<AnchorCableStressEntity>()
                         .eq(AnchorCableStressEntity::getMeasureNum, measureNum)
-                        .eq(AnchorCableStressEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
-            } else if (entityClass == RoofAbscissionEntity.class) {
-                queryWrapper = new LambdaQueryWrapper<RoofAbscissionEntity>()
+                        .eq(AnchorCableStressEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                if (ObjectUtil.isNotNull(entity)) {
+                    entity.setWorkFaceId(workFaceId);
+                    return anchorCableStressMapper.updateById(entity);
+                }
+            } else if (ConstantsInfo.ROOF_ABSCISSION_TYPE_TYPE.equals(sensorType)) {
+                RoofAbscissionEntity entity = roofAbscissionMapper.selectOne(new LambdaQueryWrapper<RoofAbscissionEntity>()
                         .eq(RoofAbscissionEntity::getMeasureNum, measureNum)
-                        .eq(RoofAbscissionEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
-            } else if (entityClass == LaneDisplacementEntity.class) {
-                queryWrapper = new LambdaQueryWrapper<LaneDisplacementEntity>()
+                        .eq(RoofAbscissionEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                if (ObjectUtil.isNotNull(entity)) {
+                    entity.setWorkFaceId(workFaceId);
+                    return roofAbscissionMapper.updateById(entity);
+                }
+            } else if (ConstantsInfo.LANE_DISPLACEMENT_TYPE.equals(sensorType)) {
+                LaneDisplacementEntity entity = laneDisplacementMapper.selectOne(new LambdaQueryWrapper<LaneDisplacementEntity>()
                         .eq(LaneDisplacementEntity::getMeasureNum, measureNum)
-                        .eq(LaneDisplacementEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
-            } else if (entityClass == ElecRadiationEntity.class) {
-                queryWrapper = new LambdaQueryWrapper<ElecRadiationEntity>()
+                        .eq(LaneDisplacementEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                if (ObjectUtil.isNotNull(entity)) {
+                    entity.setWorkFaceId(workFaceId);
+                    return laneDisplacementMapper.updateById(entity);
+                }
+            } else if (ConstantsInfo.ELECTROMAGNETIC_RADIATION_TYPE.equals(sensorType)) {
+                ElecRadiationEntity entity = elecRadiationMapper.selectOne(new LambdaQueryWrapper<ElecRadiationEntity>()
                         .eq(ElecRadiationEntity::getMeasureNum, measureNum)
-                        .eq(ElecRadiationEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG);
+                        .eq(ElecRadiationEntity::getDelFlag, ConstantsInfo.ZERO_DEL_FLAG));
+                if (ObjectUtil.isNotNull(entity)) {
+                    entity.setWorkFaceId(workFaceId);
+                    return elecRadiationMapper.updateById(entity);
+                }
+            } else {
+                throw new RuntimeException("不支持的传感器类型: " + sensorType);
             }
 
-            Object entity = selectOneMethod.invoke(mapper, queryWrapper);
-            if (ObjectUtil.isNotNull(entity)) {
-                // 使用反射调用对应实体类的setWorkFaceId方法
-                Method setWorkFaceIdMethod = entityClass.getMethod("setWorkFaceId", Long.class);
-                setWorkFaceIdMethod.invoke(entity, workFaceId);
-
-                // 使用反射调用对应Mapper的updateById方法
-                Method updateByIdMethod = mapper.getClass().getMethod("updateById", entityClass);
-                return (int) updateByIdMethod.invoke(mapper, entity);
-            }
+            throw new RuntimeException("未找到测点编码为 " + measureNum + " 的记录");
         } catch (Exception e) {
-            log.error("更新工作面ID失败", e);
+            throw new RuntimeException("更新工作面ID失败: " + e.getMessage());
         }
-        return 0;
     }
 
 }
