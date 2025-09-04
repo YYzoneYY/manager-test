@@ -62,9 +62,8 @@ public class RelevanceServiceImpl extends ServiceImpl<RelevanceMapper, Relevance
         if (ObjectUtil.isNull(relevanceDTO)) {
             throw new RuntimeException("关联信息不能为空！");
         }
-        if (ObjectUtil.isNull(relevanceDTO.getMeasureNum()) || ObjectUtil.isNull(relevanceDTO.getOriginalWorkFaceName()) ||
-                ObjectUtil.isNull(relevanceDTO.getWorkFaceId())) {
-            throw new RuntimeException("测点编码、原始工作面名称、工作面id不能为空！");
+        if (ObjectUtil.isNull(relevanceDTO.getMeasureNum()) || ObjectUtil.isNull(relevanceDTO.getWorkFaceId())) {
+            throw new RuntimeException("测点编码、工作面id不能为空！");
         }
         RelevanceEntity relevanceEntity = new RelevanceEntity();
         relevanceEntity.setSensorType(sensorType);
