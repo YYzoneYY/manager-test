@@ -92,11 +92,6 @@ public class SysConfigServiceImpl   extends ServiceImpl<SysConfigMapper, SysConf
 
     @Override
     public String selectConfigByKeyByMine(String configKey, Long mineId, Long companyId) {
-        //        String configValue = Convert.toStr(redisCache.getCacheObject(getCacheKey(configKey)));
-//        if (StringUtils.isNotEmpty(configValue))
-//        {
-//            return configValue;
-//        }
 
         QueryWrapper<SysConfig> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(SysConfig::getConfigType, "Y");
@@ -118,7 +113,6 @@ public class SysConfigServiceImpl   extends ServiceImpl<SysConfigMapper, SysConf
 
             if (StringUtils.isNotNull(retConfig))
             {
-//            redisCache.setCacheObject(getCacheKey(configKey), retConfig.getConfigValue());
                 return retConfig.getConfigValue();
             }
         }

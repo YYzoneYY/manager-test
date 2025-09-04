@@ -106,6 +106,8 @@ public class SysConfigController extends BaseController
         Long mineId = tokenService.getMineIdFromToken(token);
         Long userId = getUserId();
         SysUser user = sysUserMapper.selectUserById(userId);
+
+
         String value = configService.selectConfigByKeyByMine(configKey,mineId,user.getCompanyId());
         return success(value);
 //        return success(configService.selectConfigByKey(configKey));

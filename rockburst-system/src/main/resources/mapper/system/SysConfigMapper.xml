@@ -29,11 +29,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="configId !=null">
 				and config_id = #{configId}
 			</if>
-            <if test="mineId !=null">
-                and mine_id = #{mineId}
-            </if>
-            <if test="companyId !=null">
-                and company_id = #{companyId}
+            <if test="mineId != null or companyId != null">
+                and (
+                <if test="mineId != null">
+                    mine_id = #{mineId}
+                </if>
+                <if test="mineId != null and companyId != null">
+                    or
+                </if>
+                <if test="companyId != null">
+                    company_id = #{companyId}
+                </if>
+                )
             </if>
 			<if test="configKey !=null and configKey != ''">
 				and config_key = #{configKey}

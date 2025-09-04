@@ -11,7 +11,9 @@ import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.constant.BizBaseConstant;
+import com.ruoyi.system.domain.BizMine;
 import com.ruoyi.system.domain.Entity.SysCompany;
+import com.ruoyi.system.service.IBizMineService;
 import com.ruoyi.system.service.ISysCompanyService;
 import com.ruoyi.system.service.ISysDeptService;
 import io.swagger.annotations.Api;
@@ -42,6 +44,8 @@ public class SysCompanyController extends BaseController
     private ISysCompanyService sysCompanyService;
     @Autowired
     private ISysDeptService sysDeptService;
+    @Autowired
+    private IBizMineService bizMineService;
 
     /**
      * 获取公司列表
@@ -52,12 +56,35 @@ public class SysCompanyController extends BaseController
     public AjaxResult list(SysCompany company)
     {
 
+        List<Long> ids = new ArrayList<>();
+        if(StrUtil.isNotEmpty(company.getMineName())){
+            QueryWrapper<BizMine> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().like(StrUtil.isNotEmpty(company.getMineName()),BizMine::getMineName, company.getMineName());
+            List<BizMine> mines =  bizMineService.list(queryWrapper);
+            ids = mines.stream()
+                    .map(BizMine::getMineId)
+                    .collect(Collectors.toList());
+
+        }
+
         if(getUsername().equals("admin")){
             QueryWrapper<SysCompany> queryWrapper = new QueryWrapper<SysCompany>();
             queryWrapper.lambda().like(StringUtils.isNotEmpty(company.getCompanyName()),
                             SysCompany::getCompanyName, company.getCompanyName())
                     .eq(company.getStatus() != null , SysCompany::getStatus, company.getStatus());
+            List<Long> finalIds = ids;
+            queryWrapper.and(ids !=null && ids.size()>0 ,w -> {
+                for (int i = 0; i < finalIds.size(); i++) {
+                    Long id = finalIds.get(i);
+                    if (i == 0) {
+                        w.apply("find_in_set({0}, mine_ids)", id);
+                    } else {
+                        w.or().apply("find_in_set({0}, mine_ids)", id);
+                    }
+                }
+            });
             List<SysCompany> companies = sysCompanyService.list(queryWrapper);
+
             return success(companies);
         }
         Long deptId = getDeptId();
@@ -72,6 +99,17 @@ public class SysCompanyController extends BaseController
                         .eq(SysCompany::getParentId, dept.getCompanyId())
                         .or()
                         .apply("FIND_IN_SET({0}, ancestors)", dept.getCompanyId()));
+        List<Long> finalIds = ids;
+        queryWrapper.lambda().and(finalIds !=null && finalIds.size()>0,w -> {
+            for (int i = 0; i < finalIds.size(); i++) {
+                Long id = finalIds.get(i);
+                if (i == 0) {
+                    w.apply("find_in_set({0}, mine_ids)", id);
+                } else {
+                    w.or().apply("find_in_set({0}, mine_ids)", id);
+                }
+            }
+        });
         List<SysCompany> companies = sysCompanyService.list(queryWrapper);
         return success(companies);
     }

@@ -43,7 +43,10 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 矿井管理Controller
@@ -84,6 +87,45 @@ public class BizMineController extends BaseController
         return token;
     }
 
+    /**
+     * 查询矿井管理列表
+     */
+    @ApiOperation("查询全部矿井管理列表")
+//    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
+    @GetMapping("/alllist")
+    public R<MPage<BizMine>> alllist(@ParameterObject BizMineDto dto, @ParameterObject Pagination pagination, HttpServletRequest request)
+    {
+
+        MPage<BizMine> list = bizMineService.selectBizMineList(dto,pagination);
+        return R.ok(list);
+//        if(getUsername().equals("admin")){
+
+//        }
+
+//        Long userId = getUserId();
+//        SysUser user =  sysUserMapper.selectUserById(userId);
+//        Long deptId = getDeptId();
+//        SysDept dept = sysDeptService.selectDeptById(deptId);
+//
+//        String token = getToken(request);
+//        Long mineId = tokenService.getMineIdFromToken(token);
+//        if(mineId != null ){
+//            dto.setMineId(mineId);
+//        }
+//
+//
+//        if(dept != null && dept.getCompanyId() != null){
+//            SysCompany company = sysCompanyService.getById(dept.getCompanyId());
+//            if(company != null &&  StringUtils.isNotEmpty(company.getCompanyName())){
+//                List<Long> longList = Convert.toList(Long.class, StrUtil.split(company.getMineIds(), ','));
+//                dto.setMineIds(longList);
+//            }
+//        }
+//        MPage<BizMine> list = bizMineService.selectBizMineList(dto,pagination);
+//        return R.ok(list);
+    }
+
+
 
     /**
      * 查询矿井管理列表
@@ -98,14 +140,7 @@ public class BizMineController extends BaseController
         SysUser user =  sysUserMapper.selectUserById(userId);
         Long deptId = getDeptId();
         SysDept dept = sysDeptService.selectDeptById(deptId);
-//        if(dept != null && dept.getCompanyId() != null){
-//
-//
-//            dto.setCompanyId(dept.getCompanyId());
-//            MPage<BizMine> list = bizMineService.selectBizMineList(dto,pagination);
-//            return R.ok(list);
-//
-//        }
+
         String token = getToken(request);
         Long mineId = tokenService.getMineIdFromToken(token);
         if(mineId != null ){
@@ -125,11 +160,35 @@ public class BizMineController extends BaseController
     }
 
 
-    @ApiOperation("下拉全部矿列表")
+    @ApiOperation("下拉矿列表")
 //    @PreAuthorize("@ss.hasPermi('basicInfo:mine:list')")
     @GetMapping("/checkList")
-    public R<List<BizMine>> checkList(@RequestParam(value = "状态合集", required = false) Long[] statuss)
+    public R<List<BizMine>> checkList(@ParameterObject BizMineDto mineDto,  @RequestParam(value = "状态合集", required = false) Long[] statuss)
     {
+
+        if(getUsername().equals("admin")){
+            List<Long> allMineIds = null;
+            if(StrUtil.isNotEmpty(mineDto.getCompanyName())){
+                QueryWrapper<SysCompany> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().like(SysCompany::getCompanyName, mineDto.getCompanyName());
+                List<SysCompany> companyList = sysCompanyService.list(queryWrapper);
+
+                allMineIds = (companyList == null || companyList.isEmpty()) ?
+                        Collections.emptyList() :
+                        companyList.stream()
+                                .filter(c -> c.getMineIds() != null && !c.getMineIds().trim().isEmpty()) // mineIds 判空
+                                .flatMap(c -> Arrays.stream(c.getMineIds().split(",")))
+                                .map(String::trim)                 // 去掉多余空格
+                                .filter(s -> !s.isEmpty())         // 防止空字符串
+                                .map(Long::valueOf)
+                                .distinct()
+                                .collect(Collectors.toList());
+            }
+            QueryWrapper<BizMine> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().in(allMineIds != null && allMineIds.size() > 0, BizMine::getMineId,allMineIds);
+            List<BizMine> list = bizMineService.getBaseMapper().selectList(queryWrapper);
+            return R.ok(list);
+        }
 
         BizMineDto dto = new BizMineDto();
         Long deptId = getDeptId();
@@ -151,6 +210,26 @@ public class BizMineController extends BaseController
                         .in(dto.getMineIds() != null, BizMine::getMineId,dto.getMineIds())
                 )
                 .eq(BizMine::getDelFlag,BizBaseConstant.DELFLAG_N);
+        if(StrUtil.isNotEmpty(mineDto.getCompanyName())){
+            QueryWrapper<SysCompany> queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.lambda().like(SysCompany::getCompanyName, mineDto.getCompanyName());
+            List<SysCompany> companyList = sysCompanyService.list(queryWrapper1);
+
+            List<Long> allMineIds = (companyList == null || companyList.isEmpty()) ?
+                    Collections.emptyList() :
+                    companyList.stream()
+                            .filter(c -> c.getMineIds() != null && !c.getMineIds().trim().isEmpty()) // mineIds 判空
+                            .flatMap(c -> Arrays.stream(c.getMineIds().split(",")))
+                            .map(String::trim)                 // 去掉多余空格
+                            .filter(s -> !s.isEmpty())         // 防止空字符串
+                            .map(Long::valueOf)
+                            .distinct()
+                            .collect(Collectors.toList());
+            queryWrapper.lambda().in(allMineIds != null && allMineIds.size() > 0, BizMine::getMineId,allMineIds);
+
+        }
+
+        queryWrapper.lambda().like(StrUtil.isNotEmpty(mineDto.getMineName()), BizMine::getMineName,mineDto.getMineName());
         List<BizMine> list = bizMineService.getBaseMapper().selectList(queryWrapper);
         return R.ok(list);
     }
@@ -256,54 +335,5 @@ public class BizMineController extends BaseController
         return R.ok(bizMineService.updateBizMine(entity));
     }
 
-
-    public static void main(String[] args) {
-        try {
-            // API URL
-            URL url = new URL("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-            // Set the request method to POST
-            connection.setRequestMethod("POST");
-
-            // Set headers
-            connection.setRequestProperty("Authorization", "Bearer " + System.getenv("sk-9b6b5d723c7646f79808ff12e83c5260"));
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setDoOutput(true);
-
-            // JSON payload
-            String jsonInputString = "{"
-                    + "\"model\": \"deepseek-r1\","
-                    + "\"messages\": ["
-                    + "    {"
-                    + "        \"role\": \"user\","
-                    + "        \"content\": \"9.9和9.11谁大\""
-                    + "    }"
-                    + "]"
-                    + "}";
-
-            // Send the request
-            try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-
-            // Get the response
-            int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
-
-            // Read the response
-            try (java.io.InputStream is = connection.getInputStream();
-                 java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A")) {
-                String response = s.hasNext() ? s.next() : "";
-                System.out.println("Response: " + response);
-            }
-
-            // Close the connection
-            connection.disconnect();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 }

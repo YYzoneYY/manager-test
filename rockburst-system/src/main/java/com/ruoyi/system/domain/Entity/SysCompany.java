@@ -1,5 +1,6 @@
 package com.ruoyi.system.domain.Entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.common.core.domain.BaseSelfEntity;
@@ -41,6 +42,12 @@ public class SysCompany extends BaseSelfEntity
 
     /** 部门名称 */
     private String companyName;
+
+
+    /** 部门名称 */
+    @TableField(exist = false)
+    private String mineName;
+
 
     /** 显示顺序 */
     private Integer orderNum;

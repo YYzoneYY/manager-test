@@ -38,6 +38,10 @@ public class BizMineDto
 
 
     /** 矿井名称 */
+    @ApiModelProperty(value = "集团名称")
+    private String companyName;
+
+    /** 矿井名称 */
     @ApiModelProperty(value = "矿井名称")
     private String mineName;
 
