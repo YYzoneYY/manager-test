@@ -55,13 +55,14 @@ public class SysDictTypeController extends BaseController
 
         startPage();
         QueryWrapper<SysDictType> queryWrapper = new QueryWrapper<SysDictType>(dictType);
-        queryWrapper.lambda().eq(SysDictType::getDictSysType,"Y")
-                        .or(o->o.eq( usercurrent.getCompanyId() != null, SysDictType::getCompanyId,usercurrent.getCompanyId())
-                                .eq(usercurrent.getMineId() != null,SysDictType::getMineId,usercurrent.getMineId())
-                                .eq(mineId != null,SysDictType::getMineId,mineId)
+        queryWrapper.lambda()
+                        .eq(StrUtil.isNotEmpty(dictType.getDictSysType()), SysDictType::getDictSysType,dictType.getDictSysType())
+                        .and(o->o.eq( usercurrent.getCompanyId() != null, SysDictType::getCompanyId,usercurrent.getCompanyId())
+                                .or().eq(usercurrent.getMineId() != null,SysDictType::getMineId,usercurrent.getMineId())
+                                .or().eq(mineId != null,SysDictType::getMineId,mineId))
                                 .eq(dictType.getStatus() != null ,SysDictType::getStatus,dictType.getStatus())
                                 .eq(StrUtil.isNotEmpty(dictType.getDictName()), SysDictType::getDictName,dictType.getDictName())
-                                .eq(StrUtil.isNotEmpty(dictType.getDictType()), SysDictType::getDictType,dictType.getDictType()));
+                                .eq(StrUtil.isNotEmpty(dictType.getDictType()), SysDictType::getDictType,dictType.getDictType());
 
         List<SysDictType> list = dictTypeService.list(queryWrapper);
         return getDataTable(list);
@@ -103,13 +104,7 @@ public class SysDictTypeController extends BaseController
         dict.setCompanyId(usercurrent.getCompanyId());
         dict.setMineId(usercurrent.getMineId());
         dict.setCreateBy(getUsername());
-        String type =dict.getDictType();
-        if(usercurrent.getCompanyId() != null){
-            type = type + "_c" ;
-        }
-        if(usercurrent.getMineId() != null){
-            type = type + "_m" ;
-        }
+
         return toAjax(dictTypeService.insertDictType(dict));
     }
 

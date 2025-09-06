@@ -2,9 +2,12 @@ package com.ruoyi.web.controller.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.service.ISysUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,6 +51,9 @@ public class SysDictDataController extends BaseController
     @Autowired
     private ISysDictTypeService dictTypeService;
 
+    @Autowired
+    TokenService tokenService;
+
     @PreAuthorize("@ss.hasPermi('system:dict:list')")
     @GetMapping("/list")
     public TableDataInfo list(SysDictData dictData)
@@ -73,8 +79,25 @@ public class SysDictDataController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('system:dict:query')")
     @ApiOperation("查询字典数据详细")
     @GetMapping(value = "/{dictCode}")
-    public AjaxResult getInfo(@PathVariable Long dictCode)
+    public AjaxResult getInfo(@PathVariable Long dictCode, HttpServletRequest request)
     {
+        SysUser usercurrent = userService.selectUserById(getUserId());
+        String token = tokenService.getToken(request);
+        Long mineId = tokenService.getMineIdFromToken(token);
+        if(usercurrent.getMineId() != null ){
+            QueryWrapper<SysDictData> queryWrapper = new QueryWrapper<SysDictData>();
+            queryWrapper.lambda().eq(SysDictData::getDictCode, dictCode)
+                            .eq(SysDictData::getMineId,usercurrent.getMineId());
+            List<SysDictData> datas = dictDataService.getBaseMapper().selectList(queryWrapper);
+            return success(datas.get(0));
+        }
+        if(usercurrent.getCompanyId() != null ){
+            QueryWrapper<SysDictData> queryWrapper = new QueryWrapper<SysDictData>();
+            queryWrapper.lambda().eq(SysDictData::getDictCode, dictCode)
+                    .and(o->o.eq(SysDictData::getCompanyId, usercurrent.getCompanyId()).or().eq(SysDictData::getMineId,usercurrent.getMineId()));
+            List<SysDictData> datas = dictDataService.getBaseMapper().selectList(queryWrapper);
+            return success(datas.get(0));
+        }
         return success(dictDataService.selectDictDataById(dictCode));
     }
 

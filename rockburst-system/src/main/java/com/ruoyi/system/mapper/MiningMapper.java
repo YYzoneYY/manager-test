@@ -2,6 +2,7 @@ package com.ruoyi.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.github.pagehelper.Page;
+import com.github.yulichang.base.MPJBaseMapper;
 import com.ruoyi.system.domain.Entity.MiningEntity;
 import com.ruoyi.system.domain.dto.MiningFootageDTO;
 import com.ruoyi.system.domain.dto.MiningFootageNewDTO;
@@ -20,7 +21,7 @@ import java.util.List;
  */
 
 @Repository
-public interface MiningMapper extends BaseMapper<MiningEntity> {
+public interface MiningMapper extends MPJBaseMapper<MiningEntity> {
 
     Page<MiningFootageNewDTO> selectMiningFootageByPage(@Param("miningSelectNewDTO") MiningSelectNewDTO miningSelectNewDTO,
                                                         @Param("displayForm") Long displayForm);

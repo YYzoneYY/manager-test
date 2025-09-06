@@ -20,6 +20,7 @@ import com.ruoyi.framework.manager.factory.AsyncFactory;
 import com.ruoyi.framework.web.service.SysLoginService;
 import com.ruoyi.framework.web.service.SysPermissionService;
 import com.ruoyi.framework.web.service.TokenService;
+import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.service.ISysDeptService;
 import com.ruoyi.system.service.ISysMenuService;
 import com.ruoyi.system.service.ISysUserService;
@@ -100,6 +101,22 @@ public class SysLoginController
         // 生成令牌
         String token = tokenService.createToken(loginUser,loginBody.getMineId());
         ajax.put(Constants.TOKEN, token);
+        return ajax;
+    }
+
+    @ApiOperation("检查是否登录矿井")
+    @PreAuthorize("@ss.hasPermi('basicInfo:mine:check')")
+    @GetMapping("/checkMine")
+    public AjaxResult checkMine(HttpServletRequest request)
+    {
+        AjaxResult ajax = AjaxResult.success();
+        String token = tokenService.getToken(request);
+        Long mineId = tokenService.getMineIdFromToken(token);
+        if(mineId == null ){
+            ajax.put(Constants.LOGIN_MINE, "N");
+        }else {
+            ajax.put(Constants.LOGIN_MINE, "Y");
+        }
         return ajax;
     }
 

@@ -55,6 +55,28 @@ public class SysDictData extends BaseEntity
     @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
     private String status;
 
+    private Long mineId;
+
+    private Long companyId;
+
+    @Override
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    @Override
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
+    public Long getMineId() {
+        return mineId;
+    }
+
+    public void setMineId(Long mineId) {
+        this.mineId = mineId;
+    }
+
     public Long getDictCode()
     {
         return dictCode;

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.yulichang.base.MPJBaseMapper;
 import org.apache.ibatis.annotations.Param;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 
@@ -12,7 +13,7 @@ import com.ruoyi.common.core.domain.entity.SysDictData;
  * 
  * @author ruoyi
  */
-public interface SysDictDataMapper extends BaseMapper<SysDictData>
+public interface SysDictDataMapper extends MPJBaseMapper<SysDictData>
 {
     /**
      * 根据条件分页查询字典数据

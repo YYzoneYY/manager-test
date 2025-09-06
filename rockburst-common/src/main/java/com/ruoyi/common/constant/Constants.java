@@ -71,6 +71,13 @@ public class Constants
     public static final String LOGIN_FAIL = "Error";
 
     /**
+     * 是否登录矿井
+     */
+    public static final String LOGIN_MINE = "login_mine";
+
+
+
+    /**
      * 所有权限标识
      */
     public static final String ALL_PERMISSION = "*:*:*";

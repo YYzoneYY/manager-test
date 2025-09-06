@@ -628,6 +628,7 @@ public class SetOutController extends BaseController
                 byte[].class
         );
 
+
         if (response.getStatusCode() == HttpStatus.OK) {
             return response.getBody();
         } else {

@@ -1,8 +1,10 @@
 package com.ruoyi.web.controller.business;
 
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.*;
+import com.ruoyi.system.domain.EqtRoofSeparat;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.service.*;
 import io.swagger.annotations.*;
@@ -64,10 +66,10 @@ public class MiningFootageController {
             @ApiImplicitParam(name = "pageSize", value = "每页显示记录数", defaultValue = "10", dataType = "Integer")
     })
     @PostMapping(value = "/queryList")
-    public R<TableData> queryList(@RequestBody MiningSelectNewDTO miningSelectNewDTO,
-                                  @ApiParam(value = "展示方式", required = true) @RequestParam String displayForm,
-                                  @RequestParam(required = false) Integer pageNum,
-                                  @RequestParam(required = false) Integer pageSize){
+    public R<?> queryList(@RequestBody MiningSelectNewDTO miningSelectNewDTO,
+                                           @ApiParam(value = "展示方式", required = true) @RequestParam String displayForm,
+                                           @RequestParam(required = false) Integer pageNum,
+                                           @RequestParam(required = false) Integer pageSize){
         return R.ok(miningService.pageQueryList(miningSelectNewDTO, displayForm, pageNum,pageSize));
     }
 

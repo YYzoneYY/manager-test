@@ -17,8 +17,8 @@ import java.math.BigDecimal;
 @Data
 public class MiningFootageNewDTO extends MiningEntity {
 
-    @ApiModelProperty("回采累进进度")
-    private BigDecimal miningPaceSum;
+//    @ApiModelProperty("回采累进进度")
+//    private BigDecimal miningPaceSum;
 
     @ApiModelProperty("修改回采进度")
     private BigDecimal miningPaceEdit;

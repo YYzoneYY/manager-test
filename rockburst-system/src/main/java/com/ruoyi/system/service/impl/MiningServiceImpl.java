@@ -1,25 +1,29 @@
 package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.ruoyi.common.core.page.MPage;
+import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.common.enums.MiningFootageEnum;
 import com.ruoyi.common.utils.ConstantsInfo;
 import com.ruoyi.common.utils.ListUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
-import com.ruoyi.system.domain.BizDangerArea;
-import com.ruoyi.system.domain.BizTunnelBar;
-import com.ruoyi.system.domain.BizWorkface;
+import com.ruoyi.system.constant.BizBaseConstant;
+import com.ruoyi.system.domain.*;
 import com.ruoyi.system.domain.Entity.MiningEntity;
 import com.ruoyi.system.domain.Entity.TunnelEntity;
-import com.ruoyi.system.domain.SysConfig;
 import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.utils.AlgorithmUtils;
 import com.ruoyi.system.domain.utils.GeometryUtil;
@@ -117,7 +121,27 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         miningFootageNewDTO.setDelFlag(ConstantsInfo.ZERO_DEL_FLAG);
         MiningEntity miningEntity = new MiningEntity();
         BeanUtils.copyProperties(miningFootageNewDTO, miningEntity);
+
+        //查询 巷道总进尺
+        QueryWrapper<MiningEntity> queryWrapper = new QueryWrapper<>();
+        // 条件： mining_time < 指定时间
+        queryWrapper.lambda().lt(MiningEntity::getMiningTime, miningEntity.getMiningTime());
+        // 使用 selectSum 查询总和
+        queryWrapper.select("SUM(mining_pace) as miningPaceSum");
+
+        MiningEntity result = miningMapper.selectOne(queryWrapper);
+        if(result != null){
+            miningEntity.setMiningPaceSum(result.getMiningPaceSum().add(miningEntity.getMiningPaceSum()));
+        }else {
+            miningEntity.setMiningPaceSum(miningEntity.getMiningPaceSum());
+        }
         flag = miningMapper.insert(miningEntity);
+
+        UpdateWrapper<MiningEntity> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().eq(MiningEntity::getTunnelId, miningEntity.getTunnelId());
+        updateWrapper.setSql("mining_pace_sum = IFNULL(mining_pace_sum, 0) + "
+                + miningEntity.getMiningPaceSum());
+        this.update(updateWrapper);
         if (flag <= 0) {
             throw new RuntimeException("回采进尺新增失败,请联系管理员");
         }
@@ -149,11 +173,29 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         if (miningFootageNewDTO.getMiningPaceEdit().compareTo(surplusTunnelTotal) > 0) {
             throw new RuntimeException("回采进尺不能大于剩余巷道长度" + surplusTunnelTotal + "米");
         }
+        BigDecimal currentIncremental = miningEntity.getMiningPace();
+
         miningEntity.setMiningPace(miningFootageNewDTO.getMiningPaceEdit());
         miningEntity.setFlag(MiningFootageEnum.REVISE.getIndex());
         miningEntity.setUpdateTime(System.currentTimeMillis());
         miningEntity.setUpdateBy(SecurityUtils.getUserId());
+
+
+
+        BigDecimal updateIncremental = miningFootageNewDTO.getMiningPace();
+
+        BigDecimal  incremental = updateIncremental.subtract(currentIncremental);
+        BigDecimal  currentSum =  miningEntity.getMiningPaceSum();
+        BigDecimal  sumIncremental =  currentSum.add(incremental);
+        miningEntity.setMiningPaceSum(sumIncremental);
+
         flag = this.updateById(miningEntity);
+
+        UpdateWrapper<MiningEntity> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().eq(MiningEntity::getTunnelId, miningEntity.getTunnelId());
+        updateWrapper.setSql("mining_pace_sum = IFNULL(mining_pace_sum, 0) + "
+                + sumIncremental);
+        this.update(updateWrapper);
         if (flag) {
             miningFootageNewDTO.setFlag(MiningFootageEnum.REVISE.getIndex());
             miningFootageNewDTO.setWorkFaceId(miningEntity.getWorkFaceId());
@@ -186,8 +228,16 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         LambdaUpdateWrapper<MiningEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(MiningEntity::getMiningFootageId, miningFootageNewDTO.getMiningFootageId())
                 .set(MiningEntity::getMiningPace, 0)
+                .set(MiningEntity::getMiningPaceSum, miningFootageNewDTO.getMiningPaceSum().subtract(miningFootageNewDTO.getMiningPace()))
                 .set(MiningEntity::getFlag, MiningFootageEnum.ERASE.getIndex()); //3-标识擦除
         flag = miningMapper.update(null, updateWrapper);
+
+        updateWrapper.clear();
+        updateWrapper.eq(MiningEntity::getTunnelId, miningEntity.getTunnelId());
+        updateWrapper.setSql("mining_pace_sum = IFNULL(mining_pace_sum, 0) - "
+                + miningEntity.getMiningPace());
+        this.update(updateWrapper);
+
         if (flag > 0) {
             miningFootageNewDTO.setWorkFaceId(miningEntity.getWorkFaceId());
             miningFootageNewDTO.setTunnelId(miningEntity.getTunnelId());
@@ -208,7 +258,7 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
      * @return 返回结果
      */
     @Override
-    public TableData pageQueryList(MiningSelectNewDTO miningSelectNewDTO, String displayForm, Integer pageNum, Integer pageSize) {
+    public MPage<MiningFootageNewDTO> pageQueryList(MiningSelectNewDTO miningSelectNewDTO, String displayForm, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();
         if (null == pageNum || pageNum < 1) {
             pageNum = 1;
@@ -219,41 +269,108 @@ public class MiningServiceImpl extends ServiceImpl<MiningMapper, MiningEntity> i
         if (ObjectUtil.isNull(displayForm)) {
             throw new RuntimeException("展示方式不能为空,，请选择合理的展示方式");
         }
-        long total = 0;
-        List<?> rows = new ArrayList<>();
-        if (!displayForm.equals("average")) {
-            PageHelper.startPage(pageNum, pageSize);
-            Page<MiningFootageNewDTO> page = miningMapper.selectMiningFootageByPage(miningSelectNewDTO, Long.valueOf(displayForm));
-            if (!page.getResult().isEmpty()) {
-                List<Long> collect = page.getResult().stream()
-                        .collect(Collectors.groupingBy(MiningFootageNewDTO::getMiningTime, Collectors.counting()))
-                        .entrySet()
-                        .stream()
-                        .filter(entry -> entry.getValue() > 1)
-                        .map(entry -> entry.getKey())
-                        .collect(Collectors.toList());
 
-                page.getResult().forEach(miningFootageNewDTO -> {
-                    BigDecimal bigDecimal = miningPaceSum(miningFootageNewDTO.getTunnelId(), miningFootageNewDTO.getMiningTime());
-                    miningFootageNewDTO.setMiningPaceSum(bigDecimal);
-                    collect.forEach(c -> {
-                        if (miningFootageNewDTO.getMiningTime().equals(c)) {
-                            miningFootageNewDTO.setFlag(MiningFootageEnum.SAME_TIME.getIndex());
-                        }
-                    });
-                });
-            }
-            total = page.getTotal();
-            rows = page.getResult();
-        } else {
-            TableData list = getList(miningSelectNewDTO, pageNum, pageSize);
-            total = list.getTotal();
-            rows = list.getRows();
-        }
-        result.setTotal(total);
-        result.setRows(rows);
-        return result;
+        Pagination pagination = new Pagination();
+        pagination.setPageSize(pageSize);
+        pagination.setPageNum(pageNum);
+        MiningFootageNewDTO dto = new MiningFootageNewDTO();
+        MPJLambdaWrapper<MiningEntity> queryWrapper = new MPJLambdaWrapper<MiningEntity>();
+        queryWrapper
+                .select(
+                        "FROM_UNIXTIME(mining_time/1000, '%Y-%m-%d') as timeFlag"
+                )
+                .selectAll(MiningEntity.class)
+                .eq(MiningEntity::getWorkFaceId, miningSelectNewDTO.getWorkFaceId())
+                .groupBy("timeFlag")   // 注意：这里不能直接 Lambda 引用函数，需要用原始字段
+                .orderByAsc(MiningEntity::getMiningTime);
+        IPage<MiningFootageNewDTO> entityIPage = miningMapper.selectJoinPage(pagination,MiningFootageNewDTO.class,queryWrapper);
+
+
+        entityIPage.getRecords().forEach(miningFootageNewDTO -> {
+            BigDecimal sum =  getDailyTotalMiningPace(miningFootageNewDTO.getWorkFaceId(),miningFootageNewDTO.getTimeFlag());
+            miningFootageNewDTO.setMiningPaceSum(sum);
+        });
+
+        return new MPage<>(entityIPage);
     }
+
+    public BigDecimal getDailyTotalMiningPace(Long workFaceId, String date) {
+        // 1️⃣ 先查询每个巷道当天最大 mining_pace_sum
+
+        QueryWrapper<MiningEntity> queryWrapper =  new QueryWrapper<MiningEntity>();
+        queryWrapper.select("tunnel_id, MAX(mining_pace_sum) AS miningPaceSum")
+                .eq("workface_id", workFaceId)
+                .eq("del_flag", "0")
+                .apply("FROM_UNIXTIME(mining_time/1000, '%Y-%m-%d') <= {0}", date)
+                .groupBy("tunnel_id");
+
+        List<MiningEntity> list = miningMapper.selectList(queryWrapper);
+        List<BigDecimal> maxPaceList = list.stream()
+                .map(entity -> entity.getMiningPaceSum()) // 获取每条记录的 max_pace_sum
+                .collect(Collectors.toList());
+
+        // 2️⃣ 求和
+        return maxPaceList.stream()
+                .filter(Objects::nonNull)   // 过滤 null
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+//    /**
+//     * 分页查询
+//     * @param miningSelectNewDTO 参数DTO
+//     * @param pageNum 页数
+//     * @param pageSize 条数
+//     * @return 返回结果
+//     */
+//    @Override
+//    public TableData pageQueryList(MiningSelectNewDTO miningSelectNewDTO, String displayForm, Integer pageNum, Integer pageSize) {
+//        TableData result = new TableData();
+//        if (null == pageNum || pageNum < 1) {
+//            pageNum = 1;
+//        }
+//        if (null == pageSize || pageSize < 1) {
+//            pageSize = 10;
+//        }
+//        if (ObjectUtil.isNull(displayForm)) {
+//            throw new RuntimeException("展示方式不能为空,，请选择合理的展示方式");
+//        }
+//
+//
+//        long total = 0;
+//        List<?> rows = new ArrayList<>();
+//        if (!displayForm.equals("average")) {
+//            PageHelper.startPage(pageNum, pageSize);
+//            Page<MiningFootageNewDTO> page = miningMapper.selectMiningFootageByPage(miningSelectNewDTO, Long.valueOf(displayForm));
+//            if (!page.getResult().isEmpty()) {
+//                List<Long> collect = page.getResult().stream()
+//                        .collect(Collectors.groupingBy(MiningFootageNewDTO::getMiningTime, Collectors.counting()))
+//                        .entrySet()
+//                        .stream()
+//                        .filter(entry -> entry.getValue() > 1)
+//                        .map(entry -> entry.getKey())
+//                        .collect(Collectors.toList());
+//
+//                page.getResult().forEach(miningFootageNewDTO -> {
+//                    BigDecimal bigDecimal = miningPaceSum(miningFootageNewDTO.getTunnelId(), miningFootageNewDTO.getMiningTime());
+//                    miningFootageNewDTO.setMiningPaceSum(bigDecimal);
+//                    collect.forEach(c -> {
+//                        if (miningFootageNewDTO.getMiningTime().equals(c)) {
+//                            miningFootageNewDTO.setFlag(MiningFootageEnum.SAME_TIME.getIndex());
+//                        }
+//                    });
+//                });
+//            }
+//            total = page.getTotal();
+//            rows = page.getResult();
+//        } else {
+//            TableData list = getList(miningSelectNewDTO, pageNum, pageSize);
+//            total = list.getTotal();
+//            rows = list.getRows();
+//        }
+//        result.setTotal(total);
+//        result.setRows(rows);
+//        return result;
+//    }
 
     private TableData getList(MiningSelectNewDTO miningSelectNewDTO, Integer pageNum, Integer pageSize) {
         TableData result = new TableData();

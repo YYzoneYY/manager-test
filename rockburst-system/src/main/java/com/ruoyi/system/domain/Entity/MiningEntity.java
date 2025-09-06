@@ -58,6 +58,11 @@ public class MiningEntity extends BusinessBaseEntity implements Serializable {
     @JsonSerialize(using = ToStringSerializer.class)
     private BigDecimal miningPace;
 
+    @ApiModelProperty("回采进度")
+    @TableField("mining_pace_sum")
+    @JsonSerialize(using = ToStringSerializer.class)
+    private BigDecimal miningPaceSum;
+
     //0正常数据 1未填写的 2修改 3 擦除
     @ApiModelProperty("修改标识 0:正常数据 1:未填写的 2:修改 3:擦除")
     @TableField("flag")

@@ -36,7 +36,7 @@ public class SysConfig extends BaseEntity
     private Long companyId;
 
 
-    private Integer common;
+//    private Integer common;
 
 
     private Long mineId;
@@ -50,6 +50,17 @@ public class SysConfig extends BaseEntity
     @Excel(name = "系统内置", readConverterExp = "Y=是,N=否")
     private String configType;
 
+    private String gradeType;
+
+
+    public String getGradeType() {
+        return gradeType;
+    }
+
+    public void setGradeType(String gradeType) {
+        this.gradeType = gradeType;
+    }
+
     @Override
     public Long getCompanyId() {
         return companyId;
@@ -60,13 +71,7 @@ public class SysConfig extends BaseEntity
         this.companyId = companyId;
     }
 
-    public Integer getCommon() {
-        return common;
-    }
 
-    public void setCommon(Integer common) {
-        this.common = common;
-    }
 
     public Long getConfigId()
     {

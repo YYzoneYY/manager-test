@@ -66,13 +66,18 @@ public class SysConfigController extends BaseController
         Long mineId = tokenService.getMineIdFromToken(token);
         startPage();
         QueryWrapper<SysConfig> queryWrapper = new QueryWrapper<SysConfig>(config);
-        queryWrapper.lambda().eq(StrUtil.isNotEmpty(config.getConfigType()),SysConfig::getConfigType,"Y")
-                        .eq( usercurrent.getCompanyId() != null, SysConfig::getCompanyId,usercurrent.getCompanyId())
-                        .eq(usercurrent.getMineId() != null,SysConfig::getMineId,usercurrent.getMineId())
-                        .eq(mineId != null,SysConfig::getMineId,mineId)
+        queryWrapper.lambda()
+//                        .eq(StrUtil.isEmpty(config.getConfigType()),SysConfig::getConfigType,"Y")
+                        .eq(StrUtil.isNotEmpty(config.getConfigType()),SysConfig::getConfigType,config.getConfigType())
+                        .and(i->i.eq(usercurrent.getCompanyId() != null,SysConfig::getCompanyId,usercurrent.getCompanyId())
+                                .or().eq(usercurrent.getMineId() != null,SysConfig::getMineId,usercurrent.getMineId())
+                                .or().eq(mineId != null,SysConfig::getMineId,mineId))
+//                        .eq( usercurrent.getCompanyId() != null, SysConfig::getCompanyId,usercurrent.getCompanyId())
+//                        .eq(usercurrent.getMineId() != null,SysConfig::getMineId,usercurrent.getMineId())
+//                        .eq(mineId != null,SysConfig::getMineId,mineId)
                         .eq(StrUtil.isNotEmpty(config.getConfigName()), SysConfig::getConfigName,config.getConfigName())
                         .eq(StrUtil.isNotEmpty(config.getConfigKey()), SysConfig::getConfigKey,config.getConfigKey());
-        List<SysConfig> list = configService.selectConfigList(config);
+        List<SysConfig> list = configService.getBaseMapper().selectList(queryWrapper);
         return getDataTable(list);
     }
 
@@ -108,8 +113,20 @@ public class SysConfigController extends BaseController
         SysUser user = sysUserMapper.selectUserById(userId);
 
 
-        String value = configService.selectConfigByKeyByMine(configKey,mineId,user.getCompanyId());
-        return success(value);
+        QueryWrapper<SysConfig> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(SysConfig::getConfigKey,configKey);
+        if(user.getMineId() != null ){
+            queryWrapper.lambda().eq(SysConfig::getMineId,user.getMineId());
+        }
+        if(user.getCompanyId() != null && mineId != null){
+            queryWrapper.lambda()
+                    .and(i->i.eq(SysConfig::getCompanyId,user.getCompanyId())
+                            .or().eq(SysConfig::getMineId,mineId));
+        }
+        List<SysConfig> configs  =  configService.getBaseMapper().selectList(queryWrapper);
+
+//        String value = configService.selectConfigByKeyByMine(configKey,mineId,user.getCompanyId());
+        return success(configs.get(0).getConfigValue());
 //        return success(configService.selectConfigByKey(configKey));
     }
 
@@ -139,16 +156,19 @@ public class SysConfigController extends BaseController
         {
             return error("新增参数'" + config.getConfigName() + "'失败，参数键名已存在");
         }
-        String token = tokenService.getToken(request);
-        Long mineId = tokenService.getMineIdFromToken(token);
-        if(mineId != null ){
-            config.setMineId(mineId);
-        }
-
         SysUser usercurrent = userService.selectUserById(getUserId());
         config.setCreateBy(getUsername());
         config.setCompanyId(usercurrent.getCompanyId());
-        config.setCompanyId(usercurrent.getMineId());
+        config.setMineId(usercurrent.getMineId());
+        if(usercurrent.getCompanyId() != null ){
+//            String key = "company."+config.getConfigKey();
+            config.setGradeType("company");
+        }
+        if(usercurrent.getCompanyId() != null ){
+//            String key = "mine."+config.getConfigKey();
+            config.setConfigKey("mine");
+        }
+
         return toAjax(configService.insertConfig(config));
     }
 

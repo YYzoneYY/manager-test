@@ -92,6 +92,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="configType != null and configType != '' ">config_type,</if>
 			<if test="createBy != null and createBy != ''">create_by,</if>
 			<if test="remark != null and remark != ''">remark,</if>
+			<if test="companyId != null and companyId != ''">company_id,</if>
+			<if test="mineId != null and mineId != ''">mine_id,</if>
+			<if test="gradeType != null and gradeType != ''">grade_type,</if>
  			create_time
         )values(
 			<if test="configName != null and configName != ''">#{configName},</if>
@@ -100,6 +103,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="configType != null and configType != ''">#{configType},</if>
 			<if test="createBy != null and createBy != ''">#{createBy},</if>
 			<if test="remark != null and remark != ''">#{remark},</if>
+			<if test="companyId != null and companyId != ''">#{companyId},</if>
+			<if test="mineId != null and mineId != ''">#{mineId},</if>
+			<if test="gradeType != null and gradeType != ''">#{gradeType},</if>
  			sysdate()
 		)
     </insert>

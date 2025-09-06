@@ -1,8 +1,10 @@
 package com.ruoyi.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.TableData;
 import com.ruoyi.system.domain.Entity.MiningEntity;
+import com.ruoyi.system.domain.EqtRoofSeparat;
 import com.ruoyi.system.domain.dto.FootageReturnDTO;
 import com.ruoyi.system.domain.dto.MiningFootageNewDTO;
 import com.ruoyi.system.domain.dto.MiningSelectNewDTO;
@@ -46,7 +48,7 @@ public interface MiningService extends IService<MiningEntity> {
      * @param pageSize 条数
      * @return 返回结果
      */
-    TableData pageQueryList(MiningSelectNewDTO miningSelectNewDTO, String displayForm, Integer pageNum, Integer pageSize);
+    MPage<MiningFootageNewDTO> pageQueryList(MiningSelectNewDTO miningSelectNewDTO, String displayForm, Integer pageNum, Integer pageSize);
 
     /**
      * 查询时间相同的数据

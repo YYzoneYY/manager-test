@@ -43,6 +43,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -183,6 +184,9 @@ public class BizMineController extends BaseController
                                 .map(Long::valueOf)
                                 .distinct()
                                 .collect(Collectors.toList());
+                if(allMineIds == null || allMineIds.isEmpty()){
+                    return R.ok(new ArrayList<>());
+                }
             }
             QueryWrapper<BizMine> queryWrapper = new QueryWrapper<>();
             queryWrapper.lambda().like(StrUtil.isNotEmpty(mineDto.getMineName()), BizMine::getMineName,mineDto.getMineName());
@@ -228,7 +232,9 @@ public class BizMineController extends BaseController
                             .distinct()
                             .collect(Collectors.toList());
             queryWrapper.lambda().in(allMineIds != null && allMineIds.size() > 0, BizMine::getMineId,allMineIds);
-
+            if(allMineIds == null || allMineIds.isEmpty()){
+                return R.ok(new ArrayList<>());
+            }
         }
 
         queryWrapper.lambda().like(StrUtil.isNotEmpty(mineDto.getMineName()), BizMine::getMineName,mineDto.getMineName());
