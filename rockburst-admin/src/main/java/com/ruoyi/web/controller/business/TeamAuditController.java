@@ -1,10 +1,13 @@
 package com.ruoyi.web.controller.business;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.domain.BasePermission;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.Pagination;
+import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.system.domain.BizProjectAudit;
+import com.ruoyi.system.domain.dto.BizProjectRecordAddDto;
 import com.ruoyi.system.domain.dto.BizProjectRecordDto;
 import com.ruoyi.system.domain.vo.BizProjectRecordDetailVo;
 import com.ruoyi.system.service.IBizProjectAuditService;
@@ -128,15 +131,15 @@ public class TeamAuditController {
         return R.ok(vo);
     }
 
-//    /**
-//     * 修改工程填报记录
-//     */
-//    @ApiOperation("工程填报信息修改")
-//    @PreAuthorize("@ss.hasPermi('teamAudit:projectInfoEdit')")
-//    @Log(title = "工程填报记录", businessType = BusinessType.UPDATE)
-//    @PutMapping("/projectInfoEdit")
-//    public R<?> edit(@RequestBody BizProjectRecordAddDto bizProjectRecord)
-//    {
-//        return R.ok(bizProjectRecordService.updateRecord(bizProjectRecord));
-//    }
+    /**
+     * 修改工程填报记录
+     */
+    @ApiOperation("工程填报信息修改")
+    @PreAuthorize("@ss.hasPermi('teamAudit:projectInfoEdit')")
+    @Log(title = "工程填报记录", businessType = BusinessType.UPDATE)
+    @PutMapping("/projectInfoEdit")
+    public R<?> edit(@RequestBody BizProjectRecordAddDto bizProjectRecord)
+    {
+        return R.ok(bizProjectRecordService.updateRecord(bizProjectRecord));
+    }
 }
