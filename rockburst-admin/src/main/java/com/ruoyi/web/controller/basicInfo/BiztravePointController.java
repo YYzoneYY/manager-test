@@ -12,7 +12,9 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.MPage;
 import com.ruoyi.common.core.page.Pagination;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.constant.BizBaseConstant;
 import com.ruoyi.system.constant.GroupAdd;
 import com.ruoyi.system.constant.GroupUpdate;
@@ -89,6 +91,9 @@ public class BiztravePointController extends BaseController
     @Autowired
     MiningService miningService;
 
+    @Autowired
+    private TokenService tokenService;
+
 
 
     /**
@@ -102,11 +107,14 @@ public class BiztravePointController extends BaseController
                                         @ApiParam(name = "pointName", value = "导线点名称") @RequestParam( required = false) String pointName,
                                         @ParameterObject Pagination pagination)
     {
+        String token = tokenService.getToken(ServletUtils.getRequest());
+        Long mineId = tokenService.getMineIdFromToken(token);
+
         QueryWrapper<BizTravePoint> queryWrapper = new QueryWrapper<BizTravePoint>();
         queryWrapper.lambda()
                 .like(StrUtil.isNotEmpty( pointName), BizTravePoint::getPointName,pointName)
                 .eq(workfaceId != null , BizTravePoint::getWorkfaceId,workfaceId)
-                .eq(tunnelId != null , BizTravePoint::getTunnelId,tunnelId)
+                .eq(tunnelId != null , BizTravePoint::getTunnelId,tunnelId).eq(BizTravePoint::getMineId, mineId)
                 .eq(BizTravePoint::getDelFlag, BizBaseConstant.DELFLAG_N);
         IPage<BizTravePoint> list = bizTravePointService.getBaseMapper().selectPage(pagination,queryWrapper);
         return R.ok(new MPage<>(list));

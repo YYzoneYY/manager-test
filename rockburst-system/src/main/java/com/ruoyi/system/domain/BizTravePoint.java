@@ -95,8 +95,13 @@ public class BizTravePoint extends BaseSelfEntity
     @ApiModelProperty(value = "坡度")
     private String slope;
 
+    // todo: 2025/10/18 临时修改BUG添加
+    @ApiModelProperty("所属矿")
+    @TableField(value = "mine_id")
+    private Long mineId;
 
-
-
+    @ApiModelProperty(value = "所属公司")
+    @TableField(value = "company_id")
+    private Long companyId;
 
 }
