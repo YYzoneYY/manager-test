@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -146,8 +147,10 @@ public class BizTravePointServiceImpl extends ServiceImpl<BizTravePointMapper, B
             BizPresetPoint presetPoint = new BizPresetPoint();
             BizTravePoint pointpre = this.getPrePoint(pointId);
 
-            presetPoint.setPointId(pointpre.getPointId()).setMeter(mmBigDecimal.doubleValue());
-            return presetPoint;
+            if (ObjectUtil.isNotNull(pointpre)){
+                presetPoint.setPointId(pointpre.getPointId()).setMeter(mmBigDecimal.doubleValue());
+                return presetPoint;
+            }
         }
         BizPresetPoint presetPoint = new BizPresetPoint();
         presetPoint.setPointId(pointId).setMeter(meter);
